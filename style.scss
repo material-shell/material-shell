@@ -1,0 +1,79 @@
+.workspace-button {
+    padding: 12px;
+}
+
+.workspace-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.workspace-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.workspace-active-indicator {
+    background: blue;
+    width: 3px;
+    height: 48px;
+}
+
+.ripple-wave {
+    border-radius: 2000px;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+#dash {
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+}
+
+#panelLeft,
+#panelCenter {
+    // spacing between activities<>app menu and such
+    spacing: 0px;
+}
+.task-active-indicator {
+    background: white;
+    height: 2px;
+}
+.task-bar-item {
+    font-size: 14px;
+    height: 48px;
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    &.active {
+        .task-bar-item-content {
+            .task-bar-item-title {
+                color: rgba(255, 255, 255, 1);
+            }
+        }
+    }
+    .task-bar-item-content {
+        padding: 0px 8px;
+        .app-icon {
+            margin-right: 8px;
+        }
+        .task-bar-item-title {
+            max-width: 248px;
+            margin-right: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .close-button {
+            border-radius: 24px;
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+}
+
+.panel-button {
+    * {
+        padding: 0;
+        margin: 0;
+    }
+}
