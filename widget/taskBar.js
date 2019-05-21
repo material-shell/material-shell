@@ -2,7 +2,7 @@ const { Clutter, GObject, St, Shell } = imports.gi;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const Mainloop = imports.mainloop;
+const GLib = imports.gi.GLib;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -26,7 +26,10 @@ var TaskBar = GObject.registerClass(
 
             global.display.connect('notify::focus-window', () => {
                 let windowFocused = global.display.focus_window;
-                if (workspace === windowFocused.get_workspace()) {
+                if (windowFocused && workspace === windowFocused.get_workspace()) {
+                    if (windowFocused.is_attached_dialog()) {
+                        windowFocused = windowFocused.get_transient_for();
+                    }
                     let taskBarItem = this.getTaskBarItemOfWindow(windowFocused);
                     this.setTaskBarItemActif(taskBarItem);
                 }
@@ -41,15 +44,21 @@ var TaskBar = GObject.registerClass(
         }
 
         handleNewWindow(workspace, window) {
-            if (window.get_monitor() === Main.layoutManager.primaryMonitor.index) {
-                let item = new TaskBarItem(
-                    window,
-                    this.tracker.get_window_app(window)
-                );
-                this.items.push(item);
-                this.taskButtonContainer.add_child(item);
-                this._animateActiveIndicator();
+            if (
+                window.get_monitor() !== Main.layoutManager.primaryMonitor.index ||
+                window.skip_taskbar
+            ) {
+                return;
             }
+
+            let item = new TaskBarItem(
+                window,
+                this.tracker.get_window_app(window)
+            );
+            this.items.push(item);
+            this.taskButtonContainer.add_child(item);
+            this._reorderItems();
+            this._animateActiveIndicator();
         }
 
         handleOldWindow(workspace, window) {
@@ -64,25 +73,33 @@ var TaskBar = GObject.registerClass(
                     this.taskBarItemActif = null;
                 }
                 taskBarItem.destroy();
-                Mainloop.timeout_add(50, () => {
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
                     this._animateActiveIndicator();
                 });
+                this._reorderItems();
             }
+        }
+
+        _reorderItems() {
+            this.workspace.list_windows().forEach((window, index) => {
+                let item = this.taskButtonContainer.get_children().find((item) => {
+                    return item.window === window;
+                });
+                this.taskButtonContainer.set_child_at_index(item, index);
+            });
         }
 
         _animateActiveIndicator() {
             if (this.taskBarItemActif) {
                 Tweener.addTween(this.taskActiveIndicator, {
-                    translation_x:
-                        this.taskBarItemActif.x,
+                    x: this.taskBarItemActif.x,
                     width: this.taskBarItemActif.width,
                     time: 0.25,
                     transition: 'easeOutQuad'
                 });
             } else {
                 Tweener.addTween(this.taskActiveIndicator, {
-                    translation_x:
-                        0,
+                    x: 0,
                     width: 0,
                     time: 0.25,
                     transition: 'easeOutQuad'
@@ -97,6 +114,9 @@ var TaskBar = GObject.registerClass(
         }
 
         setTaskBarItemActif(taskBarItem) {
+            if (taskBarItem === this.taskBarItemActif) {
+                return;
+            }
             if (this.taskBarItemActif) {
                 if (this.taskBarItemActif.has_style_class_name('active')) {
                     this.taskBarItemActif.remove_style_class_name('active');
@@ -106,13 +126,12 @@ var TaskBar = GObject.registerClass(
             this.taskBarItemActif = taskBarItem;
 
             // Delay the new class otherwise it's break the style system Dunno why
-            Mainloop.timeout_add(50, () => {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.taskBarItemActif.add_style_class_name('active');
             });
             this.taskActiveIndicator.translation_y = this.height - this.taskActiveIndicator.height;
             this._animateActiveIndicator();
             this.taskBarItemActifWidthSignal = this.taskBarItemActif.connect('notify::width', () => {
-                log('width changed')
                 this._animateActiveIndicator();
             });
         }

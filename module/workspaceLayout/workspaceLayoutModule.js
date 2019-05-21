@@ -1,7 +1,8 @@
-const { Clutter, GObject, St, Shell } = imports.gi;
+const { Clutter, GObject, St, Meta } = imports.gi;
 
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const Background = imports.ui.background;
 
 const Tweener = imports.ui.tweener;
 
@@ -14,14 +15,29 @@ const TaskBar = Me.imports.widget.taskBar.TaskBar;
 /* exported WorkspaceLayoutModule */
 var WorkspaceLayoutModule = class WorkspaceLayoutModule {
     constructor() {
-        this.primaryMonitor = Main.layoutManager.primaryMonitor;
+        Main.layoutManager.monitors.forEach((monitor) => {
+            if (monitor.index === Main.layoutManager.primaryIndex) {
+                monitor.workspacesWrapper = new WorkspacesWrapper(monitor.width - 48, monitor.height);
+                monitor.workspacesWrapper.set_position(monitor.x + 48, monitor.y);
 
-        this.workspacesWrapper = new WorkspacesWrapper(this.primaryMonitor.width - 48, this.primaryMonitor.height);
-        this.workspacesWrapper.set_position(this.primaryMonitor.x + 48, this.primaryMonitor.y);
+                monitor.background = new BackgroundScroller(monitor.width, monitor.height);
+                monitor.background.set_position(monitor.x, monitor.y);
+            } else {
+                monitor.background = new Meta.BackgroundGroup({ reactive: true });
+                monitor.backgroundManager = new Background.BackgroundManager({
+                    container: monitor.background,
+                    monitorIndex: monitor.index,
+                    vignette: false
+                });
+                monitor.background.set_position(monitor.x, monitor.y);
+            }
+        });
+
+        this.primaryMonitor = Main.layoutManager.primaryMonitor;
 
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         this.topBarSpacer.height = 48;
-        this.topBarSpacer.width = this.workspacesWrapper.width;
+        this.topBarSpacer.width = this.primaryMonitor.width - 48;
         /* Main.layoutManager._trackActor(this.topBarsContainer, {
             trackFullscreen: true
         }); */
@@ -47,8 +63,13 @@ var WorkspaceLayoutModule = class WorkspaceLayoutModule {
             this.myPanelGhost,
             this.legacyPanelGhostIndex
         );
-
-        Main.layoutManager.uiGroup.add_actor(this.workspacesWrapper);
+        global.window_group.get_child_at_index(0).hide();
+        Main.layoutManager.monitors.forEach((monitor) => {
+            if (monitor.workspacesWrapper) {
+                Main.layoutManager.uiGroup.insert_child_below(monitor.workspacesWrapper, Main.layoutManager.overviewGroup);
+            }
+            Main.layoutManager.uiGroup.insert_child_below(monitor.background, global.window_group);
+        });
     }
 
     disable() {
@@ -59,10 +80,79 @@ var WorkspaceLayoutModule = class WorkspaceLayoutModule {
             this.legacyPanelGhost,
             this.legacyPanelGhostIndex
         );
+        Main.layoutManager.monitors.forEach((monitor) => {
+            if (monitor.workspacesWrapper) {
+                Main.layoutManager.uiGroup.remove_actor(monitor.workspacesWrapper);
+            }
+            Main.layoutManager.uiGroup.remove_actor(monitor.background);
 
-        Main.layoutManager.uiGroup.remove_actor(this.workspacesWrapper);
+        });
+        global.window_group.get_child_at_index(0).show();
     }
 };
+
+let BackgroundScroller = GObject.registerClass(
+    class BackgroundScroller extends St.Widget {
+        _init(workspaceWidth, workspaceHeight) {
+            super._init({
+                name: 'backgroundScrollerContainer',
+                clip_to_allocation: true,
+                width: workspaceWidth,
+                height: workspaceHeight
+            });
+
+            let workspaceManager = global.workspace_manager;
+
+            this.backgroundContainer = new St.BoxLayout({
+                name: 'backgroundScroller',
+                vertical: true
+            });
+
+            //this.translation_y = -workspaceHeight * workspaceManager.get_active_workspace_index();
+
+            this.currentWorkspaceIndex = workspaceManager.get_active_workspace_index();
+            this._firstBackgroundGroup = new Meta.BackgroundGroup({ reactive: true });
+            Main.bgManager = new Background.BackgroundManager({
+                container: this._firstBackgroundGroup,
+                monitorIndex: Main.layoutManager.primaryIndex,
+                vignette: false
+            });
+            Main.bgManager.backgroundActor.set_position(false, false)
+
+            this.backgroundContainer.add_child(this._firstBackgroundGroup);
+
+            this._secondBackgroundGroup = new Meta.BackgroundGroup({ reactive: true });
+            let bgManager2 = new Background.BackgroundManager({
+                container: this._secondBackgroundGroup,
+                monitorIndex: Main.layoutManager.primaryIndex,
+                vignette: false
+            });
+            bgManager2.backgroundActor.set_position(false, false)
+            this.backgroundContainer.add_child(this._secondBackgroundGroup);
+
+            this.add_child(this.backgroundContainer);
+            global.workspace_manager.connect('active-workspace-changed', () => {
+                let newIndex = workspaceManager.get_active_workspace_index();
+                if (this.currentWorkspaceIndex < newIndex) {
+                    this.backgroundContainer.translation_y = 0;
+                    Tweener.addTween(this.backgroundContainer, {
+                        translation_y: -workspaceHeight,
+                        time: 0.25,
+                        transition: 'easeOutQuad'
+                    });
+                } else {
+                    this.backgroundContainer.translation_y = -workspaceHeight;
+                    Tweener.addTween(this.backgroundContainer, {
+                        translation_y: 0,
+                        time: 0.25,
+                        transition: 'easeOutQuad'
+                    });
+                }
+                this.currentWorkspaceIndex = newIndex;
+            });
+        }
+    }
+);
 
 let WorkspacesWrapper = GObject.registerClass(
     class WorkspacesWrapper extends St.Widget {
@@ -120,8 +210,11 @@ let WorkspaceWidget = GObject.registerClass(
             this.panelVisible = false;
             this.workspace = workspace;
             this.workspace.workspaceWidget = this;
+            //this.set_style('background:blue');
+
             this.panel = new TopPanel(workspace);
             this.add_child(this.panel);
+
             /* Main.layoutManager._trackActor(this.panel, {
                 trackFullscreen: true
             }); */

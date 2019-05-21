@@ -46,7 +46,7 @@ var LeftPanelModule = class LeftPanelModule {
 
         this.workspaceListSubModule.enable();
         this.materializePanelSubModule.enable();
-        //this.hideDashModule.enable();
+        this.hideDashModule.enable();
     }
 
     disable() {
@@ -58,7 +58,7 @@ var LeftPanelModule = class LeftPanelModule {
         this.panel.statusArea.activities.actor.show();
         this.panelToLeftSubModule.disable();
         this.verticalisePanelSubModule.disable();
-        //this.hideDashModule.disable();
+        this.hideDashModule.disable();
     }
 };
 
@@ -77,8 +77,7 @@ class VerticalisePanelSubModule {
             let [, rightNaturalHeight] = this._rightBox.get_preferred_height(
                 -1
             );
-            let startY =
-                allocHeight - (centerNaturalHeight + rightNaturalHeight);
+            let startY = allocHeight - (centerNaturalHeight + rightNaturalHeight);
 
             let leftChildBox = new Clutter.ActorBox();
             leftChildBox.clip_to_allocation = true;
@@ -152,7 +151,7 @@ class VerticalisePanelSubModule {
         Main.wm._getPositionForDirection = this.wmGetPositionForDirection;
 
         this.rectangularClockSubModule.enable();
-        
+
     }
 
     disable() {
@@ -277,10 +276,10 @@ class PanelToLeftSubModule {
             name: 'leftPanelBox',
             vertical: true
         });
-        this.dashSpacer = new OverviewControls.DashSpacer();
-        this.dashSpacer.setDashActor(this.panel);
-
+        this.dashSpacer = new St.Widget();
         this.primaryMonitor = Main.layoutManager.primaryMonitor;
+
+        this.dashSpacer.set_size(48, Main.overview._controls._group.height);
         this.panelBox.set_size(48, this.primaryMonitor.height);
     }
 
@@ -330,13 +329,18 @@ class PanelToLeftSubModule {
 }
 
 class HideDashModule {
-    constructor() {}
+    constructor() { }
 
     enable() {
         Main.overview._controls.dash.actor.hide();
+        Main.overview._controls._group.remove_child(Main.overview._controls._dashSpacer);
     }
 
     disable() {
         Main.overview._controls.dash.actor.show();
+        Main.overview._controls._group.insert_child_at_index(
+            Main.overview._controls._dashSpacer,
+            0
+        );
     }
 }

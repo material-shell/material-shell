@@ -71,16 +71,6 @@ var RippleContainer = GObject.registerClass(
                     ...event.get_coords()
                 );
                 this.createRippleWave(x, y);
-                /* log(this.get_clip());
-                log(this.get_clip_to_allocation());
-                log(this.get_allocation_box().y1, this.get_allocation_box().y2);
-                log(this.waveContainer.get_allocation_box());
-                log(this.waveContainer.get_clip());
-                log(this.waveContainer.get_clip_to_allocation());
-                log(
-                    this.waveContainer.get_allocation_box().y1,
-                    this.waveContainer.get_allocation_box().y2
-                ); */
             });
 
             this.connect('button-release-event', (actor, event) => {
