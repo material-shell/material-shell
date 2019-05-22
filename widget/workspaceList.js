@@ -1,9 +1,9 @@
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
 const Tweener = imports.ui.tweener;
-
+const Main = imports.ui.main;
+const Me = ExtensionUtils.getCurrentExtension();
 const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
 
 /* exported WorkspaceList */
@@ -47,6 +47,9 @@ var WorkspaceList = GObject.registerClass(
             this.workspaceActiveIndicator = new St.Widget({
                 style_class: 'workspace-active-indicator'
             });
+
+            this.workspaceActiveIndicator.set_background_color(Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor.get_theme_node().get_color('-barlevel-active-background-color'));
+
 
             this.add_child(this.workspaceActiveIndicator);
 

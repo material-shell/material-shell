@@ -1,3 +1,4 @@
+const Meta = imports.gi.Meta;
 const Main = imports.ui.main;
 
 /* exported TilingManagerModule */
@@ -10,6 +11,15 @@ var TilingManagerModule = class TilingManagerModule {
     enable() {
         for (let w = 0; w < this.workspaceManager.n_workspaces; w++) {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
+            workspace.tilingLayout = 'tileRight';
+
+            workspace.tileWindows = () => {
+                this.tileWindows(workspace);
+            };
+            workspace.nextTiling = () => {
+                workspace.tilingLayout = workspace.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
+                this.tileWindows(workspace);
+            };
             workspace.connect('window-added', (workspace, window) => {
                 window._sizeChangedId = window.connect('size-changed',
                     () => {
@@ -45,8 +55,20 @@ var TilingManagerModule = class TilingManagerModule {
     }
 
     tileWindows(workspace) {
-        //this.tileMaximize(workspace.list_windows());
-        this.tileRight(workspace.list_windows(), {});
+
+        let windowsToTile = workspace.list_windows().filter((window) => {
+            return window.get_window_type() === Meta.WindowType.NORMAL;
+        });
+        switch (workspace.tilingLayout) {
+            case 'tileRight':
+                this.tileRight(windowsToTile, {});
+                break;
+            case 'maximize':
+                this.tileMaximize(windowsToTile);
+                break;
+
+        }
+        //this.tileRight(windowsToTile, {});
     }
 
     tileMaximize(windows) {
@@ -57,13 +79,20 @@ var TilingManagerModule = class TilingManagerModule {
     }
 
     tileRight(windows, tilingData) {
+        if (!windows.length)
+            return;
+
         tilingData = tilingData || {};
         let workArea = Main.layoutManager.getWorkAreaForMonitor(window.monitor);
         let masterWidth = tilingData.masterWidth || windows.length > 1 ? workArea.width / 2 : workArea.width;
         let masterWindow = windows.shift();
+        if (masterWindow.get_maximized())
+            masterWindow.unmaximize(Meta.MaximizeFlags.BOTH);
         masterWindow.move_resize_frame(true, workArea.x, workArea.y, masterWidth, workArea.height);
 
         windows.forEach((window, index) => {
+            if (window.get_maximized())
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
             window.move_resize_frame(window, workArea.x + masterWidth, workArea.y + (index * workArea.height / windows.length), workArea.width - masterWidth, workArea.height / windows.length);
         });
     }

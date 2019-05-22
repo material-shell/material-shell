@@ -1,5 +1,5 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const LeftPanelModule = Me.imports.module.leftPanelModule.LeftPanelModule;
+const LeftPanelModule = Me.imports.module.leftPanel.leftPanelModule.LeftPanelModule;
 const WorkspaceLayoutModule = Me.imports.module.workspaceLayout.workspaceLayoutModule.WorkspaceLayoutModule;
 const TilingManagerModule = Me.imports.module.tilingManagerModule.TilingManagerModule;
 const NoTitleBarModule = Me.imports.module.noTitleBarModule.NoTitleBarModule;
@@ -11,8 +11,8 @@ let leftPanelModule, workspaceLayoutModule, tilingManagerModule, noTitleBarModul
 // eslint-disable-next-line no-unused-vars
 function init() {
     leftPanelModule = new LeftPanelModule();
-    workspaceLayoutModule = new WorkspaceLayoutModule();
     tilingManagerModule = new TilingManagerModule();
+    workspaceLayoutModule = new WorkspaceLayoutModule();
     noTitleBarModule = new NoTitleBarModule();
 }
 
