@@ -1,6 +1,5 @@
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
-const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 
 let RippleWave = GObject.registerClass(
@@ -31,7 +30,11 @@ let RippleWave = GObject.registerClass(
             Tweener.addTween(this, {
                 opacity: 0,
                 time: second,
-                transition: 'easeOutQuad'
+                transition: 'easeOutQuad',
+                onComplete: () => {
+                    log('delete wave');
+                    this.destroy();
+                }
             });
         }
 
@@ -67,6 +70,8 @@ var RippleContainer = GObject.registerClass(
             super.add_child(this.waveContainer);
 
             this.connect('button-press-event', (actor, event) => {
+                log('button-press-event');
+
                 let [_, x, y] = this.transform_stage_point(
                     ...event.get_coords()
                 );
@@ -74,8 +79,8 @@ var RippleContainer = GObject.registerClass(
             });
 
             this.connect('button-release-event', (actor, event) => {
+                log('button-release-event');
                 this.removeRippleWave();
-                this.waveContainer.set_style('');
             });
 
             this.connect('leave-event', (actor, event) => {
@@ -141,11 +146,8 @@ var RippleContainer = GObject.registerClass(
             if (this.lastWave) {
                 let waveToDelete = this.lastWave;
                 delete this.lastWave;
+                log('waveToDelete');
                 waveToDelete.removeIn(0.8);
-                Mainloop.timeout_add_seconds(1, () => {
-                    this.waveContainer.remove_child(waveToDelete);
-                    waveToDelete.destroy();
-                });
             }
         }
     }

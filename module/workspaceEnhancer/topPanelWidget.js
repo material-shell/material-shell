@@ -10,11 +10,12 @@ const TaskBar = Me.imports.widget.taskBar.TaskBar;
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
     class TopPanel extends St.Widget {
-        _init(workspace) {
+        _init(workspaceEnhancer) {
             super._init({
                 name: 'dash'
             });
-            this.taskBar = new TaskBar(workspace);
+            this.workspaceEnhancer = workspaceEnhancer;
+            this.taskBar = new TaskBar(workspaceEnhancer);
             this.add_child(this.taskBar);
 
             this.tilingIcon = new St.Icon({
@@ -31,8 +32,8 @@ var TopPanel = GObject.registerClass(
             });
 
             button.connect('button-press-event', () => {
-                workspace.nextTiling();
-                this.tilingIcon.set_icon_name(workspace.tilingLayout === 'tileRight' ? 'view-grid-symbol' : 'window-maximize-symbolic');
+                workspaceEnhancer.nextTiling();
+                this.tilingIcon.set_icon_name(workspaceEnhancer.tilingLayout === 'tileRight' ? 'view-grid-symbol' : 'window-maximize-symbolic');
             });
 
             this.tilingButton = new RippleContainer(button);
@@ -40,7 +41,7 @@ var TopPanel = GObject.registerClass(
         }
 
         vfunc_get_preferred_width() {
-            return [0, Main.layoutManager.primaryMonitor.width - 48];
+            return [0, this.workspaceEnhancer.monitor.index === Main.layoutManager.primaryIndex ? this.workspaceEnhancer.monitor.width - 48 : this.workspaceEnhancer.monitor.width];
         }
 
         vfunc_get_preferred_height() {

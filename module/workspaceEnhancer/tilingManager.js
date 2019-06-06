@@ -1,14 +1,70 @@
 const Meta = imports.gi.Meta;
 const Main = imports.ui.main;
 
-/* exported TilingManagerModule */
-var TilingManagerModule = class TilingManagerModule {
-    constructor() {
+/* exported TilingManager */
+var TilingManager = class TilingManager {
+    constructor(workspaceEnhancer) {
+        this.workspaceEnhancer = workspaceEnhancer;
         this.workspaceManager = global.workspace_manager;
         this.grabInProgress = false;
+        this.signals = [];
+        this.workspaceEnhancer.connect('windows-changed', () => {
+            log('windows-changed');
+            this.registerWindowsSignal();
+            this.tileWindows();
+        });
+
+        global.display.connect('grab-op-begin', () => {
+            this.grabInProgress = true;
+        });
+
+        global.display.connect('grab-op-end', () => {
+            this.grabInProgress = false;
+            if (this.windowHasChanged) {
+                log('grab-op-end');
+                this.windowHasChanged = false;
+                this.tileWindows();
+            }
+        });
     }
 
-    enable() {
+    registerWindowsSignal() {
+        this.unregisterAllWindowsSignal();
+        this.workspaceEnhancer.windows.forEach((window) => {
+            this.signals.push({
+                from: window,
+                id: window.connect('position-changed', () => {
+                    this.windowHasChanged = true;
+                    log('position-changed');
+                    /* if (!this.grabInProgress && !this.tilingInProgress) {
+                        log('here', window.title);
+                        this.tileWindows();
+                    } */
+                })
+            });
+            this.signals.push({
+                from: window,
+                id: window.connect('size-changed', () => {
+                    this.windowHasChanged = true;
+                    log('size-changed');
+                    /* if (!this.grabInProgress && !this.tilingInProgress) {
+                        this.tileWindows();
+                    } */
+                })
+            });
+        });
+        
+    }
+
+    unregisterAllWindowsSignal() {
+        this.signals.forEach((signal) => {
+            signal.from.disconnect(signal.id);
+        });
+        this.signals = [];
+    }
+
+    /* enable() {
+        
         for (let w = 0; w < this.workspaceManager.n_workspaces; w++) {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
             workspace.tilingLayout = 'tileRight';
@@ -16,10 +72,12 @@ var TilingManagerModule = class TilingManagerModule {
             workspace.tileWindows = () => {
                 this.tileWindows(workspace);
             };
+
             workspace.nextTiling = () => {
                 workspace.tilingLayout = workspace.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
                 this.tileWindows(workspace);
             };
+
             workspace.connect('window-added', (workspace, window) => {
                 window._sizeChangedId = window.connect('size-changed',
                     () => {
@@ -35,44 +93,49 @@ var TilingManagerModule = class TilingManagerModule {
                     });
                 this.tileWindows(workspace);
             });
+
             workspace.connect('window-removed', (workspace, window) => {
                 this.tileWindows(workspace);
             });
+
         }
 
-        global.display.connect('grab-op-begin', () => {
-            this.grabInProgress = true;
+        
+        global.window_manager.connect('size-change', ()=>{
+            log('size-change');
         });
-
-        global.display.connect('grab-op-end', () => {
-            this.grabInProgress = false;
-            this.tileWindows(this.workspaceManager.get_active_workspace());
+        global.window_manager.connect('size-changed', ()=>{
+            log('size-changed');
         });
     }
 
     disable() {
 
+    } */
+
+    getFilteredWindows() {
+        return this.workspaceEnhancer.windows.filter((window) => {
+            return !window.is_attached_dialog();
+        });
     }
 
-    tileWindows(workspace) {
-
-        let windowsToTile = workspace.list_windows().filter((window) => {
-            return window.get_window_type() === Meta.WindowType.NORMAL;
-        });
-        switch (workspace.tilingLayout) {
+    tileWindows() {
+        log('TILE WINDOWS');
+        this.tilingInProgress = true;
+        switch (this.workspaceEnhancer.tilingLayout) {
             case 'tileRight':
-                this.tileRight(windowsToTile, {});
-                break;
-            case 'maximize':
-                this.tileMaximize(windowsToTile);
+                this.tileRight(this.getFilteredWindows(), {});
                 break;
 
+            case 'maximize':
+                this.tileMaximize(this.getFilteredWindows());
+                break;
         }
-        //this.tileRight(windowsToTile, {});
+        this.tilingInProgress = false;
     }
 
     tileMaximize(windows) {
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(window.monitor);
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(this.workspaceEnhancer.monitor.index);
         windows.forEach((window) => {
             window.move_resize_frame(true, workArea.x, workArea.y, workArea.width, workArea.height);
         });
@@ -83,8 +146,10 @@ var TilingManagerModule = class TilingManagerModule {
             return;
 
         tilingData = tilingData || {};
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(window.monitor);
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(this.workspaceEnhancer.monitor.index);
+
         let masterWidth = tilingData.masterWidth || windows.length > 1 ? workArea.width / 2 : workArea.width;
+
         let masterWindow = windows.shift();
         if (masterWindow.get_maximized())
             masterWindow.unmaximize(Meta.MaximizeFlags.BOTH);

@@ -95,6 +95,8 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         //3- Fix workspace switch animation by overriding the window manager function that used the panel height to define window position
         Main.wm._getPositionForDirection = this.wmGetPositionForDirection;
 
+        this.panel._leftCorner.actor.hide();
+        this.panel._rightCorner.actor.hide();
         this.rectangularClockSubModule.enable();
 
     }
@@ -108,7 +110,8 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         //3- Revert function
         Main.wm._getPositionForDirection =
             WindowManager._getPositionForDirection;
-
+        this.panel._leftCorner.actor.show();
+        this.panel._rightCorner.actor.show();
         this.rectangularClockSubModule.disable();
     }
 

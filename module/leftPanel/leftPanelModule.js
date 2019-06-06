@@ -42,13 +42,14 @@ var LeftPanelModule = class LeftPanelModule {
     }
 
     disable() {
-        this.panel._leftBox.add_child(
-            this.panel.statusArea.appMenu.actor.get_parent()
-        );
-        this.panel.statusArea.activities.actor.show();
 
         this.subModules.reverse().forEach((subModule) => {
             subModule.disable();
         });
+
+        this.panel._leftBox.add_child(
+            this.panel.statusArea.appMenu.actor.get_parent()
+        );
+        this.panel.statusArea.activities.actor.show();
     }
 };

@@ -1,0 +1,18 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.materialshell.bindings" path="/org/gnome/shell/extensions/materialshell/bindings/">
+    <key name="focus-next" type="as">
+      <default>['&lt;Super&gt;d']</default>
+      <summary>Focus next window</summary>
+      <description>
+        Focus the next window of the current workspace
+      </description>
+    </key>
+    <key name="focus-previous" type="as">
+      <default>['&lt;Super&gt;a']</default>
+      <summary>Focus previous window</summary>
+      <description>
+        Focus the previous window of the current workspace
+      </description>
+    </key>
+  </schema>
+</schemalist>

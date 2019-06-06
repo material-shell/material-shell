@@ -28,7 +28,8 @@ module.exports = {
                 "ignoredNodes": [
                     "CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child"
                 ],
-                "MemberExpression": "off"
+                "MemberExpression": "off",
+                "SwitchCase": 1
             }
         ],
         "key-spacing": [

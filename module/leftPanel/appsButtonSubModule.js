@@ -37,7 +37,7 @@ var AppsButtonSubModule = class AppsButtonSubModule {
     }
 
     enable() {
-        this.panel._leftBox.add_child(this.button);
+        this.panel._leftBox.insert_child_at_index(this.button, 0);
     }
 
     disable() {
