@@ -1,4 +1,4 @@
-const {Clutter, GObject, St, Shell} = imports.gi;
+const { Clutter, GObject, St, Shell } = imports.gi;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -40,52 +40,43 @@ var TaskBar = GObject.registerClass(
                 });
             });
 
-            this.focusId = global.display.connect('notify::focus-window', () => {
-                let windowFocused = global.display.focus_window;
-
-                if (windowFocused === this.windowFocused) {
-                    return;
-                }
-
-                if (this.workspaceEnhancer.windows.indexOf(windowFocused) === -1) {
-                    return;
-                }
-
-                log('focus');
-
-                if (windowFocused.is_attached_dialog()) {
-                    windowFocused = windowFocused.get_transient_for();
-                }
-
-                let previousItem = this.getTaskBarItemOfWindow(this.windowFocused);
-                this.windowFocused = windowFocused;
-                let nextItem = this.getTaskBarItemOfWindow(this.windowFocused);
-
-                if (previousItem) {
-                    if (previousItem.has_style_class_name('active')) {
-                        previousItem.remove_style_class_name('active');
+            this.focusId = workspaceEnhancer.connect(
+                'window-focused-changed',
+                (_, windowFocused) => {
+                    if (windowFocused === this.windowFocused) {
+                        return;
                     }
+
+                    let previousItem = this.getTaskBarItemOfWindow(
+                        this.windowFocused
+                    );
+                    this.windowFocused = windowFocused;
+                    let nextItem = this.getTaskBarItemOfWindow(
+                        this.windowFocused
+                    );
+
+                    if (previousItem) {
+                        if (previousItem.has_style_class_name('active')) {
+                            previousItem.remove_style_class_name('active');
+                        }
+                    }
+
+                    if (!nextItem) return;
+
+                    // Delay the new class otherwise it's break the style system Dunno why
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                        nextItem.add_style_class_name('active');
+                    });
+
+                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+                        this._animateActiveIndicator();
+                    });
                 }
-
-                if (!nextItem)
-                    return;
-
-                // Delay the new class otherwise it's break the style system Dunno why
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    nextItem.add_style_class_name('active');
-                });
-
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
-                    this._animateActiveIndicator();
-                });                    /* let taskBarItem = this.getTaskBarItemOfWindow(windowFocused);
-                    this.setTaskBarItemActif(taskBarItem); */
-            });
+            );
 
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            /* workspace.connect('window-added', this.handleNewWindow.bind(this));
-            workspace.connect('window-removed', this.handleOldWindow.bind(this)); */
         }
 
         on_destroy() {
@@ -94,7 +85,10 @@ var TaskBar = GObject.registerClass(
 
         handleDragOver() {
             if (!this.tempDragData.draggedOverByChild) {
-                let item = this.items[ this.items.length - 1 ] === this.tempDragData.item ? this.items[ this.items.length - 2 ] : this.items[ this.items.length - 1 ];
+                let item =
+                    this.items[this.items.length - 1] === this.tempDragData.item
+                        ? this.items[this.items.length - 2]
+                        : this.items[this.items.length - 1];
                 this._onDragOver(item, false);
             } else {
                 this.tempDragData.draggedOverByChild = false;
@@ -104,39 +98,47 @@ var TaskBar = GObject.registerClass(
         }
 
         getFilteredWindows() {
-            return this.workspaceEnhancer.windows.filter((window) => {
+            return this.workspaceEnhancer.windows.filter(window => {
                 return !window.skip_taskbar;
             });
         }
 
         updateItems() {
             log('update items of taskbar');
-            this.items.forEach((item) => {
+            this.items.forEach(item => {
                 item.destroy();
             });
             this.items = [];
-            this.getFilteredWindows().forEach((window) => {
+            this.getFilteredWindows().forEach(window => {
                 let item = new TaskBarItem(
                     window,
                     this.tracker.get_window_app(window),
                     window === this.windowFocused
                 );
                 item._draggable.connect('drag-begin', () => {
-                    let itemIndex = this.getFilteredWindows().indexOf(item.window);
+                    let itemIndex = this.getFilteredWindows().indexOf(
+                        item.window
+                    );
                     this.tempDragData = {
                         item: item,
                         initialIndex: itemIndex
                     };
                     this.dropPlaceholder.resize(item);
                     this.taskButtonContainer.add_child(this.dropPlaceholder);
-                    this.taskButtonContainer.set_child_at_index(this.dropPlaceholder, itemIndex);
+                    this.taskButtonContainer.set_child_at_index(
+                        this.dropPlaceholder,
+                        itemIndex
+                    );
                     this.taskActiveIndicator.hide();
                 });
 
                 item._draggable.connect('drag-cancelled', () => {
                     delete this.tempDragData.draggedOver;
                     delete this.tempDragData.draggedBefore;
-                    this.taskButtonContainer.set_child_at_index(this.dropPlaceholder, this.tempDragData.initialIndex);
+                    this.taskButtonContainer.set_child_at_index(
+                        this.dropPlaceholder,
+                        this.tempDragData.initialIndex
+                    );
                 });
 
                 item._draggable.connect('drag-end', this._onDragEnd.bind(this));
@@ -154,20 +156,30 @@ var TaskBar = GObject.registerClass(
                 this.taskButtonContainer.add_child(item);
                 this.items.push(item);
             });
-            this.taskActiveIndicator.translation_y = this.height - this.taskActiveIndicator.height;
+            this.taskActiveIndicator.translation_y =
+                this.height - this.taskActiveIndicator.height;
         }
 
         _onDragEnd() {
             this.taskButtonContainer.remove_child(this.dropPlaceholder);
             if (this.tempDragData.draggedOver) {
                 if (this.tempDragData.draggedBefore) {
-                    this.workspaceEnhancer.setWindowBefore(this.tempDragData.item.window, this.tempDragData.draggedOver.window);
+                    this.workspaceEnhancer.setWindowBefore(
+                        this.tempDragData.item.window,
+                        this.tempDragData.draggedOver.window
+                    );
                 } else {
-                    this.workspaceEnhancer.setWindowAfter(this.tempDragData.item.window, this.tempDragData.draggedOver.window);
+                    this.workspaceEnhancer.setWindowAfter(
+                        this.tempDragData.item.window,
+                        this.tempDragData.draggedOver.window
+                    );
                 }
                 //this.taskButtonContainer.set_child_at_index(this.tempDragData.item, this.tempDragData.draggedBefore ? index : index + 1);
             } else {
-                this.taskButtonContainer.set_child_at_index(this.tempDragData.item, this.tempDragData.initialIndex);
+                this.taskButtonContainer.set_child_at_index(
+                    this.tempDragData.item,
+                    this.tempDragData.initialIndex
+                );
             }
             this.taskActiveIndicator.show();
             delete this.tempDragData;
@@ -177,24 +189,40 @@ var TaskBar = GObject.registerClass(
             this.tempDragData.draggedOver = item;
             this.tempDragData.draggedBefore = before;
             this.dropPlaceholder.resize(this.tempDragData.item);
-            let dropPlaceholderIndex = this.taskButtonContainer.get_children().indexOf(this.dropPlaceholder);
-            let itemIndex = this.taskButtonContainer.get_children().indexOf(item);
-            let toIndex = dropPlaceholderIndex < itemIndex ? itemIndex - 1 : itemIndex;
+            let dropPlaceholderIndex = this.taskButtonContainer
+                .get_children()
+                .indexOf(this.dropPlaceholder);
+            let itemIndex = this.taskButtonContainer
+                .get_children()
+                .indexOf(item);
+            let toIndex =
+                dropPlaceholderIndex < itemIndex ? itemIndex - 1 : itemIndex;
             if (this.tempDragData.draggedBefore) {
-                this.taskButtonContainer.set_child_at_index(this.dropPlaceholder, toIndex);
+                this.taskButtonContainer.set_child_at_index(
+                    this.dropPlaceholder,
+                    toIndex
+                );
             } else {
-                this.taskButtonContainer.set_child_at_index(this.dropPlaceholder, toIndex + 1);
+                this.taskButtonContainer.set_child_at_index(
+                    this.dropPlaceholder,
+                    toIndex + 1
+                );
             }
         }
 
         _animateActiveIndicator() {
             if (this.windowFocused) {
-                let taskBarItem = this.getTaskBarItemOfWindow(this.windowFocused);
+                let taskBarItem = this.getTaskBarItemOfWindow(
+                    this.windowFocused
+                );
                 if (taskBarItem) {
                     if (!taskBarItem.widthSignalId) {
-                        taskBarItem.widthSignalId = taskBarItem.connect('notify::width', () => {
-                            this._animateActiveIndicator();
-                        });
+                        taskBarItem.widthSignalId = taskBarItem.connect(
+                            'notify::width',
+                            () => {
+                                this._animateActiveIndicator();
+                            }
+                        );
                     }
 
                     Tweener.addTween(this.taskActiveIndicator, {
@@ -216,11 +244,10 @@ var TaskBar = GObject.registerClass(
         }
 
         getTaskBarItemOfWindow(window) {
-            return this.items.find((item) => {
+            return this.items.find(item => {
                 return item.window === window;
             });
         }
-
     }
 );
 
@@ -229,7 +256,7 @@ let TaskBarItem = GObject.registerClass(
         Signals: {
             'drag-dropped': {},
             'drag-over': {
-                param_types: [ GObject.TYPE_BOOLEAN ]
+                param_types: [GObject.TYPE_BOOLEAN]
             }
         }
     },
@@ -297,7 +324,7 @@ let TaskBarItem = GObject.registerClass(
                 dragged: false,
                 originalCoords: null,
                 originalSequence: null
-            }
+            };
 
             this.connect('button-press-event', (_, event) => {
                 log('item pressed');
@@ -309,10 +336,19 @@ let TaskBarItem = GObject.registerClass(
             this.connect('motion-event', (_, event) => {
                 if (this.mouseData.pressed && !this.mouseData.dragged) {
                     let coords = event.get_coords();
-                    if (Math.abs(this.mouseData.originalCoords[ 0 ] - coords[ 0 ]) > 48 && !this.mouseData.dragged) {
+                    if (
+                        Math.abs(this.mouseData.originalCoords[0] - coords[0]) >
+                            48 &&
+                        !this.mouseData.dragged
+                    ) {
                         log('start drag');
                         this.mouseData.dragged = true;
-                        this._draggable.startDrag(this.mouseData.originalCoords[ 0 ], this.mouseData.originalCoords[ 1 ], global.get_current_time(), this.mouseData.originalSequence);
+                        this._draggable.startDrag(
+                            this.mouseData.originalCoords[0],
+                            this.mouseData.originalCoords[1],
+                            global.get_current_time(),
+                            this.mouseData.originalSequence
+                        );
                     }
                     //log('item motion', Math.abs(this.mouseData.originalCoords[0] - coords[0]), Math.abs(this.mouseData.originalCoords[1] - coords[1]));
                 }
@@ -322,7 +358,12 @@ let TaskBarItem = GObject.registerClass(
                 if (this.mouseData.pressed && !this.mouseData.dragged) {
                     log('start drag');
                     this.mouseData.dragged = true;
-                    this._draggable.startDrag(this.mouseData.originalCoords[ 0 ], this.mouseData.originalCoords[ 1 ], global.get_current_time(), this.mouseData.originalSequence);
+                    this._draggable.startDrag(
+                        this.mouseData.originalCoords[0],
+                        this.mouseData.originalCoords[1],
+                        global.get_current_time(),
+                        this.mouseData.originalSequence
+                    );
                 }
             });
 
@@ -364,11 +405,10 @@ let TaskBarItem = GObject.registerClass(
         }
 
         initDrag() {
-            this._draggable = DND.makeDraggable(this,
-                {
-                    restoreOnSuccess: false,
-                    manualMode: true
-                });
+            this._draggable = DND.makeDraggable(this, {
+                restoreOnSuccess: false,
+                manualMode: true
+            });
 
             this._draggable.connect('drag-begin', () => {
                 log('drag begin');
@@ -376,7 +416,6 @@ let TaskBarItem = GObject.registerClass(
 
             this._draggable.connect('drag-cancelled', () => {
                 log('drag canceled');
-
             });
 
             this._draggable.connect('drag-end', (_, time, success, test) => {
@@ -387,7 +426,7 @@ let TaskBarItem = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y, time) {
-            log('drag over', (x < this.width / 2) ? 'before' : 'after');
+            log('drag over', x < this.width / 2 ? 'before' : 'after');
             //return this._workspace.handleDragOver(source, actor, x, y, time);
             this.emit('drag-over', x < this.width / 2);
             return DND.DragMotionResult.MOVE_DROP;

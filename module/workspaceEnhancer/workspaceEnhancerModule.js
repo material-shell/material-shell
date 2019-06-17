@@ -1,19 +1,12 @@
-const { Clutter, GObject, St, Meta, GLib, Shell } = imports.gi;
-const Signals = imports.signals;
+const { Clutter, St, Meta, GLib, Shell } = imports.gi;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
-const Mainloop = imports.mainloop;
-const Background = imports.ui.background;
-
-const Tweener = imports.ui.tweener;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const TopPanel = Me.imports.module.workspaceEnhancer.topPanelWidget.TopPanel;
-const TaskBar = Me.imports.widget.taskBar.TaskBar;
-const TilingManager =
-    Me.imports.module.workspaceEnhancer.tilingManager.TilingManager;
+const WorkspaceEnhancer =
+    Me.imports.module.workspaceEnhancer.workspaceEnhancer.WorkspaceEnhancer;
 
 /* exported WorkspaceEnhancerModule */
 var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
@@ -23,7 +16,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         this.signals = [];
 
         this.currentWorkspace = this.workspaceManager.get_active_workspace();
-
     }
 
     enable(fake) {
@@ -31,7 +23,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         //Hide the default Background
         global.window_group.get_child_at_index(0).hide();
 
-        this.monitors = [ ...Main.layoutManager.monitors ];
+        this.monitors = [...Main.layoutManager.monitors];
         this.prepareMonitors();
 
         this.workspaceManager
@@ -142,11 +134,13 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 workspaceEnhancer.focusPrevious();
             }
         );
-        log('fake', fake);
+
+        //If it's a fake enable it's an internal reload
         if (!fake) {
             log('registered to monitor changed');
-            this.signalMonitorId = Main.layoutManager.connect('monitors-changed',
-                (test, test1, test2) => { 
+            this.signalMonitorId = Main.layoutManager.connect(
+                'monitors-changed',
+                (test, test1, test2) => {
                     if (this.monitorChangeInProgress) {
                         log('monitors changed already in progress');
                         return;
@@ -158,9 +152,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         this.enable(true);
                         this.monitorChangeInProgress = false;
                     });
-                    
                 }
-            );  
+            );
         }
         this.enabled = true;
     }
@@ -186,10 +179,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this.restoreWindowManagersFunctions();
 
-        
-
         if (!fake) {
-            Main.layoutManager.disconnect(this.signalMonitorId);  
+            Main.layoutManager.disconnect(this.signalMonitorId);
         }
         this.enabled = false;
     }
@@ -256,9 +247,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         });
         // destroy each workspaceEnhancer
         for (let w = 0; w < this.workspaceManager.n_workspaces; w++) {
-            let workspace = this.workspaceManager.get_workspace_by_index(
-                w
-            );
+            let workspace = this.workspaceManager.get_workspace_by_index(w);
             workspace.primaryWorkspaceEnhancer.destroy();
         }
     }
@@ -404,20 +393,22 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
     }
 
     dispatchExistingWindows() {
-        global.get_window_actors().forEach((windowActor) => {
+        global.get_window_actors().forEach(windowActor => {
             let metaWindow = windowActor.metaWindow;
 
             if (!this._handleWindow(metaWindow)) {
                 return;
             }
 
-            let monitor = Main.layoutManager.monitors[ metaWindow.get_monitor() ];
+            let monitor = Main.layoutManager.monitors[metaWindow.get_monitor()];
             if (monitor.index === Main.layoutManager.primaryIndex) {
-                metaWindow.get_workspace().primaryWorkspaceEnhancer.addWindow(metaWindow);
+                metaWindow
+                    .get_workspace()
+                    .primaryWorkspaceEnhancer.addWindow(metaWindow);
             } else {
                 monitor.workspaceEnhancer.addWindow(metaWindow);
             }
-        })
+        });
     }
 
     /*
@@ -429,6 +420,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             this.signals.push({
                 from: workspace,
                 id: workspace.connect('window-added', (workspace, window) => {
+                    log('WINDOW ADDED');
                     //Ignore unHandle window and window on secondary screens
                     if (!this._handleWindow(window) || window.on_all_workspaces)
                         return;
@@ -450,6 +442,64 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         this.signals.push({
             from: global.display,
             id: global.display.connect(
+                'grab-op-begin',
+                (display1, display2, window, op) => {
+                    if (op !== Meta.GrabOp.MOVING) return;
+                    this.grabInProgress = true;
+                    log('op-start', display1, display2, window, op);
+                    this.grabWindow = window;
+                    window.grabbed = true;
+                    this.grabSignal = window.connect('position-changed', () => {
+                        let windowRect = window.get_frame_rect();
+                        let x = windowRect.x + windowRect.width / 2;
+                        let y = windowRect.y + windowRect.height / 2;
+                        const windowHovered = this.grabWindow.workspaceEnhancer.windows.find(
+                            windowToCheck => {
+                                if (windowToCheck === this.grabWindow)
+                                    return false;
+                                let rect = windowToCheck.get_frame_rect();
+                                return (
+                                    x >= rect.x &&
+                                    x <= rect.x + rect.width &&
+                                    y >= rect.y &&
+                                    y <= rect.y + rect.height
+                                );
+                            }
+                        );
+                        if (
+                            windowHovered &&
+                            !this.grabWindow.workspaceEnhancer.tilingManager
+                                .tilingInProgress
+                        ) {
+                            log('Window hovered!', windowHovered.title);
+                            this.grabWindow.workspaceEnhancer.swapWindows(
+                                this.grabWindow,
+                                windowHovered
+                            );
+                        }
+                    });
+                }
+            )
+        });
+
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect('grab-op-end', () => {
+                if (this.grabInProgress) {
+                    log('grab-op-end');
+                    this.grabInProgress = false;
+                    this.grabWindow.disconnect(this.grabSignal);
+                    this.grabWindow.grabbed = false;
+                    this.grabWindow.workspaceEnhancer.tilingManager.tileWindows();
+                    delete this.grabWindow;
+                    delete this.grabSignal;
+                }
+            })
+        });
+
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect(
                 'window-entered-monitor',
                 (display, monitorIndex, window) => {
                     //Ignore unHandle window and window on primary screens
@@ -459,7 +509,12 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         this.monitorChangeInProgress
                     )
                         return;
-                    log('enter-monitor',monitorIndex, 'primary is ',Main.layoutManager.primaryIndex );
+                    log(
+                        'enter-monitor',
+                        monitorIndex,
+                        'primary is ',
+                        Main.layoutManager.primaryIndex
+                    );
                     Main.layoutManager.monitors[
                         monitorIndex
                     ].workspaceEnhancer.addWindow(window);
@@ -479,7 +534,12 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         this.monitorChangeInProgress
                     )
                         return;
-                    log('left-monitor',monitorIndex, 'primary is ',Main.layoutManager.primaryIndex );
+                    log(
+                        'left-monitor',
+                        monitorIndex,
+                        'primary is ',
+                        Main.layoutManager.primaryIndex
+                    );
                     Main.layoutManager.monitors[
                         monitorIndex
                     ].workspaceEnhancer.removeWindow(window);
@@ -494,143 +554,3 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         return types.includes(win.window_type);
     }
 };
-
-let WorkspaceEnhancer = class WorkspaceEnhancer {
-    constructor(monitor) {
-        this.monitor = monitor;
-        this.monitorIsPrimary =
-            monitor.index === Main.layoutManager.primaryIndex;
-        this.windows = [];
-        this.panel = new TopPanel(this);
-        this.backgroundGroup = new Meta.BackgroundGroup({ reactive: true });
-        this.bgManager = new Background.BackgroundManager({
-            container: this.backgroundGroup,
-            monitorIndex: this.monitor.index,
-            vignette: false
-        });
-        this.bgManager.backgroundActor.set_position(
-            this.monitor.x,
-            this.monitor.y
-        );
-        this.tilingLayout = 'tileRight';
-        this.tilingManager = new TilingManager(this);
-
-        this.windowFocusIndex = null;
-        global.display.connect('notify::focus-window', () => {
-            let windowFocused = global.display.focus_window;
-            let index = this.windows.indexOf(windowFocused);
-            if (index === -1) {
-                return;
-            }
-
-            if (windowFocused.is_attached_dialog()) {
-                windowFocused = windowFocused.get_transient_for();
-                index = this.windows.indexOf(windowFocused);
-            }
-
-            this.windowFocusIndex = index;
-        });
-
-        const offsetX = this.monitorIsPrimary ? 48 : 0;
-        if (this.monitorIsPrimary) {
-            this.panel.hide();
-            this.backgroundGroup.hide();
-        }
-        Main.layoutManager.uiGroup.add_child(this.panel);
-
-        this.panel.set_position(this.monitor.x + offsetX, this.monitor.y);
-        global.window_group.add_child(this.backgroundGroup);
-        this.backgroundGroup.lower_bottom();
-    }
-
-    destroy() {
-        log('destroy workspaceEnhancer');
-        this.panel.destroy();
-        this.backgroundGroup.destroy();
-        this.tilingManager.unregisterAllWindowsSignal();
-        this.destroyed = true;
-    }
-
-    isTopBarVisible() {
-        return (
-            !global.display.get_monitor_in_fullscreen(this.monitor.index) &&
-            !Main.overview.visible
-        );
-    }
-
-    addWindow(window) {
-        if (this.windows.indexOf(window) >= 0) return;
-        log('add window', window.title);
-        this.windows.push(window);
-        this.throttleEmit();
-    }
-
-    removeWindow(window) {
-        let windowIndex = this.windows.indexOf(window);
-        if (windowIndex === -1) return;
-
-        log('remove window in workspaceEnhancer');
-        this.windows.splice(windowIndex, 1);
-        this.throttleEmit();
-    }
-
-    focusNext() {
-        if (this.windowFocusIndex === this.windows.length - 1) {
-            return;
-        }
-        this.windows[this.windowFocusIndex + 1].raise();
-        this.windows[this.windowFocusIndex + 1].focus(0);
-    }
-
-    focusPrevious() {
-        if (this.windowFocusIndex === 0) {
-            return;
-        }
-        this.windows[this.windowFocusIndex - 1].raise();
-        this.windows[this.windowFocusIndex - 1].focus(0);
-    }
-
-    setWindowBefore(windowToMove, windowRelative) {
-        let windowToMoveIndex = this.windows.indexOf(windowToMove);
-        this.windows.splice(windowToMoveIndex, 1);
-
-        let windowRelativeIndex = this.windows.indexOf(windowRelative);
-        this.windows.splice(windowRelativeIndex, 0, windowToMove);
-
-        this.throttleEmit();
-    }
-
-    setWindowAfter(windowToMove, windowRelative) {
-        let windowToMoveIndex = this.windows.indexOf(windowToMove);
-        this.windows.splice(windowToMoveIndex, 1);
-
-        let windowRelativeIndex = this.windows.indexOf(windowRelative);
-        this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-
-        this.throttleEmit();
-    }
-
-    nextTiling() {
-        this.tilingLayout =
-            this.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
-        this.tilingManager.tileWindows();
-    }
-
-    throttleEmit() {
-        //log('throttle emit');
-        if (this.emitInProgress) {
-            return;
-        }
-        this.emitInProgress = true;
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.emitInProgress = false;
-
-            if (this.destroyed) {
-                log('emit into destroyed');
-                return;
-            }
-            this.emit('windows-changed');
-        });
-    }
-};
-Signals.addSignalMethods(WorkspaceEnhancer.prototype);

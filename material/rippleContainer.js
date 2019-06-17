@@ -32,7 +32,6 @@ let RippleWave = GObject.registerClass(
                 time: second,
                 transition: 'easeOutQuad',
                 onComplete: () => {
-                    log('delete wave');
                     this.destroy();
                 }
             });
@@ -70,8 +69,6 @@ var RippleContainer = GObject.registerClass(
             super.add_child(this.waveContainer);
 
             this.connect('button-press-event', (actor, event) => {
-                log('button-press-event');
-
                 let [_, x, y] = this.transform_stage_point(
                     ...event.get_coords()
                 );
@@ -79,7 +76,6 @@ var RippleContainer = GObject.registerClass(
             });
 
             this.connect('button-release-event', (actor, event) => {
-                log('button-release-event');
                 this.removeRippleWave();
             });
 
@@ -146,7 +142,6 @@ var RippleContainer = GObject.registerClass(
             if (this.lastWave) {
                 let waveToDelete = this.lastWave;
                 delete this.lastWave;
-                log('waveToDelete');
                 waveToDelete.removeIn(0.8);
             }
         }
