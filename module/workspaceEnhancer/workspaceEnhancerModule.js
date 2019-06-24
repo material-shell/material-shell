@@ -7,6 +7,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const WorkspaceEnhancer =
     Me.imports.module.workspaceEnhancer.workspaceEnhancer.WorkspaceEnhancer;
+const WorkspaceList = Me.imports.widget.workspaceList.WorkspaceList;
 
 /* exported WorkspaceEnhancerModule */
 var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
@@ -14,24 +15,129 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         this.workspaceManager = global.workspace_manager;
         this.enabled = false;
         this.signals = [];
-
+        this.primaryWorkspaceCategories = [
+            {
+                key: 'web',
+                icon: 'applications-internet',
+                title: _('Internet'),
+                categoriesIncluded: ['Network'],
+                categoriesExcluded: [
+                    'Chat',
+                    'InstantMessaging',
+                    'IRCClient',
+                    'Feed',
+                    'VideoConference',
+                    'Email',
+                    'ContactManagement',
+                    'Security',
+                    'Game'
+                ],
+                acceptAll: false
+            },
+            {
+                key: 'development',
+                icon: 'applications-development',
+                title: _('Development'),
+                categoriesIncluded: ['Development'],
+                categoriesExcluded: [],
+                acceptAll: false
+            },
+            {
+                key: 'social',
+                icon: 'user-available',
+                title: _('Social'),
+                categoriesIncluded: [
+                    'Chat',
+                    'InstantMessaging',
+                    'IRCClient',
+                    'Feed',
+                    'VideoConference',
+                    'Email',
+                    'ContactManagement'
+                ],
+                categoriesExcluded: [],
+                acceptAll: false
+            },
+            {
+                key: 'office',
+                icon: 'system-file-manager',
+                title: _('Office'),
+                categoriesIncluded: ['Office', 'FileManager'],
+                categoriesExcluded: ['ContactManagement'],
+                acceptAll: false
+            },
+            {
+                key: 'graphics',
+                icon: 'applications-graphics',
+                title: _('Graphics'),
+                categoriesIncluded: ['Graphics'],
+                categoriesExcluded: [],
+                acceptAll: false
+            },
+            {
+                key: 'multimedia',
+                icon: 'applications-multimedia',
+                title: _('Multimedia'),
+                categoriesIncluded: ['AudioVideo'],
+                categoriesExcluded: [],
+                acceptAll: false
+            },
+            {
+                key: 'game',
+                icon: 'applications-games',
+                title: _('Games'),
+                categoriesIncluded: ['Game'],
+                categoriesExcluded: [],
+                acceptAll: false
+            },
+            {
+                key: 'other',
+                icon: 'applications-other',
+                title: _('Others'),
+                categoriesIncluded: [],
+                categoriesExcluded: [],
+                acceptAll: true
+            }
+        ];
+        this.secondaryWorkspaceCategory = {
+            key: 'external',
+            icon: 'applications-other',
+            title: _('All applications'),
+            categoriesIncluded: [],
+            categoriesExcluded: [],
+            acceptAll: true
+        };
+        /* {
+            AudioVideo: {},
+            Development: {},
+            Education: {},
+            Game: {},
+            Graphics: {},
+            Network: {},
+            Office: {},
+            Settings: {},
+            System: {},
+            Utility: {}
+        }; */
         this.currentWorkspace = this.workspaceManager.get_active_workspace();
     }
 
     enable(fake) {
-        log('ENABLE WORKSPACE ENHANCER FAKE:', fake);
         //Hide the default Background
-        global.window_group.get_child_at_index(0).hide();
+        //global.window_group.get_child_at_index(0).hide();
 
+        this.prepareWorkspaces();
         this.monitors = [...Main.layoutManager.monitors];
         this.prepareMonitors();
+        this.workspaceList = new WorkspaceList();
+        Main.panel._leftBox.add_child(this.workspaceList);
 
         this.workspaceManager
             .get_active_workspace()
-            .primaryWorkspaceEnhancer.panel.show();
+            .workspaceEnhancer.panel.show();
         this.workspaceManager
             .get_active_workspace()
-            .primaryWorkspaceEnhancer.backgroundGroup.show();
+            .workspaceEnhancer.backgroundContainer.show();
 
         global.display.connect(
             'in-fullscreen-changed',
@@ -43,7 +149,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     let workspaceEnhancer;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
                         workspaceEnhancer = this.workspaceManager.get_active_workspace()
-                            .primaryWorkspaceEnhancer;
+                            .workspaceEnhancer;
                     } else {
                         workspaceEnhancer = monitor.workspaceEnhancer;
                     }
@@ -79,11 +185,11 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this.workspaceManager.connect('active-workspace-changed', () => {
             let newWorkspace = this.workspaceManager.get_active_workspace();
-            this.currentWorkspace.primaryWorkspaceEnhancer.panel.hide();
-            this.currentWorkspace.primaryWorkspaceEnhancer.backgroundGroup.hide();
+            this.currentWorkspace.workspaceEnhancer.panel.hide();
+            this.currentWorkspace.workspaceEnhancer.backgroundContainer.hide();
             this.currentWorkspace = newWorkspace;
-            this.currentWorkspace.primaryWorkspaceEnhancer.panel.show();
-            this.currentWorkspace.primaryWorkspaceEnhancer.backgroundGroup.show();
+            this.currentWorkspace.workspaceEnhancer.panel.show();
+            this.currentWorkspace.workspaceEnhancer.backgroundContainer.show();
         });
 
         const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
@@ -110,7 +216,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 const workspaceEnhancer =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? this.workspaceManager.get_active_workspace()
-                              .primaryWorkspaceEnhancer
+                              .workspaceEnhancer
                         : Main.layoutManager.monitors[currentMonitorIndex]
                               .workspaceEnhancer;
                 workspaceEnhancer.focusNext();
@@ -128,7 +234,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 const workspaceEnhancer =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? this.workspaceManager.get_active_workspace()
-                              .primaryWorkspaceEnhancer
+                              .workspaceEnhancer
                         : Main.layoutManager.monitors[currentMonitorIndex]
                               .workspaceEnhancer;
                 workspaceEnhancer.focusPrevious();
@@ -170,7 +276,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         });
         this.signals = [];
         this.clearMonitors();
-
+        Main.panel._leftBox.remove_child(this.workspaceList);
         Main.overview._overview.remove_child(this.myPanelGhost);
         Main.overview._overview.insert_child_at_index(
             this.legacyPanelGhost,
@@ -183,6 +289,33 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             Main.layoutManager.disconnect(this.signalMonitorId);
         }
         this.enabled = false;
+    }
+
+    prepareWorkspaces() {
+        let diff = Math.abs(
+            this.primaryWorkspaceCategories.length -
+                this.workspaceManager.n_workspaces
+        );
+        for (var i = 0; i < diff; i++) {
+            if (
+                this.primaryWorkspaceCategories.length >
+                this.workspaceManager.n_workspaces
+            ) {
+                log('CREATE NEW WORKSPACE');
+                this.workspaceManager.append_new_workspace(
+                    false,
+                    global.get_current_time()
+                );
+            } else {
+                log('REMOVE LAST WORKSPACE');
+                this.workspaceManager.remove_workspace(
+                    this.workspaceManager.get_workspace_by_index(
+                        this.workspaceManager.n_workspaces - 1
+                    ),
+                    global.get_current_time()
+                );
+            }
+        }
     }
 
     prepareMonitors() {
@@ -211,8 +344,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     let workspace = this.workspaceManager.get_workspace_by_index(
                         w
                     );
-                    workspace.primaryWorkspaceEnhancer = new WorkspaceEnhancer(
-                        monitor
+                    workspace.workspaceEnhancer = new WorkspaceEnhancer(
+                        monitor,
+                        this.primaryWorkspaceCategories[w]
                     );
                 }
             }
@@ -226,7 +360,10 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 });
 
                 // And create a simple workspaceEnhancer
-                monitor.workspaceEnhancer = new WorkspaceEnhancer(monitor);
+                monitor.workspaceEnhancer = new WorkspaceEnhancer(
+                    monitor,
+                    this.secondaryWorkspaceCategory
+                );
             }
         });
     }
@@ -248,7 +385,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         // destroy each workspaceEnhancer
         for (let w = 0; w < this.workspaceManager.n_workspaces; w++) {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
-            workspace.primaryWorkspaceEnhancer.destroy();
+            workspace.workspaceEnhancer.destroy();
         }
     }
 
@@ -263,6 +400,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             var cachedFunction = Main.wm._prepareWorkspaceSwitch;
             return function() {
                 // Before
+                global.workspaceAnimationInProgress = true;
+
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
 
@@ -288,21 +427,27 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 let curWs = global.workspace_manager.get_workspace_by_index(
                     from
                 );
-                this._switchData.previousPanel =
-                    curWs.primaryWorkspaceEnhancer.panel;
+                this._switchData.previousPanel = curWs.workspaceEnhancer.panel;
                 this._switchData.previousPanel.show();
                 this._switchData.previousPanel.reparent(
                     this._switchData.curGroup
                 );
-                this._switchData.previousBackgroundGroup =
-                    curWs.primaryWorkspaceEnhancer.backgroundGroup;
+                this._switchData.backgroundContainer =
+                    curWs.workspaceEnhancer.backgroundContainer;
+                /* this._switchData.backgroundContainer.set_offscreen_redirect(
+                    Clutter.OffscreenRedirect.ALWAYS
+                ); */
+                /* curWs.workspaceEnhancer.categorizedAppGrid._grid.hide(); */
                 this._switchData.previousBackgroundActor =
-                    curWs.primaryWorkspaceEnhancer.bgManager.backgroundActor;
-                this._switchData.previousBackgroundActor.reparent(
+                    curWs.workspaceEnhancer.bgManager.backgroundActor;
+                this._switchData.backgroundContainer.reparent(
                     this._switchData.curGroup
                 );
-                this._switchData.previousBackgroundActor.lower_bottom();
-                this._switchData.previousBackgroundGroup.show();
+                this._switchData.backgroundContainer.lower_bottom();
+                this._switchData.backgroundContainer.show();
+                this._switchData.curGroup.set_offscreen_redirect(
+                    Clutter.OffscreenRedirect.ALWAYS
+                );
                 for (let dir of Object.values(Meta.MotionDirection)) {
                     let ws = null;
 
@@ -317,16 +462,23 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     }
 
                     let info = this._switchData.surroundings[dir];
-                    info.panel = ws.primaryWorkspaceEnhancer.panel;
+                    info.panel = ws.workspaceEnhancer.panel;
                     info.panel.show();
-                    info.backgroundGroup =
-                        ws.primaryWorkspaceEnhancer.backgroundGroup;
+                    info.backgroundContainer =
+                        ws.workspaceEnhancer.backgroundContainer;
+                    /*  info.backgroundContainer.set_offscreen_redirect(
+                        Clutter.OffscreenRedirect.ALWAYS
+                    );
+                    ws.workspaceEnhancer.categorizedAppGrid._grid.hide(); */
                     info.backgroundActor =
-                        ws.primaryWorkspaceEnhancer.bgManager.backgroundActor;
+                        ws.workspaceEnhancer.bgManager.backgroundActor;
                     info.panel.reparent(info.actor);
                     info.panel.raise_top();
-                    info.backgroundActor.reparent(info.actor);
-                    info.backgroundActor.lower_bottom();
+                    info.backgroundContainer.reparent(info.actor);
+                    info.backgroundContainer.lower_bottom();
+                    info.actor.set_offscreen_redirect(
+                        Clutter.OffscreenRedirect.ALWAYS
+                    );
                 }
                 return result;
             };
@@ -342,30 +494,36 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 let switchData = arguments[0];
                 switchData.previousPanel.reparent(Main.layoutManager.uiGroup);
                 switchData.previousPanel.hide();
-                switchData.previousBackgroundActor.reparent(
-                    switchData.previousBackgroundGroup
+                switchData.backgroundContainer.reparent(
+                    Main.layoutManager._backgroundGroup
                 );
-                switchData.previousBackgroundGroup.hide();
+                switchData.backgroundContainer.hide();
                 for (let dir of Object.values(Meta.MotionDirection)) {
                     let info = switchData.surroundings[dir];
                     if (info) {
                         info.panel.reparent(Main.layoutManager.uiGroup);
                         info.panel.hide();
-                        info.backgroundActor.reparent(info.backgroundGroup);
-                        info.backgroundGroup.hide();
+                        info.backgroundContainer.reparent(
+                            Main.layoutManager._backgroundGroup
+                        );
+                        info.backgroundContainer.hide();
                     }
                 }
 
                 global.workspace_manager
                     .get_active_workspace()
-                    .primaryWorkspaceEnhancer.panel.show();
+                    .workspaceEnhancer.panel.show();
                 global.workspace_manager
                     .get_active_workspace()
-                    .primaryWorkspaceEnhancer.backgroundGroup.show();
+                    .workspaceEnhancer.backgroundContainer.show();
+                /* global.workspace_manager
+                    .get_active_workspace()
+                    .workspaceEnhancer.categorizedAppGrid._grid.show(); */
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
                 switchData.overContainer.destroy();
+                global.workspaceAnimationInProgress = false;
                 return result;
             };
         })();
@@ -378,8 +536,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
-                currentWorkspace.primaryWorkspaceEnhancer.panel.show();
-                currentWorkspace.primaryWorkspaceEnhancer.backgroundGroup.show();
+                currentWorkspace.workspaceEnhancer.panel.show();
+                currentWorkspace.workspaceEnhancer.backgroundContainer.show();
 
                 return result;
             };
@@ -404,7 +562,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             if (monitor.index === Main.layoutManager.primaryIndex) {
                 metaWindow
                     .get_workspace()
-                    .primaryWorkspaceEnhancer.addWindow(metaWindow);
+                    .workspaceEnhancer.addWindow(metaWindow);
             } else {
                 monitor.workspaceEnhancer.addWindow(metaWindow);
             }
@@ -420,11 +578,10 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             this.signals.push({
                 from: workspace,
                 id: workspace.connect('window-added', (workspace, window) => {
-                    log('WINDOW ADDED');
                     //Ignore unHandle window and window on secondary screens
                     if (!this._handleWindow(window) || window.on_all_workspaces)
                         return;
-                    workspace.primaryWorkspaceEnhancer.addWindow(window);
+                    workspace.workspaceEnhancer.addWindow(window);
                 })
             });
 
@@ -434,7 +591,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     //Ignore unHandle window and window on secondary screens
                     if (!this._handleWindow(window) || window.on_all_workspaces)
                         return;
-                    workspace.primaryWorkspaceEnhancer.removeWindow(window);
+                    workspace.workspaceEnhancer.removeWindow(window);
                 })
             });
         }

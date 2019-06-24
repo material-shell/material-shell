@@ -1,4 +1,4 @@
-const { Meta, GLib } = imports.gi;
+const { Clutter, GLib, St } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 
@@ -9,24 +9,45 @@ const Background = imports.ui.background;
 const TopPanel = Me.imports.module.workspaceEnhancer.topPanelWidget.TopPanel;
 const TilingManager =
     Me.imports.module.workspaceEnhancer.tilingManager.TilingManager;
+const CategorizedAppGrid =
+    Me.imports.module.workspaceEnhancer.categorizedAppGrid.CategorizedAppGrid;
 
 var WorkspaceEnhancer = class WorkspaceEnhancer {
-    constructor(monitor) {
+    constructor(monitor, category) {
         this.monitor = monitor;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
+        this.category = category;
         this.windows = [];
         this.panel = new TopPanel(this);
-        this.backgroundGroup = new Meta.BackgroundGroup({ reactive: true });
+
+        this.backgroundContainer = new St.Widget();
+        // this.backgroundContainer = new Meta.BackgroundGroup({ reactive: true });
         this.bgManager = new Background.BackgroundManager({
-            container: this.backgroundGroup,
+            container: this.backgroundContainer,
             monitorIndex: this.monitor.index,
             vignette: false
         });
-        this.bgManager.backgroundActor.set_position(
+        this.categorizedAppGrid = new CategorizedAppGrid(
+            category,
+            monitor.width,
+            monitor.height
+        );
+        this.categorizedAppGrid.actor.set_position(
             this.monitor.x,
             this.monitor.y
         );
+        //this.categorizedAppGrid.adapt
+        //this.categorizedAppGrid.adaptToSize(monitor.width, monitor.height);
+        //this.categorizedAppGrid._redisplay();
+        /* this.categorizedAppGrid._grid.set_offscreen_redirect(
+            Clutter.OffscreenRedirect.ALWAYS
+        ); */
+        this.backgroundContainer.add_child(this.categorizedAppGrid.actor);
+        /* this.bgManager.backgroundActor.set_position(
+            this.monitor.x,
+            this.monitor.y
+        ); */
         this.tilingLayout = 'tileRight';
         this.tilingManager = new TilingManager(this);
         this.windowFocused = null;
@@ -58,19 +79,18 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         const offsetX = this.monitorIsPrimary ? 48 : 0;
         if (this.monitorIsPrimary) {
             this.panel.hide();
-            this.backgroundGroup.hide();
+            this.backgroundContainer.hide();
         }
         Main.layoutManager.uiGroup.add_child(this.panel);
 
         this.panel.set_position(this.monitor.x + offsetX, this.monitor.y);
-        global.window_group.add_child(this.backgroundGroup);
-        this.backgroundGroup.lower_bottom();
+        Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
     }
 
     destroy() {
         log('destroy workspaceEnhancer');
         this.panel.destroy();
-        this.backgroundGroup.destroy();
+        this.backgroundContainer.destroy();
         this.tilingManager.unregisterAllWindowsSignal();
         this.destroyed = true;
     }
@@ -94,13 +114,15 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
         log('remove window in workspaceEnhancer');
+        this.windows.splice(windowIndex, 1);
         if (windowIndex === this.windowFocusIndex) {
             let newWindowToFocus =
                 this.windows[windowIndex - 1] || this.windows[0];
-            newWindowToFocus.focus(0);
+            if (newWindowToFocus) {
+                newWindowToFocus.focus(0);
+            }
+            //
         }
-
-        this.windows.splice(windowIndex, 1);
         this.throttleEmit();
     }
 

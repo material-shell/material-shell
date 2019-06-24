@@ -1,12 +1,18 @@
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const VerticalisePanelSubModule = Me.imports.module.leftPanel.verticalisePanel.verticalisePanelSubModule.VerticalisePanelSubModule;
-const PanelToLeftSubModule = Me.imports.module.leftPanel.panelToLeftSubModule.PanelToLeftSubModule;
-const AppsButtonSubModule = Me.imports.module.leftPanel.appsButtonSubModule.AppsButtonSubModule;
-const WorkspaceListSubModule = Me.imports.module.leftPanel.workspaceListSubModule.WorkspaceListSubModule;
-const MaterializePanelSubModule = Me.imports.module.leftPanel.materializePanelSubModule.MaterializePanelSubModule;
-const HideDashModule = Me.imports.module.leftPanel.hideDashModule.HideDashModule;
+const VerticalisePanelSubModule =
+    Me.imports.module.leftPanel.verticalisePanel.verticalisePanelSubModule
+        .VerticalisePanelSubModule;
+const PanelToLeftSubModule =
+    Me.imports.module.leftPanel.panelToLeftSubModule.PanelToLeftSubModule;
+const AppsButtonSubModule =
+    Me.imports.module.leftPanel.appsButtonSubModule.AppsButtonSubModule;
+const MaterializePanelSubModule =
+    Me.imports.module.leftPanel.materializePanelSubModule
+        .MaterializePanelSubModule;
+const HideDashModule =
+    Me.imports.module.leftPanel.hideDashModule.HideDashModule;
 
 /* exported LeftPanelModule */
 var LeftPanelModule = class LeftPanelModule {
@@ -14,15 +20,10 @@ var LeftPanelModule = class LeftPanelModule {
         this.panel = Main.panel;
 
         this.subModules = [
-            new VerticalisePanelSubModule(
-                this.panel
-            ),
+            new VerticalisePanelSubModule(this.panel),
             new PanelToLeftSubModule(this.panel),
             new AppsButtonSubModule(this.panel),
-            new WorkspaceListSubModule(this.panel),
-            new MaterializePanelSubModule(
-                this.panel
-            ),
+            new MaterializePanelSubModule(this.panel),
             new HideDashModule()
         ];
     }
@@ -36,14 +37,13 @@ var LeftPanelModule = class LeftPanelModule {
             this.panel.statusArea.appMenu.actor.get_parent()
         );
 
-        this.subModules.forEach((subModule) => {
+        this.subModules.forEach(subModule => {
             subModule.enable();
         });
     }
 
     disable() {
-
-        this.subModules.reverse().forEach((subModule) => {
+        this.subModules.reverse().forEach(subModule => {
             subModule.disable();
         });
 

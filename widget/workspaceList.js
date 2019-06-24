@@ -14,30 +14,6 @@ var WorkspaceList = GObject.registerClass(
                 clip_to_allocation: true
             });
 
-            this._workspaceConfigurationList = [
-                {
-                    icon: 'applications-internet'
-                },
-                {
-                    icon: 'applications-development'
-                },
-                {
-                    icon: 'user-available'
-                },
-                {
-                    icon: 'system-file-manager'
-                },
-                {
-                    icon: 'applications-multimedia'
-                },
-                {
-                    icon: 'applications-games'
-                },
-                {
-                    icon: 'applications-other'
-                }
-            ];
-
             this.buttonList = new St.BoxLayout({
                 vertical: true
             });
@@ -48,8 +24,11 @@ var WorkspaceList = GObject.registerClass(
                 style_class: 'workspace-active-indicator'
             });
 
-            this.workspaceActiveIndicator.set_background_color(Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor.get_theme_node().get_color('-barlevel-active-background-color'));
-
+            this.workspaceActiveIndicator.set_background_color(
+                Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor
+                    .get_theme_node()
+                    .get_color('-barlevel-active-background-color')
+            );
 
             this.add_child(this.workspaceActiveIndicator);
 
@@ -65,11 +44,9 @@ var WorkspaceList = GObject.registerClass(
             let workspaceManager = global.workspace_manager;
 
             for (let i = 0; i <= workspaceManager.n_workspaces - 1; i++) {
-                let workspaceConfiguration = this._workspaceConfigurationList[
-                    i
-                ];
+                let workspace = workspaceManager.get_workspace_by_index(i);
                 let icon = new St.Icon({
-                    icon_name: workspaceConfiguration.icon,
+                    icon_name: workspace.workspaceEnhancer.category.icon,
                     style_class: 'workspace-icon'
                 });
 
@@ -86,7 +63,6 @@ var WorkspaceList = GObject.registerClass(
                 let rippleContainer = new RippleContainer(workspaceButton);
                 this.buttonList.add_child(rippleContainer);
             }
-
         }
     }
 );
