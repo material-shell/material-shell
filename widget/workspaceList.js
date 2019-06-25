@@ -32,15 +32,6 @@ var WorkspaceList = GObject.registerClass(
 
             this.add_child(this.workspaceActiveIndicator);
 
-            global.workspace_manager.connect('active-workspace-changed', () => {
-                Tweener.addTween(this.workspaceActiveIndicator, {
-                    translation_y:
-                        48 * workspaceManager.get_active_workspace_index(),
-                    time: 0.25,
-                    transition: 'easeOutQuad'
-                });
-            });
-
             let workspaceManager = global.workspace_manager;
 
             for (let i = 0; i <= workspaceManager.n_workspaces - 1; i++) {
@@ -57,12 +48,56 @@ var WorkspaceList = GObject.registerClass(
                     can_focus: true,
                     track_hover: true
                 });
+                workspaceButton.workspace = workspaceManager.get_workspace_by_index(
+                    i
+                );
                 workspaceButton.connect('button-press-event', () => {
-                    workspaceManager.get_workspace_by_index(i).activate(0);
+                    workspaceButton.workspace.activate(0);
                 });
                 let rippleContainer = new RippleContainer(workspaceButton);
                 this.buttonList.add_child(rippleContainer);
             }
+
+            global.workspace_manager.connect('active-workspace-changed', () => {
+                this.activeButtonForIndex(
+                    workspaceManager.get_active_workspace_index()
+                );
+            });
+
+            this.activeButtonForIndex(
+                workspaceManager.get_active_workspace_index()
+            );
+        }
+
+        activeButtonForIndex(workspaceIndex) {
+            let workspace = global.workspace_manager.get_workspace_by_index(
+                workspaceIndex
+            );
+
+            if (this.buttonActive) {
+                if (
+                    this.buttonActive.contentActor.has_style_class_name(
+                        'active'
+                    )
+                ) {
+                    this.buttonActive.contentActor.remove_style_class_name(
+                        'active'
+                    );
+                }
+            }
+            this.buttonActive = this.getWorkspaceButtonFromWorkspace(workspace);
+            this.buttonActive.contentActor.add_style_class_name('active');
+            Tweener.addTween(this.workspaceActiveIndicator, {
+                translation_y: 48 * workspaceIndex,
+                time: 0.25,
+                transition: 'easeOutQuad'
+            });
+        }
+
+        getWorkspaceButtonFromWorkspace(workspace) {
+            return this.buttonList.get_children().find(rippleContainer => {
+                return rippleContainer.contentActor.workspace === workspace;
+            });
         }
     }
 );

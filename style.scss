@@ -1,5 +1,11 @@
 .workspace-button {
     padding: 12px;
+    &.active {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+.workspace-button .active {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .workspace-button:hover {
