@@ -1,5 +1,4 @@
-const { Clutter, St, Meta, GLib, Shell } = imports.gi;
-const Gio = imports.gi.Gio;
+const { Clutter, St, Meta, GLib, Shell, Gio } = imports.gi;
 const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -18,7 +17,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         this.primaryWorkspaceCategories = [
             {
                 key: 'web',
-                icon: 'applications-internet',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/web.svg`
+                ),
                 title: _('Internet'),
                 categoriesIncluded: ['Network'],
                 categoriesExcluded: [
@@ -36,7 +37,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'development',
-                icon: 'applications-development',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/code-braces.svg`
+                ),
                 title: _('Development'),
                 categoriesIncluded: ['Development'],
                 categoriesExcluded: [],
@@ -44,7 +47,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'social',
-                icon: 'user-available',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/forum.svg`
+                ),
                 title: _('Social'),
                 categoriesIncluded: [
                     'Chat',
@@ -60,7 +65,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'office',
-                icon: 'system-file-manager',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/folder.svg`
+                ),
                 title: _('Office'),
                 categoriesIncluded: ['Office', 'FileManager'],
                 categoriesExcluded: ['ContactManagement'],
@@ -68,7 +75,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'graphics',
-                icon: 'applications-graphics',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/palette.svg`
+                ),
                 title: _('Graphics'),
                 categoriesIncluded: ['Graphics'],
                 categoriesExcluded: [],
@@ -76,7 +85,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'multimedia',
-                icon: 'applications-multimedia',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/play-circle-outline.svg`
+                ),
                 title: _('Multimedia'),
                 categoriesIncluded: ['AudioVideo'],
                 categoriesExcluded: [],
@@ -84,7 +95,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'game',
-                icon: 'applications-games',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/google-controller.svg`
+                ),
                 title: _('Games'),
                 categoriesIncluded: ['Game'],
                 categoriesExcluded: [],
@@ -92,7 +105,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             },
             {
                 key: 'other',
-                icon: 'applications-other',
+                icon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/package.svg`
+                ),
                 title: _('Others'),
                 categoriesIncluded: [],
                 categoriesExcluded: [],
@@ -101,7 +116,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         ];
         this.secondaryWorkspaceCategory = {
             key: 'external',
-            icon: 'applications-other',
+            icon: Gio.icon_new_for_string(
+                `${Me.path}/assets/icons/package.svg`
+            ),
             title: _('All applications'),
             categoriesIncluded: [],
             categoriesExcluded: [],

@@ -1,13 +1,7 @@
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-
+const { Clutter, Shell, St } = imports.gi;
 const FrequentView = imports.ui.appDisplay.FrequentView;
 const AppIcon = imports.ui.appDisplay.AppIcon;
-const { Clutter, Shell, Meta, St } = imports.gi;
 
-var MAX_COLUMNS = 6;
-var MIN_COLUMNS = 4;
-var MIN_ROWS = 4;
 /* exported CategorizedAppGrid */
 var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
     FrequentView
@@ -29,7 +23,7 @@ var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
             style_class: 'categorized-apps-title-container'
         });
         this.categoryIcon = new St.Icon({
-            icon_name: workspaceCategory.icon,
+            gicon: workspaceCategory.icon,
             style_class: 'categorized-apps-icon'
         });
         this.categoryTitle = new St.Label({

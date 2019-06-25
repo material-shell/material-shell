@@ -1,5 +1,5 @@
 .workspace-button {
-    padding: 8px;
+    padding: 12px;
 }
 
 .workspace-button:hover {
@@ -7,8 +7,8 @@
 }
 
 .workspace-icon {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
 }
 
 .workspace-active-indicator {
@@ -62,7 +62,9 @@
             color: rgba(255, 255, 255, 0.5);
         }
         .close-button {
-            border-radius: 24px;
+            border-radius: 20px;
+            width: 20px;
+            height: 20px;
             &:hover {
                 background-color: rgba(255, 255, 255, 0.1);
             }

@@ -46,7 +46,7 @@ var WorkspaceList = GObject.registerClass(
             for (let i = 0; i <= workspaceManager.n_workspaces - 1; i++) {
                 let workspace = workspaceManager.get_workspace_by_index(i);
                 let icon = new St.Icon({
-                    icon_name: workspace.workspaceEnhancer.category.icon,
+                    gicon: workspace.workspaceEnhancer.category.icon,
                     style_class: 'workspace-icon'
                 });
 

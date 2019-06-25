@@ -1,4 +1,4 @@
-const { Clutter, GObject, St, Shell } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -295,9 +295,12 @@ let TaskBarItem = GObject.registerClass(
                 can_focus: true,
                 track_hover: true,
                 style_class: 'close-button',
+                width: 24,
                 child: new St.Icon({
-                    icon_name: 'window-close-symbolic',
-                    icon_size: 24
+                    gicon: Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/close.svg`
+                    ),
+                    icon_size: 18
                 })
             });
 
