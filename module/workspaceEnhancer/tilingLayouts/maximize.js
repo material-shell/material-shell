@@ -29,7 +29,6 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
 
     onFocusChanged(windowFocused, oldWindowFocused) {
         log('FocusChanged in maximize');
-        log(windowFocused.title, oldWindowFocused.title);
         const newIndex = this.windows.indexOf(windowFocused);
         const oldIndex = this.windows.indexOf(oldWindowFocused);
         this.focusedWindow = windowFocused;

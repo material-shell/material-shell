@@ -2,6 +2,8 @@
     "name": "Material Shell",
     "description": "Change the workflow of the Gnome-shell to Mouse-driven Tileable workflow",
     "uuid": "Material_Shell@papyelgringo",
-    "shell-version": ["3.30.2"],
+    "shell-version": [
+        "3.32"
+    ],
     "bindings": "org.gnome.shell.extensions.materialshell.bindings"
 }

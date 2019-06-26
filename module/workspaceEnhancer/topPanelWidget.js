@@ -1,4 +1,4 @@
-const { GObject, St, Clutter } = imports.gi;
+const { GObject, St, Clutter, Gio } = imports.gi;
 
 const Main = imports.ui.main;
 
@@ -15,9 +15,29 @@ var TopPanel = GObject.registerClass(
                 name: 'dash'
             });
             this.workspaceEnhancer = workspaceEnhancer;
-            this.taskBar = new TaskBar(workspaceEnhancer);
-            this.add_child(this.taskBar);
+            this._leftContainer = new St.BoxLayout();
 
+            this.taskBar = new TaskBar(workspaceEnhancer);
+            this._leftContainer.add_child(this.taskBar);
+
+            let iconContainer = new St.Bin({
+                child: new St.Icon({
+                    gicon: Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/plus-symbolic.svg`
+                    ),
+                    style_class: 'workspace-icon'
+                }),
+                style_class: 'workspace-button',
+                reactive: true,
+                can_focus: true,
+                track_hover: true
+            });
+            iconContainer.connect('button-press-event', () => {
+                workspaceEnhancer.showBackground();
+            });
+            this.addButton = new RippleContainer(iconContainer);
+            this._leftContainer.add_child(this.addButton);
+            this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
                 icon_name: 'view-grid-symbol',
                 style_class: 'workspace-icon'
@@ -33,7 +53,11 @@ var TopPanel = GObject.registerClass(
 
             button.connect('button-press-event', () => {
                 workspaceEnhancer.nextTiling();
-                this.tilingIcon.set_icon_name(workspaceEnhancer.tilingLayout === 'tileRight' ? 'view-grid-symbol' : 'window-maximize-symbolic');
+                this.tilingIcon.set_icon_name(
+                    workspaceEnhancer.tilingLayout === 'tileRight'
+                        ? 'view-grid-symbol'
+                        : 'window-maximize-symbolic'
+                );
             });
 
             this.tilingButton = new RippleContainer(button);
@@ -41,7 +65,13 @@ var TopPanel = GObject.registerClass(
         }
 
         vfunc_get_preferred_width() {
-            return [0, this.workspaceEnhancer.monitor.index === Main.layoutManager.primaryIndex ? this.workspaceEnhancer.monitor.width - 48 : this.workspaceEnhancer.monitor.width];
+            return [
+                0,
+                this.workspaceEnhancer.monitor.index ===
+                Main.layoutManager.primaryIndex
+                    ? this.workspaceEnhancer.monitor.width - 48
+                    : this.workspaceEnhancer.monitor.width
+            ];
         }
 
         vfunc_get_preferred_height() {
@@ -54,7 +84,7 @@ var TopPanel = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             box.x2 = box.x2 - 48;
-            this.taskBar.allocate(box, flags);
+            this._leftContainer.allocate(box, flags);
 
             let tilingButtonBox = new Clutter.ActorBox();
             tilingButtonBox.x1 = box.x2;

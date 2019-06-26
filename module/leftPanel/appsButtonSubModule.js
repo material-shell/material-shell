@@ -10,7 +10,9 @@ var AppsButtonSubModule = class AppsButtonSubModule {
     constructor(panel) {
         this.panel = panel;
         let icon = new St.Icon({
-            gicon: Gio.icon_new_for_string(`${Me.path}/assets/icons/gnome.svg`),
+            gicon: Gio.icon_new_for_string(
+                `${Me.path}/assets/icons/gnome-symbolic.svg`
+            ),
             style_class: 'workspace-icon'
         });
 
@@ -33,7 +35,11 @@ var AppsButtonSubModule = class AppsButtonSubModule {
         });
 
         this.button = new RippleContainer(button);
-        this.button.set_background_color(Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor.get_theme_node().get_color('-barlevel-active-background-color'));
+        this.button.set_background_color(
+            Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor
+                .get_theme_node()
+                .get_color('-barlevel-active-background-color')
+        );
     }
 
     enable() {

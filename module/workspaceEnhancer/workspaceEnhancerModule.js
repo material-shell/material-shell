@@ -18,7 +18,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'web',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/web.svg`
+                    `${Me.path}/assets/icons/web-symbolic.svg`
                 ),
                 title: _('Internet'),
                 categoriesIncluded: ['Network'],
@@ -38,7 +38,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'development',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/code-braces.svg`
+                    `${Me.path}/assets/icons/code-braces-symbolic.svg`
                 ),
                 title: _('Development'),
                 categoriesIncluded: ['Development'],
@@ -48,7 +48,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'social',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/forum.svg`
+                    `${Me.path}/assets/icons/forum-symbolic.svg`
                 ),
                 title: _('Social'),
                 categoriesIncluded: [
@@ -66,7 +66,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'office',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/folder.svg`
+                    `${Me.path}/assets/icons/folder-symbolic.svg`
                 ),
                 title: _('Office'),
                 categoriesIncluded: ['Office', 'FileManager'],
@@ -76,7 +76,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'graphics',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/palette.svg`
+                    `${Me.path}/assets/icons/palette-symbolic.svg`
                 ),
                 title: _('Graphics'),
                 categoriesIncluded: ['Graphics'],
@@ -86,7 +86,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'multimedia',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/play-circle-outline.svg`
+                    `${Me.path}/assets/icons/play-circle-outline-symbolic.svg`
                 ),
                 title: _('Multimedia'),
                 categoriesIncluded: ['AudioVideo'],
@@ -96,7 +96,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'game',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/google-controller.svg`
+                    `${Me.path}/assets/icons/google-controller-symbolic.svg`
                 ),
                 title: _('Games'),
                 categoriesIncluded: ['Game'],
@@ -106,7 +106,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             {
                 key: 'other',
                 icon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/package.svg`
+                    `${Me.path}/assets/icons/package-symbolic.svg`
                 ),
                 title: _('Others'),
                 categoriesIncluded: [],
@@ -117,7 +117,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         this.secondaryWorkspaceCategory = {
             key: 'external',
             icon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/package.svg`
+                `${Me.path}/assets/icons/package-symbolic.svg`
             ),
             title: _('All applications'),
             categoriesIncluded: [],

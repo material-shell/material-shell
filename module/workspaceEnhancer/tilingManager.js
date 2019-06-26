@@ -16,7 +16,6 @@ var TilingManager = class TilingManager {
         this.signals = [];
         this.setLayout(workspaceEnhancer.tilingLayout);
         this.workspaceEnhancer.connect('windows-changed', () => {
-            log('windows-changed');
             this.onWindowsChanged();
         });
 
@@ -46,7 +45,6 @@ var TilingManager = class TilingManager {
                 from: window,
                 id: window.connect('position-changed', window => {
                     if (!window.grabbed && !this.tilingInProgress) {
-                        log('here', window.title);
                         this.tileWindows();
                     }
                 })

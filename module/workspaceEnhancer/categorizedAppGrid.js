@@ -113,7 +113,6 @@ var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
         return appsInfo.filter(appInfo => {
             const appCategories = appInfo.get_categories() || '';
             const appCategoriesList = appCategories.split(';');
-            log(appCategoriesList);
             let flagIncluded = false;
             let flagExcluded = false;
             appCategoriesList.forEach(category => {
@@ -134,7 +133,6 @@ var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
 
     // Called before allocation to calculate dynamic spacing
     adaptToSize(width, height) {
-        log('toto');
         let box = new Clutter.ActorBox();
         box.x1 = box.y1 = 0;
         box.x2 = width;

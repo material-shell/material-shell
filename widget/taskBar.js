@@ -298,7 +298,7 @@ let TaskBarItem = GObject.registerClass(
                 width: 24,
                 child: new St.Icon({
                     gicon: Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/close.svg`
+                        `${Me.path}/assets/icons/close-symbolic.svg`
                     ),
                     icon_size: 18
                 })
@@ -376,8 +376,7 @@ let TaskBarItem = GObject.registerClass(
                 this.mouseData.dragged = false;
                 switch (event.get_button()) {
                     case 1:
-                        this.window.raise();
-                        this.window.focus(0);
+                        this.window.activate(global.get_current_time());
                         break;
 
                     case 2:

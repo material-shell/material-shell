@@ -8,47 +8,52 @@ const GLib = imports.gi.GLib;
 
 /* exported NoTitleBarModule */
 var NoTitleBarModule = class NoTitleBarModule {
-    constructor() {
-
-    }
+    constructor() {}
 
     enable() {
         global.display.connect('window-created', (display, window) => {
-            if (!this._handleWindow(window))
-                return;
-            log('remove title bar', window);
+            if (!this._handleWindow(window)) return;
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.toggleTitleBar(this.getWindowXID(window), true);
             });
         });
     }
 
-    disable() {
-
-    }
+    disable() {}
 
     _setHintValue(win, hint, value) {
         let winId = this.getWindowXID(win);
-        if (!winId)
-            return;
+        if (!winId) return;
 
-        Util.spawn(['xprop', '-id', winId, '-f', hint, '32c', '-set', hint, value]);
+        Util.spawn([
+            'xprop',
+            '-id',
+            winId,
+            '-f',
+            hint,
+            '32c',
+            '-set',
+            hint,
+            value
+        ]);
     }
 
     _getHintValue(win, hint) {
         let winId = this.getWindowXID(win);
-        if (!winId)
-            return;
+        if (!winId) return;
 
         let result = GLib.spawn_command_line_sync(`xprop -id ${winId} ${hint}`);
         let string = ByteArray.toString(result[1]);
-        if (!string.match(/=/))
-            return;
+        if (!string.match(/=/)) return;
 
-        string = string.split('=')[1].trim().split(',').map(part => {
-            part = part.trim();
-            return part.match(/\dx/) ? part : `0x${part}`
-        });
+        string = string
+            .split('=')[1]
+            .trim()
+            .split(',')
+            .map(part => {
+                part = part.trim();
+                return part.match(/\dx/) ? part : `0x${part}`;
+            });
 
         return string;
     }
@@ -61,7 +66,11 @@ var NoTitleBarModule = class NoTitleBarModule {
                 state = this._getHintValue(win, '_MOTIF_WM_HINTS');
                 state = state || ['0x2', '0x0', '0x1', '0x0', '0x0'];
 
-                this._setHintValue(win, '_GTKTitleBar_ORIGINAL_STATE', state.join(', '));
+                this._setHintValue(
+                    win,
+                    '_GTKTitleBar_ORIGINAL_STATE',
+                    state.join(', ')
+                );
             }
 
             win._GTKTitleBarOriginalState = state;
@@ -77,8 +86,7 @@ var NoTitleBarModule = class NoTitleBarModule {
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
 
-        if (!types.includes(win.window_type))
-            return;
+        if (!types.includes(win.window_type)) return;
 
         //global.log("GTKTitleBar: windowDecoration - _handleWindow + motifHints??: " + (isWindow(win) && !win.is_client_decorated()));
         let state = this._getMotifHints(win);
@@ -90,9 +98,21 @@ var NoTitleBarModule = class NoTitleBarModule {
 
     toggleTitleBar(winId, hide) {
         let flag = '0x2, 0x0, %s, 0x0, 0x0';
-        let value = hide ? flag.format(Meta.is_wayland_compositor() ? '0x2' : '0x0') : flag.format('0x1');
+        let value = hide
+            ? flag.format(Meta.is_wayland_compositor() ? '0x2' : '0x0')
+            : flag.format('0x1');
 
-        Util.spawn(['xprop', '-id', winId, '-f', prop, '32c', '-set', prop, value]);
+        Util.spawn([
+            'xprop',
+            '-id',
+            winId,
+            '-f',
+            prop,
+            '32c',
+            '-set',
+            prop,
+            value
+        ]);
     }
 
     getWindowXID(win) {
@@ -101,7 +121,4 @@ var NoTitleBarModule = class NoTitleBarModule {
 
         return match[0];
     }
-
 };
-
-

@@ -59,21 +59,12 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             if (index === -1) {
                 return;
             }
-            log('FOCUS WINDOW');
-
             if (windowFocused.is_attached_dialog()) {
                 windowFocused = windowFocused.get_transient_for();
                 index = this.windows.indexOf(windowFocused);
             }
             this.windowFocusIndex = index;
-            if (windowFocused !== this.windowFocused) {
-                this.emit(
-                    'window-focused-changed',
-                    windowFocused,
-                    this.windowFocused
-                );
-                this.windowFocused = windowFocused;
-            }
+            this.onFocus(windowFocused);
         });
 
         const offsetX = this.monitorIsPrimary ? 48 : 0;
@@ -92,6 +83,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         this.panel.destroy();
         this.backgroundContainer.destroy();
         this.tilingManager.unregisterAllWindowsSignal();
+        this.disconnectAll();
         this.destroyed = true;
     }
 
@@ -104,7 +96,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        log('add window', window.title);
         window.workspaceEnhancer = this;
         this.windows.push(window);
         this.throttleEmit();
@@ -113,7 +104,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        log('remove window in workspaceEnhancer');
         this.windows.splice(windowIndex, 1);
         if (windowIndex === this.windowFocusIndex) {
             let newWindowToFocus =
@@ -127,10 +117,8 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     }
 
     swapWindows(firstWindow, secondWindow) {
-        log(this.windows);
         const firstIndex = this.windows.indexOf(firstWindow);
         const secondIndex = this.windows.indexOf(secondWindow);
-        log(firstIndex, secondIndex);
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
         this.throttleEmit();
@@ -140,16 +128,29 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         if (this.windowFocusIndex === this.windows.length - 1) {
             return;
         }
-        this.windows[this.windowFocusIndex + 1].raise();
-        this.windows[this.windowFocusIndex + 1].focus(0);
+        this.windows[this.windowFocusIndex + 1].activate(
+            global.get_current_time()
+        );
     }
 
     focusPrevious() {
         if (this.windowFocusIndex === 0) {
             return;
         }
-        this.windows[this.windowFocusIndex - 1].raise();
-        this.windows[this.windowFocusIndex - 1].focus(0);
+        this.windows[this.windowFocusIndex - 1].activate(
+            global.get_current_time()
+        );
+    }
+
+    onFocus(windowFocused) {
+        if (windowFocused !== this.windowFocused) {
+            this.emit(
+                'window-focused-changed',
+                windowFocused,
+                this.windowFocused
+            );
+            this.windowFocused = windowFocused;
+        }
     }
 
     setWindowBefore(windowToMove, windowRelative) {
@@ -176,6 +177,48 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         this.tilingLayout =
             this.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
         this.tilingManager.setLayout(this.tilingLayout);
+    }
+
+    showBackground() {
+        this.windows.forEach(window => {
+            window.minimize();
+        });
+        this.backgroundShown = true;
+
+        global.stage.set_key_focus(this.categorizedAppGrid.actor);
+        this.backgroundSignals = [];
+        let signalId = global.stage.connect('notify::key-focus', () => {
+            let focus = global.stage.get_key_focus();
+            if (focus !== this.categorizedAppGrid.actor) {
+                this.unShowBackground();
+            }
+        });
+        this.backgroundSignals.push({ from: global.stage, id: signalId });
+        signalId = this.categorizedAppGrid.actor.connect(
+            'key-press-event',
+            (_, event) => {
+                if (event.get_key_symbol() == Clutter.KEY_Escape) {
+                    this.unShowBackground();
+                }
+
+                return Clutter.EVENT_PROPAGATE;
+            }
+        );
+        this.backgroundSignals.push({
+            from: this.categorizedAppGrid.actor,
+            id: signalId
+        });
+    }
+
+    unShowBackground() {
+        log('UnSHOW');
+        this.windows.forEach(window => {
+            window.unminimize();
+        });
+        this.backgroundSignals.forEach(signal => {
+            signal.from.disconnect(signal.id);
+        });
+        this.backgroundShown = false;
     }
 
     throttleEmit() {
