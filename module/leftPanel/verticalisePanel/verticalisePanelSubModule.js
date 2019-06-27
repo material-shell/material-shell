@@ -1,16 +1,21 @@
 const Main = imports.ui.main;
 const Gi = imports._gi;
+const GLib = imports.gi.GLib;
 const { Clutter, Meta, St } = imports.gi;
 const WindowManager = imports.ui.windowManager;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const RectangularClockSubModule = Me.imports.module.leftPanel.verticalisePanel.rectangularClockSubModule.RectangularClockSubModule;
+const RectangularClockSubModule =
+    Me.imports.module.leftPanel.verticalisePanel.rectangularClockSubModule
+        .RectangularClockSubModule;
 
 /* exported VerticalisePanelSubModule */
 var VerticalisePanelSubModule = class VerticalisePanelSubModule {
     constructor(panel) {
         this.panel = panel;
-        this.rectangularClockSubModule = new RectangularClockSubModule(this.panel.statusArea.dateMenu);
+        this.rectangularClockSubModule = new RectangularClockSubModule(
+            this.panel.statusArea.dateMenu
+        );
         this.panelAllocate = function(box, flags) {
             this.set_allocation(box, flags);
             let allocWidth = box.x2 - box.x1;
@@ -22,7 +27,8 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
             let [, rightNaturalHeight] = this._rightBox.get_preferred_height(
                 -1
             );
-            let startY = allocHeight - (centerNaturalHeight + rightNaturalHeight);
+            let startY =
+                allocHeight - (centerNaturalHeight + rightNaturalHeight);
 
             let leftChildBox = new Clutter.ActorBox();
             leftChildBox.clip_to_allocation = true;
@@ -36,15 +42,15 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
             centerChildBox.x1 = 0;
             centerChildBox.x2 = allocWidth;
             centerChildBox.y1 = startY + rightNaturalHeight;
-            centerChildBox.y2 = startY + centerNaturalHeight + rightNaturalHeight;
+            centerChildBox.y2 =
+                startY + centerNaturalHeight + rightNaturalHeight;
             this._centerBox.allocate(centerChildBox, flags);
 
             let rightChildBox = new Clutter.ActorBox();
             rightChildBox.x1 = 0;
             rightChildBox.x2 = allocWidth;
             rightChildBox.y1 = startY;
-            rightChildBox.y2 =
-                startY + rightNaturalHeight;
+            rightChildBox.y2 = startY + rightNaturalHeight;
             this._rightBox.allocate(rightChildBox, flags);
         };
 
@@ -84,7 +90,9 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
 
     enable() {
         // 1- Set all List container to vertical
-        this.recursivelySetVertical(this.panel, true);
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.recursivelySetVertical(this.panel, true);
+        });
 
         // 2- Override the allocate function of the panel to display the PanelBoxes vertically
         this.panel.__proto__[Gi.hook_up_vfunc_symbol](
@@ -98,7 +106,6 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         this.panel._leftCorner.actor.hide();
         this.panel._rightCorner.actor.hide();
         this.rectangularClockSubModule.enable();
-
     }
 
     disable() {

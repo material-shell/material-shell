@@ -83,6 +83,7 @@
 }
 
 .panel-button {
+    text-align: center;
     * {
         padding: 0;
         margin: 0;
@@ -100,5 +101,10 @@
             font-size: 26px;
             font-weight: bold;
         }
+    }
+}
+.clock-display {
+    * {
+        padding: 4px 0px !important;
     }
 }
