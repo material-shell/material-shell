@@ -9,8 +9,10 @@ const Background = imports.ui.background;
 const TopPanel = Me.imports.module.workspaceEnhancer.topPanelWidget.TopPanel;
 const TilingManager =
     Me.imports.module.workspaceEnhancer.tilingManager.TilingManager;
-const CategorizedAppGrid =
-    Me.imports.module.workspaceEnhancer.categorizedAppGrid.CategorizedAppGrid;
+
+const CategorizedAppCard =
+    Me.imports.module.workspaceEnhancer.categorizedAppCard.CategorizedAppCard;
+
 const { Stack } = Me.imports.lib.Layout;
 
 var WorkspaceEnhancer = class WorkspaceEnhancer {
@@ -31,30 +33,18 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             vignette: false
         });
 
-        this.categorizedAppGrid = new CategorizedAppGrid(
-            category,
-            monitor.width,
-            monitor.height
-        );
+        this.categorizedAppCard = new CategorizedAppCard(category);
         this.backgroundStackLayout = new Stack({
             x: monitor.x,
             y: monitor.y,
             width: monitor.width,
             height: monitor.height,
-            children: [this.categorizedAppGrid.actor]
+            //This St.Bin fix an Incredible Bug which the source is Unknown that make the AppCard to fill his parent when clicking on app icon SOMETIMES.
+            // Since the St.Bin take the size of the AppCard the bug is invisible...
+            children: [new St.Bin({ child: this.categorizedAppCard })]
         });
-        //this.categorizedAppGrid.adapt
-        //this.categorizedAppGrid.adaptToSize(monitor.width, monitor.height);
-        //this.categorizedAppGrid._redisplay();
-        /* this.categorizedAppGrid._grid.set_offscreen_redirect(
-            Clutter.OffscreenRedirect.ALWAYS
-        ); */
 
         this.backgroundContainer.add_child(this.backgroundStackLayout);
-        /* this.bgManager.backgroundActor.set_position(
-            this.monitor.x,
-            this.monitor.y
-        ); */
         this.tilingLayout = 'tileRight';
         this.tilingManager = new TilingManager(this);
         this.windowFocused = null;
@@ -192,16 +182,16 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         });
         this.backgroundShown = true;
 
-        global.stage.set_key_focus(this.categorizedAppGrid.actor);
+        global.stage.set_key_focus(this.categorizedAppCard);
         this.backgroundSignals = [];
         let signalId = global.stage.connect('notify::key-focus', () => {
             let focus = global.stage.get_key_focus();
-            if (focus !== this.categorizedAppGrid.actor) {
+            if (focus !== this.categorizedAppCard) {
                 this.unShowBackground();
             }
         });
         this.backgroundSignals.push({ from: global.stage, id: signalId });
-        signalId = this.categorizedAppGrid.actor.connect(
+        signalId = this.categorizedAppCard.connect(
             'key-press-event',
             (_, event) => {
                 if (event.get_key_symbol() == Clutter.KEY_Escape) {
@@ -212,7 +202,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             }
         );
         this.backgroundSignals.push({
-            from: this.categorizedAppGrid.actor,
+            from: this.categorizedAppCard,
             id: signalId
         });
     }
@@ -225,6 +215,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         this.backgroundSignals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });
+        this.backgroundSignals = [];
         this.backgroundShown = false;
     }
 

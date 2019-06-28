@@ -90,19 +90,6 @@
     }
 }
 
-.categorized-apps {
-    background-color: rgba(0, 0, 0, 0.7);
-    .categorized-apps-title-container {
-        padding: 16px;
-        .categorized-apps-icon {
-            margin-right: 16px;
-        }
-        .categorized-apps-title {
-            font-size: 26px;
-            font-weight: bold;
-        }
-    }
-}
 .clock-display {
     * {
         padding: 4px 0px !important;
@@ -127,6 +114,12 @@
     }
     .mat-card-content {
         padding: 24px;
+    }
+}
+
+.categorized-app-card {
+    .overview-icon {
+        margin: 8px;
     }
 }
 

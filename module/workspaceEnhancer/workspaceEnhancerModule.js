@@ -452,10 +452,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 );
                 this._switchData.backgroundContainer =
                     curWs.workspaceEnhancer.backgroundContainer;
-                /* this._switchData.backgroundContainer.set_offscreen_redirect(
-                    Clutter.OffscreenRedirect.ALWAYS
-                ); */
-                /* curWs.workspaceEnhancer.categorizedAppGrid._grid.hide(); */
+
                 this._switchData.previousBackgroundActor =
                     curWs.workspaceEnhancer.bgManager.backgroundActor;
                 this._switchData.backgroundContainer.reparent(
@@ -484,10 +481,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     info.panel.show();
                     info.backgroundContainer =
                         ws.workspaceEnhancer.backgroundContainer;
-                    /*  info.backgroundContainer.set_offscreen_redirect(
-                        Clutter.OffscreenRedirect.ALWAYS
-                    );
-                    ws.workspaceEnhancer.categorizedAppGrid._grid.hide(); */
+
                     info.backgroundActor =
                         ws.workspaceEnhancer.bgManager.backgroundActor;
                     info.panel.reparent(info.actor);
@@ -534,9 +528,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 global.workspace_manager
                     .get_active_workspace()
                     .workspaceEnhancer.backgroundContainer.show();
-                /* global.workspace_manager
-                    .get_active_workspace()
-                    .workspaceEnhancer.categorizedAppGrid._grid.show(); */
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
