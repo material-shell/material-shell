@@ -404,6 +404,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
             workspace.workspaceEnhancer.destroy();
         }
+        log('clearMonitor Finished');
     }
 
     overrideWindowManagerFunctions() {

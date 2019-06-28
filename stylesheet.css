@@ -78,3 +78,23 @@
 
 .clock-display * {
   padding: 4px 0px !important; }
+
+.mat-card {
+  background-color: #191919;
+  border-radius: 6px;
+  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24); }
+  .mat-card .mat-card-title {
+    background-color: rgba(255, 255, 255, 0.1);
+    height: 72px;
+    padding: 0px 24px; }
+    .mat-card .mat-card-title .mat-card-title-icon {
+      icon-size: 40px;
+      margin-right: 16px; }
+    .mat-card .mat-card-title .mat-card-title-label {
+      font-size: 24px; }
+  .mat-card .mat-card-content {
+    padding: 24px; }
+
+#panel {
+  background-color: #191919;
+  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24); }

@@ -11,6 +11,7 @@ const TilingManager =
     Me.imports.module.workspaceEnhancer.tilingManager.TilingManager;
 const CategorizedAppGrid =
     Me.imports.module.workspaceEnhancer.categorizedAppGrid.CategorizedAppGrid;
+const { Stack } = Me.imports.lib.Layout;
 
 var WorkspaceEnhancer = class WorkspaceEnhancer {
     constructor(monitor, category) {
@@ -23,27 +24,33 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
 
         this.backgroundContainer = new St.Widget();
         // this.backgroundContainer = new Meta.BackgroundGroup({ reactive: true });
+
         this.bgManager = new Background.BackgroundManager({
             container: this.backgroundContainer,
             monitorIndex: this.monitor.index,
             vignette: false
         });
+
         this.categorizedAppGrid = new CategorizedAppGrid(
             category,
             monitor.width,
             monitor.height
         );
-        this.categorizedAppGrid.actor.set_position(
-            this.monitor.x,
-            this.monitor.y
-        );
+        this.backgroundStackLayout = new Stack({
+            x: monitor.x,
+            y: monitor.y,
+            width: monitor.width,
+            height: monitor.height,
+            children: [this.categorizedAppGrid.actor]
+        });
         //this.categorizedAppGrid.adapt
         //this.categorizedAppGrid.adaptToSize(monitor.width, monitor.height);
         //this.categorizedAppGrid._redisplay();
         /* this.categorizedAppGrid._grid.set_offscreen_redirect(
             Clutter.OffscreenRedirect.ALWAYS
         ); */
-        this.backgroundContainer.add_child(this.categorizedAppGrid.actor);
+
+        this.backgroundContainer.add_child(this.backgroundStackLayout);
         /* this.bgManager.backgroundActor.set_position(
             this.monitor.x,
             this.monitor.y

@@ -1,6 +1,9 @@
 const { Clutter, Shell, St } = imports.gi;
 const FrequentView = imports.ui.appDisplay.FrequentView;
 const AppIcon = imports.ui.appDisplay.AppIcon;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { MatCard, MatCardTitle, MatCardContent } = Me.imports.material.card.card;
+const { Column, Row } = Me.imports.lib.Layout;
 
 /* exported CategorizedAppGrid */
 var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
@@ -9,31 +12,34 @@ var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
     constructor(workspaceCategory, monitorWidth, monitorHeight) {
         super(null, { fillParent: false });
         this.workspaceCategory = workspaceCategory;
-        this.actor = new St.Widget({
+        this.actor = new MatCard({
             style_class: 'categorized-apps',
-            layout_manager: new Clutter.BinLayout(),
-            width: monitorWidth,
-            height: monitorHeight
+            child: new Column({
+                children: [
+                    new MatCardTitle({
+                        icon: new St.Icon({
+                            gicon: workspaceCategory.icon
+                        }),
+                        label: new St.Label({
+                            text: workspaceCategory.title,
+                            style_class: 'categorized-apps-title',
+                            x_expand: true,
+                            y_align: Clutter.ActorAlign.CENTER
+                        })
+                    }),
+                    new MatCardContent({
+                        child: this._grid
+                    })
+                ]
+            })
         });
 
-        this.container = new St.BoxLayout({
-            vertical: true
-        });
-        this.titleContainer = new St.BoxLayout({
-            style_class: 'categorized-apps-title-container'
-        });
-        this.categoryIcon = new St.Icon({
-            gicon: workspaceCategory.icon,
-            style_class: 'categorized-apps-icon'
-        });
-        this.categoryTitle = new St.Label({
-            text: workspaceCategory.title,
-            style_class: 'categorized-apps-title',
-            x_expand: true,
-            y_align: Clutter.ActorAlign.CENTER
-        });
+        /*         this.container = 
+        this.titleContainer = ;
+        this.categoryIcon = ;
+        this.categoryTitle = ;
         this.titleContainer.add_child(this.categoryIcon);
-        this.titleContainer.add_child(this.categoryTitle);
+        this.titleContainer.add_child(this.categoryTitle); */
         //this._grid.y_expand = true;
 
         let grid = this._grid;
@@ -47,9 +53,9 @@ var CategorizedAppGrid = class CategorizedAppGrid extends Object.getPrototypeOf(
             };
         })();
 
-        this.container.add_child(this.titleContainer);
+        /* this.container.add_child(this.titleContainer);
         this.container.add_child(this._grid);
-        this.actor.add_actor(this.container);
+        this.actor.add_actor(this.container); */
 
         this._usage = Shell.AppUsage.get_default();
 
