@@ -5,7 +5,8 @@ const WorkspaceEnhancerModule =
     Me.imports.module.workspaceEnhancer.workspaceEnhancerModule
         .WorkspaceEnhancerModule;
 const NoTitleBarModule = Me.imports.module.noTitleBarModule.NoTitleBarModule;
-const { GMenu, Gio } = imports.gi;
+const RequiredSettingsModule =
+    Me.imports.module.requiredSettingsModule.RequiredSettingsModule;
 
 //const AggregateMenu = imports.ui.panel.AggregateMenu;
 
@@ -17,6 +18,7 @@ function init() {
     log('INIT EXTENSION');
     log('--------------');
     modules = [
+        new RequiredSettingsModule(),
         new LeftPanelModule(),
         new WorkspaceEnhancerModule(),
         new NoTitleBarModule()
@@ -28,6 +30,7 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+
     modules.forEach(module => {
         module.enable();
     });
