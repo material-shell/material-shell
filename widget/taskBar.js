@@ -294,7 +294,7 @@ let TaskBarItem = GObject.registerClass(
                 reactive: true,
                 can_focus: true,
                 track_hover: true,
-                style_class: 'close-button',
+                style_class: 'task-close-button',
                 width: 24,
                 child: new St.Icon({
                     gicon: Gio.icon_new_for_string(

@@ -1,5 +1,6 @@
 const { Gio } = imports.gi;
 const Main = imports.ui.main;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported RequiredSettingsModule */
 var RequiredSettingsModule = class RequiredSettingsModule {
@@ -52,6 +53,33 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 from: setting,
                 signalId: signalId
             });
+        });
+
+        const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
+            Me.dir.get_path(),
+            Gio.SettingsSchemaSource.get_default(),
+            false
+        );
+        const bindingSettings = new Gio.Settings({
+            settings_schema: SchemaSource.lookup(Me.metadata['bindings'], true)
+        });
+        this.hotkeysToRemove = bindingSettings.list_keys().map(key => {
+            return bindingSettings.get_strv(key)[0];
+        });
+
+        let setting = new Gio.Settings({
+            schema_id: 'org.gnome.shell.keybindings'
+        });
+        setting.list_keys().forEach(key => {
+            let shortcut = setting.get_strv(key);
+            if (this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {
+                log(key, shortcut);
+                setting.set_strv(key, ['']);
+                Main.notify(
+                    'Material-shell',
+                    `This extension has unset the ${key} hotkey to override it`
+                );
+            }
         });
     }
 
