@@ -24,6 +24,8 @@
   background-color: rgba(255, 255, 255, 0.3); }
 
 #dash {
+  background-color: #191919;
+  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24);
   border-radius: 0;
   padding: 0;
   border: 0; }
