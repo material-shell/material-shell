@@ -11,7 +11,7 @@ var AppsButtonSubModule = class AppsButtonSubModule {
         this.panel = panel;
         let icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/gnome-symbolic.svg`
+                `${Me.path}/assets/icons/menu-symbolic.svg`
             ),
             style_class: 'workspace-icon'
         });
