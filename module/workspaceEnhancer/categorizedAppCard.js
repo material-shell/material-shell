@@ -2,7 +2,7 @@ const { Clutter, Shell, St, GObject } = imports.gi;
 const AppIcon = imports.ui.appDisplay.AppIcon;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatCard, MatCardTitle, MatCardContent } = Me.imports.material.card.card;
-const { Column, Row } = Me.imports.lib.Layout;
+const { Column, Row } = Me.imports.files.Layout;
 
 /* exported CategorizedAppCard */
 var CategorizedAppCard = GObject.registerClass(

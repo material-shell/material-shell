@@ -209,104 +209,12 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             this.currentWorkspace.workspaceEnhancer.backgroundContainer.show();
         });
 
-        const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-            Me.dir.get_path(),
-            Gio.SettingsSchemaSource.get_default(),
-            false
-        );
-        const settings = new Gio.Settings({
-            settings_schema: SchemaSource.lookup(Me.metadata['bindings'], true)
-        });
-        global.test_schema = SchemaSource;
-        global.test_settings = settings;
-
         this.dispatchExistingWindows();
 
         this._listenToDispatchWindow();
 
         //If it's a fake enable it's an internal reload
         if (!fake) {
-            Main.wm.addKeybinding(
-                'previous-window',
-                settings,
-                Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-                Shell.ActionMode.NORMAL,
-                () => {
-                    log('focus-previous');
-                    const currentMonitorIndex = global.display.get_current_monitor();
-                    const workspaceEnhancer =
-                        currentMonitorIndex === Main.layoutManager.primaryIndex
-                            ? this.workspaceManager.get_active_workspace()
-                                  .workspaceEnhancer
-                            : Main.layoutManager.monitors[currentMonitorIndex]
-                                  .workspaceEnhancer;
-                    workspaceEnhancer.focusPrevious();
-                }
-            );
-
-            Main.wm.addKeybinding(
-                'next-window',
-                settings,
-                Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-                Shell.ActionMode.NORMAL,
-                () => {
-                    log('focus-next');
-                    const currentMonitorIndex = global.display.get_current_monitor();
-                    const workspaceEnhancer =
-                        currentMonitorIndex === Main.layoutManager.primaryIndex
-                            ? this.workspaceManager.get_active_workspace()
-                                  .workspaceEnhancer
-                            : Main.layoutManager.monitors[currentMonitorIndex]
-                                  .workspaceEnhancer;
-                    workspaceEnhancer.focusNext();
-                }
-            );
-
-            Main.wm.addKeybinding(
-                'previous-workspace',
-                settings,
-                Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-                Shell.ActionMode.NORMAL,
-                () => {
-                    log('focus-previous-workspace');
-                    let currentIndex = this.workspaceManager.get_active_workspace_index();
-                    if (currentIndex > 0) {
-                        this.workspaceManager
-                            .get_workspace_by_index(currentIndex - 1)
-                            .activate(0);
-                    }
-                }
-            );
-
-            Main.wm.addKeybinding(
-                'next-workspace',
-                settings,
-                Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-                Shell.ActionMode.NORMAL,
-                () => {
-                    log('focus-next-workspace');
-                    let currentIndex = this.workspaceManager.get_active_workspace_index();
-                    if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                        this.workspaceManager
-                            .get_workspace_by_index(currentIndex + 1)
-                            .activate(0);
-                    }
-                }
-            );
-
-            Main.wm.addKeybinding(
-                'kill-focused-window',
-                settings,
-                Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-                Shell.ActionMode.NORMAL,
-                () => {
-                    log('kill current window');
-                    global.display
-                        .get_focus_window()
-                        .delete(global.get_current_time());
-                }
-            );
-
             log('registered to monitor changed');
             this.signalMonitorId = Main.layoutManager.connect(
                 'monitors-changed',

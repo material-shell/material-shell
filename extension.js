@@ -1,13 +1,13 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const LeftPanelModule =
-    Me.imports.module.leftPanel.leftPanelModule.LeftPanelModule;
-const WorkspaceEnhancerModule =
-    Me.imports.module.workspaceEnhancer.workspaceEnhancerModule
-        .WorkspaceEnhancerModule;
-const NoTitleBarModule = Me.imports.module.noTitleBarModule.NoTitleBarModule;
-const RequiredSettingsModule =
-    Me.imports.module.requiredSettingsModule.RequiredSettingsModule;
 
+const {
+    LeftPanelModule,
+    WorkspaceEnhancerModule,
+    NoTitleBarModule,
+    HotKeysModule,
+    RequiredSettingsModule
+} = Me.imports.files.Module;
+const TestModule = Me.imports.module;
 //const AggregateMenu = imports.ui.panel.AggregateMenu;
 
 let modules;
@@ -17,11 +17,13 @@ function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
+
     modules = [
         new RequiredSettingsModule(),
         new LeftPanelModule(),
         new WorkspaceEnhancerModule(),
-        new NoTitleBarModule()
+        new NoTitleBarModule(),
+        new HotKeysModule()
     ];
 }
 
@@ -30,7 +32,6 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-
     modules.forEach(module => {
         module.enable();
     });

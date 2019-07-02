@@ -376,6 +376,7 @@ let TaskBarItem = GObject.registerClass(
                 this.mouseData.dragged = false;
                 switch (event.get_button()) {
                     case 1:
+                        log('ACTIVATE FROM TASKBAR');
                         this.window.activate(global.get_current_time());
                         break;
 

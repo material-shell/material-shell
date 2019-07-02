@@ -37,6 +37,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 settingToForce.value,
                 settingToForce.valueType
             );
+
             let signalId = setting.connect(
                 `changed::${settingToForce.key}`,
                 () => {
@@ -70,6 +71,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
         let setting = new Gio.Settings({
             schema_id: 'org.gnome.shell.keybindings'
         });
+
         setting.list_keys().forEach(key => {
             let shortcut = setting.get_strv(key);
             if (this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {

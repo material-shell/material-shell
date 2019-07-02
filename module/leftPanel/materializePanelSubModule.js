@@ -16,4 +16,4 @@ var MaterializePanelSubModule = class MaterializePanelSubModule {
             Clutter.OffscreenRedirect.ALWAYS
         );
     }
-}
+};

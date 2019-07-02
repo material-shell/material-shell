@@ -13,7 +13,7 @@ const TilingManager =
 const CategorizedAppCard =
     Me.imports.module.workspaceEnhancer.categorizedAppCard.CategorizedAppCard;
 
-const { Stack } = Me.imports.lib.Layout;
+const { Stack } = Me.imports.files.Layout;
 
 var WorkspaceEnhancer = class WorkspaceEnhancer {
     constructor(monitor, category) {
@@ -106,6 +106,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             let newWindowToFocus =
                 this.windows[windowIndex - 1] || this.windows[0];
             if (newWindowToFocus) {
+                log('FOCUS NEW WINDOW AFTER REMOVING');
                 newWindowToFocus.focus(0);
             }
             //
@@ -125,6 +126,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         if (this.windowFocusIndex === this.windows.length - 1) {
             return;
         }
+        log('FOCUS NEXT');
         this.windows[this.windowFocusIndex + 1].activate(
             global.get_current_time()
         );
@@ -134,6 +136,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         if (this.windowFocusIndex === 0) {
             return;
         }
+        log('FOCUS prEVIOUS');
         this.windows[this.windowFocusIndex - 1].activate(
             global.get_current_time()
         );

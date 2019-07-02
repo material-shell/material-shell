@@ -1,7 +1,7 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 const Params = imports.misc.params;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Row } = Me.imports.lib.Layout;
+const { Row } = Me.imports.files.Layout;
 /* exported MatCard */
 var MatCard = GObject.registerClass(
     class MatCard extends St.Bin {

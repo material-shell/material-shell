@@ -12,12 +12,13 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
     constructor(focusedWindow, windows, monitor) {
         super(windows, monitor);
         this.focusedWindow = focusedWindow;
+        this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
         this.rightWindowContainer = new St.Widget();
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
-
+        this.overContainer.add_actor(this.transitionContainer);
         let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -94,7 +95,13 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
                 direction > 0 ? 0 : -workArea.width,
                 0
             );
-            global.window_group.add_actor(this.transitionContainer);
+            this.overContainer.set_clip(
+                this.monitor.x,
+                this.monitor.y,
+                this.monitor.width,
+                this.monitor.height
+            );
+            global.window_group.add_actor(this.overContainer);
             this.animationInProgress = true;
         }
 
@@ -116,7 +123,7 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
             .forEach(window => {
                 window.reparent(global.window_group);
             });
-        global.window_group.remove_child(this.transitionContainer);
+        global.window_group.remove_child(this.overContainer);
         this.onTile();
     }
 };
