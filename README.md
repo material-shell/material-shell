@@ -4,6 +4,7 @@ Following my earlier work on [Material Awesome](https://github.com/PapyElGringo/
 
 ### Discord
 Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://discord.gg/vBb7D9a)
+#
 #### STATUS: BETA
 #### REQUIRE: Gnome-shell 3.32.x
 
@@ -12,4 +13,4 @@ Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://disc
 ```
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-1) Open `gnome-tweaks` and activate `Material-shell` extension
+2) Open `gnome-tweaks` and activate `Material-shell` extension
