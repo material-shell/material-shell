@@ -9,9 +9,7 @@ var CategorizedAppCard = GObject.registerClass(
     class CategorizedAppCard extends MatCard {
         _init(workspaceCategory) {
             this.workspaceCategory = workspaceCategory;
-
             this._grid = new SimpleIconGrid(6);
-
             super._init({
                 style_class: 'categorized-app-card',
                 child: new Column({
@@ -33,48 +31,12 @@ var CategorizedAppCard = GObject.registerClass(
                     ]
                 })
             });
-
-            this._usage = Shell.AppUsage.get_default();
-            this._loadApps();
+            this.appSys = Shell.AppSystem.get_default();
         }
-        _loadApps() {
-            let mostUsed = this.filterAppsToMatchCategory(
-                this._usage.get_most_used().map(usageInfo => {
-                    return usageInfo.app_info;
-                })
-            );
-            let appInstalled = this.filterAppsToMatchCategory(
-                Shell.AppSystem.get_default()
-                    .get_installed()
-                    .filter(appInfo => {
-                        try {
-                            let id = appInfo.get_id(); // catch invalid file encodings
-                        } catch (e) {
-                            return false;
-                        }
-                        return appInfo.should_show();
-                    })
-            );
-
-            let appSys = Shell.AppSystem.get_default();
-
-            let allAppsId = [
-                ...new Set(
-                    mostUsed
-                        .map(appInfo => {
-                            return appInfo.get_id();
-                        })
-                        .concat(
-                            appInstalled.map(appInfo => {
-                                return appInfo.get_id();
-                            })
-                        )
-                )
-            ];
-
+        _loadApps(apps) {
             let icons = [];
-            for (let i = 0; i < Math.min(allAppsId.length, 12); i++) {
-                let app = appSys.lookup_app(allAppsId[i]);
+            for (let i = 0; i < Math.min(apps.length, 12); i++) {
+                let app = this.appSys.lookup_app(apps[i].get_id());
                 let appIcon = new AppIcon(app, {
                     isDraggable: false
                 });
@@ -114,6 +76,7 @@ var SimpleIconGrid = GObject.registerClass(
             this.nbColumns = nbColumns;
         }
         loadIcons(icons) {
+            this.destroy_all_children();
             this.nbRows = Math.ceil(icons.length / this.nbColumns);
             for (let i = 0; i < this.nbRows; i++) {
                 let row = new Row({

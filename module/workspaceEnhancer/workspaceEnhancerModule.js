@@ -33,7 +33,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     'Security',
                     'Game'
                 ],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'development',
@@ -43,7 +44,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Development'),
                 categoriesIncluded: ['Development'],
                 categoriesExcluded: [],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'social',
@@ -61,7 +63,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     'ContactManagement'
                 ],
                 categoriesExcluded: [],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'office',
@@ -71,7 +74,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Office'),
                 categoriesIncluded: ['Office', 'FileManager'],
                 categoriesExcluded: ['ContactManagement'],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'graphics',
@@ -81,7 +85,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Graphics'),
                 categoriesIncluded: ['Graphics'],
                 categoriesExcluded: [],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'multimedia',
@@ -91,7 +96,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Multimedia'),
                 categoriesIncluded: ['AudioVideo'],
                 categoriesExcluded: [],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'game',
@@ -101,7 +107,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Games'),
                 categoriesIncluded: ['Game'],
                 categoriesExcluded: [],
-                acceptAll: false
+                acceptAll: false,
+                acceptOrphans: false
             },
             {
                 key: 'other',
@@ -111,7 +118,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 title: _('Others'),
                 categoriesIncluded: [],
                 categoriesExcluded: [],
-                acceptAll: true
+                acceptAll: false,
+                acceptOrphans: true
             }
         ];
         this.secondaryWorkspaceCategory = {
@@ -122,8 +130,10 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             title: _('All applications'),
             categoriesIncluded: [],
             categoriesExcluded: [],
-            acceptAll: true
+            acceptAll: true,
+            acceptOrphans: false
         };
+        this.superWorkspaces = [];
         /* {
             AudioVideo: {},
             Development: {},
@@ -213,6 +223,17 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this._listenToDispatchWindow();
 
+        let signalId = Shell.AppSystem.get_default().connect(
+            'installed-changed',
+            () => {
+                this.dispatchApps();
+            }
+        );
+        this.signals.push({
+            from: Shell.AppSystem.get_default(),
+            id: signalId
+        });
+        this.dispatchApps();
         //If it's a fake enable it's an internal reload
         if (!fake) {
             log('registered to monitor changed');
@@ -291,8 +312,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
     }
 
     prepareMonitors() {
+        this.superWorkspaces = [];
         // For Each monitor
-        this.monitors.forEach(monitor => {
+        for (let monitor of this.monitors) {
             const isPrimary = Main.layoutManager.primaryIndex === monitor.index;
 
             // Create a spacer which will reserve the space on the screens for the taskbar
@@ -320,6 +342,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         monitor,
                         this.primaryWorkspaceCategories[w]
                     );
+                    this.superWorkspaces.push(workspace.workspaceEnhancer);
                 }
             }
             // If it's a secondary monitor
@@ -336,8 +359,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     monitor,
                     this.secondaryWorkspaceCategory
                 );
+                this.superWorkspaces.push(monitor.workspaceEnhancer);
             }
-        });
+        }
     }
 
     clearMonitors() {
@@ -673,5 +697,71 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(win.window_type);
+    }
+
+    dispatchApps() {
+        let usage = Shell.AppUsage.get_default();
+        let appSystem = Shell.AppSystem.get_default();
+        let appsInstalled = appSystem.get_installed().filter(appInfo => {
+            try {
+                let id = appInfo.get_id(); // catch invalid file encodings
+            } catch (e) {
+                return false;
+            }
+            return appInfo.should_show();
+        });
+
+        let appsSorted = appsInstalled.sort((a, b) => {
+            return usage.compare(a.get_id(), b.get_id());
+        });
+
+        let appsByCategoryKeys = {};
+        let orphans = [];
+        for (let app of appsSorted) {
+            let workspaceCategoryKeys = this.getWorkspaceCategoriesForApp(app);
+            let orphan = workspaceCategoryKeys.length === 0;
+            if (!orphan) {
+                for (let key of workspaceCategoryKeys) {
+                    appsByCategoryKeys[key] = appsByCategoryKeys[key] || [];
+                    appsByCategoryKeys[key].push(app);
+                }
+            } else {
+                orphans.push(app);
+            }
+        }
+
+        for (let superWorkspace of this.superWorkspaces) {
+            let apps;
+            if (superWorkspace.category.acceptAll) {
+                apps = appsSorted;
+            } else if (superWorkspace.category.acceptOrphans) {
+                apps = orphans;
+            } else {
+                apps = appsByCategoryKeys[superWorkspace.category.key];
+            }
+            superWorkspace.setApps(apps);
+        }
+    }
+
+    getWorkspaceCategoriesForApp(appInfo) {
+        const appCategoriesList = (appInfo.get_categories() || '').split(';');
+
+        let categoryKeys = [];
+        for (let category of this.primaryWorkspaceCategories) {
+            let flagIncluded = false;
+            let flagExcluded = false;
+            appCategoriesList.forEach(appCategory => {
+                flagIncluded =
+                    flagIncluded ||
+                    category.categoriesIncluded.indexOf(appCategory) >= 0;
+                flagExcluded =
+                    flagExcluded ||
+                    category.categoriesExcluded.indexOf(appCategory) >= 0;
+            });
+            if (flagIncluded && !flagExcluded) {
+                categoryKeys.push(category.key);
+            }
+        }
+        return categoryKeys;
     }
 };

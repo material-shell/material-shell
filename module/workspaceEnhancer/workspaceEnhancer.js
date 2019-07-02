@@ -238,5 +238,10 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             this.emit('windows-changed');
         });
     }
+
+    setApps(apps) {
+        this.apps = apps;
+        this.categorizedAppCard._loadApps(apps);
+    }
 };
 Signals.addSignalMethods(WorkspaceEnhancer.prototype);
