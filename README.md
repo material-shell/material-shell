@@ -14,3 +14,7 @@ Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://disc
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
 2) Open `gnome-tweaks` and activate `Material-shell` extension
+
+## Recommendations
+* Get [plata-theme](https://gitlab.com/tista500/plata-theme) GTK and Shell theme 
+* Get [Tela-icon-theme](https://github.com/vinceliuice/Tela-icon-theme) Icon theme
