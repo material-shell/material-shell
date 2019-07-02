@@ -19,9 +19,6 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
     }
 
     onWindowsChanged(windows) {

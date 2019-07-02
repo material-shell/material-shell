@@ -161,7 +161,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this.workspaceManager
             .get_active_workspace()
-            .workspaceEnhancer.panel.show();
+            .workspaceEnhancer.frontendContainer.show();
         this.workspaceManager
             .get_active_workspace()
             .workspaceEnhancer.backgroundContainer.show();
@@ -181,9 +181,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         workspaceEnhancer = monitor.workspaceEnhancer;
                     }
                     if (isFullscreen) {
-                        workspaceEnhancer.panel.hide();
+                        workspaceEnhancer.frontendContainer.hide();
                     } else {
-                        workspaceEnhancer.panel.show();
+                        workspaceEnhancer.frontendContainer.show();
                     }
                 });
             }
@@ -212,10 +212,10 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this.workspaceManager.connect('active-workspace-changed', () => {
             let newWorkspace = this.workspaceManager.get_active_workspace();
-            this.currentWorkspace.workspaceEnhancer.panel.hide();
+            this.currentWorkspace.workspaceEnhancer.frontendContainer.hide();
             this.currentWorkspace.workspaceEnhancer.backgroundContainer.hide();
             this.currentWorkspace = newWorkspace;
-            this.currentWorkspace.workspaceEnhancer.panel.show();
+            this.currentWorkspace.workspaceEnhancer.frontendContainer.show();
             this.currentWorkspace.workspaceEnhancer.backgroundContainer.show();
         });
 
@@ -229,11 +229,14 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 this.dispatchApps();
             }
         );
+
         this.signals.push({
             from: Shell.AppSystem.get_default(),
             id: signalId
         });
+
         this.dispatchApps();
+
         //If it's a fake enable it's an internal reload
         if (!fake) {
             log('registered to monitor changed');
@@ -424,7 +427,8 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 let curWs = global.workspace_manager.get_workspace_by_index(
                     from
                 );
-                this._switchData.previousPanel = curWs.workspaceEnhancer.panel;
+                this._switchData.previousPanel =
+                    curWs.workspaceEnhancer.frontendContainer;
                 this._switchData.previousPanel.show();
                 this._switchData.previousPanel.reparent(
                     this._switchData.curGroup
@@ -456,7 +460,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                     }
 
                     let info = this._switchData.surroundings[dir];
-                    info.panel = ws.workspaceEnhancer.panel;
+                    info.panel = ws.workspaceEnhancer.frontendContainer;
                     info.panel.show();
                     info.backgroundContainer =
                         ws.workspaceEnhancer.backgroundContainer;
@@ -503,7 +507,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
                 global.workspace_manager
                     .get_active_workspace()
-                    .workspaceEnhancer.panel.show();
+                    .workspaceEnhancer.frontendContainer.show();
                 global.workspace_manager
                     .get_active_workspace()
                     .workspaceEnhancer.backgroundContainer.show();
@@ -524,7 +528,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
-                currentWorkspace.workspaceEnhancer.panel.show();
+                currentWorkspace.workspaceEnhancer.frontendContainer.show();
                 currentWorkspace.workspaceEnhancer.backgroundContainer.show();
 
                 return result;

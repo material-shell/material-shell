@@ -93,3 +93,6 @@
 #panel {
   background-color: #191919;
   box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24); }
+
+.backdrop-container {
+  background: rgba(0, 0, 0, 0.7); }

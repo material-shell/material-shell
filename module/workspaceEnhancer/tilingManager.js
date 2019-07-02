@@ -7,6 +7,8 @@ const MaximizeLayout =
     Me.imports.module.workspaceEnhancer.tilingLayouts.maximize.MaximizeLayout;
 const GridLayout =
     Me.imports.module.workspaceEnhancer.tilingLayouts.grid.GridLayout;
+const DialogLayout =
+    Me.imports.module.workspaceEnhancer.tilingLayouts.dialog.DialogLayout;
 /* exported TilingManager */
 var TilingManager = class TilingManager {
     constructor(workspaceEnhancer) {
@@ -25,17 +27,25 @@ var TilingManager = class TilingManager {
                 this.onWindowFocusedChanged(window, oldWindow);
             }
         );
+
+        this.dialogLayout = new DialogLayout(
+            this.windows,
+            this.workspaceEnhancer.monitor
+        );
     }
 
     onWindowsChanged() {
         this.windows = this.getFilteredWindows();
         this.registerWindowsSignal();
-        this.layout.onWindowsChanged(this.windows);
+        let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
+        this.dialogLayout.onWindowsChanged(dialogWindows);
+        this.layout.onWindowsChanged(regularWindows);
         this.tileWindows();
     }
 
     onWindowFocusedChanged(window, oldWindow) {
         this.layout.onFocusChanged(window, oldWindow);
+        this.dialogLayout.onFocusChanged(window, oldWindow);
     }
 
     registerWindowsSignal() {
@@ -73,6 +83,27 @@ var TilingManager = class TilingManager {
         });
     }
 
+    getDialogAndRegularWindows() {
+        let dialogWindows = [];
+        let regularWindows = [];
+
+        let dialogTypes = [
+            Meta.WindowType.DIALOG,
+            Meta.WindowType.MODAL_DIALOG,
+            Meta.WindowType.UTILITY
+        ];
+
+        for (let window of this.windows) {
+            if (dialogTypes.includes(window.window_type)) {
+                dialogWindows.push(window);
+            } else {
+                regularWindows.push(window);
+            }
+        }
+
+        return [dialogWindows, regularWindows];
+    }
+
     setLayout(layout) {
         if (this.layout) {
             this.layout.onDestroy();
@@ -102,6 +133,7 @@ var TilingManager = class TilingManager {
 
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.layout.onTile();
+            this.dialogLayout.onTile();
             this.tilingInProgress = false;
         });
     }

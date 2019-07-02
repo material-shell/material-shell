@@ -25,6 +25,8 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         this.panel = new TopPanel(this);
 
         this.backgroundContainer = new St.Widget();
+        this.frontendContainer = new St.Widget();
+        this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
         // this.backgroundContainer = new Meta.BackgroundGroup({ reactive: true });
 
         this.bgManager = new Background.BackgroundManager({
@@ -66,12 +68,13 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
 
         const offsetX = this.monitorIsPrimary ? 48 : 0;
         if (this.monitorIsPrimary) {
-            this.panel.hide();
+            this.frontendContainer.hide();
             this.backgroundContainer.hide();
         }
-        Main.layoutManager.uiGroup.add_child(this.panel);
+        this.frontendContainer.add_child(this.panel);
+        Main.layoutManager.uiGroup.add_child(this.frontendContainer);
 
-        this.panel.set_position(this.monitor.x + offsetX, this.monitor.y);
+        this.panel.set_position(0 + offsetX, 0);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
     }
 
