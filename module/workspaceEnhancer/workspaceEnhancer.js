@@ -79,7 +79,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     }
 
     destroy() {
-        log('destroy workspaceEnhancer');
         this.panel.destroy();
         this.backgroundContainer.destroy();
         this.tilingManager.unregisterAllWindowsSignal();
@@ -109,7 +108,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             let newWindowToFocus =
                 this.windows[windowIndex - 1] || this.windows[0];
             if (newWindowToFocus) {
-                log('FOCUS NEW WINDOW AFTER REMOVING');
                 newWindowToFocus.focus(0);
             }
             //
@@ -129,7 +127,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         if (this.windowFocusIndex === this.windows.length - 1) {
             return;
         }
-        log('FOCUS NEXT');
         this.windows[this.windowFocusIndex + 1].activate(
             global.get_current_time()
         );
@@ -139,7 +136,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         if (this.windowFocusIndex === 0) {
             return;
         }
-        log('FOCUS prEVIOUS');
         this.windows[this.windowFocusIndex - 1].activate(
             global.get_current_time()
         );
@@ -214,7 +210,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     }
 
     unShowBackground() {
-        log('UnSHOW');
         this.windows.forEach(window => {
             window.unminimize();
         });
@@ -235,7 +230,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             this.emitInProgress = false;
 
             if (this.destroyed) {
-                log('emit into destroyed');
                 return;
             }
             this.emit('windows-changed');

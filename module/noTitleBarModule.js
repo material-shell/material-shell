@@ -80,15 +80,12 @@ var NoTitleBarModule = class NoTitleBarModule {
     }
 
     _handleWindow(win) {
-        //global.log("GTKTitleBar: windowDecoration - _handleWindow + win: " + win);
-
         let handleWin = false;
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
 
         if (!types.includes(win.window_type)) return;
 
-        //global.log("GTKTitleBar: windowDecoration - _handleWindow + motifHints??: " + (isWindow(win) && !win.is_client_decorated()));
         let state = this._getMotifHints(win);
         handleWin = !win.is_client_decorated();
         handleWin = handleWin && (state[2] != '0x2' && state[2] != '0x0');

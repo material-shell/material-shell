@@ -26,10 +26,8 @@ var AppsButtonSubModule = class AppsButtonSubModule {
 
         button.connect('button-press-event', () => {
             if (!Main.overview._shown) {
-                log('show apps');
                 Main.overview.viewSelector.showApps();
             } else {
-                log('hide apps');
                 Main.overview.hide();
             }
         });

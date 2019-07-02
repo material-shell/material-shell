@@ -239,15 +239,12 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         //If it's a fake enable it's an internal reload
         if (!fake) {
-            log('registered to monitor changed');
             this.signalMonitorId = Main.layoutManager.connect(
                 'monitors-changed',
                 (test, test1, test2) => {
                     if (this.monitorChangeInProgress) {
-                        log('monitors changed already in progress');
                         return;
                     }
-                    log('monitors changed triggered');
                     this.monitorChangeInProgress = true;
                     this.disable(true);
                     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -264,7 +261,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         if (!this.enabled) {
             return;
         }
-        log('DISABLE WORKSPACE ENHANCER FAKE:', fake);
         //Re show the default Background
         global.window_group.get_child_at_index(0).show();
         this.signals.forEach(signal => {
@@ -297,13 +293,11 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 this.primaryWorkspaceCategories.length >
                 this.workspaceManager.n_workspaces
             ) {
-                log('CREATE NEW WORKSPACE');
                 this.workspaceManager.append_new_workspace(
                     false,
                     global.get_current_time()
                 );
             } else {
-                log('REMOVE LAST WORKSPACE');
                 this.workspaceManager.remove_workspace(
                     this.workspaceManager.get_workspace_by_index(
                         this.workspaceManager.n_workspaces - 1
@@ -368,7 +362,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
     }
 
     clearMonitors() {
-        log(this.monitors);
         this.monitors.forEach(monitor => {
             const isPrimary = Main.layoutManager.primaryIndex === monitor.index;
             monitor.topBarSpacer.destroy();
@@ -386,7 +379,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
             workspace.workspaceEnhancer.destroy();
         }
-        log('clearMonitor Finished');
     }
 
     overrideWindowManagerFunctions() {
@@ -595,7 +587,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 (display1, display2, window, op) => {
                     if (op !== Meta.GrabOp.MOVING) return;
                     this.grabInProgress = true;
-                    log('op-start', display1, display2, window, op);
                     this.grabWindow = window;
                     window.grabbed = true;
                     this.grabSignal = window.connect('position-changed', () => {
@@ -620,7 +611,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                             !this.grabWindow.workspaceEnhancer.tilingManager
                                 .tilingInProgress
                         ) {
-                            log('Window hovered!', windowHovered.title);
                             this.grabWindow.workspaceEnhancer.swapWindows(
                                 this.grabWindow,
                                 windowHovered
@@ -635,7 +625,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             from: global.display,
             id: global.display.connect('grab-op-end', () => {
                 if (this.grabInProgress) {
-                    log('grab-op-end');
                     this.grabInProgress = false;
                     this.grabWindow.disconnect(this.grabSignal);
                     this.grabWindow.grabbed = false;
@@ -658,12 +647,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         this.monitorChangeInProgress
                     )
                         return;
-                    log(
-                        'enter-monitor',
-                        monitorIndex,
-                        'primary is ',
-                        Main.layoutManager.primaryIndex
-                    );
                     Main.layoutManager.monitors[
                         monitorIndex
                     ].workspaceEnhancer.addWindow(window);
@@ -683,12 +666,6 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                         this.monitorChangeInProgress
                     )
                         return;
-                    log(
-                        'left-monitor',
-                        monitorIndex,
-                        'primary is ',
-                        Main.layoutManager.primaryIndex
-                    );
                     Main.layoutManager.monitors[
                         monitorIndex
                     ].workspaceEnhancer.removeWindow(window);

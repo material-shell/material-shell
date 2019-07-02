@@ -104,7 +104,6 @@ var TaskBar = GObject.registerClass(
         }
 
         updateItems() {
-            log('update items of taskbar');
             this.items.forEach(item => {
                 item.destroy();
             });
@@ -330,7 +329,6 @@ let TaskBarItem = GObject.registerClass(
             };
 
             this.connect('button-press-event', (_, event) => {
-                log('item pressed');
                 this.mouseData.pressed = true;
                 this.mouseData.originalCoords = event.get_coords();
                 this.mouseData.originalSequence = event.get_event_sequence();
@@ -344,7 +342,6 @@ let TaskBarItem = GObject.registerClass(
                             48 &&
                         !this.mouseData.dragged
                     ) {
-                        log('start drag');
                         this.mouseData.dragged = true;
                         this._draggable.startDrag(
                             this.mouseData.originalCoords[0],
@@ -359,7 +356,6 @@ let TaskBarItem = GObject.registerClass(
 
             this.connect('leave-event', (actor, event) => {
                 if (this.mouseData.pressed && !this.mouseData.dragged) {
-                    log('start drag');
                     this.mouseData.dragged = true;
                     this._draggable.startDrag(
                         this.mouseData.originalCoords[0],
@@ -371,12 +367,10 @@ let TaskBarItem = GObject.registerClass(
             });
 
             this.connect('button-release-event', (_, event) => {
-                log('item released');
                 this.mouseData.pressed = false;
                 this.mouseData.dragged = false;
                 switch (event.get_button()) {
                     case 1:
-                        log('ACTIVATE FROM TASKBAR');
                         this.window.activate(global.get_current_time());
                         break;
 
@@ -413,30 +407,19 @@ let TaskBarItem = GObject.registerClass(
                 manualMode: true
             });
 
-            this._draggable.connect('drag-begin', () => {
-                log('drag begin');
-            });
-
-            this._draggable.connect('drag-cancelled', () => {
-                log('drag canceled');
-            });
-
             this._draggable.connect('drag-end', (_, time, success, test) => {
-                log('drag end', time, success, test);
                 this.mouseData.pressed = false;
                 this.mouseData.dragged = false;
             });
         }
 
         handleDragOver(source, actor, x, y, time) {
-            log('drag over', x < this.width / 2 ? 'before' : 'after');
             //return this._workspace.handleDragOver(source, actor, x, y, time);
             this.emit('drag-over', x < this.width / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }
 
         acceptDrop(source, actor, x, y, time) {
-            log('drag drop', source, actor, x, y, time);
             //this._workspace.acceptDrop(source, actor, x, y, time);
             this.emit('drag-dropped');
             return true;

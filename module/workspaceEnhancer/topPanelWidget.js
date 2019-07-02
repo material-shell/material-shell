@@ -39,7 +39,9 @@ var TopPanel = GObject.registerClass(
             this._leftContainer.add_child(this.addButton);
             this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
-                icon_name: 'view-grid-symbol',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/view-quilt-symbolic.svg`
+                ),
                 style_class: 'workspace-icon'
             });
 
@@ -53,11 +55,14 @@ var TopPanel = GObject.registerClass(
 
             button.connect('button-press-event', () => {
                 workspaceEnhancer.nextTiling();
-                this.tilingIcon.set_icon_name(
+                this.tilingIcon.gicon =
                     workspaceEnhancer.tilingLayout === 'tileRight'
-                        ? 'view-grid-symbol'
-                        : 'window-maximize-symbolic'
-                );
+                        ? Gio.icon_new_for_string(
+                              `${Me.path}/assets/icons/view-quilt-symbolic.svg`
+                          )
+                        : Gio.icon_new_for_string(
+                              `${Me.path}/assets/icons/tab-symbolic.svg`
+                          );
             });
 
             this.tilingButton = new RippleContainer(button);

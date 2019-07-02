@@ -75,7 +75,6 @@ var RequiredSettingsModule = class RequiredSettingsModule {
         setting.list_keys().forEach(key => {
             let shortcut = setting.get_strv(key);
             if (this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {
-                log(key, shortcut);
                 setting.set_strv(key, ['']);
                 Main.notify(
                     'Material-shell',
@@ -101,40 +100,5 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 `This extension has override the ${key} setting to ${value}`
             );
         }
-    }
-
-    forceStaticWorkspaces() {
-        this.mutterSettings.connect(
-            'changed::dynamic-workspaces',
-            (_, value, test) => {
-                if (this.mutterSettings.get('dynamic-workspaces') === true) {
-                    log('set3');
-                    this.mutterSettings.set('dynamic-workspaces', false);
-                }
-            }
-        );
-        log('set1');
-        this.mutterSettings['set_' + 'boolean']('dynamic-workspaces', false);
-        log('set2');
-        this.mutterSettings.set('dynamic-workspaces', true);
-    }
-
-    forceWorkspacesOnlyOnPrimary() {
-        this.mutterSettings.connect(
-            'changed::workspaces-only-on-primary',
-            (_, value, test) => {
-                if (
-                    !this.mutterSettings.get_boolean(
-                        'workspaces-only-on-primary'
-                    )
-                ) {
-                    this.mutterSettings.set_boolean(
-                        'workspaces-only-on-primary',
-                        true
-                    );
-                }
-            }
-        );
-        this.mutterSettings.set_boolean('workspaces-only-on-primary', true);
     }
 };

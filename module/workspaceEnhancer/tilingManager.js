@@ -90,7 +90,8 @@ var TilingManager = class TilingManager {
         let dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY
+            Meta.WindowType.UTILITY,
+            Meta.WindowType.SPLASHSCREEN
         ];
 
         for (let window of this.windows) {

@@ -23,7 +23,6 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                log('focus-previous');
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const workspaceEnhancer =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
@@ -41,7 +40,6 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                log('focus-next');
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const workspaceEnhancer =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
@@ -59,7 +57,6 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                log('focus-previous-workspace');
                 let currentIndex = this.workspaceManager.get_active_workspace_index();
                 if (currentIndex > 0) {
                     this.workspaceManager
@@ -75,7 +72,6 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                log('focus-next-workspace');
                 let currentIndex = this.workspaceManager.get_active_workspace_index();
                 if (currentIndex < this.workspaceManager.n_workspaces - 1) {
                     this.workspaceManager
@@ -91,7 +87,6 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                log('kill current window');
                 global.display
                     .get_focus_window()
                     .delete(global.get_current_time());

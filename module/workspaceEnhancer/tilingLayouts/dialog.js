@@ -20,7 +20,6 @@ var DialogLayout = class DialogLayout extends TilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        log('FocusChanged in dialog');
         this.onTile();
     }
 
@@ -97,17 +96,14 @@ var BackdropContainer = GObject.registerClass(
 
             window.connect('notify::visible', () => {
                 this.visible = window.visible;
-                log('CHANGE VISIbILITY', this.visible);
             });
             window.connect('parent-set', () => {
-                log('PARENT CHANGED');
                 this.followWindow();
             });
             this.connect('parent-set', () => {
                 if (this.destroyed) return;
                 //this.raise_top();
                 if (this.get_parent() === this.window.get_parent()) {
-                    log('PARENT CHANGED2');
                     GLib.idle_add(GLib.PRIORITY_HIGH, () => {
                         this.get_parent().set_child_above_sibling(
                             this.window,
@@ -115,7 +111,6 @@ var BackdropContainer = GObject.registerClass(
                         );
                     });
                 } else {
-                    log('PARENT CHANGED3');
                     this.followWindow();
                 }
             });

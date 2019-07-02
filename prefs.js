@@ -5,9 +5,7 @@ const Lang = imports.lang;
 
 // Extension imports
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-function init() {
-    log('TEST YEAH');
-}
+function init() {}
 
 const pretty_names = {
     'previous-window': 'Focus the previous window',
