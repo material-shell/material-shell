@@ -697,13 +697,15 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
         });
 
         let appsByCategoryKeys = {};
+        for (let workspaceCategory of this.primaryWorkspaceCategories) {
+            appsByCategoryKeys[workspaceCategory.key] = [];
+        }
         let orphans = [];
         for (let app of appsSorted) {
             let workspaceCategoryKeys = this.getWorkspaceCategoriesForApp(app);
             let orphan = workspaceCategoryKeys.length === 0;
             if (!orphan) {
                 for (let key of workspaceCategoryKeys) {
-                    appsByCategoryKeys[key] = appsByCategoryKeys[key] || [];
                     appsByCategoryKeys[key].push(app);
                 }
             } else {
