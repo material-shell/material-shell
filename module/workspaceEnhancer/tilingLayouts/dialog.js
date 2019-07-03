@@ -34,7 +34,7 @@ var DialogLayout = class DialogLayout extends TilingLayout {
             let backdropContainer = this.getBackdropContainer(metaWindow);
             //backdropContainer.reparent(global.window_group);
             backdropContainer.raise_top();
-            metaWindow.raise(global.get_current_time());
+            metaWindow.raise();
             window.raise_top();
             backdropContainer.set_position(workArea.x, workArea.y);
             backdropContainer.set_size(workArea.width, workArea.height);
@@ -55,6 +55,7 @@ var DialogLayout = class DialogLayout extends TilingLayout {
     }
 
     getBackdropContainer(metaWindow) {
+        global.tw = metaWindow;
         let backdropContainer = this.backdropContainers[metaWindow.get_id()];
         if (!backdropContainer) {
             backdropContainer = this.newBackropContainer(metaWindow);
@@ -71,7 +72,7 @@ var DialogLayout = class DialogLayout extends TilingLayout {
 };
 
 var BackdropContainer = GObject.registerClass(
-    class BackdropContainer extends St.Bin {
+    class BackdropContainer extends St.Widget {
         _init(window) {
             super._init({
                 reactive: false

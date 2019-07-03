@@ -82,9 +82,12 @@ var NoTitleBarModule = class NoTitleBarModule {
     _handleWindow(win) {
         let handleWin = false;
         let meta = Meta.WindowType;
-        let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
-
-        if (!types.includes(win.window_type)) return;
+        let types = [meta.NORMAL];
+        if (
+            !types.includes(win.window_type) ||
+            win.find_root_ancestor() !== win
+        )
+            return;
 
         let state = this._getMotifHints(win);
         handleWin = !win.is_client_decorated();

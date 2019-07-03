@@ -90,12 +90,14 @@ var TilingManager = class TilingManager {
         let dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY,
-            Meta.WindowType.SPLASHSCREEN
+            Meta.WindowType.UTILITY
         ];
 
         for (let window of this.windows) {
-            if (dialogTypes.includes(window.window_type)) {
+            if (
+                dialogTypes.includes(window.window_type) ||
+                window.find_root_ancestor() !== window
+            ) {
                 dialogWindows.push(window);
             } else {
                 regularWindows.push(window);
