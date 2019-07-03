@@ -14,7 +14,19 @@ Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://disc
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
 2) Open `gnome-tweaks` and activate `Material-shell` extension
+#
+## Workflow Hotkeys
+#### Desktop navigation
+* `Super+W` Navigate to the upper workspace/category.
+* `Super+S` Navigate to the lower workspace/category.
+* `Super+A` Focus the window at the left of the current window.
+* `Super+D` Focus the window at the right of the current window.
 
+#### Window manipulation
+* `Super+Q` Kill the current window focused.
+* `Super+[MouseDrag]` Move window around.
+
+#
 ## Recommendations
 * Get [plata-theme](https://gitlab.com/tista500/plata-theme) GTK and Shell theme 
 * Get [Tela-icon-theme](https://github.com/vinceliuice/Tela-icon-theme) Icon theme
