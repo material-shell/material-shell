@@ -166,28 +166,31 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
             .get_active_workspace()
             .workspaceEnhancer.backgroundContainer.show();
 
-        global.display.connect(
-            'in-fullscreen-changed',
-            (test, test2, test3) => {
-                Main.layoutManager.monitors.forEach(monitor => {
-                    let isFullscreen = global.display.get_monitor_in_fullscreen(
-                        monitor.index
-                    );
-                    let workspaceEnhancer;
-                    if (Main.layoutManager.primaryIndex === monitor.index) {
-                        workspaceEnhancer = this.workspaceManager.get_active_workspace()
-                            .workspaceEnhancer;
-                    } else {
-                        workspaceEnhancer = monitor.workspaceEnhancer;
-                    }
-                    if (isFullscreen) {
-                        workspaceEnhancer.frontendContainer.hide();
-                    } else {
-                        workspaceEnhancer.frontendContainer.show();
-                    }
-                });
-            }
-        );
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect(
+                'in-fullscreen-changed',
+                (test, test2, test3) => {
+                    Main.layoutManager.monitors.forEach(monitor => {
+                        let isFullscreen = global.display.get_monitor_in_fullscreen(
+                            monitor.index
+                        );
+                        let workspaceEnhancer;
+                        if (Main.layoutManager.primaryIndex === monitor.index) {
+                            workspaceEnhancer = this.workspaceManager.get_active_workspace()
+                                .workspaceEnhancer;
+                        } else {
+                            workspaceEnhancer = monitor.workspaceEnhancer;
+                        }
+                        if (isFullscreen) {
+                            workspaceEnhancer.frontendContainer.hide();
+                        } else {
+                            workspaceEnhancer.frontendContainer.show();
+                        }
+                    });
+                }
+            )
+        });
 
         this.legacyPanelGhost = Main.overview._panelGhost;
         this.legacyPanelGhostIndex = Main.overview._overview
@@ -210,29 +213,33 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
         this.overrideWindowManagerFunctions();
 
-        this.workspaceManager.connect('active-workspace-changed', () => {
-            let newWorkspace = this.workspaceManager.get_active_workspace();
-            this.currentWorkspace.workspaceEnhancer.frontendContainer.hide();
-            this.currentWorkspace.workspaceEnhancer.backgroundContainer.hide();
-            this.currentWorkspace = newWorkspace;
-            this.currentWorkspace.workspaceEnhancer.frontendContainer.show();
-            this.currentWorkspace.workspaceEnhancer.backgroundContainer.show();
+        this.signals.push({
+            from: this.workspaceManager,
+            id: this.workspaceManager.connect(
+                'active-workspace-changed',
+                () => {
+                    let newWorkspace = this.workspaceManager.get_active_workspace();
+                    this.currentWorkspace.workspaceEnhancer.frontendContainer.hide();
+                    this.currentWorkspace.workspaceEnhancer.backgroundContainer.hide();
+                    this.currentWorkspace = newWorkspace;
+                    this.currentWorkspace.workspaceEnhancer.frontendContainer.show();
+                    this.currentWorkspace.workspaceEnhancer.backgroundContainer.show();
+                }
+            )
         });
 
         this.dispatchExistingWindows();
 
         this._listenToDispatchWindow();
 
-        let signalId = Shell.AppSystem.get_default().connect(
-            'installed-changed',
-            () => {
-                this.dispatchApps();
-            }
-        );
-
         this.signals.push({
             from: Shell.AppSystem.get_default(),
-            id: signalId
+            id: Shell.AppSystem.get_default().connect(
+                'installed-changed',
+                () => {
+                    this.dispatchApps();
+                }
+            )
         });
 
         this.dispatchApps();

@@ -63,14 +63,9 @@ var TaskBar = GObject.registerClass(
 
                     if (!nextItem) return;
 
-                    // Delay the new class otherwise it's break the style system Dunno why
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                        nextItem.add_style_class_name('active');
-                    });
-
-                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
-                        this._animateActiveIndicator();
-                    });
+                    //if you change the class before animate the indicator there is an issue for retrieving the item.x
+                    this._animateActiveIndicator();
+                    nextItem.add_style_class_name('active');
                 }
             );
 
@@ -80,7 +75,7 @@ var TaskBar = GObject.registerClass(
         }
 
         on_destroy() {
-            global.display.disconnect(this.focusId);
+            this.workspaceEnhancer.disconnect(this.focusId);
         }
 
         handleDragOver() {
@@ -223,7 +218,6 @@ var TaskBar = GObject.registerClass(
                             }
                         );
                     }
-
                     Tweener.addTween(this.taskActiveIndicator, {
                         x: taskBarItem.x,
                         width: taskBarItem.width,
@@ -350,7 +344,6 @@ let TaskBarItem = GObject.registerClass(
                             this.mouseData.originalSequence
                         );
                     }
-                    //log('item motion', Math.abs(this.mouseData.originalCoords[0] - coords[0]), Math.abs(this.mouseData.originalCoords[1] - coords[1]));
                 }
             });
 

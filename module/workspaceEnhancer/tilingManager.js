@@ -16,6 +16,7 @@ var TilingManager = class TilingManager {
         this.workspaceManager = global.workspace_manager;
         this.grabInProgress = false;
         this.signals = [];
+        this.windows = [];
         this.setLayout(workspaceEnhancer.tilingLayout);
         this.workspaceEnhancer.connect('windows-changed', () => {
             this.onWindowsChanged();

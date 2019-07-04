@@ -52,7 +52,9 @@ var WorkspaceList = GObject.registerClass(
                     i
                 );
                 workspaceButton.connect('button-press-event', () => {
-                    workspaceButton.workspace.activate(0);
+                    workspaceButton.workspace.activate(
+                        global.get_current_time()
+                    );
                 });
                 let rippleContainer = new RippleContainer(workspaceButton);
                 this.buttonList.add_child(rippleContainer);

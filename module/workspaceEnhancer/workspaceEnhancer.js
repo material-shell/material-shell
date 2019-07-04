@@ -108,9 +108,8 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             let newWindowToFocus =
                 this.windows[windowIndex - 1] || this.windows[0];
             if (newWindowToFocus) {
-                newWindowToFocus.focus(0);
+                newWindowToFocus.focus(global.get_current_time());
             }
-            //
         }
         this.throttleEmit();
     }
@@ -221,7 +220,6 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     }
 
     throttleEmit() {
-        //log('throttle emit');
         if (this.emitInProgress) {
             return;
         }

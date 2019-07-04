@@ -7,8 +7,6 @@ const {
     HotKeysModule,
     RequiredSettingsModule
 } = Me.imports.files.Module;
-const TestModule = Me.imports.module;
-//const AggregateMenu = imports.ui.panel.AggregateMenu;
 
 let modules;
 

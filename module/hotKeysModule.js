@@ -61,7 +61,7 @@ var HotKeysModule = class HotKeysModule {
                 if (currentIndex > 0) {
                     this.workspaceManager
                         .get_workspace_by_index(currentIndex - 1)
-                        .activate(0);
+                        .activate(global.get_current_time());
                 }
             }
         );
@@ -76,7 +76,7 @@ var HotKeysModule = class HotKeysModule {
                 if (currentIndex < this.workspaceManager.n_workspaces - 1) {
                     this.workspaceManager
                         .get_workspace_by_index(currentIndex + 1)
-                        .activate(0);
+                        .activate(global.get_current_time());
                 }
             }
         );

@@ -74,7 +74,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
 
         setting.list_keys().forEach(key => {
             let shortcut = setting.get_strv(key);
-            if (this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {
+            if (shortcut[0] && this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {
                 setting.set_strv(key, ['']);
                 Main.notify(
                     'Material-shell',
