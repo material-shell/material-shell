@@ -1,0 +1,1 @@
+var getScalingFactor = () => 2

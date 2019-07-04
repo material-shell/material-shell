@@ -1,5 +1,7 @@
 const Main = imports.ui.main;
 const { St } = imports.gi;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const utils = Me.imports.utils;
 
 /* exported PanelToLeftSubModule */
 var PanelToLeftSubModule = class PanelToLeftSubModule {
@@ -24,8 +26,8 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             affectsStruts: true,
             trackFullscreen: true
         });
-        this.dashSpacer.set_size(48, Main.overview._controls._group.height);
-        this.panelBox.set_size(48, this.primaryMonitor.height);
+        this.dashSpacer.set_size(48 * utils.getScalingFactor(), Main.overview._controls._group.height);
+        this.panelBox.set_size(48 * utils.getScalingFactor(), this.primaryMonitor.height);
 
         this.panelBox.set_position(
             this.primaryMonitor.x,
@@ -37,10 +39,10 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             () => {
                 this.primaryMonitor = Main.layoutManager.primaryMonitor;
                 this.dashSpacer.set_size(
-                    48,
+                    48 * utils.getScalingFactor(),
                     Main.overview._controls._group.height
                 );
-                this.panelBox.set_size(48, this.primaryMonitor.height);
+                this.panelBox.set_size(48 * utils.getScalingFactor(), this.primaryMonitor.height);
                 this.panelBox.set_position(
                     this.primaryMonitor.x,
                     this.primaryMonitor.y

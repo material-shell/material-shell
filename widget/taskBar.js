@@ -333,7 +333,7 @@ let TaskBarItem = GObject.registerClass(
                     let coords = event.get_coords();
                     if (
                         Math.abs(this.mouseData.originalCoords[0] - coords[0]) >
-                            48 &&
+                        (48*2) &&
                         !this.mouseData.dragged
                     ) {
                         this.mouseData.dragged = true;

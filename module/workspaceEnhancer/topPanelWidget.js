@@ -6,6 +6,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
 const TaskBar = Me.imports.widget.taskBar.TaskBar;
+const utils = Me.imports.utils;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
@@ -74,13 +75,13 @@ var TopPanel = GObject.registerClass(
                 0,
                 this.workspaceEnhancer.monitor.index ===
                 Main.layoutManager.primaryIndex
-                    ? this.workspaceEnhancer.monitor.width - 48
+                    ? this.workspaceEnhancer.monitor.width - (48 * utils.getScalingFactor())
                     : this.workspaceEnhancer.monitor.width
             ];
         }
 
         vfunc_get_preferred_height() {
-            return [0, 48];
+            return [0, 48 * utils.getScalingFactor()];
         }
 
         vfunc_allocate(box, flags) {
@@ -88,12 +89,12 @@ var TopPanel = GObject.registerClass(
 
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
-            box.x2 = box.x2 - 48;
+            box.x2 = box.x2 - (48 * utils.getScalingFactor());
             this._leftContainer.allocate(box, flags);
 
             let tilingButtonBox = new Clutter.ActorBox();
             tilingButtonBox.x1 = box.x2;
-            tilingButtonBox.x2 = box.x2 + 48;
+            tilingButtonBox.x2 = box.x2 + (48 * utils.getScalingFactor());
             tilingButtonBox.y1 = box.y1;
             tilingButtonBox.y2 = box.y2;
             this.tilingButton.allocate(tilingButtonBox, flags);

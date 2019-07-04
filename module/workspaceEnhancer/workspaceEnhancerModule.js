@@ -7,6 +7,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const WorkspaceEnhancer =
     Me.imports.module.workspaceEnhancer.workspaceEnhancer.WorkspaceEnhancer;
 const WorkspaceList = Me.imports.widget.workspaceList.WorkspaceList;
+const utils = Me.imports.utils;
 
 /* exported WorkspaceEnhancerModule */
 var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
@@ -323,9 +324,9 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
 
             // Create a spacer which will reserve the space on the screens for the taskbar
             monitor.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
-            monitor.topBarSpacer.height = 48;
+            monitor.topBarSpacer.height = 48 * utils.getScalingFactor();
             monitor.topBarSpacer.width = isPrimary
-                ? monitor.width - 48
+                ? monitor.width - (48 * utils.getScalingFactor())
                 : monitor.width;
 
             // If it's the primary
@@ -333,7 +334,7 @@ var WorkspaceEnhancerModule = class WorkspaceEnhancerModule {
                 // add spacer inside the original panelBox (which is used for sizing some native stuff)
                 Main.layoutManager.panelBox.add_child(monitor.topBarSpacer);
                 Main.layoutManager.panelBox.set_position(
-                    monitor.x + 48,
+                    monitor.x + (48 * utils.getScalingFactor()),
                     monitor.y
                 );
 

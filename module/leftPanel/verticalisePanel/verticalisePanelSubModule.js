@@ -18,7 +18,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         );
         this.panelAllocate = function(box, flags) {
             this.set_allocation(box, flags);
-            let allocWidth = box.x2 - box.x1;
+            let allocWidth = (box.x2 - box.x1);
             let allocHeight = box.y2 - box.y1;
             let [, leftNaturalHeight] = this._leftBox.get_preferred_height(-1);
             let [, centerNaturalHeight] = this._centerBox.get_preferred_height(

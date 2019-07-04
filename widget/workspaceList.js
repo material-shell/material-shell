@@ -90,7 +90,7 @@ var WorkspaceList = GObject.registerClass(
             this.buttonActive = this.getWorkspaceButtonFromWorkspace(workspace);
             this.buttonActive.contentActor.add_style_class_name('active');
             Tweener.addTween(this.workspaceActiveIndicator, {
-                translation_y: 48 * workspaceIndex,
+                translation_y: 48*2 * workspaceIndex,
                 time: 0.25,
                 transition: 'easeOutQuad'
             });

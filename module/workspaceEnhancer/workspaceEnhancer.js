@@ -13,6 +13,8 @@ const TilingManager =
 const CategorizedAppCard =
     Me.imports.module.workspaceEnhancer.categorizedAppCard.CategorizedAppCard;
 
+const utils = Me.imports.utils;
+
 const { Stack } = Me.imports.files.Layout;
 
 var WorkspaceEnhancer = class WorkspaceEnhancer {
@@ -66,7 +68,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             this.onFocus(windowFocused);
         });
 
-        const offsetX = this.monitorIsPrimary ? 48 : 0;
+        const offsetX = this.monitorIsPrimary ? 48 * utils.getScalingFactor() : 0;
         if (this.monitorIsPrimary) {
             this.frontendContainer.hide();
             this.backgroundContainer.hide();
