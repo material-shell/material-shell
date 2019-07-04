@@ -13,7 +13,8 @@ Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://disc
 ```
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-2) Open `gnome-tweaks` and activate `Material-shell` extension
+2) Reload gnome-shell by logout and re-login
+3) Open `gnome-tweaks` and activate `Material-shell` extension
 #
 ## Workflow Hotkeys
 #### Desktop navigation
