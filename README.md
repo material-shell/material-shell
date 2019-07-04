@@ -15,6 +15,22 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 ```
 2) Reload gnome-shell by logout and re-login
 3) Open `gnome-tweaks` and activate `Material-shell` extension
+
+### If using Ubuntu
+The stock Gnome Shell on Ubuntu comes with an extension called Ubuntu Dock, which covers up the Material Shell dock. It can not be disabled through Gnome-Tweaks. To disable it, the following can be done:
+
+```shell
+sudo mv /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com{,.bak}
+```
+
+Then restart Gnome Shell (Alt-F2, r <enter>). If you then enable Material Shell dock, it will look as expected.
+
+To restore the original dock after disabling Material Shell, use the following: 
+
+```shell
+sudo mv /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com{.bak,}
+```
+
 #
 ## Workflow Hotkeys
 #### Desktop navigation
