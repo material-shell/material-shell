@@ -2,6 +2,10 @@
 
 Following my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome). This gnome-shell extension provide a performant opinionated mouse/keyboard workflow and follow the [Material Design guidelines](https://material.io)
 
+## Demo
+
+![](https://s.put.re/4vVfcEbe.gif)
+
 ### Discord
 Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://discord.gg/vBb7D9a)
 #
