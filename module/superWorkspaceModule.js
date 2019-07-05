@@ -1,8 +1,7 @@
 const { Clutter, St, Meta, GLib, Shell, Gio } = imports.gi;
 const Main = imports.ui.main;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const { AppsManager } = Me.imports.superWorkspace.appsManager;
 const {
@@ -79,6 +78,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: this.workspaceManager.connect(
                 'active-workspace-changed',
                 () => {
+                    log('active-workspace-changed');
                     let newSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
                     this.currentSuperWorkspace.hideUI();
                     this.currentSuperWorkspace = newSuperWorkspace;
@@ -90,20 +90,21 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
-                log('NEW window', metaWindow);
+                log('window-created');
                 global.superWorkspaceManager.addWindowToAppropriateSuperWorkspace(
                     metaWindow
                 );
             })
         });
 
-        //this._listenToDispatchWindow();
+        this._listenToDispatchWindow();
 
         this.signals.push({
             from: Shell.AppSystem.get_default(),
             id: Shell.AppSystem.get_default().connect(
                 'installed-changed',
                 () => {
+                    log('installed-changed');
                     this.dispatchApps();
                 }
             )
@@ -113,7 +114,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         if (!fake) {
             this.signalMonitorId = Main.layoutManager.connect(
                 'monitors-changed',
-                (test, test1, test2) => {
+                () => {
+                    log('monitors-changed');
                     global.superWorkspaceManager.destroy();
                     global.superWorkspaceManager = new SuperWorkspaceManager();
                 }
@@ -280,6 +282,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 // After
                 switchData.overContainer.destroy();
                 global.workspaceAnimationInProgress = false;
+                log('Workspace switch animation ended');
+                global.tilingManager.tileWindows();
                 return result;
             };
         })();
@@ -311,28 +315,20 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
     _listenToDispatchWindow() {
         for (let w = 0; w < this.workspaceManager.n_workspaces; w++) {
             let workspace = this.workspaceManager.get_workspace_by_index(w);
-            this.signals.push({
-                from: workspace,
-                id: workspace.connect('window-added', (workspace, window) => {
-                    //Ignore unHandle window and window on secondary screens
-                    if (!this._handleWindow(window) || window.on_all_workspaces)
-                        return;
-                    workspace.workspaceEnhancer.addWindow(window);
-                })
-            });
-
-            this.signals.push({
-                from: workspace,
-                id: workspace.connect('window-removed', (workspace, window) => {
-                    //Ignore unHandle window and window on secondary screens
-                    if (!this._handleWindow(window) || window.on_all_workspaces)
-                        return;
-                    workspace.workspaceEnhancer.removeWindow(window);
-                })
-            });
+            this.listenWorkspaceEventToDispatch(workspace);
         }
 
         this.signals.push({
+            from: this.workspaceManager,
+            id: this.workspaceManager.connect(
+                'workspace-added',
+                (_, workspace) => {
+                    log('workspace-added');
+                    this.listenWorkspaceEventToDispatch(workspace);
+                }
+            )
+        });
+        /* this.signals.push({
             from: global.display,
             id: global.display.connect(
                 'grab-op-begin',
@@ -385,7 +381,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     delete this.grabSignal;
                 }
             })
-        });
+        }); */
 
         this.signals.push({
             from: global.display,
@@ -394,15 +390,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 (display, monitorIndex, window) => {
                     log('window-entered-monitor');
                     //Ignore unHandle window and window on primary screens
-                    if (
-                        !this._handleWindow(window) ||
-                        monitorIndex === Main.layoutManager.primaryIndex ||
-                        this.monitorChangeInProgress
-                    )
-                        return;
-                    Main.layoutManager.monitors[
+                    global.superWorkspaceManager.windowEnteredMonitor(
+                        window,
                         monitorIndex
-                    ].workspaceEnhancer.addWindow(window);
+                    );
                 }
             )
         });
@@ -414,17 +405,34 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 (display, monitorIndex, window) => {
                     log('window-left-monitor');
                     //Ignore unHandle window and window on primary screens
-                    if (
-                        !this._handleWindow(window) ||
-                        monitorIndex === Main.layoutManager.primaryIndex ||
-                        this.monitorChangeInProgress
-                    )
-                        return;
-                    Main.layoutManager.monitors[
+                    global.superWorkspaceManager.windowLeftMonitor(
+                        window,
                         monitorIndex
-                    ].workspaceEnhancer.removeWindow(window);
+                    );
                 }
             )
+        });
+    }
+
+    listenWorkspaceEventToDispatch(workspace) {
+        this.signals.push({
+            from: workspace,
+            id: workspace.connect('window-added', (workspace, window) => {
+                global.superWorkspaceManager.windowEnteredWorkspace(
+                    window,
+                    workspace
+                );
+            })
+        });
+
+        this.signals.push({
+            from: workspace,
+            id: workspace.connect('window-removed', (workspace, window) => {
+                global.superWorkspaceManager.windowLeftWorkspace(
+                    window,
+                    workspace
+                );
+            })
         });
     }
 };

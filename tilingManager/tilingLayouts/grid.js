@@ -1,16 +1,22 @@
 const Main = imports.ui.main;
-const Meta = imports.gi.Meta;
+const { Meta, Gio } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const TilingLayout =
-    Me.imports.tilingManager.tilingLayouts.tilingLayout.TilingLayout;
+const {
+    BaseTilingLayout
+} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
 
 /* exported GridLayout */
-var GridLayout = class GridLayout extends TilingLayout {
-    constructor(windows, monitor) {
-        super(windows, monitor);
+var GridLayout = class GridLayout extends BaseTilingLayout {
+    constructor(monitor) {
+        super();
+        this.monitor = monitor;
+        this.key = 'grid';
+        this.icon = Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/view-quilt-symbolic.svg`
+        );
         this.masterWidth = 0;
     }
 
@@ -20,32 +26,19 @@ var GridLayout = class GridLayout extends TilingLayout {
 
     onFocusChanged(windowFocused) {}
 
-    onTile() {
-        if (!this.windows.length) return;
+    onTile(windows) {
+        if (!windows.length) return;
 
         let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
 
         let masterWidth =
-            this.masterWidth || this.windows.length > 1
+            this.masterWidth || windows.length > 1
                 ? workArea.width / 2
                 : workArea.width;
 
-        /* let masterWindow = this.windows.shift();
-        if (!masterWindow.grabbed) {
-            if (masterWindow.get_maximized())
-                masterWindow.unmaximize(Meta.MaximizeFlags.BOTH);
-            masterWindow.move_resize_frame(
-                true,
-                workArea.x,
-                workArea.y,
-                masterWidth,
-                workArea.height
-            );
-        } */
-
-        this.windows.forEach((window, index) => {
+        windows.forEach((window, index) => {
             if (window.grabbed) return;
 
             if (window.get_maximized())
@@ -64,10 +57,9 @@ var GridLayout = class GridLayout extends TilingLayout {
                     window,
                     workArea.x + masterWidth,
                     workArea.y +
-                        ((index - 1) * workArea.height) /
-                            (this.windows.length - 1),
+                        ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
-                    workArea.height / (this.windows.length - 1)
+                    workArea.height / (windows.length - 1)
                 );
             }
         });

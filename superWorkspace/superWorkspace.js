@@ -7,7 +7,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Background = imports.ui.background;
 
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
-const TilingManager = Me.imports.tilingManager.tilingManager.TilingManager;
+const {
+    TilingLayoutByKey
+} = Me.imports.tilingManager.tilingLayouts.layoutByKey;
 
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
@@ -24,18 +26,20 @@ var SuperWorkspace = class SuperWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.category = category;
         this.windows = [];
-        this.panel = new TopPanel(this);
-        Main.layoutManager._trackActor(this.panel, {
-            affectsStruts: true
-        });
-        this.backgroundContainer = new St.Widget({
-            visible: visible
-        });
+        this.tilingLayout = new TilingLayoutByKey['grid'](this.monitor);
+
         this.frontendContainer = new St.Widget({
             visible: visible
         });
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
-        // this.backgroundContainer = new Meta.BackgroundGroup({ reactive: true });
+        this.panel = new TopPanel(this);
+        Main.layoutManager._trackActor(this.panel, {
+            affectsStruts: true
+        });
+
+        this.backgroundContainer = new St.Widget({
+            visible: visible
+        });
 
         this.bgManager = new Background.BackgroundManager({
             container: this.backgroundContainer,
@@ -55,8 +59,7 @@ var SuperWorkspace = class SuperWorkspace {
         });
 
         this.backgroundContainer.add_child(this.backgroundStackLayout);
-        this.tilingLayout = 'tileRight';
-        this.tilingManager = new TilingManager(this);
+
         this.windowFocused = null;
         this.windowFocusIndex = null;
 
@@ -89,7 +92,6 @@ var SuperWorkspace = class SuperWorkspace {
     destroy() {
         this.frontendContainer.destroy();
         this.backgroundContainer.destroy();
-        this.tilingManager.unregisterAllWindowsSignal();
         this.disconnectAll();
         this.destroyed = true;
     }
@@ -103,6 +105,7 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
+        log(`window ${window.get_id()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
         this.windows.push(window);
         this.throttleEmit();
@@ -111,6 +114,8 @@ var SuperWorkspace = class SuperWorkspace {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
+        log(`window ${window.get_id()} remove from ${this.categoryKey}`);
+
         this.windows.splice(windowIndex, 1);
         if (windowIndex === this.windowFocusIndex) {
             let newWindowToFocus =
@@ -181,8 +186,10 @@ var SuperWorkspace = class SuperWorkspace {
 
     nextTiling() {
         this.tilingLayout =
-            this.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
-        this.tilingManager.setLayout(this.tilingLayout);
+            this.tilingLayout.key === 'grid'
+                ? new TilingLayoutByKey['maximize'](this.monitor)
+                : new TilingLayoutByKey['grid'](this.monitor);
+        global.tilingManager.tileWindows();
     }
 
     showUI() {
@@ -248,6 +255,8 @@ var SuperWorkspace = class SuperWorkspace {
             if (this.destroyed) {
                 return;
             }
+            log(`workspace ${this.categoryKey} emit windows-changed`);
+            global.tilingManager.tileWindows();
             this.emit('windows-changed');
         });
     }

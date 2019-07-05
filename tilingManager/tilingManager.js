@@ -9,31 +9,16 @@ const GridLayout = Me.imports.tilingManager.tilingLayouts.grid.GridLayout;
 const DialogLayout = Me.imports.tilingManager.tilingLayouts.dialog.DialogLayout;
 /* exported TilingManager */
 var TilingManager = class TilingManager {
-    constructor(workspaceEnhancer) {
-        this.workspaceEnhancer = workspaceEnhancer;
+    constructor() {
         this.workspaceManager = global.workspace_manager;
         this.grabInProgress = false;
         this.signals = [];
         this.windows = [];
-        this.setLayout(workspaceEnhancer.tilingLayout);
-        this.workspaceEnhancer.connect('windows-changed', () => {
-            this.onWindowsChanged();
-        });
 
-        this.workspaceEnhancer.connect(
-            'window-focused-changed',
-            (_, window, oldWindow) => {
-                this.onWindowFocusedChanged(window, oldWindow);
-            }
-        );
-
-        this.dialogLayout = new DialogLayout(
-            this.windows,
-            this.workspaceEnhancer.monitor
-        );
+        this.dialogLayout = new DialogLayout();
     }
 
-    onWindowsChanged() {
+    /* onWindowsChanged() {
         this.windows = this.getFilteredWindows();
         this.registerWindowsSignal();
         let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
@@ -58,6 +43,7 @@ var TilingManager = class TilingManager {
                     }
                 })
             });
+
             this.signals.push({
                 from: window,
                 id: window.connect('size-changed', window => {
@@ -74,15 +60,15 @@ var TilingManager = class TilingManager {
             signal.from.disconnect(signal.id);
         });
         this.signals = [];
-    }
+    } */
 
-    getFilteredWindows() {
-        return this.workspaceEnhancer.windows.filter(window => {
+    getFilteredWindows(windows) {
+        return windows.filter(window => {
             return !window.is_attached_dialog();
         });
     }
 
-    getDialogAndRegularWindows() {
+    getDialogAndRegularWindows(windows) {
         let dialogWindows = [];
         let regularWindows = [];
 
@@ -92,7 +78,7 @@ var TilingManager = class TilingManager {
             Meta.WindowType.UTILITY
         ];
 
-        for (let window of this.windows) {
+        for (let window of windows) {
             if (
                 dialogTypes.includes(window.window_type) ||
                 window.find_root_ancestor() !== window ||
@@ -107,36 +93,32 @@ var TilingManager = class TilingManager {
         return [dialogWindows, regularWindows];
     }
 
-    setLayout(layout) {
-        if (this.layout) {
-            this.layout.onDestroy();
-        }
-        switch (layout) {
-            case 'tileRight':
-                this.layout = new GridLayout(
-                    this.windows,
-                    this.workspaceEnhancer.monitor
-                );
-                break;
-            case 'maximize':
-                this.layout = new MaximizeLayout(
-                    this.workspaceEnhancer.windowFocused,
-                    this.windows,
-                    this.workspaceEnhancer.monitor
-                );
-                break;
-        }
-        this.tileWindows();
-    }
-
     tileWindows() {
         if (this.tilingInProgress) return;
 
         this.tilingInProgress = true;
-
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.layout.onTile();
-            this.dialogLayout.onTile();
+            log(`tile windows start`);
+            for (let monitor of Main.layoutManager.monitors) {
+                let superWorkspace;
+                if (monitor.index === Main.layoutManager.primaryIndex) {
+                    superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
+                } else {
+                    superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        monitor.index
+                    )[0];
+                }
+                let layout = superWorkspace.tilingLayout;
+
+                let [
+                    dialogWindows,
+                    regularWindows
+                ] = this.getDialogAndRegularWindows(superWorkspace.windows);
+
+                layout.onTile(regularWindows);
+                this.dialogLayout.onTile(dialogWindows, monitor);
+            }
+            log(`tile windows end`);
             this.tilingInProgress = false;
         });
     }

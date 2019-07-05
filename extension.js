@@ -5,6 +5,7 @@ const { SuperWorkspaceModule } = Me.imports.module.superWorkspaceModule;
 const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
 const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
+const { TilingModule } = Me.imports.module.tilingModule;
 
 let modules;
 
@@ -19,7 +20,8 @@ function init() {
         new LeftPanelModule(),
         new SuperWorkspaceModule(),
         new NoTitleBarModule(),
-        new HotKeysModule()
+        new HotKeysModule(),
+        new TilingModule()
     ];
 }
 

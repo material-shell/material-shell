@@ -5,14 +5,16 @@ const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const TilingLayout =
-    Me.imports.tilingManager.tilingLayouts.tilingLayout.TilingLayout;
+const {
+    BaseTilingLayout
+} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
 
 /* exported DialogLayout */
-var DialogLayout = class DialogLayout extends TilingLayout {
+var DialogLayout = class DialogLayout extends BaseTilingLayout {
     constructor(windows, monitor) {
         super(windows, monitor);
         this.backdropContainers = {};
+        this.key = 'dialog';
     }
 
     onWindowsChanged(windows) {
@@ -23,11 +25,11 @@ var DialogLayout = class DialogLayout extends TilingLayout {
         this.onTile();
     }
 
-    onTile() {
+    onTile(windows, monitor) {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
+            monitor.index
         );
-        this.windows.forEach(metaWindow => {
+        windows.forEach(metaWindow => {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;

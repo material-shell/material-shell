@@ -111,12 +111,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     getSuperWorkspacesOfMonitorIndex(monitorIndex) {
-        log(
-            monitorIndex,
-            this.superWorkspaces.filter(superWorkspace => {
-                return superWorkspace.monitor.index === monitorIndex;
-            })
-        );
         return this.superWorkspaces.filter(superWorkspace => {
             return superWorkspace.monitor.index === monitorIndex;
         });
@@ -124,9 +118,13 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     addWindowToAppropriateSuperWorkspace(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
-        const currentMonitorIndex = global.display.get_current_monitor();
+        log(
+            `window ${metaWindow.get_id()} has been added to the appropriate SuperWorkspace`
+        );
+        const windowMonitorIndex = metaWindow.get_monitor();
+        const focusedMonitorIndex = global.display.get_current_monitor();
         let superWorkspace;
-        if (currentMonitorIndex === Main.layoutManager.primaryIndex) {
+        if (focusedMonitorIndex === Main.layoutManager.primaryIndex) {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
             superWorkspace = this.superWorkspaces.find(superWorkspace => {
                 return (
@@ -135,13 +133,16 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     }) > -1
                 );
             });
+            if (windowMonitorIndex !== focusedMonitorIndex) {
+                metaWindow.move_to_monitor(focusedMonitorIndex);
+            }
 
             metaWindow.change_workspace(
                 this.getWorkspaceOfSuperWorkspace(superWorkspace)
             );
         } else {
             superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
-                currentMonitorIndex
+                focusedMonitorIndex
             )[0];
         }
         /* metaWindow.activate_with_workspace(
@@ -156,6 +157,54 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         global.get_window_actors().forEach(windowActor => {
             this.addWindowToAppropriateSuperWorkspace(windowActor.metaWindow);
         });
+    }
+
+    windowEnteredWorkspace(window, workspace) {
+        if (!this._handleWindow(window) || window.on_all_workspaces) {
+            return;
+        }
+        log(`window ${window.get_id()} entered in workspace`);
+        this.getPrimarySuperWorkspaceByIndex(workspace.index()).addWindow(
+            window
+        );
+    }
+
+    windowLeftWorkspace(window, workspace) {
+        if (!this._handleWindow(window) || window.on_all_workspaces) {
+            return;
+        }
+        log(`window ${window.get_id()} left a workspace`);
+        this.getPrimarySuperWorkspaceByIndex(workspace.index()).removeWindow(
+            window
+        );
+    }
+
+    windowEnteredMonitor(window, monitorIndex) {
+        //Ignore unHandle window and window on secondary screens
+        if (
+            !this._handleWindow(window) ||
+            monitorIndex === Main.layoutManager.primaryIndex ||
+            this.monitorChangeInProgress
+        ) {
+            return;
+        }
+        this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].addWindow(
+            window
+        );
+    }
+
+    windowLeftMonitor(window, monitorIndex) {
+        //Ignore unHandle window and window on secondary screens
+        if (
+            !this._handleWindow(window) ||
+            monitorIndex === Main.layoutManager.primaryIndex ||
+            this.monitorChangeInProgress
+        ) {
+            return;
+        }
+        this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].removeWindow(
+            window
+        );
     }
 
     _handleWindow(win) {

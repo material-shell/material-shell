@@ -70,6 +70,7 @@ var WorkspaceList = GObject.registerClass(
                     workspaceManager.get_active_workspace_index()
                 );
             });
+
             this.activeButtonForIndex(
                 workspaceManager.get_active_workspace_index()
             );
@@ -79,7 +80,6 @@ var WorkspaceList = GObject.registerClass(
             let superWorkspace = this.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                 workspaceIndex
             );
-            log(superWorkspace);
 
             if (this.buttonActive) {
                 if (
