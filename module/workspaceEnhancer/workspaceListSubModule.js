@@ -15,4 +15,4 @@ var WorkspaceListSubModule = class WorkspaceListSubModule {
     disable() {
         this.panel._leftBox.remove_child(this.workspaceList);
     }
-}
+};
