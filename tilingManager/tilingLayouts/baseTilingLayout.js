@@ -30,7 +30,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
         );
         this.windows = superWorkspace.windows;
-        this.onTile();
     }
 
     onWindowsChanged() {

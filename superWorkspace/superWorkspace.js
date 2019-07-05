@@ -88,6 +88,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         this.panel.set_position(0 + offsetX, 0);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
+        this.tilingLayout.onTile();
     }
 
     destroy() {

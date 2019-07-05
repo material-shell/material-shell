@@ -23,6 +23,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         this.topBarSpacer.height = 48;
         Main.layoutManager.panelBox.add_child(this.topBarSpacer);
+
         global.superWorkspaceManager = new SuperWorkspaceManager(
             AppsManager.groupAppsByCategory(AppsManager.getApps())
         );
