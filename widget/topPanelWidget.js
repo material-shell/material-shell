@@ -4,8 +4,8 @@ const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
-const TaskBar = Me.imports.widget.taskBar.TaskBar;
+const { RippleContainer } = Me.imports.widget.material.rippleContainer;
+const { TaskBar } = Me.imports.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
@@ -33,7 +33,7 @@ var TopPanel = GObject.registerClass(
                 track_hover: true
             });
             iconContainer.connect('button-press-event', () => {
-                workspaceEnhancer.showBackground();
+                workspaceEnhancer.revealBackground();
             });
             this.addButton = new RippleContainer(iconContainer);
             this._leftContainer.add_child(this.addButton);

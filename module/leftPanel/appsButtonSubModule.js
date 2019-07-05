@@ -3,7 +3,7 @@ const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
+const { RippleContainer } = Me.imports.widget.material.rippleContainer;
 
 /* exported AppsButtonSubModule */
 var AppsButtonSubModule = class AppsButtonSubModule {

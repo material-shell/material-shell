@@ -6,7 +6,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const TilingLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.tilingLayout.TilingLayout;
+    Me.imports.tilingManager.tilingLayouts.tilingLayout.TilingLayout;
 
 /* exported DialogLayout */
 var DialogLayout = class DialogLayout extends TilingLayout {
@@ -96,12 +96,19 @@ var BackdropContainer = GObject.registerClass(
             });
 
             window.connect('notify::visible', () => {
+                log('DIALOG', 'notify::visible');
                 this.visible = window.visible;
             });
+
             window.connect('parent-set', () => {
+                log('DIALOG', 'WINDOW', 'parent-set');
+
                 this.followWindow();
             });
+
             this.connect('parent-set', () => {
+                log('DIALOG', 'BACKDROP', 'parent-set');
+
                 if (this.destroyed) return;
                 //this.raise_top();
                 if (this.get_parent() === this.window.get_parent()) {

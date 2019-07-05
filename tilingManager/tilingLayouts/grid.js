@@ -5,7 +5,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const TilingLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.tilingLayout.TilingLayout;
+    Me.imports.tilingManager.tilingLayouts.tilingLayout.TilingLayout;
 
 /* exported GridLayout */
 var GridLayout = class GridLayout extends TilingLayout {

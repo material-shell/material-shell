@@ -4,11 +4,9 @@ const GLib = imports.gi.GLib;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const MaximizeLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.maximize.MaximizeLayout;
-const GridLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.grid.GridLayout;
-const DialogLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.dialog.DialogLayout;
+    Me.imports.tilingManager.tilingLayouts.maximize.MaximizeLayout;
+const GridLayout = Me.imports.tilingManager.tilingLayouts.grid.GridLayout;
+const DialogLayout = Me.imports.tilingManager.tilingLayouts.dialog.DialogLayout;
 /* exported TilingManager */
 var TilingManager = class TilingManager {
     constructor(workspaceEnhancer) {
@@ -97,7 +95,8 @@ var TilingManager = class TilingManager {
         for (let window of this.windows) {
             if (
                 dialogTypes.includes(window.window_type) ||
-                window.find_root_ancestor() !== window
+                window.find_root_ancestor() !== window ||
+                !window.resizeable
             ) {
                 dialogWindows.push(window);
             } else {
