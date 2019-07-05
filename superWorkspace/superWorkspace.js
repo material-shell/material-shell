@@ -92,9 +92,8 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     destroy() {
-        this.frontendContainer.destroy();
-        this.backgroundContainer.destroy();
-        this.disconnectAll();
+        if (this.frontendContainer) this.frontendContainer.destroy();
+        if (this.backgroundContainer) this.backgroundContainer.destroy();
         this.destroyed = true;
     }
 

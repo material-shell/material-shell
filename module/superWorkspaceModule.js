@@ -17,9 +17,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
     }
 
     enable() {
-        //Hide the default Background
-        //global.window_group.get_child_at_index(0).hide();
-
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         this.topBarSpacer.height = 48;
         Main.layoutManager.panelBox.add_child(this.topBarSpacer);
@@ -116,14 +113,15 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             () => {
                 log('monitors-changed');
                 global.superWorkspaceManager.destroy();
-                global.superWorkspaceManager = new SuperWorkspaceManager();
+                global.superWorkspaceManager = new SuperWorkspaceManager(
+                    AppsManager.groupAppsByCategory(AppsManager.getApps())
+                );
+                this.currentSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
             }
         );
     }
 
     disable() {
-        //Re show the default Background
-        global.window_group.get_child_at_index(0).show();
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });
