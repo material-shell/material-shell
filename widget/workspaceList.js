@@ -65,11 +65,14 @@ var WorkspaceList = GObject.registerClass(
                 this.buttonList.add_child(rippleContainer);
             }
 
-            global.workspace_manager.connect('active-workspace-changed', () => {
-                this.activeButtonForIndex(
-                    workspaceManager.get_active_workspace_index()
-                );
-            });
+            this.workspaceSignal = global.workspace_manager.connect(
+                'active-workspace-changed',
+                () => {
+                    this.activeButtonForIndex(
+                        workspaceManager.get_active_workspace_index()
+                    );
+                }
+            );
 
             this.activeButtonForIndex(
                 workspaceManager.get_active_workspace_index()
@@ -110,6 +113,10 @@ var WorkspaceList = GObject.registerClass(
                     superWorkspace
                 );
             });
+        }
+
+        on_destroy() {
+            global.workspace_manager.disconnect(this.workspaceSignal);
         }
     }
 );

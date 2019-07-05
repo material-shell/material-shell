@@ -81,6 +81,7 @@ var TilingModule = class TilingModule {
     }
 
     windowChangedSomething(window) {
+        return;
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         if (types.includes(window.window_type)) {

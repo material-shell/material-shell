@@ -37,6 +37,9 @@ function enable() {
 
 // eslint-disable-next-line no-unused-vars
 function disable() {
+    log('----------------');
+    log('DISABLE EXTENSION');
+    log('----------------');
     modules.reverse().forEach(module => {
         module.disable();
     });

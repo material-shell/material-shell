@@ -29,12 +29,13 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onFocusChanged(window, oldWindow);
             }
         );
-
         this.windows = superWorkspace.windows;
+        this.onTile();
     }
 
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
+        this.onTile();
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
@@ -42,6 +43,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTile() {
+        log('tile for real');
         let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);

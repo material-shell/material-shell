@@ -16,7 +16,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals = [];
     }
 
-    enable(fake) {
+    enable() {
         //Hide the default Background
         //global.window_group.get_child_at_index(0).hide();
 
@@ -110,33 +110,27 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             )
         });
 
-        //If it's a fake enable it's an internal reload
-        if (!fake) {
-            this.signalMonitorId = Main.layoutManager.connect(
-                'monitors-changed',
-                () => {
-                    log('monitors-changed');
-                    global.superWorkspaceManager.destroy();
-                    global.superWorkspaceManager = new SuperWorkspaceManager();
-                }
-            );
-        }
-        this.enabled = true;
+        this.signalMonitorId = Main.layoutManager.connect(
+            'monitors-changed',
+            () => {
+                log('monitors-changed');
+                global.superWorkspaceManager.destroy();
+                global.superWorkspaceManager = new SuperWorkspaceManager();
+            }
+        );
     }
 
-    disable(fake) {
-        if (!this.enabled) {
-            return;
-        }
+    disable() {
         //Re show the default Background
         global.window_group.get_child_at_index(0).show();
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });
         this.signals = [];
+        this.topBarSpacer.destroy();
         global.superWorkspaceManager.destroy();
         delete global.superWorkspaceManager;
-        Main.panel._leftBox.remove_child(this.workspaceList);
+
         Main.overview._overview.remove_child(this.myPanelGhost);
         Main.overview._overview.insert_child_at_index(
             this.legacyPanelGhost,
@@ -145,10 +139,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
         this.restoreWindowManagersFunctions();
 
-        if (!fake) {
-            Main.layoutManager.disconnect(this.signalMonitorId);
-        }
-        this.enabled = false;
+        Main.layoutManager.disconnect(this.signalMonitorId);
     }
 
     overrideWindowManagerFunctions() {
@@ -283,7 +274,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 switchData.overContainer.destroy();
                 global.workspaceAnimationInProgress = false;
                 log('Workspace switch animation ended');
-                global.tilingManager.tileWindows();
+                //global.tilingManager.tileWindows();
                 return result;
             };
         })();
@@ -328,60 +319,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 }
             )
         });
-        /* this.signals.push({
-            from: global.display,
-            id: global.display.connect(
-                'grab-op-begin',
-                (display1, display2, window, op) => {
-                    if (op !== Meta.GrabOp.MOVING) return;
-                    this.grabInProgress = true;
-                    this.grabWindow = window;
-                    window.grabbed = true;
-                    this.grabSignal = window.connect('position-changed', () => {
-                        let windowRect = window.get_frame_rect();
-                        let x = windowRect.x + windowRect.width / 2;
-                        let y = windowRect.y + windowRect.height / 2;
-                        const windowHovered = this.grabWindow.workspaceEnhancer.windows.find(
-                            windowToCheck => {
-                                if (windowToCheck === this.grabWindow)
-                                    return false;
-                                let rect = windowToCheck.get_frame_rect();
-                                return (
-                                    x >= rect.x &&
-                                    x <= rect.x + rect.width &&
-                                    y >= rect.y &&
-                                    y <= rect.y + rect.height
-                                );
-                            }
-                        );
-                        if (
-                            windowHovered &&
-                            !this.grabWindow.workspaceEnhancer.tilingManager
-                                .tilingInProgress
-                        ) {
-                            this.grabWindow.workspaceEnhancer.swapWindows(
-                                this.grabWindow,
-                                windowHovered
-                            );
-                        }
-                    });
-                }
-            )
-        });
-
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect('grab-op-end', () => {
-                if (this.grabInProgress) {
-                    this.grabInProgress = false;
-                    this.grabWindow.disconnect(this.grabSignal);
-                    this.grabWindow.grabbed = false;
-                    this.grabWindow.workspaceEnhancer.tilingManager.tileWindows();
-                    delete this.grabWindow;
-                    delete this.grabSignal;
-                }
-            })
-        }); */
 
         this.signals.push({
             from: global.display,

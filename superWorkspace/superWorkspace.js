@@ -191,7 +191,6 @@ var SuperWorkspace = class SuperWorkspace {
             this.tilingLayout.key === 'grid'
                 ? new TilingLayoutByKey['maximize'](this)
                 : new TilingLayoutByKey['grid'](this);
-        global.tilingManager.tileWindows();
     }
 
     showUI() {
@@ -257,8 +256,6 @@ var SuperWorkspace = class SuperWorkspace {
             if (this.destroyed) {
                 return;
             }
-            log(`workspace ${this.categoryKey} emit windows-changed`);
-            global.tilingManager.tileWindows();
             this.emit('windows-changed');
         });
     }
