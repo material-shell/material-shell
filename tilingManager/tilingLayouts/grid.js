@@ -10,9 +10,8 @@ const {
 
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseTilingLayout {
-    constructor(monitor) {
-        super();
-        this.monitor = monitor;
+    constructor(superWorkspace) {
+        super(superWorkspace);
         this.key = 'grid';
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/view-quilt-symbolic.svg`
@@ -26,7 +25,7 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
 
     onFocusChanged(windowFocused) {}
 
-    onTile(windows) {
+    onTileRegulars(windows) {
         if (!windows.length) return;
 
         let workArea = Main.layoutManager.getWorkAreaForMonitor(

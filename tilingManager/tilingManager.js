@@ -15,7 +15,7 @@ var TilingManager = class TilingManager {
         this.signals = [];
         this.windows = [];
 
-        this.dialogLayout = new DialogLayout();
+        //this.dialogLayout = new DialogLayout();
     }
 
     /* onWindowsChanged() {
@@ -68,31 +68,6 @@ var TilingManager = class TilingManager {
         });
     }
 
-    getDialogAndRegularWindows(windows) {
-        let dialogWindows = [];
-        let regularWindows = [];
-
-        let dialogTypes = [
-            Meta.WindowType.DIALOG,
-            Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY
-        ];
-
-        for (let window of windows) {
-            if (
-                dialogTypes.includes(window.window_type) ||
-                window.find_root_ancestor() !== window ||
-                !window.resizeable
-            ) {
-                dialogWindows.push(window);
-            } else {
-                regularWindows.push(window);
-            }
-        }
-
-        return [dialogWindows, regularWindows];
-    }
-
     tileWindows() {
         if (this.tilingInProgress) return;
 
@@ -110,13 +85,13 @@ var TilingManager = class TilingManager {
                 }
                 let layout = superWorkspace.tilingLayout;
 
-                let [
+                /* let [
                     dialogWindows,
                     regularWindows
-                ] = this.getDialogAndRegularWindows(superWorkspace.windows);
+                ] = this.getDialogAndRegularWindows(superWorkspace.windows); */
 
-                layout.onTile(regularWindows);
-                this.dialogLayout.onTile(dialogWindows, monitor);
+                layout.onTile();
+                //this.dialogLayout.onTile(dialogWindows, monitor);
             }
             log(`tile windows end`);
             this.tilingInProgress = false;

@@ -26,11 +26,12 @@ var SuperWorkspace = class SuperWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.category = category;
         this.windows = [];
-        this.tilingLayout = new TilingLayoutByKey['grid'](this.monitor);
+        this.tilingLayout = new TilingLayoutByKey['grid'](this);
 
         this.frontendContainer = new St.Widget({
             visible: visible
         });
+
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
         this.panel = new TopPanel(this);
         Main.layoutManager._trackActor(this.panel, {
@@ -185,10 +186,11 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     nextTiling() {
+        this.tilingLayout.onDestroy();
         this.tilingLayout =
             this.tilingLayout.key === 'grid'
-                ? new TilingLayoutByKey['maximize'](this.monitor)
-                : new TilingLayoutByKey['grid'](this.monitor);
+                ? new TilingLayoutByKey['maximize'](this)
+                : new TilingLayoutByKey['grid'](this);
         global.tilingManager.tileWindows();
     }
 

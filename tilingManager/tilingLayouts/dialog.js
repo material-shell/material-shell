@@ -4,7 +4,7 @@ const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-
+const { Backdrop } = Me.imports.widget.backdrop;
 const {
     BaseTilingLayout
 } = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
@@ -33,13 +33,14 @@ var DialogLayout = class DialogLayout extends BaseTilingLayout {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
-            let backdropContainer = this.getBackdropContainer(metaWindow);
-            //backdropContainer.reparent(global.window_group);
-            backdropContainer.raise_top();
+
+            if (!window.backdrop) {
+                window.backdrop = new Backdrop(window);
+            }
+
+            window.backdrop.raise_top();
             metaWindow.raise();
             window.raise_top();
-            backdropContainer.set_position(workArea.x, workArea.y);
-            backdropContainer.set_size(workArea.width, workArea.height);
             metaWindow.move_frame(
                 window,
                 workArea.x + workArea.width / 2 - window.width / 2,
@@ -72,67 +73,3 @@ var DialogLayout = class DialogLayout extends BaseTilingLayout {
         return backdropContainer;
     }
 };
-
-var BackdropContainer = GObject.registerClass(
-    class BackdropContainer extends St.Widget {
-        _init(window) {
-            super._init({
-                reactive: false
-            });
-
-            this.add_style_class_name('backdrop-container');
-            this.window = window;
-            /*             this.connect('button-press-event', (actor, event) => {
-                log('PRESS ON BACKDROP');
-                this.window.get_meta_window().delete(global.get_current_time());
-            });
-            this.connect('button-release-event', (actor, event) => {
-                log('RELEASE ON BACKDROP');
-                this.window.get_meta_window().delete(global.get_current_time());
-            }); */
-
-            window.connect('destroy', () => {
-                //this.remove_child(window);
-                this.destroyed = true;
-                this.destroy();
-            });
-
-            window.connect('notify::visible', () => {
-                log('DIALOG', 'notify::visible');
-                this.visible = window.visible;
-            });
-
-            window.connect('parent-set', () => {
-                log('DIALOG', 'WINDOW', 'parent-set');
-
-                this.followWindow();
-            });
-
-            this.connect('parent-set', () => {
-                log('DIALOG', 'BACKDROP', 'parent-set');
-
-                if (this.destroyed) return;
-                //this.raise_top();
-                if (this.get_parent() === this.window.get_parent()) {
-                    GLib.idle_add(GLib.PRIORITY_HIGH, () => {
-                        this.get_parent().set_child_above_sibling(
-                            this.window,
-                            this
-                        );
-                    });
-                } else {
-                    this.followWindow();
-                }
-            });
-            this.followWindow();
-            //window.reparent(this);
-        }
-
-        followWindow() {
-            let newParent = this.window.get_parent();
-            if (newParent) {
-                this.reparent(newParent);
-            }
-        }
-    }
-);

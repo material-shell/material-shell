@@ -10,14 +10,12 @@ const {
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
-    constructor(monitor) {
-        super();
+    constructor(superWorkspace) {
+        super(superWorkspace);
         this.key = 'maximize';
-        this.monitor = monitor;
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/tab-symbolic.svg`
         );
-        //this.focusedWindow = focusedWindow;
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
@@ -32,15 +30,16 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
+        log('onFocusChanged', windowFocused, oldWindowFocused);
         const newIndex = this.windows.indexOf(windowFocused);
         const oldIndex = this.windows.indexOf(oldWindowFocused);
-        this.focusedWindow = windowFocused;
+        this.windowFocused = windowFocused;
         const direction = newIndex > oldIndex ? 1 : -1;
         this.prepareTransition(windowFocused, oldWindowFocused, direction);
         this.animateTransition(direction);
     }
 
-    onTile(windows) {
+    onTileRegulars(windows) {
         if (this.animationInProgress) return;
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
@@ -55,15 +54,16 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 workArea.width,
                 workArea.height
             );
-            if (window !== this.focusedWindow) {
+            if (window !== this.windowFocused) {
                 window.get_compositor_private().hide();
             }
         });
     }
 
     onDestroy() {
+        super.onDestroy();
         this.windows.forEach(window => {
-            if (window !== this.focusedWindow) {
+            if (window !== this.windowFocused) {
                 window.get_compositor_private().show();
             }
         });
