@@ -1,5 +1,5 @@
 .primary-bg {
-  background-color: #4e8d4e;
+  background-color: #24aed8;
 }
 
 .workspace-button {
@@ -59,7 +59,7 @@
 }
 
 .task-active-indicator {
-  background: #4e8d4e;
+  background: #24aed8;
   height: 2px;
 }
 
