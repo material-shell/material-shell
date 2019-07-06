@@ -4,7 +4,7 @@ Following my earlier work on [Material Awesome](https://github.com/PapyElGringo/
 
 ## Demo
 
-![](https://s.put.re/4vVfcEbe.gif)
+![](demo.gif)
 
 ### Discord
 Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://discord.gg/vBb7D9a)
