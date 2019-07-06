@@ -1,7 +1,6 @@
 let prop = '_MOTIF_WM_HINTS';
 
 const ByteArray = imports.byteArray;
-const Main = imports.ui.main;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
 const GLib = imports.gi.GLib;

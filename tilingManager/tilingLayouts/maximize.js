@@ -1,17 +1,21 @@
-const { Clutter, Meta, St } = imports.gi;
+const { St, Gio } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const TilingLayout =
-    Me.imports.module.workspaceEnhancer.tilingLayouts.tilingLayout.TilingLayout;
+const {
+    BaseTilingLayout
+} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
 
 /* exported MaximizeLayout */
-var MaximizeLayout = class MaximizeLayout extends TilingLayout {
-    constructor(focusedWindow, windows, monitor) {
-        super(windows, monitor);
-        this.focusedWindow = focusedWindow;
+var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
+    constructor(superWorkspace) {
+        super(superWorkspace);
+        this.key = 'maximize';
+        this.icon = Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/tab-symbolic.svg`
+        );
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
@@ -26,21 +30,22 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
+        log('onFocusChanged', windowFocused, oldWindowFocused);
         const newIndex = this.windows.indexOf(windowFocused);
         const oldIndex = this.windows.indexOf(oldWindowFocused);
-        this.focusedWindow = windowFocused;
+        this.windowFocused = windowFocused;
         const direction = newIndex > oldIndex ? 1 : -1;
         this.prepareTransition(windowFocused, oldWindowFocused, direction);
         this.animateTransition(direction);
     }
 
-    onTile() {
+    onTileRegulars(windows) {
         if (this.animationInProgress) return;
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
 
-        this.windows.forEach(window => {
+        windows.forEach(window => {
             if (window.grabbed) return;
             window.move_resize_frame(
                 window,
@@ -49,15 +54,16 @@ var MaximizeLayout = class MaximizeLayout extends TilingLayout {
                 workArea.width,
                 workArea.height
             );
-            if (window !== this.focusedWindow) {
+            if (window !== this.windowFocused) {
                 window.get_compositor_private().hide();
             }
         });
     }
 
     onDestroy() {
+        super.onDestroy();
         this.windows.forEach(window => {
-            if (window !== this.focusedWindow) {
+            if (window !== this.windowFocused) {
                 window.get_compositor_private().show();
             }
         });

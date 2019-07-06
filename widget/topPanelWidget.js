@@ -4,20 +4,20 @@ const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
-const TaskBar = Me.imports.widget.taskBar.TaskBar;
+const { RippleContainer } = Me.imports.widget.material.rippleContainer;
+const { TaskBar } = Me.imports.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
     class TopPanel extends St.Widget {
-        _init(workspaceEnhancer) {
+        _init(superWorkspace) {
             super._init({
                 name: 'dash'
             });
-            this.workspaceEnhancer = workspaceEnhancer;
+            this.superWorkspace = superWorkspace;
             this._leftContainer = new St.BoxLayout();
 
-            this.taskBar = new TaskBar(workspaceEnhancer);
+            this.taskBar = new TaskBar(superWorkspace);
             this._leftContainer.add_child(this.taskBar);
 
             let iconContainer = new St.Bin({
@@ -32,16 +32,16 @@ var TopPanel = GObject.registerClass(
                 can_focus: true,
                 track_hover: true
             });
+
             iconContainer.connect('button-press-event', () => {
-                workspaceEnhancer.showBackground();
+                superWorkspace.revealBackground();
             });
+
             this.addButton = new RippleContainer(iconContainer);
             this._leftContainer.add_child(this.addButton);
             this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
-                gicon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/view-quilt-symbolic.svg`
-                ),
+                gicon: superWorkspace.tilingLayout.icon,
                 style_class: 'workspace-icon'
             });
 
@@ -54,15 +54,8 @@ var TopPanel = GObject.registerClass(
             });
 
             button.connect('button-press-event', () => {
-                workspaceEnhancer.nextTiling();
-                this.tilingIcon.gicon =
-                    workspaceEnhancer.tilingLayout === 'tileRight'
-                        ? Gio.icon_new_for_string(
-                              `${Me.path}/assets/icons/view-quilt-symbolic.svg`
-                          )
-                        : Gio.icon_new_for_string(
-                              `${Me.path}/assets/icons/tab-symbolic.svg`
-                          );
+                superWorkspace.nextTiling();
+                this.tilingIcon.gicon = superWorkspace.tilingLayout.icon;
             });
 
             this.tilingButton = new RippleContainer(button);
@@ -72,10 +65,10 @@ var TopPanel = GObject.registerClass(
         vfunc_get_preferred_width() {
             return [
                 0,
-                this.workspaceEnhancer.monitor.index ===
+                this.superWorkspace.monitor.index ===
                 Main.layoutManager.primaryIndex
-                    ? this.workspaceEnhancer.monitor.width - 48
-                    : this.workspaceEnhancer.monitor.width
+                    ? this.superWorkspace.monitor.width - 48
+                    : this.superWorkspace.monitor.width
             ];
         }
 

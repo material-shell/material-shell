@@ -1,14 +1,18 @@
 const { Clutter, Shell, St, GObject } = imports.gi;
 const AppIcon = imports.ui.appDisplay.AppIcon;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MatCard, MatCardTitle, MatCardContent } = Me.imports.material.card.card;
-const { Column, Row } = Me.imports.files.Layout;
+const {
+    MatCard,
+    MatCardTitle,
+    MatCardContent
+} = Me.imports.widget.material.card;
+const { Column, Row } = Me.imports.widget.layout;
 
 /* exported CategorizedAppCard */
 var CategorizedAppCard = GObject.registerClass(
     class CategorizedAppCard extends MatCard {
-        _init(workspaceCategory) {
-            this.workspaceCategory = workspaceCategory;
+        _init(superWorkspaceCategory, apps) {
+            this.workspaceCategory = superWorkspaceCategory;
             this._grid = new SimpleIconGrid(6);
             super._init({
                 style_class: 'categorized-app-card',
@@ -16,10 +20,10 @@ var CategorizedAppCard = GObject.registerClass(
                     children: [
                         new MatCardTitle({
                             icon: new St.Icon({
-                                gicon: workspaceCategory.icon
+                                gicon: this.workspaceCategory.icon
                             }),
                             label: new St.Label({
-                                text: workspaceCategory.title,
+                                text: this.workspaceCategory.title,
                                 style_class: 'categorized-apps-title',
                                 x_expand: true,
                                 y_align: Clutter.ActorAlign.CENTER
@@ -32,7 +36,9 @@ var CategorizedAppCard = GObject.registerClass(
                 })
             });
             this.appSys = Shell.AppSystem.get_default();
+            this._loadApps(apps);
         }
+
         _loadApps(apps) {
             let icons = [];
             for (let i = 0; i < Math.min(apps.length, 12); i++) {

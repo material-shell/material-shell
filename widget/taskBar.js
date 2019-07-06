@@ -8,7 +8,7 @@ const DND = imports.ui.dnd;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const RippleContainer = Me.imports.material.rippleContainer.RippleContainer;
+const { RippleContainer } = Me.imports.widget.material.rippleContainer;
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(

@@ -6,28 +6,41 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const Background = imports.ui.background;
 
-const TopPanel = Me.imports.module.workspaceEnhancer.topPanelWidget.TopPanel;
-const TilingManager =
-    Me.imports.module.workspaceEnhancer.tilingManager.TilingManager;
+const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
+const {
+    TilingLayoutByKey
+} = Me.imports.tilingManager.tilingLayouts.layoutByKey;
 
 const CategorizedAppCard =
-    Me.imports.module.workspaceEnhancer.categorizedAppCard.CategorizedAppCard;
+    Me.imports.widget.categorizedAppCard.CategorizedAppCard;
 
-const { Stack } = Me.imports.files.Layout;
+const { Stack } = Me.imports.widget.layout;
 
-var WorkspaceEnhancer = class WorkspaceEnhancer {
-    constructor(monitor, category) {
+var SuperWorkspace = class SuperWorkspace {
+    constructor(categoryKey, category, apps, monitor, visible) {
+        this.categoryKey = categoryKey;
+        this.category = category;
         this.monitor = monitor;
+        this.apps = apps;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.category = category;
         this.windows = [];
-        this.panel = new TopPanel(this);
+        this.tilingLayout = new TilingLayoutByKey['grid'](this);
 
-        this.backgroundContainer = new St.Widget();
-        this.frontendContainer = new St.Widget();
+        this.frontendContainer = new St.Widget({
+            visible: visible
+        });
+
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
-        // this.backgroundContainer = new Meta.BackgroundGroup({ reactive: true });
+        this.panel = new TopPanel(this);
+        Main.layoutManager._trackActor(this.panel, {
+            affectsStruts: true
+        });
+
+        this.backgroundContainer = new St.Widget({
+            visible: visible
+        });
 
         this.bgManager = new Background.BackgroundManager({
             container: this.backgroundContainer,
@@ -35,7 +48,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             vignette: false
         });
 
-        this.categorizedAppCard = new CategorizedAppCard(category);
+        this.categorizedAppCard = new CategorizedAppCard(this.category, apps);
         this.backgroundStackLayout = new Stack({
             x: monitor.x,
             y: monitor.y,
@@ -47,8 +60,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         });
 
         this.backgroundContainer.add_child(this.backgroundStackLayout);
-        this.tilingLayout = 'tileRight';
-        this.tilingManager = new TilingManager(this);
+
         this.windowFocused = null;
         this.windowFocusIndex = null;
 
@@ -76,13 +88,12 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
 
         this.panel.set_position(0 + offsetX, 0);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
+        this.tilingLayout.onTile();
     }
 
     destroy() {
-        this.panel.destroy();
-        this.backgroundContainer.destroy();
-        this.tilingManager.unregisterAllWindowsSignal();
-        this.disconnectAll();
+        if (this.frontendContainer) this.frontendContainer.destroy();
+        if (this.backgroundContainer) this.backgroundContainer.destroy();
         this.destroyed = true;
     }
 
@@ -95,6 +106,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
+        log(`window ${window.get_id()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
         this.windows.push(window);
         this.throttleEmit();
@@ -103,6 +115,8 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
+        log(`window ${window.get_id()} remove from ${this.categoryKey}`);
+
         this.windows.splice(windowIndex, 1);
         if (windowIndex === this.windowFocusIndex) {
             let newWindowToFocus =
@@ -172,12 +186,24 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
     }
 
     nextTiling() {
+        this.tilingLayout.onDestroy();
         this.tilingLayout =
-            this.tilingLayout === 'tileRight' ? 'maximize' : 'tileRight';
-        this.tilingManager.setLayout(this.tilingLayout);
+            this.tilingLayout.key === 'grid'
+                ? new TilingLayoutByKey['maximize'](this)
+                : new TilingLayoutByKey['grid'](this);
     }
 
-    showBackground() {
+    showUI() {
+        this.frontendContainer.show();
+        this.backgroundContainer.show();
+    }
+
+    hideUI() {
+        this.frontendContainer.hide();
+        this.backgroundContainer.hide();
+    }
+
+    revealBackground() {
         this.windows.forEach(window => {
             window.minimize();
         });
@@ -188,7 +214,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         let signalId = global.stage.connect('notify::key-focus', () => {
             let focus = global.stage.get_key_focus();
             if (focus !== this.categorizedAppCard) {
-                this.unShowBackground();
+                this.unRevealBackground();
             }
         });
         this.backgroundSignals.push({ from: global.stage, id: signalId });
@@ -196,7 +222,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
             'key-press-event',
             (_, event) => {
                 if (event.get_key_symbol() == Clutter.KEY_Escape) {
-                    this.unShowBackground();
+                    this.unRevealBackground();
                 }
 
                 return Clutter.EVENT_PROPAGATE;
@@ -208,7 +234,7 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         });
     }
 
-    unShowBackground() {
+    unRevealBackground() {
         this.windows.forEach(window => {
             window.unminimize();
         });
@@ -239,4 +265,4 @@ var WorkspaceEnhancer = class WorkspaceEnhancer {
         this.categorizedAppCard._loadApps(apps);
     }
 };
-Signals.addSignalMethods(WorkspaceEnhancer.prototype);
+Signals.addSignalMethods(SuperWorkspace.prototype);

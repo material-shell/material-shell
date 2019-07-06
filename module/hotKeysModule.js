@@ -24,13 +24,13 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const workspaceEnhancer =
+                const superWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? this.workspaceManager.get_active_workspace()
-                              .workspaceEnhancer
-                        : Main.layoutManager.monitors[currentMonitorIndex]
-                              .workspaceEnhancer;
-                workspaceEnhancer.focusPrevious();
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                superWorkspace.focusPrevious();
             }
         );
 
@@ -41,13 +41,13 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const workspaceEnhancer =
+                const superWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? this.workspaceManager.get_active_workspace()
-                              .workspaceEnhancer
-                        : Main.layoutManager.monitors[currentMonitorIndex]
-                              .workspaceEnhancer;
-                workspaceEnhancer.focusNext();
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                superWorkspace.focusNext();
             }
         );
 

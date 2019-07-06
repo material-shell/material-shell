@@ -1,7 +1,7 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 const Params = imports.misc.params;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Row } = Me.imports.files.Layout;
+const { Row } = Me.imports.widget.layout;
 /* exported MatCard */
 var MatCard = GObject.registerClass(
     class MatCard extends St.Bin {
@@ -32,32 +32,6 @@ var MatCardTitle = GObject.registerClass(
                 this.add_child(this.label);
             }
         }
-
-        /* vfunc_allocate(cardTitleBox, flags) {
-            this.set_allocation(cardTitleBox, flags);
-            let themeNode = this.get_theme_node();
-            let contentBox = themeNode.get_content_box(cardTitleBox);
-            let offsetX = 0;
-            if (this.icon) {
-                offsetX = 32;
-                let iconBox = new Clutter.ActorBox({
-                    x1: contentBox.x1,
-                    y1: contentBox.y1,
-                    x2: contentBox.x1 + offsetX,
-                    y2: contentBox.y2
-                });
-                this.icon.allocate(iconBox, flags);
-            }
-            if (this.label) {
-                let iconBox = new Clutter.ActorBox({
-                    x1: contentBox.x1 + offsetX,
-                    y1: contentBox.y1,
-                    x2: contentBox.x1 + offsetX,
-                    y2: contentBox.y2
-                });
-                this.icon.allocate(iconBox, flags);
-            }
-        } */
     }
 );
 
