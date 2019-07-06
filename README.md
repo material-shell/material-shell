@@ -16,27 +16,6 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 2) Reload gnome-shell by logout and re-login
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
-### If using Ubuntu
-
-**Important - do this before enabling `Material-Shell` in Gnome Tweaks**
-
-The stock Gnome Shell on Ubuntu comes with some extensions that can't be disabled through Gnome-Tweaks that interfere with Material Shell. The Ubuntu Dock extension covers up Material Shell's vertical dock, and the Desktop Icons overlay Material Shell's launcher. To disable them, the following can be done:
-
-```shell
-$ sudo mv /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com{,.bak}
-$ sudo mv /usr/share/gnome-shell/extensions/desktop-icons@csoriano{,.bak}
-```
-
-Then restart Gnome Shell (Alt-F2, r <enter>). You will notice that the desktop icons are gone, and there is no dock. To bring up the dock, open the Gnome Overview with the Super (Windows) key. Then launch Tweaks and enable `Material-Shell`. It should now look as expected.
-  
-To restore the original dock and icons after disabling Material Shell, use the following: 
-
-```shell
-$ sudo mv /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com{.bak,}
-$ sudo mv /usr/share/gnome-shell/extensions/desktop-icons@csoriano{.bak,}
-```
-
-
 ## Workflow Hotkeys
 #### Desktop navigation
 * `Super+W` Navigate to the upper workspace/category.
