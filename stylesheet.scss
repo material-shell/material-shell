@@ -1,24 +1,43 @@
+$color-primary: rgb(78, 141, 78);
+$color-bg: rgb(25, 25, 25);
+$color-fg: rgb(200, 200, 200);
+$color-active-bg: rgba(255, 255, 255, 0.2);
+$color-hover-bg: rgba(255, 255, 255, 0.1);
+$color-active-fg: rgb(255, 255, 255);
+$ripple: rgba(255, 255, 255, 0.5);
+$shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+
+.primary-bg {
+    background-color: $color-primary;
+}
+
 .workspace-button {
     padding: 12px;
     &.active {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: $color-active-bg;
         .workspace-icon {
-            color: rgba(255, 255, 255, 1);
+            color: $color-active-fg;
         }
     }
 }
 
 .workspace-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: $color-hover-bg;
     .workspace-icon {
-        color: rgba(255, 255, 255, 1);
+        color: $color-active-fg;
     }
+}
+
+.workspace-main-icon {
+    width: 24px;
+    height: 24px;
+    color: $color-active-fg;
 }
 
 .workspace-icon {
     width: 24px;
     height: 24px;
-    color: rgba(255, 255, 255, 0.8);
+    color: $color-fg;
 }
 
 .workspace-active-indicator {
@@ -27,15 +46,15 @@
 }
 
 .ripple-wave {
-    border-radius: 2000px;
-    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    background-color: $ripple;
 }
 
 #dash {
-    background-color: rgb(25, 25, 25);
-    box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24);
+    background-color: $color-bg;
+    box-shadow: $shadow;
 
-    border-radius: 0;
+    border-radius: 0px;
     padding: 0;
     border: 0;
 }
@@ -46,19 +65,19 @@
     spacing: 0px;
 }
 .task-active-indicator {
-    background: white;
+    background: $color-primary;
     height: 2px;
 }
 .task-bar-item {
     font-size: 14px;
     height: 48px;
     &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: $color-hover-bg;
     }
     &.active {
         .task-bar-item-content {
             .task-bar-item-title {
-                color: rgba(255, 255, 255, 1);
+                color: $color-active-fg;
             }
         }
     }
@@ -72,14 +91,14 @@
             margin-right: 8px;
             font-weight: 600;
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
+            color: $color-fg;
         }
         .task-close-button {
             border-radius: 20px;
             width: 20px;
             height: 20px;
             &:hover {
-                background-color: rgba(255, 255, 255, 0.1);
+                background-color: $color-hover-bg;
             }
         }
     }
@@ -100,11 +119,12 @@
 }
 
 .mat-card {
-    background-color: rgba(25, 25, 25, 1);
+    background-color: $color-bg;
     border-radius: 6px;
-    box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24);
+    box-shadow: $shadow;
     .mat-card-title {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: $color-active-bg;
+        color: $color-active-fg;
         height: 72px;
         padding: 0px 24px;
         .mat-card-title-icon {
@@ -127,10 +147,10 @@
 }
 
 #panel {
-    background-color: rgb(25, 25, 25);
-    box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24);
+    background-color: $color-bg;
+    box-shadow: $shadow;
 }
 
 .backdrop-container {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.5);
 }

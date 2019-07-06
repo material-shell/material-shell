@@ -26,11 +26,7 @@ var WorkspaceList = GObject.registerClass(
                 style_class: 'workspace-active-indicator'
             });
 
-            this.workspaceActiveIndicator.set_background_color(
-                Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor
-                    .get_theme_node()
-                    .get_color('-barlevel-active-background-color')
-            );
+            this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
             this.add_child(this.workspaceActiveIndicator);
 
