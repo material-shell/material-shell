@@ -1,4 +1,4 @@
-const { Clutter, St, Meta, GLib, Shell, Gio } = imports.gi;
+const { Clutter, St, Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();

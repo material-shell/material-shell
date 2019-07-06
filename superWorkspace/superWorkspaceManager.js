@@ -1,7 +1,6 @@
-const { Shell, Meta, GLib } = imports.gi;
+const { Shell, Meta } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { AppsManager } = Me.imports.superWorkspace.appsManager;
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
 const { WorkspaceList } = Me.imports.widget.workspaceList;
@@ -129,7 +128,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         if (focusedMonitorIndex === Main.layoutManager.primaryIndex) {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
 
-            log('search superworkspace by app');
+            log('search superWorkspace by app');
             superWorkspace = this.superWorkspaces.find(superWorkspace => {
                 return (
                     superWorkspace.apps.findIndex(app => {
@@ -140,15 +139,13 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
             if (windowMonitorIndex !== focusedMonitorIndex) {
                 log(
-                    'move window to monitor',
+                    'TODO move window to monitor',
                     focusedMonitorIndex,
                     windowMonitorIndex,
                     metaWindow.get_frame_rect().__animationInfo
                 );
-                Main.wm.skipNextEffect(metaWindow.get_frame_rect());
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    metaWindow.move_to_monitor(focusedMonitorIndex);
-                });
+                // TODO MOVE TO CORRECT MONITOR BUT THE LINE BELOW CRASH IS WAYLAND
+                //metaWindow.move_to_monitor(focusedMonitorIndex);
             }
 
             log('change workspace of the window', superWorkspace);

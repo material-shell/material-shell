@@ -81,6 +81,7 @@ var TilingModule = class TilingModule {
     }
 
     windowChangedSomething(window) {
+        // Probably delete
         return;
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
@@ -88,14 +89,4 @@ var TilingModule = class TilingModule {
             global.tilingManager.tileWindows();
         }
     }
-
-    /*     subscribeToWindowSignals(window) {
-        window.tilingSignals = [];
-        window.tilingSignals.push(
-            window.connect('unmanage', window => {
-                log('unmanage');
-                this.windowChangedSomething(window);
-            })
-        );
-    } */
 };

@@ -1,5 +1,3 @@
-const { Pango } = imports.gi;
-
 /* exported RectangularClockSubModule */
 var RectangularClockSubModule = class RectangularClockSubModule {
     constructor(dateMenu) {

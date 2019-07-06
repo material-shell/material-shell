@@ -1,7 +1,5 @@
-const Meta = imports.gi.Meta;
 const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported TilingManager */
 var TilingManager = class TilingManager {
@@ -23,7 +21,7 @@ var TilingManager = class TilingManager {
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log(`tile windows start`);
+            log('tile windows start');
             for (let monitor of Main.layoutManager.monitors) {
                 let superWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
@@ -43,7 +41,7 @@ var TilingManager = class TilingManager {
                 layout.onTile();
                 //this.dialogLayout.onTile(dialogWindows, monitor);
             }
-            log(`tile windows end`);
+            log('tile windows end');
             this.tilingInProgress = false;
         });
     }

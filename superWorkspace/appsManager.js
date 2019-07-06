@@ -4,8 +4,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 
+/* exported AppsManager */
 var AppsManager = class AppsManager {
-    constructor(apps) {}
+    constructor() {}
 
     static getApps() {
         let usage = Shell.AppUsage.get_default();

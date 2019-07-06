@@ -66,7 +66,7 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
         super.onWindowsChanged(windows);
     }
 
-    onFocusChanged(windowFocused) {}
+    onFocusChanged() {}
 
     onTileRegulars(windows) {
         if (!windows.length) return;
