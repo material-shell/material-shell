@@ -26,7 +26,7 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         });
         this.dashSpacer.set_size(48, Main.overview._controls._group.height);
         this.panelBox.set_size(48, this.primaryMonitor.height);
-
+        this.panel.set_size(48, this.primaryMonitor.height);
         this.panelBox.set_position(
             this.primaryMonitor.x,
             this.primaryMonitor.y
@@ -69,6 +69,7 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         Main.layoutManager.disconnect(this.signalMonitorId);
         Main.overview._controls._group.remove_child(this.dashSpacer); // insert on first
         this.panelBox.remove_child(this.panel);
+        this.panel.set_size(-1, -1);
         Main.layoutManager.panelBox.add_child(this.panel);
         Main.layoutManager.removeChrome(this.panelBox);
 
