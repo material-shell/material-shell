@@ -88,7 +88,7 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
 
             if (index === 0) {
                 window.move_resize_frame(
-                    window,
+                    false,
                     workArea.x,
                     workArea.y,
                     masterWidth,
@@ -96,7 +96,7 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
                 );
             } else {
                 window.move_resize_frame(
-                    window,
+                    false,
                     workArea.x + masterWidth,
                     workArea.y +
                         ((index - 1) * workArea.height) / (windows.length - 1),

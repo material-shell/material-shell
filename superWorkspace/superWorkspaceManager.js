@@ -1,4 +1,4 @@
-const { Shell, Meta } = imports.gi;
+const { Shell, Meta, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { AppsManager } = Me.imports.superWorkspace.appsManager;
@@ -6,6 +6,7 @@ const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
 const { WorkspaceList } = Me.imports.widget.workspaceList;
 
+/* exported SuperWorkspaceManager */
 var SuperWorkspaceManager = class SuperWorkspaceManager {
     constructor(appsByCategory) {
         this.workspaceManager = global.workspace_manager;
@@ -124,8 +125,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         const windowMonitorIndex = metaWindow.get_monitor();
         const focusedMonitorIndex = global.display.get_current_monitor();
         let superWorkspace;
+
         if (focusedMonitorIndex === Main.layoutManager.primaryIndex) {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
+
+            log('search superworkspace by app');
             superWorkspace = this.superWorkspaces.find(superWorkspace => {
                 return (
                     superWorkspace.apps.findIndex(app => {
@@ -133,10 +137,21 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     }) > -1
                 );
             });
+
             if (windowMonitorIndex !== focusedMonitorIndex) {
-                metaWindow.move_to_monitor(focusedMonitorIndex);
+                log(
+                    'move window to monitor',
+                    focusedMonitorIndex,
+                    windowMonitorIndex,
+                    metaWindow.get_frame_rect().__animationInfo
+                );
+                Main.wm.skipNextEffect(metaWindow.get_frame_rect());
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    metaWindow.move_to_monitor(focusedMonitorIndex);
+                });
             }
 
+            log('change workspace of the window', superWorkspace);
             metaWindow.change_workspace(
                 this.getWorkspaceOfSuperWorkspace(superWorkspace)
             );
