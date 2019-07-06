@@ -1,5 +1,7 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
+const {
+    DisableIncompatibleExtensionsModule
+} = Me.imports.module.disableIncompatibleExtensionsModule;
 const { LeftPanelModule } = Me.imports.module.leftPanel.leftPanelModule;
 const { SuperWorkspaceModule } = Me.imports.module.superWorkspaceModule;
 const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
@@ -16,6 +18,7 @@ function init() {
     log('--------------');
     global.materialShell = Me;
     modules = [
+        new DisableIncompatibleExtensionsModule(),
         new RequiredSettingsModule(),
         new LeftPanelModule(),
         new SuperWorkspaceModule(),
