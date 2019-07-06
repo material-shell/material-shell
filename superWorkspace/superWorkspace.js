@@ -33,10 +33,14 @@ var SuperWorkspace = class SuperWorkspace {
         });
 
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
+
         this.panel = new TopPanel(this);
-        Main.layoutManager._trackActor(this.panel, {
-            affectsStruts: true
-        });
+
+        if (this.monitor.index !== Main.layoutManager.primaryIndex) {
+            Main.layoutManager._trackActor(this.panel, {
+                affectsStruts: true
+            });
+        }
 
         this.backgroundContainer = new St.Widget({
             visible: visible
@@ -191,6 +195,7 @@ var SuperWorkspace = class SuperWorkspace {
             this.tilingLayout.key === 'grid'
                 ? new TilingLayoutByKey['maximize'](this)
                 : new TilingLayoutByKey['grid'](this);
+        this.tilingLayout.onTile();
     }
 
     showUI() {

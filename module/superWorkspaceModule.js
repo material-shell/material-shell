@@ -156,7 +156,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
-
+                //Main.messageTray._escapeTray();
                 // Creating a new container over the switchData,container
                 let primaryMonitorGeometry = global.display.get_monitor_geometry(
                     global.display.get_primary_monitor()
@@ -176,6 +176,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 let from = arguments[0];
                 let to = arguments[1];
                 let direction = arguments[2];
+
                 let curWs = global.workspace_manager.get_workspace_by_index(
                     from
                 );
@@ -183,6 +184,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 let curSuperWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                     from
                 );
+
                 this._switchData.previousFrontendContainer =
                     curSuperWorkspace.frontendContainer;
                 this._switchData.previousFrontendContainer.show();
@@ -219,15 +221,15 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     let superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                         ws.index()
                     );
-                    info.panel = superWorkspace.frontendContainer;
-                    info.panel.show();
+                    info.frontendContainer = superWorkspace.frontendContainer;
+                    info.frontendContainer.show();
                     info.backgroundContainer =
                         superWorkspace.backgroundContainer;
 
                     info.backgroundActor =
                         superWorkspace.bgManager.backgroundActor;
-                    info.panel.reparent(info.actor);
-                    info.panel.raise_top();
+                    info.frontendContainer.reparent(info.actor);
+                    info.frontendContainer.raise_top();
                     info.backgroundContainer.reparent(info.actor);
                     info.backgroundContainer.lower_bottom();
                     info.actor.set_offscreen_redirect(
@@ -257,8 +259,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 for (let dir of Object.values(Meta.MotionDirection)) {
                     let info = switchData.surroundings[dir];
                     if (info) {
-                        info.panel.reparent(Main.layoutManager.uiGroup);
-                        info.panel.hide();
+                        info.frontendContainer.reparent(
+                            Main.layoutManager.uiGroup
+                        );
+                        info.frontendContainer.hide();
                         info.backgroundContainer.reparent(
                             Main.layoutManager._backgroundGroup
                         );
