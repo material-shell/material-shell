@@ -1,3 +1,4 @@
+const { GLib } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     DisableIncompatibleExtensionsModule
@@ -10,7 +11,7 @@ const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
 const { StateManager } = Me.imports.stateManager;
 
-let modules;
+let disableIncompatibleExtensionsModule, modules;
 
 // eslint-disable-next-line no-unused-vars
 function init() {
@@ -19,8 +20,8 @@ function init() {
     log('--------------');
     global.materialShell = Me;
     Me.stateManager = new StateManager();
+    disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
     modules = [
-        new DisableIncompatibleExtensionsModule(),
         new RequiredSettingsModule(),
         new LeftPanelModule(),
         new SuperWorkspaceModule(),
@@ -35,10 +36,14 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-    Me.stateManager.loadRegistry(state => {
-        log(state);
-        modules.forEach(module => {
-            module.enable();
+    //Delay to wait for others extensions to load first;
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        //Then disable incompatibles extensions;
+        disableIncompatibleExtensionsModule.enable();
+        Me.stateManager.loadRegistry(() => {
+            modules.forEach(module => {
+                module.enable();
+            });
         });
     });
 }
