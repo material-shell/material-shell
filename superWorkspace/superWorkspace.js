@@ -145,7 +145,8 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     focusNext() {
-        if (this.windowFocusIndex === this.windows.length - 1) {
+        let windowFocusIndex = this.windows.indexOf(this.windowFocused);
+        if (windowFocusIndex === this.windows.length - 1) {
             return;
         }
         this.windows[this.windowFocusIndex + 1].activate(
@@ -154,12 +155,11 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     focusPrevious() {
-        if (this.windowFocusIndex === 0) {
+        let windowFocusIndex = this.windows.indexOf(this.windowFocused);
+        if (windowFocusIndex === 0) {
             return;
         }
-        this.windows[this.windowFocusIndex - 1].activate(
-            global.get_current_time()
-        );
+        this.windows[windowFocusIndex - 1].activate(global.get_current_time());
     }
 
     onFocus(windowFocused) {

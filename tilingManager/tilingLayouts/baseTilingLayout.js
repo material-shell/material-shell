@@ -42,7 +42,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTile() {
-        log('tile for real');
+        log('tile for real', this.superWorkspace.categoryKey);
         let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);

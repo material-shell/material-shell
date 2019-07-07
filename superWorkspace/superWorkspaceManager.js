@@ -141,8 +141,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 log(
                     'TODO move window to monitor',
                     focusedMonitorIndex,
-                    windowMonitorIndex,
-                    metaWindow.get_frame_rect().__animationInfo
+                    windowMonitorIndex
                 );
                 // TODO MOVE TO CORRECT MONITOR BUT THE LINE BELOW CRASH IS WAYLAND
                 //metaWindow.move_to_monitor(focusedMonitorIndex);
