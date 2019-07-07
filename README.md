@@ -17,7 +17,7 @@ Get notified on updates and join me at [https://discord.gg/vBb7D9a](https://disc
 ```
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-2) Reload gnome-shell by logout and re-login
+2) Reload gnome-shell by hitting `Alt+F2` and typing the command `r`
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
 ## Workflow Hotkeys
