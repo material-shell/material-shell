@@ -8,6 +8,7 @@ const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
 const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
+const { StateManager } = Me.imports.stateManager;
 
 let modules;
 
@@ -17,6 +18,7 @@ function init() {
     log('INIT EXTENSION');
     log('--------------');
     global.materialShell = Me;
+    Me.stateManager = new StateManager();
     modules = [
         new DisableIncompatibleExtensionsModule(),
         new RequiredSettingsModule(),
@@ -33,8 +35,11 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-    modules.forEach(module => {
-        module.enable();
+    Me.stateManager.loadRegistry(state => {
+        log(state);
+        modules.forEach(module => {
+            module.enable();
+        });
     });
 }
 

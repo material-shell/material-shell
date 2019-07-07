@@ -1,4 +1,4 @@
-const { Clutter, GLib, St } = imports.gi;
+const { Clutter, GLib, St, Gio } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 
@@ -26,8 +26,11 @@ var SuperWorkspace = class SuperWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.category = category;
         this.windows = [];
-        this.tilingLayout = new TilingLayoutByKey['grid'](this);
-
+        let previousLayout =
+            Me.stateManager.getState(
+                `${this.categoryKey}_${this.monitor.index}`
+            ) || 'grid';
+        this.tilingLayout = new TilingLayoutByKey[previousLayout](this);
         this.frontendContainer = new St.Widget({
             visible: visible
         });
@@ -185,11 +188,13 @@ var SuperWorkspace = class SuperWorkspace {
 
     nextTiling() {
         this.tilingLayout.onDestroy();
-        this.tilingLayout =
-            this.tilingLayout.key === 'grid'
-                ? new TilingLayoutByKey['maximize'](this)
-                : new TilingLayoutByKey['grid'](this);
-
+        let newLayoutKey =
+            this.tilingLayout.key === 'grid' ? 'maximize' : 'grid';
+        Me.stateManager.setState(
+            `${this.categoryKey}_${this.monitor.index}`,
+            newLayoutKey
+        );
+        this.tilingLayout = new TilingLayoutByKey[newLayoutKey](this);
         this.tilingLayout.onTile();
     }
 
