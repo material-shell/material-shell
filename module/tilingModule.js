@@ -25,7 +25,7 @@ var TilingModule = class TilingModule {
             })
         }); */
 
-        this.signals.push({
+        /* this.signals.push({
             from: global.display,
             id: global.display.connect(
                 'window-entered-monitor',
@@ -45,7 +45,7 @@ var TilingModule = class TilingModule {
                     this.windowChangedSomething(window);
                 }
             )
-        });
+        }); */
 
         this.signals.push({
             from: global.display,

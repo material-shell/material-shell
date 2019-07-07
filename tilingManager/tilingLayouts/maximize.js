@@ -1,4 +1,4 @@
-const { St, Gio } = imports.gi;
+const { St, Gio, Meta } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -30,7 +30,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        log('onFocusChanged', windowFocused, oldWindowFocused);
         const newIndex = this.windows.indexOf(windowFocused);
         const oldIndex = this.windows.indexOf(oldWindowFocused);
         this.windowFocused = windowFocused;
@@ -47,13 +46,10 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
         windows.forEach(window => {
             if (window.grabbed) return;
-            window.move_resize_frame(
-                window,
-                workArea.x,
-                workArea.y,
-                workArea.width,
-                workArea.height
-            );
+            if (!window.maximized_horizontally) {
+                window.maximize(Meta.MaximizeFlags.BOTH);
+            }
+
             if (window !== this.windowFocused) {
                 window.get_compositor_private().hide();
             }

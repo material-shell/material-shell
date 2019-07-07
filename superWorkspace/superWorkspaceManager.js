@@ -172,7 +172,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     windowEnteredWorkspace(window, workspace) {
-        if (!this._handleWindow(window) || window.on_all_workspaces) {
+        if (
+            !this._handleWindow(window) ||
+            window.on_all_workspaces ||
+            !window.get_compositor_private()
+        ) {
             return;
         }
         log(`window ${window.get_id()} entered in workspace`);

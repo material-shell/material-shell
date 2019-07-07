@@ -1,4 +1,4 @@
-const Meta = imports.gi.Meta;
+const { Meta, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
@@ -68,12 +68,41 @@ var BaseTilingLayout = class BaseTilingLayout {
             window.backdrop.raise_top();
             metaWindow.raise();
             window.raise_top();
-            metaWindow.move_frame(
-                window,
+            this.moveMetaWindow(
+                metaWindow,
                 workArea.x + workArea.width / 2 - window.width / 2,
                 workArea.y + workArea.height / 2 - window.height / 2
             );
         });
+    }
+
+    moveMetaWindow(metaWindow, x, y, alreadyDelayed) {
+        let actor = metaWindow.get_compositor_private();
+        if (actor.mapped) {
+            metaWindow.move_frame(false, x, y);
+        } else if (!alreadyDelayed) {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                this.moveMetaWindow(metaWindow, x, y, true);
+            });
+        }
+    }
+
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, alreadyDelayed) {
+        let actor = metaWindow.get_compositor_private();
+        if (actor.mapped) {
+            metaWindow.move_resize_frame(false, x, y, width, height);
+        } else if (!alreadyDelayed) {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                this.moveAndResizeMetaWindow(
+                    metaWindow,
+                    x,
+                    y,
+                    width,
+                    height,
+                    true
+                );
+            });
+        }
     }
 
     onDestroy() {

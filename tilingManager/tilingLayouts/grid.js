@@ -87,16 +87,16 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
 
             if (index === 0) {
-                window.move_resize_frame(
-                    false,
+                this.moveAndResizeMetaWindow(
+                    window,
                     workArea.x,
                     workArea.y,
                     masterWidth,
                     workArea.height
                 );
             } else {
-                window.move_resize_frame(
-                    false,
+                this.moveAndResizeMetaWindow(
+                    window,
                     workArea.x + masterWidth,
                     workArea.y +
                         ((index - 1) * workArea.height) / (windows.length - 1),
@@ -107,5 +107,8 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
         });
     }
 
-    onDestroy() {}
+    onDestroy() {
+        super.onDestroy();
+        global.display.disconnect(this.grabStartSignal);
+    }
 };

@@ -113,6 +113,7 @@ var SuperWorkspace = class SuperWorkspace {
         log(`window ${window.get_id()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
         this.windows.push(window);
+        this.onFocus(window);
         this.throttleEmit();
     }
 
@@ -122,11 +123,11 @@ var SuperWorkspace = class SuperWorkspace {
         log(`window ${window.get_id()} remove from ${this.categoryKey}`);
 
         this.windows.splice(windowIndex, 1);
-        if (windowIndex === this.windowFocusIndex) {
+        if (window === this.windowFocused) {
             let newWindowToFocus =
                 this.windows[windowIndex - 1] || this.windows[0];
             if (newWindowToFocus) {
-                newWindowToFocus.focus(global.get_current_time());
+                this.onFocus(newWindowToFocus);
             }
         }
         this.throttleEmit();
@@ -159,14 +160,9 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     onFocus(windowFocused) {
-        if (windowFocused !== this.windowFocused) {
-            this.emit(
-                'window-focused-changed',
-                windowFocused,
-                this.windowFocused
-            );
-            this.windowFocused = windowFocused;
-        }
+        if (windowFocused === this.windowFocused) return;
+        this.emit('window-focused-changed', windowFocused, this.windowFocused);
+        this.windowFocused = windowFocused;
     }
 
     setWindowBefore(windowToMove, windowRelative) {
@@ -175,7 +171,6 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-
         this.throttleEmit();
     }
 
@@ -185,7 +180,6 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-
         this.throttleEmit();
     }
 
@@ -195,6 +189,7 @@ var SuperWorkspace = class SuperWorkspace {
             this.tilingLayout.key === 'grid'
                 ? new TilingLayoutByKey['maximize'](this)
                 : new TilingLayoutByKey['grid'](this);
+
         this.tilingLayout.onTile();
     }
 
