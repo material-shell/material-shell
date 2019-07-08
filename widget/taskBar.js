@@ -269,6 +269,7 @@ let TaskBarItem = GObject.registerClass(
             this.app = app;
 
             // ICON
+            this.iconSize = 24 * scaleFactor;
             this.icon = app.create_icon_texture(this.iconSize);
             this.icon.style_class = 'app-icon';
 
