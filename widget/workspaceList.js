@@ -95,8 +95,10 @@ var WorkspaceList = GObject.registerClass(
                 superWorkspace
             );
             this.buttonActive.contentActor.add_style_class_name('active');
+            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
+                .scale_factor;
             Tweener.addTween(this.workspaceActiveIndicator, {
-                translation_y: 48 * workspaceIndex,
+                translation_y: 48 * scaleFactor * workspaceIndex,
                 time: 0.25,
                 transition: 'easeOutQuad'
             });

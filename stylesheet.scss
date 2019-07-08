@@ -1,11 +1,12 @@
-$color-primary: rgb(36, 174, 216);
+$color-primary: #3f51b5;
 $color-bg: rgb(25, 25, 25);
 $color-fg: rgb(200, 200, 200);
-$color-active-bg: rgba(255, 255, 255, 0.2);
-$color-hover-bg: rgba(255, 255, 255, 0.1);
+$color-active-bg: rgba(255, 255, 255, 0.12);
+$color-hover-bg: rgba(255, 255, 255, 0.04);
 $color-active-fg: rgb(255, 255, 255);
-$ripple: rgba(255, 255, 255, 0.5);
+$ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+$panel-size: 48px;
 
 .primary-bg {
     background-color: $color-primary;
@@ -46,31 +47,45 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
 .ripple-wave {
-    border-radius: 50%;
+    //This is a hack because percentage is not handled yet
+    border-radius: 2000px;
     background-color: $ripple;
 }
 
-#dash {
+#leftPanelBox,
+#leftDashSpacer {
+    width: $panel-size;
+}
+
+#panel {
+    width: $panel-size;
     background-color: $color-bg;
     box-shadow: $shadow;
-
-    border-radius: 0px;
-    padding: 0;
-    border: 0;
+    #panelLeft,
+    #panelCenter {
+        // spacing between activities<>app menu and such
+        spacing: 0px;
+    }
 }
 
-#panelLeft,
-#panelCenter {
-    // spacing between activities<>app menu and such
-    spacing: 0px;
+#topBarSpacer {
+    height: $panel-size;
 }
+
+#topPanel {
+    height: $panel-size;
+    background-color: $color-bg;
+    box-shadow: $shadow;
+}
+
 .task-active-indicator {
-    background: $color-primary;
+    background: $color-active-fg;
     height: 2px;
 }
+
 .task-bar-item {
     font-size: 14px;
-    height: 48px;
+    height: $panel-size;
     &:hover {
         background-color: $color-hover-bg;
     }
@@ -84,6 +99,7 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
     .task-bar-item-content {
         padding: 0px 8px;
         .app-icon {
+            icon-size: 24px;
             margin-right: 8px;
         }
         .task-bar-item-title {
@@ -95,10 +111,13 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
         }
         .task-close-button {
             border-radius: 20px;
-            width: 20px;
+            width: 24px;
             height: 20px;
             &:hover {
                 background-color: $color-hover-bg;
+            }
+            .task-close-icon {
+                icon-size: 18px;
             }
         }
     }
@@ -144,11 +163,6 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
     .overview-icon {
         margin: 8px;
     }
-}
-
-#panel {
-    background-color: $color-bg;
-    box-shadow: $shadow;
 }
 
 .backdrop-container {

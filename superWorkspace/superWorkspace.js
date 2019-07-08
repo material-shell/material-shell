@@ -71,35 +71,46 @@ var SuperWorkspace = class SuperWorkspace {
         this.windowFocused = null;
         this.windowFocusIndex = null;
 
-        global.display.connect('notify::focus-window', () => {
-            let windowFocused = global.display.focus_window;
-            let index = this.windows.indexOf(windowFocused);
-            if (index === -1) {
-                return;
+        this.focusEventId = global.display.connect(
+            'notify::focus-window',
+            () => {
+                let windowFocused = global.display.focus_window;
+                let index = this.windows.indexOf(windowFocused);
+                if (index === -1) {
+                    return;
+                }
+                if (windowFocused.is_attached_dialog()) {
+                    windowFocused = windowFocused.get_transient_for();
+                    index = this.windows.indexOf(windowFocused);
+                }
+                this.windowFocusIndex = index;
+                this.onFocus(windowFocused);
             }
-            if (windowFocused.is_attached_dialog()) {
-                windowFocused = windowFocused.get_transient_for();
-                index = this.windows.indexOf(windowFocused);
-            }
-            this.windowFocusIndex = index;
-            this.onFocus(windowFocused);
-        });
+        );
 
-        const offsetX = this.monitorIsPrimary ? 48 : 0;
+        this.workAreaChangedId = global.display.connect(
+            'workareas-changed',
+            () => {
+                this.updateTopBarPositionAndSize();
+            }
+        );
+
         if (this.monitorIsPrimary) {
             this.frontendContainer.hide();
             this.backgroundContainer.hide();
         }
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
-
-        this.panel.set_position(0 + offsetX, 0);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
+        this.updateTopBarPositionAndSize();
     }
 
     destroy() {
         if (this.frontendContainer) this.frontendContainer.destroy();
         if (this.backgroundContainer) this.backgroundContainer.destroy();
+        global.display.disconnect(this.focusEventId);
+        global.display.disconnect(this.workAreaChangedId);
+        this.tilingLayout.destroy();
         this.destroyed = true;
     }
 
@@ -108,6 +119,14 @@ var SuperWorkspace = class SuperWorkspace {
             !global.display.get_monitor_in_fullscreen(this.monitor.index) &&
             !Main.overview.visible
         );
+    }
+
+    updateTopBarPositionAndSize() {
+        let workarea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+        this.panel.set_position(workarea.x - this.monitor.x, 0);
+        this.panel.set_width(workarea.width);
     }
 
     addWindow(window) {
