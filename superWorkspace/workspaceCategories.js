@@ -98,7 +98,7 @@ var WorkspaceCategories = {
         acceptOrphans: false,
         primary: true
     },
-    other: {
+    /*     other: {
         icon: Gio.icon_new_for_string(
             `${Me.path}/assets/icons/package-symbolic.svg`
         ),
@@ -108,7 +108,7 @@ var WorkspaceCategories = {
         acceptAll: false,
         acceptOrphans: true,
         primary: true
-    },
+    }, */
     external: {
         icon: Gio.icon_new_for_string(
             `${Me.path}/assets/icons/package-symbolic.svg`

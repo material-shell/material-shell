@@ -37,7 +37,11 @@ var TilingManager = class TilingManager {
                     dialogWindows,
                     regularWindows
                 ] = this.getDialogAndRegularWindows(superWorkspace.windows); */
-
+                log(
+                    `${
+                        superWorkspace.categoryKey
+                    } ask for tiling from tiling Manager`
+                );
                 layout.onTile();
                 //this.dialogLayout.onTile(dialogWindows, monitor);
             }

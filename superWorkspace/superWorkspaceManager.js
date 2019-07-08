@@ -118,49 +118,60 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     addWindowToAppropriateSuperWorkspace(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
+
         log(
-            `window ${metaWindow.get_id()} has been added to the appropriate SuperWorkspace`
+            `window ${metaWindow.get_title()} search for the appropriate SuperWorkspace`
         );
+
         const windowMonitorIndex = metaWindow.get_monitor();
-        const focusedMonitorIndex = global.display.get_current_monitor();
-        let superWorkspace;
+        const currentWindowWorkspace = metaWindow.get_workspace();
+        /*  const focusedMonitorIndex = global.display.get_current_monitor(); */
 
-        if (focusedMonitorIndex === Main.layoutManager.primaryIndex) {
-            const appToFind = this.windowTracker.get_window_app(metaWindow);
+        const appToFind = this.windowTracker.get_window_app(metaWindow);
 
-            log('search superWorkspace by app');
-            superWorkspace =
-                this.superWorkspaces.find(superWorkspace => {
-                    return (
-                        superWorkspace.apps.findIndex(app => {
-                            return app.get_id() === appToFind.get_id();
-                        }) > -1
-                    );
-                }) || this.superWorkspaces[0];
-
-            if (windowMonitorIndex !== focusedMonitorIndex) {
-                log(
-                    'TODO move window to monitor',
-                    focusedMonitorIndex,
-                    windowMonitorIndex
-                );
-                // TODO MOVE TO CORRECT MONITOR BUT THE LINE BELOW CRASH IS WAYLAND
-                //metaWindow.move_to_monitor(focusedMonitorIndex);
-            }
-            superWorkspace;
-            log('change workspace of the window', superWorkspace);
-            metaWindow.change_workspace(
-                this.getWorkspaceOfSuperWorkspace(superWorkspace)
+        log('search superWorkspace by app');
+        let superWorkspace = this.superWorkspaces.find(superWorkspace => {
+            return (
+                superWorkspace.category.primary &&
+                superWorkspace.apps.findIndex(app => {
+                    return app.get_id() === appToFind.get_id();
+                }) > -1
             );
-        } else {
-            superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
-                focusedMonitorIndex
-            )[0];
+        });
+
+        if (!superWorkspace) {
+            log('No superWorkspace by app founded');
+            if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
+                log(
+                    'Window is on external monitor try to find right Superworkspace'
+                );
+                superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+                    windowMonitorIndex
+                )[0];
+            } else {
+                log(
+                    'Window is on primary monitor try to find right Superworkspace'
+                );
+                superWorkspace = this.getPrimarySuperWorkspaceByIndex(
+                    currentWindowWorkspace.index()
+                );
+            }
+            log(`the superWorkspace founded is ${superWorkspace.categoryKey}`);
         }
-        /* metaWindow.activate_with_workspace(
-            global.get_current_time(),
-            this.getWorkspaceOfSuperWorkspace(superWorkspace)
-        ); */
+
+        let workspaceOfSuperWorkspace = this.getWorkspaceOfSuperWorkspace(
+            superWorkspace
+        );
+        if (
+            workspaceOfSuperWorkspace &&
+            workspaceOfSuperWorkspace !== currentWindowWorkspace
+        ) {
+            log(
+                `the window is not on the correct workspace so it's moved to  ${workspaceOfSuperWorkspace.index()}`
+            );
+            metaWindow.change_workspace(workspaceOfSuperWorkspace);
+        }
+
         log(superWorkspace.categoryKey);
         superWorkspace.addWindow(metaWindow);
     }
