@@ -10,7 +10,7 @@ const { GridLayout } = Me.imports.tilingManager.tilingLayouts.grid;
 var VerticalGridLayout = class VerticalGridLayout extends GridLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'verticalGrid';
+        this.key = 'vertical-grid';
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/view-quilt-vertical-symbolic.svg`
         );

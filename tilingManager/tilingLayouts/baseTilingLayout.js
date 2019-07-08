@@ -41,9 +41,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }

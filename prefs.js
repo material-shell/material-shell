@@ -5,6 +5,7 @@ const Lang = imports.lang;
 
 // Extension imports
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 function init() {}
 
 const pretty_names = {
@@ -18,8 +19,9 @@ const pretty_names = {
 function buildPrefsWidget() {
     let notebook = new Gtk.Notebook();
     accel_tab(notebook);
+    layouts_tab(notebook);
     /* basics_tab(notebook);
-    
+
     presets_tab(notebook);
     margins_tab(notebook);
     help_tab(notebook); */
@@ -150,6 +152,55 @@ function accel_tab(notebook) {
         label: 'Shortcuts',
         halign: Gtk.Align.START,
         use_markup: false
+    });
+    notebook.append_page(ks_window, ks_label);
+}
+
+function layouts_tab(notebook) {
+    const layouts = {
+        maximize: 'Maximize all windows',
+        grid: 'Tile windows horizontaly',
+        'vertical-grid': 'Tile windows vertically'
+    };
+    const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
+        Me.dir.get_path(),
+        Gio.SettingsSchemaSource.get_default(),
+        false
+    );
+    const settings = new Gio.Settings({
+        settings_schema: SchemaSource.lookup(Me.metadata['layouts'], true)
+    });
+
+    let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
+    const ks_lbox = new Gtk.ListBox({
+        vexpand: false,
+        valign: Gtk.Align.START
+    });
+    ks_window.add(ks_lbox);
+    let ks_label = new Gtk.Label({
+        label: 'Layouts',
+        halign: Gtk.Align.START,
+        use_markup: false
+    });
+    Object.entries(layouts).forEach(([layout, description]) => {
+        const row = new Gtk.ListBoxRow();
+        const hbox = new Gtk.HBox();
+        let item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+
+        const name = new Gtk.Label({ xalign: 0 });
+        name.set_markup(`<span size="medium">${layout}</span>`);
+        const desc = new Gtk.Label({ xalign: 0 });
+        desc.set_markup(`<span size="small">${description}</span>`);
+
+        const vbox = new Gtk.VBox();
+        vbox.pack_start(name, false, false, 0);
+        vbox.pack_start(desc, false, false, 0);
+        hbox.pack_start(vbox, true, true, 10);
+        hbox.pack_start(item, false, false, 0);
+        row.add(hbox);
+
+        ks_lbox.add(row);
+        settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
     });
     notebook.append_page(ks_window, ks_label);
 }

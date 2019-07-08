@@ -13,5 +13,7 @@
     <file>assets/icons/play-circle-outline-symbolic.svg</file>
     <file>assets/icons/plus-symbolic.svg</file>
     <file>assets/icons/web-symbolic.svg</file>
+    <file>assets/icons/view-quilt-symbolic.svg</file>
+    <file>assets/icons/view-quilt-vertical-symbolic.svg</file>
   </gresource>
 </gresources>

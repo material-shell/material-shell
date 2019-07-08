@@ -24,10 +24,10 @@ function init() {
     modules = [
         new RequiredSettingsModule(),
         new LeftPanelModule(),
+        new TilingModule(),
         new SuperWorkspaceModule(),
         new NoTitleBarModule(),
-        new HotKeysModule(),
-        new TilingModule()
+        new HotKeysModule()
     ];
 }
 

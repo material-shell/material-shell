@@ -9,6 +9,6 @@ const {
 /* exported TilingLayoutByKey */
 var TilingLayoutByKey = {
     grid: GridLayout,
-    verticalGrid: VerticalGridLayout,
+    'vertical-grid': VerticalGridLayout,
     maximize: MaximizeLayout
 };
