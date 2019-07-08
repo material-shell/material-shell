@@ -261,14 +261,15 @@ let TaskBarItem = GObject.registerClass(
                 can_focus: true,
                 track_hover: true
             });
-
+            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
+                .scale_factor;
             this._delegate = this;
 
             this.window = window;
             this.app = app;
 
             // ICON
-            this.iconSize = 24;
+            this.iconSize = 24 * scaleFactor;
             this.icon = app.create_icon_texture(this.iconSize);
             this.icon.style_class = 'app-icon';
 
@@ -288,12 +289,11 @@ let TaskBarItem = GObject.registerClass(
                 can_focus: true,
                 track_hover: true,
                 style_class: 'task-close-button',
-                width: 24,
                 child: new St.Icon({
+                    style_class: 'task-close-icon',
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/close-symbolic.svg`
-                    ),
-                    icon_size: 18
+                    )
                 })
             });
 
@@ -331,9 +331,12 @@ let TaskBarItem = GObject.registerClass(
             this.connect('motion-event', (_, event) => {
                 if (this.mouseData.pressed && !this.mouseData.dragged) {
                     let coords = event.get_coords();
+                    let scaleFactor = St.ThemeContext.get_for_stage(
+                        global.stage
+                    ).scale_factor;
                     if (
                         Math.abs(this.mouseData.originalCoords[0] - coords[0]) >
-                            48 &&
+                            48 * scaleFactor &&
                         !this.mouseData.dragged
                     ) {
                         this.mouseData.dragged = true;

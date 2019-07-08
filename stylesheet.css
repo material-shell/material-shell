@@ -1,19 +1,27 @@
+.primary-bg {
+  background-color: #3f51b5; }
+
 .workspace-button {
   padding: 12px; }
   .workspace-button.active {
-    background-color: rgba(255, 255, 255, 0.1); }
+    background-color: rgba(255, 255, 255, 0.12); }
     .workspace-button.active .workspace-icon {
       color: white; }
 
 .workspace-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); }
+  background-color: rgba(255, 255, 255, 0.04); }
   .workspace-button:hover .workspace-icon {
     color: white; }
+
+.workspace-main-icon {
+  width: 24px;
+  height: 24px;
+  color: white; }
 
 .workspace-icon {
   width: 24px;
   height: 24px;
-  color: rgba(255, 255, 255, 0.8); }
+  color: #c8c8c8; }
 
 .workspace-active-indicator {
   width: 3px;
@@ -21,18 +29,27 @@
 
 .ripple-wave {
   border-radius: 2000px;
-  background-color: rgba(255, 255, 255, 0.3); }
+  background-color: rgba(255, 255, 255, 0.16); }
 
-#dash {
+#leftPanelBox,
+#leftDashSpacer {
+  width: 48px; }
+
+#panel {
+  width: 48px;
   background-color: #191919;
-  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24);
-  border-radius: 0;
-  padding: 0;
-  border: 0; }
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  #panel #panelLeft,
+  #panel #panelCenter {
+    spacing: 0px; }
 
-#panelLeft,
-#panelCenter {
-  spacing: 0px; }
+#topBarSpacer {
+  height: 48px; }
+
+#topPanel {
+  height: 48px;
+  background-color: #191919;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
 
 .task-active-indicator {
   background: white;
@@ -42,25 +59,28 @@
   font-size: 14px;
   height: 48px; }
   .task-bar-item:hover {
-    background-color: rgba(255, 255, 255, 0.1); }
+    background-color: rgba(255, 255, 255, 0.04); }
   .task-bar-item.active .task-bar-item-content .task-bar-item-title {
     color: white; }
   .task-bar-item .task-bar-item-content {
     padding: 0px 8px; }
     .task-bar-item .task-bar-item-content .app-icon {
+      icon-size: 24px;
       margin-right: 8px; }
     .task-bar-item .task-bar-item-content .task-bar-item-title {
       max-width: 248px;
       margin-right: 8px;
       font-weight: 600;
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.5); }
+      color: #c8c8c8; }
     .task-bar-item .task-bar-item-content .task-close-button {
       border-radius: 20px;
-      width: 20px;
+      width: 24px;
       height: 20px; }
       .task-bar-item .task-bar-item-content .task-close-button:hover {
-        background-color: rgba(255, 255, 255, 0.1); }
+        background-color: rgba(255, 255, 255, 0.04); }
+      .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+        icon-size: 18px; }
 
 .panel-button {
   text-align: center; }
@@ -74,9 +94,10 @@
 .mat-card {
   background-color: #191919;
   border-radius: 6px;
-  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24); }
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   .mat-card .mat-card-title {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.12);
+    color: white;
     height: 72px;
     padding: 0px 24px; }
     .mat-card .mat-card-title .mat-card-title-icon {
@@ -90,9 +111,5 @@
 .categorized-app-card .overview-icon {
   margin: 8px; }
 
-#panel {
-  background-color: #191919;
-  box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.24); }
-
 .backdrop-container {
-  background: rgba(0, 0, 0, 0.7); }
+  background: rgba(0, 0, 0, 0.5); }

@@ -1,0 +1,170 @@
+$color-primary: #3f51b5;
+$color-bg: rgb(25, 25, 25);
+$color-fg: rgb(200, 200, 200);
+$color-active-bg: rgba(255, 255, 255, 0.12);
+$color-hover-bg: rgba(255, 255, 255, 0.04);
+$color-active-fg: rgb(255, 255, 255);
+$ripple: rgba(255, 255, 255, 0.16);
+$shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+$panel-size: 48px;
+
+.primary-bg {
+    background-color: $color-primary;
+}
+
+.workspace-button {
+    padding: 12px;
+    &.active {
+        background-color: $color-active-bg;
+        .workspace-icon {
+            color: $color-active-fg;
+        }
+    }
+}
+
+.workspace-button:hover {
+    background-color: $color-hover-bg;
+    .workspace-icon {
+        color: $color-active-fg;
+    }
+}
+
+.workspace-main-icon {
+    width: 24px;
+    height: 24px;
+    color: $color-active-fg;
+}
+
+.workspace-icon {
+    width: 24px;
+    height: 24px;
+    color: $color-fg;
+}
+
+.workspace-active-indicator {
+    width: 3px;
+    height: 48px;
+}
+
+.ripple-wave {
+    //This is a hack because percentage is not handled yet
+    border-radius: 2000px;
+    background-color: $ripple;
+}
+
+#leftPanelBox,
+#leftDashSpacer {
+    width: $panel-size;
+}
+
+#panel {
+    width: $panel-size;
+    background-color: $color-bg;
+    box-shadow: $shadow;
+    #panelLeft,
+    #panelCenter {
+        // spacing between activities<>app menu and such
+        spacing: 0px;
+    }
+}
+
+#topBarSpacer {
+    height: $panel-size;
+}
+
+#topPanel {
+    height: $panel-size;
+    background-color: $color-bg;
+    box-shadow: $shadow;
+}
+
+.task-active-indicator {
+    background: $color-active-fg;
+    height: 2px;
+}
+
+.task-bar-item {
+    font-size: 14px;
+    height: $panel-size;
+    &:hover {
+        background-color: $color-hover-bg;
+    }
+    &.active {
+        .task-bar-item-content {
+            .task-bar-item-title {
+                color: $color-active-fg;
+            }
+        }
+    }
+    .task-bar-item-content {
+        padding: 0px 8px;
+        .app-icon {
+            icon-size: 24px;
+            margin-right: 8px;
+        }
+        .task-bar-item-title {
+            max-width: 248px;
+            margin-right: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: $color-fg;
+        }
+        .task-close-button {
+            border-radius: 20px;
+            width: 24px;
+            height: 20px;
+            &:hover {
+                background-color: $color-hover-bg;
+            }
+            .task-close-icon {
+                icon-size: 18px;
+            }
+        }
+    }
+}
+
+.panel-button {
+    text-align: center;
+}
+
+.system-status-icon {
+    height: 24px;
+}
+
+.clock-display {
+    * {
+        padding: 4px 0px !important;
+    }
+}
+
+.mat-card {
+    background-color: $color-bg;
+    border-radius: 6px;
+    box-shadow: $shadow;
+    .mat-card-title {
+        background-color: $color-active-bg;
+        color: $color-active-fg;
+        height: 72px;
+        padding: 0px 24px;
+        .mat-card-title-icon {
+            icon-size: 40px;
+            margin-right: 16px;
+        }
+        .mat-card-title-label {
+            font-size: 24px;
+        }
+    }
+    .mat-card-content {
+        padding: 24px;
+    }
+}
+
+.categorized-app-card {
+    .overview-icon {
+        margin: 8px;
+    }
+}
+
+.backdrop-container {
+    background: rgba(0, 0, 0, 0.5);
+}

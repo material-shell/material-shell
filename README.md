@@ -21,6 +21,7 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
 ## Workflow Hotkeys
+Some hotkeys might already be used by gnome shell, please check your keybindings first
 #### Desktop navigation
 * `Super+W` Navigate to the upper workspace/category.
 * `Super+S` Navigate to the lower workspace/category.

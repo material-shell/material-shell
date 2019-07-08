@@ -9,7 +9,9 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             name: 'leftPanelBox',
             vertical: true
         });
-        this.dashSpacer = new St.Widget();
+        this.dashSpacer = new St.Widget({
+            name: 'leftDashSpacer'
+        });
         this.primaryMonitor = Main.layoutManager.primaryMonitor;
     }
 
@@ -24,9 +26,9 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             affectsStruts: true,
             trackFullscreen: true
         });
-        this.dashSpacer.set_size(48, Main.overview._controls._group.height);
-        this.panelBox.set_size(48, this.primaryMonitor.height);
-        this.panel.set_size(48, this.primaryMonitor.height);
+        this.panelBox.set_height(this.primaryMonitor.height);
+        this.dashSpacer.set_height(Main.overview._controls._group.height);
+        this.panel.set_height(this.primaryMonitor.height);
         this.panelBox.set_position(
             this.primaryMonitor.x,
             this.primaryMonitor.y
@@ -36,11 +38,11 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             'monitors-changed',
             () => {
                 this.primaryMonitor = Main.layoutManager.primaryMonitor;
-                this.dashSpacer.set_size(
-                    48,
+                this.panelBox.set_height(this.primaryMonitor.height);
+                this.dashSpacer.set_height(
                     Main.overview._controls._group.height
                 );
-                this.panelBox.set_size(48, this.primaryMonitor.height);
+                this.panel.set_height(this.primaryMonitor.height);
                 this.panelBox.set_position(
                     this.primaryMonitor.x,
                     this.primaryMonitor.y
@@ -69,10 +71,9 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         Main.layoutManager.disconnect(this.signalMonitorId);
         Main.overview._controls._group.remove_child(this.dashSpacer); // insert on first
         this.panelBox.remove_child(this.panel);
-        this.panel.set_size(-1, -1);
+        this.panel.set_height(-1);
         Main.layoutManager.panelBox.add_child(this.panel);
         Main.layoutManager.removeChrome(this.panelBox);
-
         this.panel.menuManager._menus.forEach(menuData => {
             if (menuData.menu._boxPointer) {
                 menuData.menu._boxPointer._calculateArrowSide =

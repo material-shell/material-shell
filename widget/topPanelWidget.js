@@ -12,7 +12,7 @@ var TopPanel = GObject.registerClass(
     class TopPanel extends St.Widget {
         _init(superWorkspace) {
             super._init({
-                name: 'dash'
+                name: 'topPanel'
             });
             this.superWorkspace = superWorkspace;
             this._leftContainer = new St.BoxLayout();
@@ -62,31 +62,19 @@ var TopPanel = GObject.registerClass(
             this.add_child(this.tilingButton);
         }
 
-        vfunc_get_preferred_width() {
-            return [
-                0,
-                this.superWorkspace.monitor.index ===
-                Main.layoutManager.primaryIndex
-                    ? this.superWorkspace.monitor.width - 48
-                    : this.superWorkspace.monitor.width
-            ];
-        }
-
-        vfunc_get_preferred_height() {
-            return [0, 48];
-        }
-
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
 
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
-            box.x2 = box.x2 - 48;
+            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
+                .scale_factor;
+            box.x2 = box.x2 - 48 * scaleFactor;
             this._leftContainer.allocate(box, flags);
 
             let tilingButtonBox = new Clutter.ActorBox();
             tilingButtonBox.x1 = box.x2;
-            tilingButtonBox.x2 = box.x2 + 48;
+            tilingButtonBox.x2 = box.x2 + 48 * scaleFactor;
             tilingButtonBox.y1 = box.y1;
             tilingButtonBox.y2 = box.y2;
             this.tilingButton.allocate(tilingButtonBox, flags);
