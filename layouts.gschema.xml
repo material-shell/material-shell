@@ -8,6 +8,11 @@
     <key name="grid" type="b">
       <default>true</default>
       <summary>Grid layout</summary>
+      <description>Tile windows according to screen ratio</description>
+    </key>
+    <key name="horizontal-grid" type="b">
+      <default>false</default>
+      <summary>Horizontal Grid layout</summary>
       <description>Tile windows horizontaly</description>
     </key>
     <key name="vertical-grid" type="b">

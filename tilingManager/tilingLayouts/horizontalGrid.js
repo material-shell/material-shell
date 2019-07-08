@@ -8,13 +8,13 @@ const {
     BaseGridLayout
 } = Me.imports.tilingManager.tilingLayouts.baseGridLayout;
 
-/* exported VerticalGridLayout */
-var VerticalGridLayout = class VerticalGridLayout extends BaseGridLayout {
+/* exported HorizontalGridLayout */
+var HorizontalGridLayout = class HorizontalGridLayout extends BaseGridLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'vertical-grid';
+        this.key = 'horizontal-grid';
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/view-quilt-vertical-symbolic.svg`
+            `${Me.path}/assets/icons/view-quilt-horizontal-symbolic.svg`
         );
     }
 
@@ -25,8 +25,8 @@ var VerticalGridLayout = class VerticalGridLayout extends BaseGridLayout {
             this.monitor.index
         );
 
-        let masterHeight =
-            windows.length > 1 ? workArea.height / 2 : workArea.height;
+        let masterWidth =
+            windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
             if (window.grabbed) return;
@@ -39,17 +39,17 @@ var VerticalGridLayout = class VerticalGridLayout extends BaseGridLayout {
                     window,
                     workArea.x,
                     workArea.y,
-                    workArea.width,
-                    masterHeight
+                    masterWidth,
+                    workArea.height
                 );
             } else {
                 this.moveAndResizeMetaWindow(
                     window,
-                    workArea.x +
-                        ((index - 1) * workArea.width) / (windows.length - 1),
-                    workArea.y + masterHeight,
-                    workArea.width / (windows.length - 1),
-                    workArea.height - masterHeight
+                    workArea.x + masterWidth,
+                    workArea.y +
+                        ((index - 1) * workArea.height) / (windows.length - 1),
+                    workArea.width - masterWidth,
+                    workArea.height / (windows.length - 1)
                 );
             }
         });

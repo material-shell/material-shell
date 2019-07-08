@@ -159,8 +159,9 @@ function accel_tab(notebook) {
 function layouts_tab(notebook) {
     const layouts = {
         maximize: 'Maximize all windows',
-        grid: 'Tile windows horizontaly',
-        'vertical-grid': 'Tile windows vertically'
+        grid: 'Tile windows according to screen ratio',
+        'vertical-grid': 'Tile windows vertically',
+        'horizontal-grid': 'Tile windows horizontally'
     };
     const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
         Me.dir.get_path(),
