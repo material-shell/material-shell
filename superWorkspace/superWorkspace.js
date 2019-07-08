@@ -7,9 +7,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Background = imports.ui.background;
 
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
-const {
-    TilingLayoutByKey
-} = Me.imports.tilingManager.tilingLayouts.layoutByKey;
 
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
@@ -30,7 +27,8 @@ var SuperWorkspace = class SuperWorkspace {
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
             ) || 'grid';
-        this.tilingLayout = new TilingLayoutByKey[previousLayout](this);
+        const Layout = global.tilingManager.getLayoutByKey(previousLayout);
+        this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget({
             visible: visible
         });
@@ -206,14 +204,14 @@ var SuperWorkspace = class SuperWorkspace {
 
     nextTiling() {
         this.tilingLayout.onDestroy();
-        let newLayoutKey =
-            this.tilingLayout.key === 'grid' ? 'maximize' : 'grid';
+        const Layout = global.tilingManager.getNextLayout(this.tilingLayout);
+        this.tilingLayout = new Layout(this);
         Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
-            newLayoutKey
+            this.tilingLayout.key
         );
-        this.tilingLayout = new TilingLayoutByKey[newLayoutKey](this);
         log(`${this.categoryKey} ask for tiling after layout changed`);
+        this.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.tilingLayout.onTile();
     }
 

@@ -1,0 +1,24 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.materialshell.layouts" path="/org/gnome/shell/extensions/materialshell/layouts/">
+    <key name="maximize" type="b">
+      <default>true</default>
+      <summary>Maximize layout</summary>
+      <description>Maximize all windows</description>
+    </key>
+    <key name="grid" type="b">
+      <default>true</default>
+      <summary>Grid layout</summary>
+      <description>Tile windows according to screen ratio</description>
+    </key>
+    <key name="horizontal-grid" type="b">
+      <default>false</default>
+      <summary>Horizontal Grid layout</summary>
+      <description>Tile windows horizontaly</description>
+    </key>
+    <key name="vertical-grid" type="b">
+      <default>false</default>
+      <summary>Vertical Grid layout</summary>
+      <description>Tile windows vertically</description>
+    </key>
+  </schema>
+</schemalist>

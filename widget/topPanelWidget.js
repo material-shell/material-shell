@@ -55,7 +55,6 @@ var TopPanel = GObject.registerClass(
 
             button.connect('button-press-event', () => {
                 superWorkspace.nextTiling();
-                this.tilingIcon.gicon = superWorkspace.tilingLayout.icon;
             });
 
             this.tilingButton = new RippleContainer(button);
