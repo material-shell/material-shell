@@ -188,8 +188,11 @@ var SuperWorkspace = class SuperWorkspace {
 
     nextTiling() {
         this.tilingLayout.onDestroy();
-        let newLayoutKey =
-            this.tilingLayout.key === 'grid' ? 'maximize' : 'grid';
+        const layouts = Object.keys(TilingLayoutByKey);
+        const newLayoutKey =
+            layouts[
+                (layouts.indexOf(this.tilingLayout.key) + 1) % layouts.length
+            ];
         Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
             newLayoutKey
