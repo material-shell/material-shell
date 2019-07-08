@@ -13,7 +13,7 @@ var AppsButtonSubModule = class AppsButtonSubModule {
             gicon: Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/menu-symbolic.svg`
             ),
-            style_class: 'workspace-icon'
+            style_class: 'workspace-main-icon'
         });
 
         let button = new St.Bin({
@@ -33,11 +33,7 @@ var AppsButtonSubModule = class AppsButtonSubModule {
         });
 
         this.button = new RippleContainer(button);
-        this.button.set_background_color(
-            Main.panel.statusArea.aggregateMenu._volume._volumeMenu._output._slider.actor
-                .get_theme_node()
-                .get_color('-barlevel-active-background-color')
-        );
+        this.button.add_style_class_name('primary-bg');
     }
 
     enable() {
