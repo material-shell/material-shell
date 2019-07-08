@@ -95,7 +95,6 @@ var SuperWorkspace = class SuperWorkspace {
 
         this.panel.set_position(0 + offsetX, 0);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
-        this.tilingLayout.onTile();
     }
 
     destroy() {
@@ -198,6 +197,7 @@ var SuperWorkspace = class SuperWorkspace {
             newLayoutKey
         );
         this.tilingLayout = new TilingLayoutByKey[newLayoutKey](this);
+        log(`${this.categoryKey} ask for tiling after layout changed`);
         this.tilingLayout.onTile();
     }
 

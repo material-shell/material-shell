@@ -29,11 +29,22 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onFocusChanged(window, oldWindow);
             }
         );
+        this.workAreaChangedId = global.display.connect(
+            'workareas-changed',
+            () => {
+                this.onTile();
+            }
+        );
         this.windows = superWorkspace.windows;
     }
 
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
+        log(
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself from onWindowsChanged event`
+        );
         this.onTile();
     }
 
@@ -78,18 +89,20 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindow(metaWindow, x, y, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        if (actor.mapped) {
+        if (actor && actor.mapped) {
             metaWindow.move_frame(false, x, y);
         } else if (!alreadyDelayed) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.moveMetaWindow(metaWindow, x, y, true);
             });
+        } else {
+            log(`failed to tile ${metaWindow.get_title()}`);
         }
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        if (actor.mapped) {
+        if (actor && actor.mapped) {
             metaWindow.move_resize_frame(false, x, y, width, height);
         } else if (!alreadyDelayed) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -102,12 +115,15 @@ var BaseTilingLayout = class BaseTilingLayout {
                     true
                 );
             });
+        } else {
+            log(`failed to tile ${metaWindow.get_title()}`);
         }
     }
 
     onDestroy() {
         this.superWorkspace.disconnect(this.windowChangedId);
         this.superWorkspace.disconnect(this.windowFocusedChangedId);
+        global.display.disconnect(this.workAreaChangedId);
     }
 
     getDialogAndRegularWindows() {

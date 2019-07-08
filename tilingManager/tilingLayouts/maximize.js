@@ -122,6 +122,11 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 window.reparent(global.window_group);
             });
         global.window_group.remove_child(this.overContainer);
+        log(
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself after the transition`
+        );
         this.onTile();
     }
 };
