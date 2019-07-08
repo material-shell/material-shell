@@ -129,13 +129,14 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
 
             log('search superWorkspace by app');
-            superWorkspace = this.superWorkspaces.find(superWorkspace => {
-                return (
-                    superWorkspace.apps.findIndex(app => {
-                        return app.get_id() === appToFind.get_id();
-                    }) > -1
-                );
-            });
+            superWorkspace =
+                this.superWorkspaces.find(superWorkspace => {
+                    return (
+                        superWorkspace.apps.findIndex(app => {
+                            return app.get_id() === appToFind.get_id();
+                        }) > -1
+                    );
+                }) || this.superWorkspaces[0];
 
             if (windowMonitorIndex !== focusedMonitorIndex) {
                 log(
@@ -146,7 +147,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 // TODO MOVE TO CORRECT MONITOR BUT THE LINE BELOW CRASH IS WAYLAND
                 //metaWindow.move_to_monitor(focusedMonitorIndex);
             }
-
+            superWorkspace;
             log('change workspace of the window', superWorkspace);
             metaWindow.change_workspace(
                 this.getWorkspaceOfSuperWorkspace(superWorkspace)
