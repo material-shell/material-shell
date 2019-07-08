@@ -29,6 +29,12 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onFocusChanged(window, oldWindow);
             }
         );
+        this.workAreaChangedId = global.display.connect(
+            'workareas-changed',
+            () => {
+                this.onTile();
+            }
+        );
         this.windows = superWorkspace.windows;
     }
 
@@ -117,6 +123,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     onDestroy() {
         this.superWorkspace.disconnect(this.windowChangedId);
         this.superWorkspace.disconnect(this.windowFocusedChangedId);
+        global.display.disconnect(this.workAreaChangedId);
     }
 
     getDialogAndRegularWindows() {
