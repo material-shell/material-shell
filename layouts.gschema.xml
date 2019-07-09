@@ -5,7 +5,7 @@
       <summary>Maximize layout</summary>
       <description>Maximize all windows</description>
     </key>
-    <key name="grid" type="b">
+    <key name="auto-grid" type="b">
       <default>true</default>
       <summary>Grid layout</summary>
       <description>Tile windows according to screen ratio</description>

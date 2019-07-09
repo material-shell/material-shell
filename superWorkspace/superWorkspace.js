@@ -26,7 +26,7 @@ var SuperWorkspace = class SuperWorkspace {
         let previousLayout =
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
-            ) || 'grid';
+            ) || 'auto-grid';
         const Layout = global.tilingManager.getLayoutByKey(previousLayout);
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget({
@@ -108,7 +108,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.backgroundContainer) this.backgroundContainer.destroy();
         global.display.disconnect(this.focusEventId);
         global.display.disconnect(this.workAreaChangedId);
-        this.tilingLayout.destroy();
+        this.tilingLayout.onDestroy();
         this.destroyed = true;
     }
 
@@ -120,11 +120,11 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     updateTopBarPositionAndSize() {
-        let workarea = Main.layoutManager.getWorkAreaForMonitor(
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-        this.panel.set_position(workarea.x - this.monitor.x, 0);
-        this.panel.set_width(workarea.width);
+        this.panel.set_position(workArea.x - this.monitor.x, 0);
+        this.panel.set_width(workArea.width);
     }
 
     addWindow(window) {
