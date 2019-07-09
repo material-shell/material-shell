@@ -125,8 +125,14 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         });
     }
 
-    addWindowToAppropriateSuperWorkspace(metaWindow) {
+    onNewWindow(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
+        metaWindow.handledByMaterialShell = true;
+        this.addWindowToAppropriateSuperWorkspace(metaWindow);
+    }
+
+    addWindowToAppropriateSuperWorkspace(metaWindow) {
+        if (!metaWindow.handledByMaterialShell) return;
 
         log(
             `window ${metaWindow.get_title()} search for the appropriate SuperWorkspace`
@@ -136,36 +142,41 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         const currentWindowWorkspace = metaWindow.get_workspace();
         /*  const focusedMonitorIndex = global.display.get_current_monitor(); */
 
-        const appToFind = this.windowTracker.get_window_app(metaWindow);
-
-        log('search superWorkspace by app');
-        let superWorkspace = this.superWorkspaces.find(superWorkspace => {
-            return (
-                superWorkspace.category.primary &&
-                superWorkspace.apps.findIndex(app => {
-                    return app.get_id() === appToFind.get_id();
-                }) > -1
+        let superWorkspace;
+        if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
+            log(
+                'Window is on external monitor try to find right Superworkspace'
             );
-        });
-
-        if (!superWorkspace) {
-            log('No superWorkspace by app founded');
-            if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
-                log(
-                    'Window is on external monitor try to find right Superworkspace'
+            superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+                windowMonitorIndex
+            )[0];
+        } else {
+            const appToFind = this.windowTracker.get_window_app(metaWindow);
+            log('search superWorkspace by app');
+            superWorkspace = this.superWorkspaces.find(superWorkspace => {
+                return (
+                    superWorkspace.category.primary &&
+                    superWorkspace.apps.findIndex(app => {
+                        return app.get_id() === appToFind.get_id();
+                    }) > -1
                 );
-                superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
-                    windowMonitorIndex
-                )[0];
-            } else {
+            });
+
+            if (!superWorkspace) {
+                log('No superWorkspace by app founded');
+
                 log(
                     'Window is on primary monitor try to find right Superworkspace'
                 );
                 superWorkspace = this.getPrimarySuperWorkspaceByIndex(
                     currentWindowWorkspace.index()
                 );
+                log(
+                    `the superWorkspace founded is ${
+                        superWorkspace.categoryKey
+                    }`
+                );
             }
-            log(`the superWorkspace founded is ${superWorkspace.categoryKey}`);
         }
 
         let workspaceOfSuperWorkspace = this.getWorkspaceOfSuperWorkspace(
@@ -187,66 +198,68 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     dispatchExistingWindows() {
         global.get_window_actors().forEach(windowActor => {
-            this.addWindowToAppropriateSuperWorkspace(windowActor.metaWindow);
+            this.onNewWindow(windowActor.metaWindow);
         });
     }
 
-    windowEnteredWorkspace(window, workspace) {
+    windowEnteredWorkspace(metaWindow, workspace) {
         if (
-            !this._handleWindow(window) ||
-            window.on_all_workspaces ||
-            !window.get_compositor_private()
+            !metaWindow.handledByMaterialShell ||
+            metaWindow.on_all_workspaces ||
+            !metaWindow.get_compositor_private()
         ) {
             return;
         }
-        log(`window ${window.get_id()} entered in workspace`);
+        log(`metaWindow ${metaWindow.get_id()} entered in workspace`);
         this.getPrimarySuperWorkspaceByIndex(workspace.index()).addWindow(
-            window
+            metaWindow
         );
     }
 
-    windowLeftWorkspace(window, workspace) {
-        if (!this._handleWindow(window) || window.on_all_workspaces) {
+    windowLeftWorkspace(metaWindow, workspace) {
+        if (
+            !metaWindow.handledByMaterialShell ||
+            metaWindow.on_all_workspaces
+        ) {
             return;
         }
-        log(`window ${window.get_id()} left a workspace`);
+        log(`metaWindow ${metaWindow.get_id()} left a workspace`);
         this.getPrimarySuperWorkspaceByIndex(workspace.index()).removeWindow(
-            window
+            metaWindow
         );
     }
 
-    windowEnteredMonitor(window, monitorIndex) {
-        //Ignore unHandle window and window on secondary screens
+    windowEnteredMonitor(metaWindow, monitorIndex) {
+        //Ignore unHandle metaWindow and metaWindow on secondary screens
         if (
-            !this._handleWindow(window) ||
-            monitorIndex === Main.layoutManager.primaryIndex ||
-            this.monitorChangeInProgress
+            !metaWindow.handledByMaterialShell ||
+            monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
         }
         this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].addWindow(
-            window
+            metaWindow
         );
     }
 
-    windowLeftMonitor(window, monitorIndex) {
-        //Ignore unHandle window and window on secondary screens
+    windowLeftMonitor(metaWindow, monitorIndex) {
+        //Ignore unHandle metaWindow and metaWindow on secondary screens
         if (
-            !this._handleWindow(window) ||
-            monitorIndex === Main.layoutManager.primaryIndex ||
-            this.monitorChangeInProgress
+            !metaWindow.handledByMaterialShell ||
+            monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
         }
         this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].removeWindow(
-            window
+            metaWindow
         );
     }
 
-    _handleWindow(win) {
+    _handleWindow(metaWindow) {
+        log(metaWindow);
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
-        return types.includes(win.window_type);
+        return types.includes(metaWindow.window_type);
     }
 
     updateSuperWorkspaceVisibility() {
