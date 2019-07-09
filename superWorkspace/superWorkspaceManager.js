@@ -42,13 +42,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 }
             }
         }
-
+        this.prepareWorkspaces();
         let activeSuperWorkspace = this.getActiveSuperWorkspace();
 
         activeSuperWorkspace.frontendContainer.show();
         activeSuperWorkspace.backgroundContainer.show();
-
-        this.prepareWorkspaces();
 
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
@@ -68,6 +66,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 superWorkspace => superWorkspace.category.primary
             ).length - this.workspaceManager.n_workspaces
         );
+        log('diff');
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         for (var i = 0; i < diff; i++) {
             if (
@@ -81,9 +80,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 let workspaceIndexToRemove =
                     this.workspaceManager.n_workspaces - 1;
                 if (workspaceIndexToRemove === activeWorkspaceIndex) {
+                    Main.wm._blockAnimations = true;
                     this.workspaceManager
                         .get_workspace_by_index(0)
                         .activate(global.get_current_time());
+                    Main.wm._blockAnimations = false;
                 }
                 this.workspaceManager.remove_workspace(
                     this.workspaceManager.get_workspace_by_index(
