@@ -3,13 +3,6 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
 
-/* 
-var TilingLayoutList = {
-    grid: {
-        class: Me.imports.tilingManager.tilingLayouts.grid.Grid
-    }
-}; */
-
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
@@ -87,35 +80,41 @@ var BaseTilingLayout = class BaseTilingLayout {
         });
     }
 
-    moveMetaWindow(metaWindow, x, y, alreadyDelayed) {
-        let actor = metaWindow.get_compositor_private();
-        if (actor && actor.mapped) {
-            metaWindow.move_frame(false, x, y);
-        } else if (!alreadyDelayed) {
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.moveMetaWindow(metaWindow, x, y, true);
-            });
-        } else {
-            log(`failed to tile ${metaWindow.get_title()}`);
-        }
+    moveMetaWindow(metaWindow, x, y) {
+        this.callSafely(metaWindow, metaWindowInside => {
+            metaWindowInside.move_frame(false, x, y);
+        });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height, alreadyDelayed) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+        this.callSafely(metaWindow, metaWindowInside => {
+            metaWindowInside.move_resize_frame(false, x, y, width, height);
+        });
+    }
+
+    callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        if (actor && actor.mapped) {
-            metaWindow.move_resize_frame(false, x, y, width, height);
+        //First check if the metaWindow got an actor
+        if (actor) {
+            // We need the actor to be mapped to remove random crashes
+            if (actor.mapped) {
+                callback(metaWindow);
+            } else {
+                // Wait for it to be mapped
+                if (actor.waitToBeMappedId) return;
+                actor.waitToBeMappedId = actor.connect('notify::mapped', () => {
+                    callback(metaWindow);
+                    actor.disconnect(actor.waitToBeMappedId);
+                    delete actor.waitToBeMappedId;
+                });
+            }
         } else if (!alreadyDelayed) {
+            //If we don't have actor we hope to get it in the next loop
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.moveAndResizeMetaWindow(
-                    metaWindow,
-                    x,
-                    y,
-                    width,
-                    height,
-                    true
-                );
+                this.callSafely(metaWindow, callback, true);
             });
         } else {
+            // Can't do shit for now
             log(`failed to tile ${metaWindow.get_title()}`);
         }
     }

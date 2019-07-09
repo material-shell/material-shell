@@ -88,9 +88,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
                 log('window-created');
-                global.superWorkspaceManager.addWindowToAppropriateSuperWorkspace(
-                    metaWindow
-                );
+                global.superWorkspaceManager.onNewWindow(metaWindow);
             })
         });
 

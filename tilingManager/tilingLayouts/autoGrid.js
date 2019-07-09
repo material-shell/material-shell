@@ -8,16 +8,14 @@ const {
     BaseTilingLayout
 } = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
 
-/* exported GridLayout */
-var GridLayout = class GridLayout extends BaseTilingLayout {
+/* exported AutoGridLayout */
+var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'grid';
+        this.key = 'auto-grid';
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/view-quilt-symbolic.svg`
         );
-        this.masterWidth = 0;
-
         this.grabStartSignal = global.display.connect(
             'grab-op-begin',
             (display1, display2, window, op) => {
@@ -61,7 +59,6 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
             }
         });
     }
-
     onWindowsChanged(windows) {
         super.onWindowsChanged(windows);
     }
@@ -75,10 +72,22 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
             this.monitor.index
         );
 
+        if (workArea.width > workArea.height) {
+            this.onTileHorizontal(windows);
+        } else {
+            this.onTileVertical(windows);
+        }
+    }
+
+    onTileHorizontal(windows) {
+        if (!windows.length) return;
+
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+
         let masterWidth =
-            this.masterWidth || windows.length > 1
-                ? workArea.width / 2
-                : workArea.width;
+            windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
             if (window.grabbed) return;
@@ -102,6 +111,43 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
                         ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
                     workArea.height / (windows.length - 1)
+                );
+            }
+        });
+    }
+
+    onTileVertical(windows) {
+        if (!windows.length) return;
+
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+
+        let masterHeight =
+            windows.length > 1 ? workArea.height / 2 : workArea.height;
+
+        windows.forEach((window, index) => {
+            if (window.grabbed) return;
+
+            if (window.get_maximized())
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
+
+            if (index === 0) {
+                this.moveAndResizeMetaWindow(
+                    window,
+                    workArea.x,
+                    workArea.y,
+                    workArea.width,
+                    masterHeight
+                );
+            } else {
+                this.moveAndResizeMetaWindow(
+                    window,
+                    workArea.x +
+                        ((index - 1) * workArea.width) / (windows.length - 1),
+                    workArea.y + masterHeight,
+                    workArea.width / (windows.length - 1),
+                    workArea.height - masterHeight
                 );
             }
         });

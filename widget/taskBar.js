@@ -261,8 +261,7 @@ let TaskBarItem = GObject.registerClass(
                 can_focus: true,
                 track_hover: true
             });
-            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
-                .scale_factor;
+
             this._delegate = this;
 
             this.window = window;
