@@ -68,6 +68,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 superWorkspace => superWorkspace.category.primary
             ).length - this.workspaceManager.n_workspaces
         );
+        let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         for (var i = 0; i < diff; i++) {
             if (
                 this.superWorkspaces.length > this.workspaceManager.n_workspaces
@@ -77,6 +78,13 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     global.get_current_time()
                 );
             } else {
+                let workspaceIndexToRemove =
+                    this.workspaceManager.n_workspaces - 1;
+                if (workspaceIndexToRemove === activeWorkspaceIndex) {
+                    this.workspaceManager
+                        .get_workspace_by_index(0)
+                        .activate(global.get_current_time());
+                }
                 this.workspaceManager.remove_workspace(
                     this.workspaceManager.get_workspace_by_index(
                         this.workspaceManager.n_workspaces - 1

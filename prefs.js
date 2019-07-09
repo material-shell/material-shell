@@ -159,7 +159,7 @@ function accel_tab(notebook) {
 function layouts_tab(notebook) {
     const layouts = {
         maximize: 'Maximize all windows',
-        grid: 'Tile windows according to screen ratio',
+        'auto-grid': 'Tile windows according to screen ratio',
         'vertical-grid': 'Tile windows vertically',
         'horizontal-grid': 'Tile windows horizontally'
     };

@@ -3,13 +3,6 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
 
-/* 
-var TilingLayoutList = {
-    grid: {
-        class: Me.imports.tilingManager.tilingLayouts.grid.Grid
-    }
-}; */
-
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
@@ -41,7 +34,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
         log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
