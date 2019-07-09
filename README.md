@@ -20,6 +20,12 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 2) Reload gnome-shell by hitting `Alt+F2` and typing the command `r`
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
+#### Arch Linux (AUR):
+[Henri98 created a package for material-shell on the AUR.](https://aur.archlinux.org/packages/gnome-shell-extension-material-shell-git/)
+```
+yay gnome-shell-extension-material-shell-git
+```
+
 ## Workflow Hotkeys
 Some hotkeys might already be used by gnome shell, please check your keybindings first
 #### Desktop navigation
