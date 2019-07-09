@@ -9,10 +9,13 @@ const {
 const {
     HorizontalGridLayout
 } = Me.imports.tilingManager.tilingLayouts.horizontalGrid;
+const { RatioGridLayout } = Me.imports.tilingManager.tilingLayouts.ratioGrid;
+
 /* exported TilingLayoutByKey */
 var TilingLayoutByKey = {
     'auto-grid': AutoGridLayout,
     'vertical-grid': VerticalGridLayout,
     'horizontal-grid': HorizontalGridLayout,
-    maximize: MaximizeLayout
+    maximize: MaximizeLayout,
+    'ratio-grid': RatioGridLayout
 };

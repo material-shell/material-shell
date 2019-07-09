@@ -20,5 +20,15 @@
       <summary>Vertical Grid layout</summary>
       <description>Tile windows vertically</description>
     </key>
+    <key name="ratio-grid" type="b">
+      <default>false</default>
+      <summary>Ratio based Grid layout</summary>
+      <description>Tile windows in both way according to the ratio of the remaining space</description>
+    </key>
+    <key name="ratio-grid-ratio" type="d">
+      <default>0.6180339887498948</default>
+      <summary>Ratio of the ratio layout</summary>
+      <description>Determines the ratio of the tiling</description>
+    </key>
   </schema>
 </schemalist>

@@ -3,6 +3,8 @@ const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.utils.settings;
+
 const {
     TilingLayoutByKey
 } = Me.imports.tilingManager.tilingLayouts.layoutByKey;
@@ -14,14 +16,7 @@ var TilingManager = class TilingManager {
         this.grabInProgress = false;
         this.signals = [];
         this.windows = [];
-        const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-            Me.dir.get_path(),
-            Gio.SettingsSchemaSource.get_default(),
-            false
-        );
-        this.layoutsSettings = new Gio.Settings({
-            settings_schema: SchemaSource.lookup(Me.metadata['layouts'], true)
-        });
+        this.layoutsSettings = getSettings('layouts');
 
         this.allLayouts = Object.keys(TilingLayoutByKey);
         // On layout settings change

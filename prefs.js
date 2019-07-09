@@ -5,6 +5,7 @@ const Lang = imports.lang;
 
 // Extension imports
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.utils.settings;
 
 function init() {}
 
@@ -40,14 +41,7 @@ function buildPrefsWidget() {
 }
 
 function accel_tab(notebook) {
-    const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-        Me.dir.get_path(),
-        Gio.SettingsSchemaSource.get_default(),
-        false
-    );
-    const settings = new Gio.Settings({
-        settings_schema: SchemaSource.lookup(Me.metadata['bindings'], true)
-    });
+    const settings = getSettings('bindings');
 
     let ks_grid = new Gtk.Grid({
         column_spacing: 10,
@@ -161,16 +155,11 @@ function layouts_tab(notebook) {
         maximize: 'Maximize all windows',
         'auto-grid': 'Tile windows according to screen ratio',
         'vertical-grid': 'Tile windows vertically',
-        'horizontal-grid': 'Tile windows horizontally'
+        'horizontal-grid': 'Tile windows horizontally',
+        'ratio-grid':
+            'Tile windows in both way according to the ratio of the remaining space'
     };
-    const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-        Me.dir.get_path(),
-        Gio.SettingsSchemaSource.get_default(),
-        false
-    );
-    const settings = new Gio.Settings({
-        settings_schema: SchemaSource.lookup(Me.metadata['layouts'], true)
-    });
+    const settings = getSettings('layouts');
 
     let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
     const ks_lbox = new Gtk.ListBox({
@@ -198,10 +187,34 @@ function layouts_tab(notebook) {
         vbox.pack_start(desc, false, false, 0);
         hbox.pack_start(vbox, true, true, 10);
         hbox.pack_start(item, false, false, 0);
+
         row.add(hbox);
 
         ks_lbox.add(row);
+
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
+        if (layout === 'ratio-grid') {
+            const row = new Gtk.ListBoxRow();
+            const ratio = Gtk.Scale.new_with_range(
+                Gtk.Orientation.HORIZONTAL,
+                0,
+                1,
+                0.01
+            );
+            ratio.add_mark(
+                0.6180339887498948,
+                Gtk.PositionType.BOTTOM,
+                'Golden Ratio'
+            );
+            settings.bind(
+                'ratio-grid-ratio',
+                ratio.get_adjustment(),
+                'value',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+            row.add(ratio);
+            ks_lbox.add(row);
+        }
     });
     notebook.append_page(ks_window, ks_label);
 }

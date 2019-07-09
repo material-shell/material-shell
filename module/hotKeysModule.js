@@ -1,6 +1,7 @@
-const { Meta, Shell, Gio } = imports.gi;
+const { Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.utils.settings;
 
 /* exported HotKeysModule */
 var HotKeysModule = class HotKeysModule {
@@ -9,14 +10,8 @@ var HotKeysModule = class HotKeysModule {
     }
 
     enable() {
-        const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-            Me.dir.get_path(),
-            Gio.SettingsSchemaSource.get_default(),
-            false
-        );
-        const settings = new Gio.Settings({
-            settings_schema: SchemaSource.lookup(Me.metadata['bindings'], true)
-        });
+        const settings = getSettings('bindings');
+
         Main.wm.addKeybinding(
             'previous-window',
             settings,
