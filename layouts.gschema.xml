@@ -5,35 +5,40 @@
       <summary>Maximize layout</summary>
       <description>Maximize all windows</description>
     </key>
-    <key name="auto-grid" type="b">
+    <key name="half" type="b">
       <default>true</default>
-      <summary>Grid layout</summary>
+      <summary>Half layout</summary>
       <description>Tile windows according to screen ratio</description>
     </key>
-    <key name="horizontal-grid" type="b">
+    <key name="half-horizontal" type="b">
       <default>false</default>
-      <summary>Horizontal Grid layout</summary>
+      <summary>Half Horizontal layout</summary>
       <description>Tile windows horizontaly</description>
     </key>
-    <key name="vertical-grid" type="b">
+    <key name="half-vertical" type="b">
       <default>false</default>
-      <summary>Vertical Grid layout</summary>
+      <summary>Half Vertical layout</summary>
       <description>Tile windows vertically</description>
     </key>
-    <key name="ratio-grid" type="b">
+    <key name="ratio" type="b">
       <default>false</default>
       <summary>Ratio based Grid layout</summary>
       <description>Tile windows in both way according to the ratio of the remaining space</description>
     </key>
-    <key name="ratio-grid-ratio" type="d">
+    <key name="ratio-value" type="d">
       <default>0.6180339887498948</default>
       <summary>Ratio of the ratio layout</summary>
       <description>Determines the ratio of the tiling</description>
     </key>
-    <key name="grid-grid" type="b">
+    <key name="grid" type="b">
       <default>false</default>
       <summary>Regular Grid layout</summary>
       <description>Tile windows according to a regular grid</description>
+    </key>
+    <key name="float" type="b">
+      <default>false</default>
+      <summary>Float layout</summary>
+      <description>No tiling is done, windows are floating freely</description>
     </key>
   </schema>
 </schemalist>

@@ -3,28 +3,29 @@ const { Meta, Gio } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { AutoGridLayout } = Me.imports.tilingManager.tilingLayouts.autoGrid;
+const {
+    BaseGrabbableLayout
+} = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 const { getSettings } = Me.imports.utils.settings;
 
-/* exported RatioGridLayout */
-var RatioGridLayout = class RatioGridLayout extends AutoGridLayout {
+/* exported RatioLayout */
+var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'ratio-grid';
-        this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/view-quilt-ratio-symbolic.svg`
-        );
         this.settings = getSettings('layouts');
-        this.settings.connect('changed::ratio-grid-ratio', (schema, key) => {
-            log('changed');
-            this.onTile();
-        });
+        this.settingsSignal = this.settings.connect(
+            'changed::ratio-value',
+            (schema, key) => {
+                log('changed');
+                this.onTile();
+            }
+        );
     }
 
     onTileRegulars(windows) {
         if (!windows.length) return;
 
-        const ratio = this.settings.get_double('ratio-grid-ratio');
+        const ratio = this.settings.get_double('ratio-value');
         log('tile', ratio);
 
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
@@ -73,4 +74,10 @@ var RatioGridLayout = class RatioGridLayout extends AutoGridLayout {
             );
         });
     }
+    onDestroy() {
+        super.onDestroy();
+        this.settings.disconnect(this.settingsSignal);
+    }
 };
+
+RatioLayout.key = 'ratio';

@@ -208,7 +208,7 @@ var SuperWorkspace = class SuperWorkspace {
         this.tilingLayout = new Layout(this);
         Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
-            this.tilingLayout.key
+            this.tilingLayout.constructor.key
         );
         log(`${this.categoryKey} ask for tiling after layout changed`);
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;

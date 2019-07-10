@@ -1,4 +1,4 @@
-const { Meta, GLib } = imports.gi;
+const { Meta, Gio, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
@@ -6,8 +6,9 @@ const { Backdrop } = Me.imports.widget.backdrop;
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
-        this.icon = '';
-        this.key = 'base';
+        this.icon = Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+        );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
         this.windowFocused = this.superWorkspace.windowFocused;
@@ -34,14 +35,12 @@ var BaseTilingLayout = class BaseTilingLayout {
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
 
-    onFocusChanged(windowFocused, oldWindowFocused) {
+    onFocusChanged(windowFocused) {
         this.windowFocused = windowFocused;
     }
 
@@ -52,6 +51,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.onTileDialogs(dialogWindows);
     }
 
+    // eslint-disable-next-line no-unused-vars
     onTileRegulars(windows) {
         // Define windows sizes and positions
     }

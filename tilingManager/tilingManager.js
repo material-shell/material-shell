@@ -5,9 +5,7 @@ const GLib = imports.gi.GLib;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
 
-const {
-    TilingLayoutByKey
-} = Me.imports.tilingManager.tilingLayouts.layoutByKey;
+const { TilingLayoutByKey } = Me.imports.tilingManager.tilingLayouts.layouts;
 
 /* exported TilingManager */
 var TilingManager = class TilingManager {
@@ -66,7 +64,7 @@ var TilingManager = class TilingManager {
     }
 
     getNextLayout(currentLayout) {
-        let { key } = currentLayout;
+        let { key } = currentLayout.constructor;
         if (!this.availableLayouts.includes(key)) {
             key = this.availableLayouts[0];
         }
@@ -75,6 +73,7 @@ var TilingManager = class TilingManager {
             (this.availableLayouts.indexOf(key) + 1) %
                 this.availableLayouts.length
         ];
+        log(key, '-->', newKey);
         // And returns it
         return TilingLayoutByKey[newKey];
     }

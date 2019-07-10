@@ -1,25 +1,19 @@
 const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
+const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { AutoGridLayout } = Me.imports.tilingManager.tilingLayouts.autoGrid;
+const {
+    BaseGrabbableLayout
+} = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 
 const range = to =>
     Array(to)
         .fill(0)
         .map((_, i) => i);
 
-/* exported GridGridLayout */
-var GridGridLayout = class GridGridLayout extends AutoGridLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
-        this.key = 'grid-grid';
-        this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/view-quilt-grid-symbolic.svg`
-        );
-    }
-
+/* exported GridLayout */
+var GridLayout = class GridLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         if (!windows.length) return;
 
@@ -53,3 +47,5 @@ var GridGridLayout = class GridGridLayout extends AutoGridLayout {
         });
     }
 };
+
+GridLayout.key = 'grid';

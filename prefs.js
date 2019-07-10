@@ -18,12 +18,13 @@ const pretty_names = {
 };
 const layouts = {
     maximize: 'Maximize all windows',
-    'auto-grid': 'Tile windows according to screen ratio',
-    'vertical-grid': 'Tile windows vertically',
-    'horizontal-grid': 'Tile windows horizontally',
-    'ratio-grid':
+    float: 'Windows are not tiled',
+    half: 'Tile windows according to screen ratio',
+    'half-horizontal': 'Tile windows horizontaly',
+    'half-vertical': 'Tile windows vertically',
+    ratio:
         'Tile windows in both way according to the ratio of the remaining space',
-    'grid-grid': 'Tile windows according to a regular grid'
+    grid: 'Tile windows according to a regular grid'
 };
 function buildPrefsWidget() {
     let notebook = new Gtk.Notebook();
@@ -193,7 +194,7 @@ function layouts_tab(notebook) {
         ks_lbox.add(row);
 
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
-        if (layout === 'ratio-grid') {
+        if (layout === 'ratio') {
             const row = new Gtk.ListBoxRow();
             const ratio = Gtk.Scale.new_with_range(
                 Gtk.Orientation.HORIZONTAL,
@@ -207,7 +208,7 @@ function layouts_tab(notebook) {
                 'Golden Ratio'
             );
             settings.bind(
-                'ratio-grid-ratio',
+                'ratio-value',
                 ratio.get_adjustment(),
                 'value',
                 Gio.SettingsBindFlags.DEFAULT

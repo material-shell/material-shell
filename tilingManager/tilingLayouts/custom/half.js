@@ -5,66 +5,11 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    BaseTilingLayout
-} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
+    BaseGrabbableLayout
+} = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 
-/* exported AutoGridLayout */
-var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
-        this.key = 'auto-grid';
-        this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/view-quilt-symbolic.svg`
-        );
-        this.grabStartSignal = global.display.connect(
-            'grab-op-begin',
-            (display1, display2, window, op) => {
-                if (op !== Meta.GrabOp.MOVING) return;
-                this.grabInProgress = true;
-                this.grabWindow = window;
-                this.grabSignal = window.connect('position-changed', () => {
-                    let windowRect = window.get_frame_rect();
-                    let x = windowRect.x + windowRect.width / 2;
-                    let y = windowRect.y + windowRect.height / 2;
-                    const windowHovered = this.windows.find(windowToCheck => {
-                        if (windowToCheck === this.grabWindow) return false;
-                        let rect = windowToCheck.get_frame_rect();
-                        return (
-                            x >= rect.x &&
-                            x <= rect.x + rect.width &&
-                            y >= rect.y &&
-                            y <= rect.y + rect.height
-                        );
-                    });
-                    if (
-                        windowHovered &&
-                        this.windows.indexOf(windowHovered) > -1 &&
-                        this.windows.indexOf(this.grabWindow) > -1
-                    ) {
-                        this.superWorkspace.swapWindows(
-                            this.grabWindow,
-                            windowHovered
-                        );
-                    }
-                });
-            }
-        );
-
-        this.grabEndSignal = global.display.connect('grab-op-end', () => {
-            if (this.grabInProgress) {
-                this.grabInProgress = false;
-                this.grabWindow.disconnect(this.grabSignal);
-                delete this.grabWindow;
-                delete this.grabSignal;
-            }
-        });
-    }
-    onWindowsChanged(windows) {
-        super.onWindowsChanged(windows);
-    }
-
-    onFocusChanged() {}
-
+/* exported HalfLayout */
+var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         if (!windows.length) return;
 
@@ -152,9 +97,6 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
             }
         });
     }
-
-    onDestroy() {
-        super.onDestroy();
-        global.display.disconnect(this.grabStartSignal);
-    }
 };
+
+HalfLayout.key = 'half';
