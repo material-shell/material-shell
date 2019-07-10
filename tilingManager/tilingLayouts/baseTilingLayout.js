@@ -1,7 +1,10 @@
 const { Meta, GLib } = imports.gi;
 const Main = imports.ui.main;
+const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
+
+const TILE_TWEEN_TIME = 0.25;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -82,14 +85,43 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindow(metaWindow, x, y) {
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_frame(false, x, y);
+            const actor = metaWindowInside.get_compositor_private();
+
+            Tweener.addTween(actor, {
+                x,
+                y,
+                time: TILE_TWEEN_TIME,
+                transition: 'easeOutQuad',
+                onComplete: this.moveMetaWindowTweenComplete,
+                onCompleteParams: [metaWindowInside, x, y]
+            });
         });
+    }
+
+    moveMetaWindowTweenComplete(metaWindow, x, y) {
+        metaWindowInside.move_frame(true, x, y);
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_resize_frame(false, x, y, width, height);
+            const actor = metaWindowInside.get_compositor_private();
+
+            Tweener.addTween(actor, {
+                x,
+                y,
+                scaleX: width / actor.width,
+                scaleY: height / actor.height,
+                time: TILE_TWEEN_TIME,
+                transition: 'easeOutQuad',
+                onComplete: this.moveAndResizeMetaWindowTweenComplete,
+                onCompleteParams: [metaWindowInside, x, y, width, height]
+            });
         });
+    }
+    moveAndResizeMetaWindowTweenComplete(metaWindow, x, y, width, height) {
+        const actor = metaWindow.get_compositor_private();
+        actor.set_scale(1, 1);
+        metaWindow.move_resize_frame(true, x, y, width, height);
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
