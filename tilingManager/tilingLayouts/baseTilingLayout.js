@@ -93,12 +93,15 @@ var BaseTilingLayout = class BaseTilingLayout {
                 time: TILE_TWEEN_TIME,
                 transition: 'easeOutQuad',
                 onComplete: this.moveMetaWindowTweenComplete,
+                onCompleteScope: this,
                 onCompleteParams: [metaWindowInside, x, y]
             });
         });
     }
 
     moveMetaWindowTweenComplete(metaWindow, x, y) {
+        const actor = metaWindow.get_compositor_private();
+        Tweener.removeTweens(actor);
         metaWindowInside.move_frame(true, x, y);
     }
 
@@ -114,12 +117,14 @@ var BaseTilingLayout = class BaseTilingLayout {
                 time: TILE_TWEEN_TIME,
                 transition: 'easeOutQuad',
                 onComplete: this.moveAndResizeMetaWindowTweenComplete,
+                onCompleteScope: this,
                 onCompleteParams: [metaWindowInside, x, y, width, height]
             });
         });
     }
     moveAndResizeMetaWindowTweenComplete(metaWindow, x, y, width, height) {
         const actor = metaWindow.get_compositor_private();
+        Tweener.removeTweens(actor);
         actor.set_scale(1, 1);
         metaWindow.move_resize_frame(true, x, y, width, height);
     }
