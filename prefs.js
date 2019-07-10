@@ -16,7 +16,15 @@ const pretty_names = {
     'next-workspace': 'Focus the next workspace',
     'kill-focused-window': 'kill the current window'
 };
-
+const layouts = {
+    maximize: 'Maximize all windows',
+    'auto-grid': 'Tile windows according to screen ratio',
+    'vertical-grid': 'Tile windows vertically',
+    'horizontal-grid': 'Tile windows horizontally',
+    'ratio-grid':
+        'Tile windows in both way according to the ratio of the remaining space',
+    'grid-grid': 'Tile windows according to a regular grid'
+};
 function buildPrefsWidget() {
     let notebook = new Gtk.Notebook();
     accel_tab(notebook);
@@ -151,14 +159,6 @@ function accel_tab(notebook) {
 }
 
 function layouts_tab(notebook) {
-    const layouts = {
-        maximize: 'Maximize all windows',
-        'auto-grid': 'Tile windows according to screen ratio',
-        'vertical-grid': 'Tile windows vertically',
-        'horizontal-grid': 'Tile windows horizontally',
-        'ratio-grid':
-            'Tile windows in both way according to the ratio of the remaining space'
-    };
     const settings = getSettings('layouts');
 
     let ks_window = new Gtk.ScrolledWindow({ vexpand: true });

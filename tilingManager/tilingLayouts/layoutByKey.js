@@ -10,6 +10,7 @@ const {
     HorizontalGridLayout
 } = Me.imports.tilingManager.tilingLayouts.horizontalGrid;
 const { RatioGridLayout } = Me.imports.tilingManager.tilingLayouts.ratioGrid;
+const { GridGridLayout } = Me.imports.tilingManager.tilingLayouts.gridGrid;
 
 /* exported TilingLayoutByKey */
 var TilingLayoutByKey = {
@@ -17,5 +18,6 @@ var TilingLayoutByKey = {
     'vertical-grid': VerticalGridLayout,
     'horizontal-grid': HorizontalGridLayout,
     maximize: MaximizeLayout,
-    'ratio-grid': RatioGridLayout
+    'ratio-grid': RatioGridLayout,
+    'grid-grid': GridGridLayout
 };

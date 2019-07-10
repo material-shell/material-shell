@@ -30,5 +30,10 @@
       <summary>Ratio of the ratio layout</summary>
       <description>Determines the ratio of the tiling</description>
     </key>
+    <key name="grid-grid" type="b">
+      <default>false</default>
+      <summary>Regular Grid layout</summary>
+      <description>Tile windows according to a regular grid</description>
+    </key>
   </schema>
 </schemalist>
