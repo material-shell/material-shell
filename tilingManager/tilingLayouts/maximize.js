@@ -4,17 +4,14 @@ const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const {
-    BaseTilingLayout
-} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
+const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'maximize';
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tab-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/maximize-symbolic.svg`
         );
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
@@ -23,10 +20,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
-    }
-
-    onWindowsChanged(windows) {
-        super.onWindowsChanged(windows);
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
@@ -128,3 +121,5 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.onTile();
     }
 };
+
+MaximizeLayout.key = 'maximize';
