@@ -101,7 +101,6 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindowTweenComplete(metaWindow, x, y) {
         const actor = metaWindow.get_compositor_private();
-        Tweener.removeTweens(actor);
         metaWindowInside.move_frame(true, x, y);
     }
 
@@ -124,15 +123,14 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
     moveAndResizeMetaWindowTweenComplete(metaWindow, x, y, width, height) {
         const actor = metaWindow.get_compositor_private();
-        Tweener.removeTweens(actor);
         actor.set_scale(1, 1);
         metaWindow.move_resize_frame(true, x, y, width, height);
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        //First check if the metaWindow got an actor
-        if (actor) {
+        //First check if the metaWindow got an actor and it's not already tweening
+        if (actor && !Tweener.getTweenCount(actor)) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
                 callback(metaWindow);
@@ -145,15 +143,21 @@ var BaseTilingLayout = class BaseTilingLayout {
                     delete actor.waitToBeMappedId;
                 });
             }
-        } else if (!alreadyDelayed) {
-            //If we don't have actor we hope to get it in the next loop
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.callSafely(metaWindow, callback, true);
+        } else if (!alreadyDelayed || alreadyDelayed < 20) {
+            // If we don't have actor we hope to get it in the next loop
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+                this.callSafely(
+                    metaWindow,
+                    callback,
+                    (alreadyDelayed || 0) + 1
+                );
                 return GLib.SOURCE_REMOVE;
             });
         } else {
             // Can't do shit for now
-            log(`failed to tile ${metaWindow.get_title()}`);
+            log(
+                `Failed to tile ${metaWindow.get_title()} after ${alreadyDelayed} tries`
+            );
         }
     }
 
