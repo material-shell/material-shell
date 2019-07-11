@@ -1,5 +1,6 @@
 const Main = imports.ui.main;
 const { Meta, Gio } = imports.gi;
+const Tweener = imports.ui.tweener;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -39,7 +40,10 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
                     if (
                         windowHovered &&
                         this.windows.indexOf(windowHovered) > -1 &&
-                        this.windows.indexOf(this.grabWindow) > -1
+                        this.windows.indexOf(this.grabWindow) > -1 &&
+                        !Tweener.getTweenCount(
+                            windowHovered.get_compositor_private()
+                        )
                     ) {
                         this.superWorkspace.swapWindows(
                             this.grabWindow,
@@ -53,6 +57,7 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
         this.grabEndSignal = global.display.connect('grab-op-end', () => {
             if (this.grabInProgress) {
                 this.grabInProgress = false;
+                Tweener.removeTweens(this.grabWindow.get_compositor_private());
                 this.grabWindow.disconnect(this.grabSignal);
                 delete this.grabWindow;
                 delete this.grabSignal;
@@ -90,7 +95,7 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
             windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
-            if (window.grabbed) return;
+            // if (window.grabbed) return;
 
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
@@ -101,7 +106,8 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
                     workArea.x,
                     workArea.y,
                     masterWidth,
-                    workArea.height
+                    workArea.height,
+                    window.grabbed
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -110,7 +116,8 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
                     workArea.y +
                         ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
-                    workArea.height / (windows.length - 1)
+                    workArea.height / (windows.length - 1),
+                    window.grabbed
                 );
             }
         });
@@ -127,8 +134,6 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
             windows.length > 1 ? workArea.height / 2 : workArea.height;
 
         windows.forEach((window, index) => {
-            if (window.grabbed) return;
-
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
 
@@ -138,7 +143,8 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
                     workArea.x,
                     workArea.y,
                     workArea.width,
-                    masterHeight
+                    masterHeight,
+                    window.grabbed
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -147,7 +153,8 @@ var AutoGridLayout = class AutoGridLayout extends BaseTilingLayout {
                         ((index - 1) * workArea.width) / (windows.length - 1),
                     workArea.y + masterHeight,
                     workArea.width / (windows.length - 1),
-                    workArea.height - masterHeight
+                    workArea.height - masterHeight,
+                    window.grabbed
                 );
             }
         });

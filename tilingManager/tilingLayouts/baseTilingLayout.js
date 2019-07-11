@@ -18,7 +18,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             'windows-changed',
             this.onWindowsChanged.bind(this)
         );
-
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
             (_, window, oldWindow) => {
@@ -35,11 +34,10 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onWindowsChanged() {
+        log('windows changed');
         this.windows = this.superWorkspace.windows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
@@ -94,43 +92,117 @@ var BaseTilingLayout = class BaseTilingLayout {
                 transition: 'easeOutQuad',
                 onComplete: this.moveMetaWindowTweenComplete,
                 onCompleteScope: this,
-                onCompleteParams: [metaWindowInside, x, y]
+                onCompleteParams: [metaWindowInside, x, y],
+                onOverwrite: this.moveMetaWindowTweenComplete,
+                onOverwriteScope: this,
+                onOverwriteParams: [metaWindowInside, x, y, true]
             });
         });
     }
 
-    moveMetaWindowTweenComplete(metaWindow, x, y) {
+    moveMetaWindowTweenComplete(metaWindow, x, y, overwritten) {
         const actor = metaWindow.get_compositor_private();
         metaWindowInside.move_frame(true, x, y);
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, onlyScale) {
+        const rect = metaWindow.get_frame_rect();
+        const buf = metaWindow.get_buffer_rect();
+        x = Math.floor(x);
+        y = Math.floor(y);
+        width = Math.floor(width);
+        height = Math.floor(height);
+        if (
+            x === rect.x &&
+            y === rect.y &&
+            width === rect.width &&
+            height === rect.height
+        ) {
+            return;
+        }
         this.callSafely(metaWindow, metaWindowInside => {
             const actor = metaWindowInside.get_compositor_private();
+            if (Tweener.getTweenCount(actor)) {
+                actor.opacity = 255;
+                actor.scale_x = 1;
+                actor.scale_y = 1;
+            }
 
-            Tweener.addTween(actor, {
-                x,
-                y,
-                scaleX: width / actor.width,
-                scaleY: height / actor.height,
+            const params = {
+                scale_x: width / metaWindow.get_frame_rect().width,
+                scale_y: height / metaWindow.get_frame_rect().height,
                 time: TILE_TWEEN_TIME,
                 transition: 'easeOutQuad',
                 onComplete: this.moveAndResizeMetaWindowTweenComplete,
                 onCompleteScope: this,
-                onCompleteParams: [metaWindowInside, x, y, width, height]
-            });
+                onCompleteParams: [
+                    metaWindowInside,
+                    x,
+                    y,
+                    width,
+                    height,
+                    onlyScale
+                ],
+                onOverwrite: this.moveAndResizeMetaWindowTweenComplete,
+                onOverwriteScope: this,
+                onOverwriteParams: [
+                    metaWindowInside,
+                    x,
+                    y,
+                    width,
+                    height,
+                    onlyScale,
+                    true
+                ]
+            };
+            if (!onlyScale) {
+                // Correct delta between metaWindow position and actor's
+                params.x =
+                    x +
+                    (metaWindow.get_buffer_rect().x -
+                        metaWindow.get_frame_rect().x);
+                params.y =
+                    y +
+                    (metaWindow.get_buffer_rect().y -
+                        metaWindow.get_frame_rect().y);
+            }
+            log(
+                'tween',
+                metaWindow.get_title(),
+                params.x,
+                params.y,
+                params.scale_x,
+                params.scale_y
+            );
+
+            Tweener.addTween(actor, params);
         });
     }
-    moveAndResizeMetaWindowTweenComplete(metaWindow, x, y, width, height) {
+    moveAndResizeMetaWindowTweenComplete(
+        metaWindow,
+        x,
+        y,
+        width,
+        height,
+        onlyScale,
+        overwritten
+    ) {
         const actor = metaWindow.get_compositor_private();
-        actor.set_scale(1, 1);
+        if (onlyScale) {
+            const rect = metaWindow.get_frame_rect();
+            x = rect.x;
+            y = rect.y;
+        }
+        if (!overwritten) {
+            actor.set_scale(1, 1);
+        }
         metaWindow.move_resize_frame(true, x, y, width, height);
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
         //First check if the metaWindow got an actor and it's not already tweening
-        if (actor && !Tweener.getTweenCount(actor)) {
+        if (actor) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
                 callback(metaWindow);
