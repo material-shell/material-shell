@@ -48,6 +48,7 @@ var Backdrop = GObject.registerClass(
                             this.window,
                             this
                         );
+                        return GLib.SOURCE_REMOVE;
                     });
                 } else {
                     this.followWindow();

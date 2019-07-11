@@ -46,6 +46,7 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
             if (this.grabInProgress) {
                 this.grabInProgress = false;
                 this.grabWindow.disconnect(this.grabSignal);
+                Tweener.removeTweens(this.grabWindow.get_compositor_private());
                 delete this.grabWindow;
                 delete this.grabSignal;
             }

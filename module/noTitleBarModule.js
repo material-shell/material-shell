@@ -14,6 +14,7 @@ var NoTitleBarModule = class NoTitleBarModule {
             if (!this._handleWindow(window)) return;
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.toggleTitleBar(this.getWindowXID(window), true);
+                return GLib.SOURCE_REMOVE;
             });
         });
     }

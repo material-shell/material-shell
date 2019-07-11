@@ -1,7 +1,10 @@
 const { Meta, Gio, GLib } = imports.gi;
 const Main = imports.ui.main;
+const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
+
+const TILE_TWEEN_TIME = 0.25;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -16,7 +19,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             'windows-changed',
             this.onWindowsChanged.bind(this)
         );
-
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
             (_, window, oldWindow) => {
@@ -33,6 +35,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onWindowsChanged() {
+        log('windows changed');
         this.windows = this.superWorkspace.windows;
         log(
             `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
@@ -82,19 +85,125 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindow(metaWindow, x, y) {
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_frame(false, x, y);
+            const actor = metaWindowInside.get_compositor_private();
+
+            Tweener.addTween(actor, {
+                x,
+                y,
+                time: TILE_TWEEN_TIME,
+                transition: 'easeOutQuad',
+                onComplete: this.moveMetaWindowTweenComplete,
+                onCompleteScope: this,
+                onCompleteParams: [metaWindowInside, x, y],
+                onOverwrite: this.moveMetaWindowTweenComplete,
+                onOverwriteScope: this,
+                onOverwriteParams: [metaWindowInside, x, y, true]
+            });
         });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+    moveMetaWindowTweenComplete(metaWindow, x, y, overwritten) {
+        const actor = metaWindow.get_compositor_private();
+        metaWindowInside.move_frame(true, x, y);
+    }
+
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, onlyScale) {
+        const rect = metaWindow.get_frame_rect();
+        const buf = metaWindow.get_buffer_rect();
+        x = Math.floor(x);
+        y = Math.floor(y);
+        width = Math.floor(width);
+        height = Math.floor(height);
+        if (
+            x === rect.x &&
+            y === rect.y &&
+            width === rect.width &&
+            height === rect.height
+        ) {
+            return;
+        }
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_resize_frame(false, x, y, width, height);
+            const actor = metaWindowInside.get_compositor_private();
+            if (Tweener.getTweenCount(actor)) {
+                actor.opacity = 255;
+                actor.scale_x = 1;
+                actor.scale_y = 1;
+            }
+
+            const params = {
+                scale_x: width / metaWindow.get_frame_rect().width,
+                scale_y: height / metaWindow.get_frame_rect().height,
+                time: TILE_TWEEN_TIME,
+                transition: 'easeOutQuad',
+                onComplete: this.moveAndResizeMetaWindowTweenComplete,
+                onCompleteScope: this,
+                onCompleteParams: [
+                    metaWindowInside,
+                    x,
+                    y,
+                    width,
+                    height,
+                    onlyScale
+                ],
+                onOverwrite: this.moveAndResizeMetaWindowTweenComplete,
+                onOverwriteScope: this,
+                onOverwriteParams: [
+                    metaWindowInside,
+                    x,
+                    y,
+                    width,
+                    height,
+                    onlyScale,
+                    true
+                ]
+            };
+            if (!onlyScale) {
+                // Correct delta between metaWindow position and actor's
+                params.x =
+                    x +
+                    (metaWindow.get_buffer_rect().x -
+                        metaWindow.get_frame_rect().x);
+                params.y =
+                    y +
+                    (metaWindow.get_buffer_rect().y -
+                        metaWindow.get_frame_rect().y);
+            }
+            log(
+                'tween',
+                metaWindow.get_title(),
+                params.x,
+                params.y,
+                params.scale_x,
+                params.scale_y
+            );
+
+            Tweener.addTween(actor, params);
         });
+    }
+    moveAndResizeMetaWindowTweenComplete(
+        metaWindow,
+        x,
+        y,
+        width,
+        height,
+        onlyScale,
+        overwritten
+    ) {
+        const actor = metaWindow.get_compositor_private();
+        if (onlyScale) {
+            const rect = metaWindow.get_frame_rect();
+            x = rect.x;
+            y = rect.y;
+        }
+        if (!overwritten) {
+            actor.set_scale(1, 1);
+        }
+        metaWindow.move_resize_frame(true, x, y, width, height);
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        //First check if the metaWindow got an actor
+        //First check if the metaWindow got an actor and it's not already tweening
         if (actor) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
@@ -108,14 +217,21 @@ var BaseTilingLayout = class BaseTilingLayout {
                     delete actor.waitToBeMappedId;
                 });
             }
-        } else if (!alreadyDelayed) {
-            //If we don't have actor we hope to get it in the next loop
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.callSafely(metaWindow, callback, true);
+        } else if (!alreadyDelayed || alreadyDelayed < 20) {
+            // If we don't have actor we hope to get it in the next loop
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+                this.callSafely(
+                    metaWindow,
+                    callback,
+                    (alreadyDelayed || 0) + 1
+                );
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             // Can't do shit for now
-            log(`failed to tile ${metaWindow.get_title()}`);
+            log(
+                `Failed to tile ${metaWindow.get_title()} after ${alreadyDelayed} tries`
+            );
         }
     }
 
