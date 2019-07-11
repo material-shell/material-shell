@@ -18,14 +18,14 @@ Get notified about updates and join me at [https://discord.gg/vBb7D9a](https://d
 ```bash
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-2) Reload GNOME shell by hitting `Alt+F2` and typing the command `r`
+2) Reload GNOME Shell by hitting `Alt+F2` and typing the command `r`
 3) Open `gnome-tweaks` and activate `Material-shell` extension **OR** enable it using 
 ```bash
 gnome-shell-extension-tool -e material-shell@papyelgringo
 ```
 
 ## Modifying the Stylesheet
-The stylesheet is written in [Sass](https://sass-lang.com) so it must be compiled before reloading it.
+The stylesheet is written in [Sass](https://sass-lang.com) so it must be compiled before it can be reloaded.
 First, make sure to install the Sass command line tool with `npm`:
 ```bash
 npm install -g sass
