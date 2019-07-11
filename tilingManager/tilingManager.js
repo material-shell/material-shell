@@ -43,6 +43,7 @@ var TilingManager = class TilingManager {
                                 }
                             }
                         );
+                        return GLib.SOURCE_REMOVE;
                     });
                 }
             });
@@ -119,6 +120,7 @@ var TilingManager = class TilingManager {
             }
             log('tile windows end');
             this.tilingInProgress = false;
+            return GLib.SOURCE_REMOVE;
         });
     }
 };

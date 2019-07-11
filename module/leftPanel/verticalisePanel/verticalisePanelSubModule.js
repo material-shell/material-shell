@@ -92,6 +92,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         // 1- Set all List container to vertical
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.recursivelySetVertical(this.panel, true);
+            return GLib.SOURCE_REMOVE;
         });
 
         // 2- Override the allocate function of the panel to display the PanelBoxes vertically

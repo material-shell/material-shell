@@ -276,9 +276,10 @@ var SuperWorkspace = class SuperWorkspace {
             this.emitInProgress = false;
 
             if (this.destroyed) {
-                return;
+                return GLib.SOURCE_REMOVE;
             }
             this.emit('windows-changed');
+            return GLib.SOURCE_REMOVE;
         });
     }
 

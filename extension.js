@@ -45,6 +45,7 @@ function enable() {
                 module.enable();
             });
         });
+        return GLib.SOURCE_REMOVE;
     });
 }
 

@@ -37,6 +37,7 @@ var TaskBar = GObject.registerClass(
                 this.updateItems();
                 GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
                     this._animateActiveIndicator();
+                    return GLib.SOURCE_REMOVE;
                 });
             });
 

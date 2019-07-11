@@ -149,6 +149,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             //If we don't have actor we hope to get it in the next loop
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.callSafely(metaWindow, callback, true);
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             // Can't do shit for now
