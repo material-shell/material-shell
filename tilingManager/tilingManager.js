@@ -73,7 +73,6 @@ var TilingManager = class TilingManager {
             (this.availableLayouts.indexOf(key) + 1) %
                 this.availableLayouts.length
         ];
-        log(key, '-->', newKey);
         // And returns it
         return TilingLayoutByKey[newKey];
     }

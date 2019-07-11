@@ -12,17 +12,17 @@
     </key>
     <key name="half-horizontal" type="b">
       <default>false</default>
-      <summary>Half Horizontal layout</summary>
-      <description>Tile windows horizontaly</description>
+      <summary>Half horizontal layout</summary>
+      <description>Tile windows horizontally</description>
     </key>
     <key name="half-vertical" type="b">
       <default>false</default>
-      <summary>Half Vertical layout</summary>
+      <summary>Half vertical layout</summary>
       <description>Tile windows vertically</description>
     </key>
     <key name="ratio" type="b">
       <default>false</default>
-      <summary>Ratio based Grid layout</summary>
+      <summary>Ratio based grid layout</summary>
       <description>Tile windows in both way according to the ratio of the remaining space</description>
     </key>
     <key name="ratio-value" type="d">
@@ -32,13 +32,28 @@
     </key>
     <key name="grid" type="b">
       <default>false</default>
-      <summary>Regular Grid layout</summary>
+      <summary>Regular grid layout</summary>
       <description>Tile windows according to a regular grid</description>
     </key>
     <key name="float" type="b">
       <default>false</default>
       <summary>Float layout</summary>
       <description>No tiling is done, windows are floating freely</description>
+    </key>
+    <key name="simple" type="b">
+      <default>false</default>
+      <summary>Simple layout</summary>
+      <description>Split screen unidirectionally according to screen ratio</description>
+    </key>
+    <key name="simple-horizontal" type="b">
+      <default>false</default>
+      <summary>Simple horizontal layout</summary>
+      <description>Split screen horizontally</description>
+    </key>
+    <key name="simple-vertical" type="b">
+      <default>false</default>
+      <summary>Simple vertical layout</summary>
+      <description>Split screen vertically</description>
     </key>
   </schema>
 </schemalist>

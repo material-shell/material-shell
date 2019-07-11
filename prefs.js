@@ -20,11 +20,14 @@ const layouts = {
     maximize: 'Maximize all windows',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
-    'half-horizontal': 'Tile windows horizontaly',
+    'half-horizontal': 'Tile windows horizontally',
     'half-vertical': 'Tile windows vertically',
     ratio:
         'Tile windows in both way according to the ratio of the remaining space',
-    grid: 'Tile windows according to a regular grid'
+    grid: 'Tile windows according to a regular grid',
+    simple: 'Split screen unidirectionally according to screen ratio',
+    'simple-horizontal': 'Split screen horizontally',
+    'simple-vertical': 'Split screen vertically'
 };
 function buildPrefsWidget() {
     let notebook = new Gtk.Notebook();

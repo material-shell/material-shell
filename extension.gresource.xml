@@ -20,5 +20,8 @@
     <file>assets/icons/tiling/maximize-symbolic.svg</file>
     <file>assets/icons/tiling/native-symbolic.svg</file>
     <file>assets/icons/tiling/ratio-symbolic.svg</file>
+    <file>assets/icons/tiling/simple-horizontal-symbolic.svg</file>
+    <file>assets/icons/tiling/simple-symbolic.svg</file>
+    <file>assets/icons/tiling/simple-vertical-symbolic.svg</file>
   </gresource>
 </gresources>

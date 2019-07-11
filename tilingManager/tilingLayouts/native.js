@@ -18,7 +18,7 @@ var NativeLayout = class NativeLayout extends BaseGrabbableLayout {
         //     windows[0].maximize(Meta.MaximizeFlags.BOTH);
         // } else {
         //     windows.forEach((window, i) => {
-        //         window.tile(i % 0 ? Meta.Tile.Left : Meta.Tile.RIGHT);
+        //         window.tile(i % 2 ? Meta.Tile.Left : Meta.Tile.RIGHT);
         //     });
         // }
     }
