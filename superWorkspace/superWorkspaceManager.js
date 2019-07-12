@@ -103,7 +103,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     getPrimarySuperWorkspaceByIndex(index) {
         return this.getSuperWorkspaceByCategoryKey(
-            this.categoryKeyOrderedList[index]
+            this.categoryKeyOrderedList[
+                Math.min(index, this.categoryKeyOrderedList.length - 1)
+            ]
         );
     }
 
