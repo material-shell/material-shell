@@ -1,4 +1,5 @@
 const { Meta } = imports.gi;
+const Tweener = imports.ui.tweener;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -31,7 +32,10 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                     if (
                         windowHovered &&
                         this.windows.indexOf(windowHovered) > -1 &&
-                        this.windows.indexOf(this.grabWindow) > -1
+                        this.windows.indexOf(this.grabWindow) > -1 &&
+                        !Tweener.getTweenCount(
+                            windowHovered.get_compositor_private()
+                        )
                     ) {
                         this.superWorkspace.swapWindows(
                             this.grabWindow,

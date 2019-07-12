@@ -32,8 +32,6 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         );
 
         windows.forEach((window, index) => {
-            if (window.grabbed) return;
-
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
 
@@ -55,8 +53,6 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         );
 
         windows.forEach((window, index) => {
-            if (window.grabbed) return;
-
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
 

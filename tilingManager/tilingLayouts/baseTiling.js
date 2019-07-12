@@ -85,29 +85,11 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindow(metaWindow, x, y) {
         this.callSafely(metaWindow, metaWindowInside => {
-            const actor = metaWindowInside.get_compositor_private();
-
-            Tweener.addTween(actor, {
-                x,
-                y,
-                time: TILE_TWEEN_TIME,
-                transition: 'easeOutQuad',
-                onComplete: this.moveMetaWindowTweenComplete,
-                onCompleteScope: this,
-                onCompleteParams: [metaWindowInside, x, y],
-                onOverwrite: this.moveMetaWindowTweenComplete,
-                onOverwriteScope: this,
-                onOverwriteParams: [metaWindowInside, x, y, true]
-            });
+            metaWindowInside.move_frame(true, x, y);
         });
     }
 
-    moveMetaWindowTweenComplete(metaWindow, x, y, overwritten) {
-        const actor = metaWindow.get_compositor_private();
-        metaWindowInside.move_frame(true, x, y);
-    }
-
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height, onlyScale) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
         const rect = metaWindow.get_frame_rect();
         const buf = metaWindow.get_buffer_rect();
         x = Math.floor(x);
@@ -137,27 +119,12 @@ var BaseTilingLayout = class BaseTilingLayout {
                 transition: 'easeOutQuad',
                 onComplete: this.moveAndResizeMetaWindowTweenComplete,
                 onCompleteScope: this,
-                onCompleteParams: [
-                    metaWindowInside,
-                    x,
-                    y,
-                    width,
-                    height,
-                    onlyScale
-                ],
+                onCompleteParams: [metaWindowInside, x, y, width, height],
                 onOverwrite: this.moveAndResizeMetaWindowTweenComplete,
                 onOverwriteScope: this,
-                onOverwriteParams: [
-                    metaWindowInside,
-                    x,
-                    y,
-                    width,
-                    height,
-                    onlyScale,
-                    true
-                ]
+                onOverwriteParams: [metaWindowInside, x, y, width, height, true]
             };
-            if (!onlyScale) {
+            if (!metaWindow.grabbed) {
                 // Correct delta between metaWindow position and actor's
                 params.x =
                     x +
@@ -186,11 +153,10 @@ var BaseTilingLayout = class BaseTilingLayout {
         y,
         width,
         height,
-        onlyScale,
         overwritten
     ) {
         const actor = metaWindow.get_compositor_private();
-        if (onlyScale) {
+        if (metaWindow.grabbed) {
             const rect = metaWindow.get_frame_rect();
             x = rect.x;
             y = rect.y;
@@ -204,7 +170,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
         //First check if the metaWindow got an actor and it's not already tweening
-        if (actor) {
+        if (actor && actor.get_texture()) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
                 callback(metaWindow);

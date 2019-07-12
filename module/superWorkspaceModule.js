@@ -77,7 +77,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 () => {
                     log('active-workspace-changed');
                     let newSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
-                    this.currentSuperWorkspace.hideUI();
+                    this.currentSuperWorkspace &&
+                        this.currentSuperWorkspace.hideUI();
                     this.currentSuperWorkspace = newSuperWorkspace;
                     this.currentSuperWorkspace.showUI();
                 }

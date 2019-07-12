@@ -36,8 +36,6 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
             windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
-            // if (window.grabbed) return;
-
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
 
@@ -47,8 +45,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.x,
                     workArea.y,
                     masterWidth,
-                    workArea.height,
-                    window.grabbed
+                    workArea.height
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -57,8 +54,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.y +
                         ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
-                    workArea.height / (windows.length - 1),
-                    window.grabbed
+                    workArea.height / (windows.length - 1)
                 );
             }
         });
@@ -84,8 +80,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.x,
                     workArea.y,
                     workArea.width,
-                    masterHeight,
-                    window.grabbed
+                    masterHeight
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -94,8 +89,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                         ((index - 1) * workArea.width) / (windows.length - 1),
                     workArea.y + masterHeight,
                     workArea.width / (windows.length - 1),
-                    workArea.height - masterHeight,
-                    window.grabbed
+                    workArea.height - masterHeight
                 );
             }
         });

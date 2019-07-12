@@ -28,7 +28,7 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
             range(rows).forEach(j => {
                 const index = j + i * rows;
                 const window = windows[index];
-                if (!window || window.grabbed) return;
+                if (!window) return;
 
                 if (window.get_maximized())
                     window.unmaximize(Meta.MaximizeFlags.BOTH);
