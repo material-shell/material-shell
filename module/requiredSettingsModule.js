@@ -21,6 +21,18 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 key: 'workspaces-only-on-primary',
                 value: true,
                 valueType: 'boolean'
+            },
+            {
+                schema: 'org.gnome.shell.overrides',
+                key: 'edge-tiling',
+                value: false,
+                valueType: 'boolean'
+            },
+            {
+                schema: 'org.gnome.mutter',
+                key: 'edge-tiling',
+                value: false,
+                valueType: 'boolean'
             }
         ];
     }
