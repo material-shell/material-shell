@@ -106,65 +106,40 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
         this.callSafely(metaWindow, metaWindowInside => {
             const actor = metaWindowInside.get_compositor_private();
-            if (Tweener.getTweenCount(actor)) {
-                actor.opacity = 255;
-                actor.scale_x = 1;
-                actor.scale_y = 1;
+            const oldRect = metaWindow.get_frame_rect();
+            const [px, py] = global.get_pointer();
+
+            if (metaWindow.grabbed) {
+                const aw = actor.width;
+                const ah = actor.height;
+                const grabX = (px - actor.x) / actor.width;
+                const grabY = (py - actor.y) / actor.height;
+                actor.set_pivot_point(grabX, grabY);
+                Tweener.addTween(actor, {
+                    scale_x: width / oldRect.width,
+                    scale_y: height / oldRect.height,
+                    time: TILE_TWEEN_TIME,
+                    transition: 'easeOutQuad'
+                });
+                return;
             }
 
-            const params = {
-                scale_x: width / metaWindow.get_frame_rect().width,
-                scale_y: height / metaWindow.get_frame_rect().height,
+            metaWindow.move_resize_frame(true, x, y, width, height);
+            const newRect = metaWindow.get_frame_rect();
+            actor.opacity = 255;
+            actor.scale_x = oldRect.width / newRect.width;
+            actor.scale_y = oldRect.height / newRect.height;
+            actor.translation_x = oldRect.x - newRect.x;
+            actor.translation_y = oldRect.y - newRect.y;
+            Tweener.addTween(actor, {
+                scale_x: 1.0,
+                scale_y: 1.0,
+                translation_x: 0,
+                translation_y: 0,
                 time: TILE_TWEEN_TIME,
-                transition: 'easeOutQuad',
-                onComplete: this.moveAndResizeMetaWindowTweenComplete,
-                onCompleteScope: this,
-                onCompleteParams: [metaWindowInside, x, y, width, height],
-                onOverwrite: this.moveAndResizeMetaWindowTweenComplete,
-                onOverwriteScope: this,
-                onOverwriteParams: [metaWindowInside, x, y, width, height, true]
-            };
-            if (!metaWindow.grabbed) {
-                // Correct delta between metaWindow position and actor's
-                params.x =
-                    x +
-                    (metaWindow.get_buffer_rect().x -
-                        metaWindow.get_frame_rect().x);
-                params.y =
-                    y +
-                    (metaWindow.get_buffer_rect().y -
-                        metaWindow.get_frame_rect().y);
-            }
-            log(
-                'tween',
-                metaWindow.get_title(),
-                params.x,
-                params.y,
-                params.scale_x,
-                params.scale_y
-            );
-
-            Tweener.addTween(actor, params);
+                transition: 'easeOutQuad'
+            });
         });
-    }
-    moveAndResizeMetaWindowTweenComplete(
-        metaWindow,
-        x,
-        y,
-        width,
-        height,
-        overwritten
-    ) {
-        const actor = metaWindow.get_compositor_private();
-        if (metaWindow.grabbed) {
-            const rect = metaWindow.get_frame_rect();
-            x = rect.x;
-            y = rect.y;
-        }
-        if (!overwritten) {
-            actor.set_scale(1, 1);
-        }
-        metaWindow.move_resize_frame(true, x, y, width, height);
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
