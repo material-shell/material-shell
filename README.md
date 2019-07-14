@@ -25,14 +25,11 @@ Some hotkeys might already be used by gnome shell, please check your keybindings
 #### Desktop navigation
 * `Super+W` Navigate to the upper workspace/category.
 * `Super+S` Navigate to the lower workspace/category.
-* `Super+A` Focus the window at the left of the current window.
-* `Super+D` Focus the window at the right of the current window.
 
 #### Window manipulation
-* `Super+Q` Kill the current window focused.
 * `Super+[MouseDrag]` Move window around.
 
 #
 ## Recommendations
-* Get [plata-theme](https://gitlab.com/tista500/plata-theme) GTK and Shell theme 
+* Get [plata-theme](https://gitlab.com/tista500/plata-theme) GTK and Shell theme
 * Get [Tela-icon-theme](https://github.com/vinceliuice/Tela-icon-theme) Icon theme

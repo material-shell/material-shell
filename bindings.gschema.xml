@@ -14,26 +14,5 @@
         Focus the next window of the current workspace
       </description>
     </key>
-    <key name="previous-workspace" type="as">
-      <default><![CDATA[['<Super>w']]]></default>
-      <summary>Focus previous workspace</summary>
-      <description>
-        Focus the previous  workspace
-      </description>
-    </key>
-    <key name="next-workspace" type="as">
-      <default><![CDATA[['<Super>s']]]></default>
-      <summary>Focus next workspace</summary>
-      <description>
-        Focus the next workspace 
-      </description>
-    </key>
-    <key name="kill-focused-window" type="as">
-      <default><![CDATA[['<Super>q']]]></default>
-      <summary>Kill the current window</summary>
-      <description>
-        Kill the current focused window 
-      </description>
-    </key>
   </schema>
 </schemalist>

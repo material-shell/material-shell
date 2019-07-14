@@ -50,48 +50,6 @@ var HotKeysModule = class HotKeysModule {
                 superWorkspace.focusNext();
             }
         );
-
-        Main.wm.addKeybinding(
-            'previous-workspace',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                let currentIndex = this.workspaceManager.get_active_workspace_index();
-                if (currentIndex > 0) {
-                    this.workspaceManager
-                        .get_workspace_by_index(currentIndex - 1)
-                        .activate(global.get_current_time());
-                }
-            }
-        );
-
-        Main.wm.addKeybinding(
-            'next-workspace',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                let currentIndex = this.workspaceManager.get_active_workspace_index();
-                if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                    this.workspaceManager
-                        .get_workspace_by_index(currentIndex + 1)
-                        .activate(global.get_current_time());
-                }
-            }
-        );
-
-        Main.wm.addKeybinding(
-            'kill-focused-window',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                global.display
-                    .get_focus_window()
-                    .delete(global.get_current_time());
-            }
-        );
     }
 
     disable() {}

@@ -10,10 +10,7 @@ function init() {}
 
 const pretty_names = {
     'previous-window': 'Focus the previous window',
-    'next-window': 'Focus the next window',
-    'previous-workspace': 'Focus the previous workspace',
-    'next-workspace': 'Focus the next workspace',
-    'kill-focused-window': 'kill the current window'
+    'next-window': 'Focus the next window'
 };
 
 function buildPrefsWidget() {
