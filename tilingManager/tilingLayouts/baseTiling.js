@@ -3,7 +3,6 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
-const { getSettings } = Me.imports.utils.settings;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -30,18 +29,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onTile();
             }
         );
-        this.settings = getSettings('layouts');
-        this.settingsSignals = [
-            this.settings.connect('changed::gap', (schema, key) => {
-                this.gap = schema.get_int('gap');
-                this.onTile();
-            }),
-            this.settings.connect('changed::tween-time', (schema, key) => {
-                this.tweenTime = schema.get_double('tween-time');
-            })
-        ];
-        this.gap = this.settings.get_int('gap');
-        this.tweenTime = this.settings.get_double('tween-time');
+
         this.windows = superWorkspace.windows;
     }
 
@@ -101,11 +89,13 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
-        if (this.gap) {
-            x = x + this.gap;
-            y = y + this.gap;
-            width = width - 2 * this.gap;
-            height = height - 2 * this.gap;
+        const gap = global.tilingManager.gap;
+        const tweenTime = global.tilingManager.tweenTime;
+        if (gap) {
+            x = x + gap;
+            y = y + gap;
+            width = width - 2 * gap;
+            height = height - 2 * gap;
         }
 
         const rect = metaWindow.get_frame_rect();
@@ -136,7 +126,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 Tweener.addTween(actor, {
                     scale_x: width / oldRect.width,
                     scale_y: height / oldRect.height,
-                    time: this.tweenTime,
+                    time: tweenTime,
                     transition: 'easeOutQuad'
                 });
                 return;
@@ -154,7 +144,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 scale_y: 1.0,
                 translation_x: 0,
                 translation_y: 0,
-                time: this.tweenTime,
+                time: tweenTime,
                 transition: 'easeOutQuad'
             });
         });
@@ -195,7 +185,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onDestroy() {
-        this.settings.disconnect(this.settingsSignal);
         this.superWorkspace.disconnect(this.windowChangedId);
         this.superWorkspace.disconnect(this.windowFocusedChangedId);
         global.display.disconnect(this.workAreaChangedId);
@@ -222,6 +211,12 @@ var BaseTilingLayout = class BaseTilingLayout {
                 regularWindows.push(window);
             }
         }
+
+        log(
+            'Tiling ',
+            this.superWorkspace.categoryKey,
+            regularWindows.map(w => w.get_title())
+        );
         return [dialogWindows, regularWindows];
     }
 };

@@ -10,21 +10,9 @@ const { getSettings } = Me.imports.utils.settings;
 
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
-        this.settings = getSettings('layouts');
-        this.settingsSignal = this.settings.connect(
-            'changed::ratio-value',
-            (schema, key) => {
-                this.ratio = schema.get_double('ratio-value');
-                this.onTile();
-            }
-        );
-        this.ratio = this.settings.get_double('ratio-value');
-    }
-
     onTileRegulars(windows) {
         if (!windows.length) return;
+        const ratio = global.tilingManager.ratio;
 
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
@@ -49,13 +37,13 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 windowArea = freeArea;
             } else {
                 if (freeArea.width > freeArea.height) {
-                    windowArea.width = freeArea.width * this.ratio;
+                    windowArea.width = freeArea.width * ratio;
                     windowArea.height = freeArea.height;
                     freeArea.x += windowArea.width;
                     freeArea.width -= windowArea.width;
                 } else {
                     windowArea.width = freeArea.width;
-                    windowArea.height = freeArea.height * this.ratio;
+                    windowArea.height = freeArea.height * ratio;
                     freeArea.y += windowArea.height;
                     freeArea.height -= windowArea.height;
                 }
@@ -69,10 +57,6 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 windowArea.height
             );
         });
-    }
-    onDestroy() {
-        super.onDestroy();
-        this.settings.disconnect(this.settingsSignal);
     }
 };
 

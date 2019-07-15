@@ -15,31 +15,62 @@ var TilingManager = class TilingManager {
         this.signals = [];
         this.windows = [];
         this.layoutsSettings = getSettings('layouts');
+        this.settingsSignals = [
+            this.layoutsSettings.connect('changed::gap', (schema, key) => {
+                this.gap = schema.get_int('gap');
+                this.tileWindows();
+            }),
+            this.layoutsSettings.connect(
+                'changed::tween-time',
+                (schema, key) => {
+                    this.tweenTime = schema.get_double('tween-time');
+                }
+            ),
+            this.layoutsSettings.connect(
+                'changed::ratio-value',
+                (schema, key) => {
+                    this.ratio = schema.get_double('ratio-value');
+                    this.tileWindows();
+                }
+            )
+        ];
+
+        this.ratio = this.layoutsSettings.get_double('ratio-value');
+        this.gap = this.layoutsSettings.get_int('gap');
+        this.tweenTime = this.layoutsSettings.get_double('tween-time');
 
         this.allLayouts = Object.keys(TilingLayoutByKey);
         // On layout settings change
         this.allLayouts.forEach(key => {
-            this.layoutsSettings.connect(`changed::${key}`, (schema, key) => {
-                // Compute new available layouts
-                this.refreshAvailableLayouts();
-                log('New available', this.availableLayouts);
-                if (!schema.get_boolean(key)) {
-                    // If a layout has been removed,
-                    // change tiling of all workspaces using that layout.
+            this.settingsSignals.push(
+                this.layoutsSettings.connect(
+                    `changed::${key}`,
+                    (schema, key) => {
+                        // Compute new available layouts
+                        this.refreshAvailableLayouts();
+                        log('New available', this.availableLayouts);
+                        if (!schema.get_boolean(key)) {
+                            // If a layout has been removed,
+                            // change tiling of all workspaces using that layout.
 
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                        global.superWorkspaceManager.superWorkspaces.forEach(
-                            superWorkspace => {
-                                log(key, superWorkspace.tilingLayout);
-                                if (key == superWorkspace.tilingLayout.key) {
-                                    superWorkspace.nextTiling();
-                                }
-                            }
-                        );
-                        return GLib.SOURCE_REMOVE;
-                    });
-                }
-            });
+                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                global.superWorkspaceManager.superWorkspaces.forEach(
+                                    superWorkspace => {
+                                        log(key, superWorkspace.tilingLayout);
+                                        if (
+                                            key ==
+                                            superWorkspace.tilingLayout.key
+                                        ) {
+                                            superWorkspace.nextTiling();
+                                        }
+                                    }
+                                );
+                                return GLib.SOURCE_REMOVE;
+                            });
+                        }
+                    }
+                )
+            );
         });
 
         // Compute available layouts
@@ -115,5 +146,11 @@ var TilingManager = class TilingManager {
             this.tilingInProgress = false;
             return GLib.SOURCE_REMOVE;
         });
+    }
+
+    onDestroy() {
+        this.settingsSignals.forEach(signal =>
+            this.settings.disconnect(signal)
+        );
     }
 };
