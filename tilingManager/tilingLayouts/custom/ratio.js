@@ -16,17 +16,15 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
         this.settingsSignal = this.settings.connect(
             'changed::ratio-value',
             (schema, key) => {
-                log('changed');
+                this.ratio = schema.get_double('ratio-value');
                 this.onTile();
             }
         );
+        this.ratio = this.settings.get_double('ratio-value');
     }
 
     onTileRegulars(windows) {
         if (!windows.length) return;
-
-        const ratio = this.settings.get_double('ratio-value');
-        log('tile', ratio);
 
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
@@ -51,13 +49,13 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 windowArea = freeArea;
             } else {
                 if (freeArea.width > freeArea.height) {
-                    windowArea.width = freeArea.width * ratio;
+                    windowArea.width = freeArea.width * this.ratio;
                     windowArea.height = freeArea.height;
                     freeArea.x += windowArea.width;
                     freeArea.width -= windowArea.width;
                 } else {
                     windowArea.width = freeArea.width;
-                    windowArea.height = freeArea.height * ratio;
+                    windowArea.height = freeArea.height * this.ratio;
                     freeArea.y += windowArea.height;
                     freeArea.height -= windowArea.height;
                 }

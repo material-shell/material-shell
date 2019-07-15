@@ -55,5 +55,15 @@
       <summary>Simple vertical layout</summary>
       <description>Split screen vertically</description>
     </key>
+    <key name="gap" type="i">
+      <default>0</default>
+      <summary>Gap size around tiled windows</summary>
+      <description>Determines the gap size between windows</description>
+    </key>
+    <key name="tween-time" type="d">
+      <default>0.25</default>
+      <summary>Animation duration</summary>
+      <description>Ajust duration of window move/resize animation</description>
+    </key>
   </schema>
 </schemalist>

@@ -33,6 +33,7 @@ function buildPrefsWidget() {
     let notebook = new Gtk.Notebook();
     accel_tab(notebook);
     layouts_tab(notebook);
+    layouts_settings_tab(notebook);
     /* basics_tab(notebook);
 
     presets_tab(notebook);
@@ -167,10 +168,14 @@ function layouts_tab(notebook) {
 
     let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
     const ks_lbox = new Gtk.ListBox({
-        vexpand: false,
         valign: Gtk.Align.START
     });
-    ks_window.add(ks_lbox);
+    const w_box = new Gtk.VBox({
+        border_width: 10
+    });
+
+    w_box.add(ks_lbox);
+    ks_window.add(w_box);
     let ks_label = new Gtk.Label({
         label: 'Layouts',
         halign: Gtk.Align.START,
@@ -182,7 +187,11 @@ function layouts_tab(notebook) {
         let item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
 
         const name = new Gtk.Label({ xalign: 0 });
-        name.set_markup(`<span size="medium">${layout}</span>`);
+        name.set_markup(
+            `<span size="medium">${layout
+                .replace('-', ' ')
+                .replace(/^\w/g, c => c.toUpperCase())}</span>`
+        );
         const desc = new Gtk.Label({ xalign: 0 });
         desc.set_markup(`<span size="small">${description}</span>`);
 
@@ -220,6 +229,79 @@ function layouts_tab(notebook) {
             ks_lbox.add(row);
         }
     });
+    notebook.append_page(ks_window, ks_label);
+}
+
+function layouts_settings_tab(notebook) {
+    const settings = getSettings('layouts');
+
+    let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
+    const parent_vbox = new Gtk.VBox({
+        valign: Gtk.Align.START,
+        border_width: 10
+    });
+    ks_window.add(parent_vbox);
+    let ks_label = new Gtk.Label({
+        label: 'Tiling settings',
+        halign: Gtk.Align.START,
+        use_markup: false
+    });
+
+    const gaphbox = new Gtk.HBox();
+    const gap = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1);
+    settings.bind(
+        'gap',
+        gap.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const gapname = new Gtk.Label({ xalign: 0 });
+    gapname.set_markup(`<span size="medium">Gap size</span>`);
+    const gapdesc = new Gtk.Label({ xalign: 0 });
+    gapdesc.set_markup(
+        `<span size="small">Determines the gap size in pixel between windows</span>`
+    );
+
+    const gapvbox = new Gtk.VBox();
+    gapvbox.pack_start(gapname, false, false, 0);
+    gapvbox.pack_start(gapdesc, false, false, 0);
+    gaphbox.pack_start(gapvbox, true, true, 10);
+    gaphbox.pack_end(gap, true, true, 0);
+
+    parent_vbox.add(gaphbox);
+
+    const tweentimehbox = new Gtk.HBox();
+    const tweentime = Gtk.Scale.new_with_range(
+        Gtk.Orientation.HORIZONTAL,
+        0,
+        1,
+        0.01
+    );
+    settings.bind(
+        'tween-time',
+        tweentime.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    tweentime.add_mark(0.1, Gtk.PositionType.BOTTOM, 'Fast');
+    tweentime.add_mark(0.25, Gtk.PositionType.BOTTOM, 'Smooth');
+    tweentime.add_mark(0.75, Gtk.PositionType.BOTTOM, 'Mesmerizing');
+
+    const tweentimename = new Gtk.Label({ xalign: 0 });
+    tweentimename.set_markup(`<span size="medium">Animation duration</span>`);
+    const tweentimedesc = new Gtk.Label({ xalign: 0 });
+    tweentimedesc.set_markup(
+        `<span size="small">Ajust duration (in seconds) of window move/resize animation</span>`
+    );
+
+    const tweentimevbox = new Gtk.VBox();
+    tweentimevbox.pack_start(tweentimename, false, false, 0);
+    tweentimevbox.pack_start(tweentimedesc, false, false, 0);
+    tweentimehbox.pack_start(tweentimevbox, true, true, 10);
+    tweentimehbox.pack_start(tweentime, true, true, 0);
+
+    parent_vbox.add(tweentimehbox);
     notebook.append_page(ks_window, ks_label);
 }
 
