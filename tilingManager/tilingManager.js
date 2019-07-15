@@ -52,7 +52,7 @@ var TilingManager = class TilingManager {
         );
         if (!this.availableLayouts.length) {
             // Use grid by default if all layouts are disabled
-            this.availableLayouts = ['auto-grid'];
+            this.availableLayouts = ['half'];
         }
     }
 
