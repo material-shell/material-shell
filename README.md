@@ -39,6 +39,16 @@ sass stylesheet.scss:stylesheet.css --sourcemap
 ```
 3) Reload GNOME Shell by hitting `Alt+F2` and typing the command `r`
 
+### Arch Linux
+1) You can choose to install using the Arch Linux User-Community Repository (AUR) https://aur.archlinux.org/packages/gnome-shell-extension-material-shell-git/ \
+Assuming you're using yay:
+```
+yay -S gnome-shell-extension-material-shell-git
+```
+2) Reload gnome-shell by hitting `Alt+F2` and typing the command `r`
+3) Open `gnome-tweaks` and activate `Material-shell` extension
+
+
 ## Workflow Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
 #### Desktop navigation
