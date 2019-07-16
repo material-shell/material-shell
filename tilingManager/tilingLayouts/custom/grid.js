@@ -17,9 +17,7 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         if (!windows.length) return;
 
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
         const columns = Math.ceil(Math.sqrt(windows.length));
         const rows = Math.ceil(windows.length / columns);
         const width = workArea.width / columns;

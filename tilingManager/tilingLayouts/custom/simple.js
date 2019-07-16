@@ -13,9 +13,7 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         if (workArea.width > workArea.height) {
             this.onTileHorizontal(windows);
@@ -27,9 +25,7 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
     onTileHorizontal(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
             if (window.get_maximized())
@@ -48,9 +44,7 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
     onTileVertical(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
             if (window.get_maximized())

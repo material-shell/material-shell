@@ -33,9 +33,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onTileRegulars(windows) {
         if (this.animationInProgress) return;
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
 
         windows.forEach(window => {
             if (window.grabbed) return;
@@ -76,6 +73,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     animateTransition(direction) {
+        // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );

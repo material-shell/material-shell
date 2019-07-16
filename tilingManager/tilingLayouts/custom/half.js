@@ -14,9 +14,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         if (workArea.width > workArea.height) {
             this.onTileHorizontal(windows);
@@ -28,9 +26,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
     onTileHorizontal(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         let masterWidth =
             windows.length > 1 ? workArea.width / 2 : workArea.width;
@@ -63,9 +59,7 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
     onTileVertical(windows) {
         if (!windows.length) return;
 
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
 
         let masterHeight =
             windows.length > 1 ? workArea.height / 2 : workArea.height;

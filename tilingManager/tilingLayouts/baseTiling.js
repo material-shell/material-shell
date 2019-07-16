@@ -92,10 +92,10 @@ var BaseTilingLayout = class BaseTilingLayout {
         const gap = global.tilingManager.gap;
         const tweenTime = global.tilingManager.tweenTime;
         if (gap) {
-            x = x + gap;
-            y = y + gap;
-            width = width - 2 * gap;
-            height = height - 2 * gap;
+            x = x + gap / 2;
+            y = y + gap / 2;
+            width = width - gap;
+            height = height - gap;
         }
 
         const rect = metaWindow.get_frame_rect();
@@ -182,6 +182,22 @@ var BaseTilingLayout = class BaseTilingLayout {
                 `Failed to tile ${metaWindow.get_title()} after ${alreadyDelayed} tries`
             );
         }
+    }
+
+    getWorkspaceBounds() {
+        const gap = global.tilingManager.gap;
+        const {
+            x,
+            y,
+            width,
+            height
+        } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
+        return {
+            x: x + gap / 2,
+            y: y + gap / 2,
+            width: width - gap,
+            height: height - gap
+        };
     }
 
     onDestroy() {
