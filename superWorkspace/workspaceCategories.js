@@ -29,7 +29,10 @@ var WorkspaceCategories = {
             `${Me.path}/assets/icons/code-braces-symbolic.svg`
         ),
         title: _('Development'),
-        categoriesIncluded: ['Development'],
+        categoriesIncluded: [
+            'Development',
+            'TerminalEmulator'
+        ],
         categoriesExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
