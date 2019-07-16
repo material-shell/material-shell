@@ -18,26 +18,13 @@ Get notified about updates and join me at [https://discord.gg/vBb7D9a](https://d
 ```bash
 git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-2) Reload GNOME Shell by hitting `Alt+F2` and typing the command `r`
-3) Open `gnome-tweaks` and activate `Material-shell` extension **OR** enable it using 
+2) Reload GNOME Shell:
+  + On X.org: Hit `Alt+F2` and type the command `r`
+  + On Wayland: Log out and back in
+3) Open `gnome-tweaks` and activate the `Material-shell` extension **OR** enable it using 
 ```bash
 gnome-shell-extension-tool -e material-shell@papyelgringo
 ```
-
-## Modifying the Stylesheet
-The stylesheet is written in [Sass](https://sass-lang.com) so it must be compiled before it can be reloaded.
-First, make sure to install the Sass command line tool with `npm`:
-```bash
-npm install -g sass
-```
-If Sass is installed, then:
-1) Make changes to the `stylesheet.scss` file as you please.
-2) Compile the file, and generate a sourcemap:
-```bash
-cd ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
-sass stylesheet.scss:stylesheet.css --sourcemap
-```
-3) Reload GNOME Shell by hitting `Alt+F2` and typing the command `r`
 
 ### Arch Linux
 1) You can choose to install using the Arch Linux User-Community Repository (AUR) https://aur.archlinux.org/packages/gnome-shell-extension-material-shell-git/ \
@@ -45,9 +32,13 @@ Assuming you're using yay:
 ```
 yay -S gnome-shell-extension-material-shell-git
 ```
-2) Reload gnome-shell by hitting `Alt+F2` and typing the command `r`
-3) Open `gnome-tweaks` and activate `Material-shell` extension
-
+2) Reload GNOME Shell:
+  + On X.org: Hit `Alt+F2` and type the command `r`
+  + On Wayland: Log out and back in
+3) Open `gnome-tweaks` and activate the `Material-shell` extension **OR** enable it using 
+```bash
+gnome-shell-extension-tool -e material-shell@papyelgringo
+```
 
 ## Workflow Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
@@ -61,7 +52,7 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+Q` Kill the current window focused.
 * `Super+[MouseDrag]` Move window around.
 
-#
+
 ## Optional Configuration
 * Get [Plata Theme](https://gitlab.com/tista500/plata-theme) as the GTK and shell theme 
 * Get [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme) as the icon theme
