@@ -22,7 +22,8 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
 ### Arch Linux
-1) You can choose to install using the Arch Linux User-Community Repository (AUR)
+1) You can choose to install using the Arch Linux User-Community Repository (AUR) https://aur.archlinux.org/packages/gnome-shell-extension-material-shell-git/ \
+Assuming you're using yay:
 ```
 yay -S gnome-shell-extension-material-shell-git
 ```
