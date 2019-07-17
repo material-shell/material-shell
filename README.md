@@ -20,6 +20,9 @@ git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnom
 2) Reload gnome-shell by logout and re-login
 3) Open `gnome-tweaks` and activate `Material-shell` extension
 
+### Distribution packages
+- Fedora: `sudo dnf install gnome-shell-extension-material-shell`
+
 ## Workflow Hotkeys
 #### Desktop navigation
 * `Super+W` Navigate to the upper workspace/category.
