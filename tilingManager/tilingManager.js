@@ -82,8 +82,8 @@ var TilingManager = class TilingManager {
             this.layoutsSettings.get_boolean(key)
         );
         if (!this.availableLayouts.length) {
-            // Use grid by default if all layouts are disabled
-            this.availableLayouts = ['half'];
+            // Use maximize by default if all layouts are disabled
+            this.availableLayouts = ['maximize'];
         }
     }
 

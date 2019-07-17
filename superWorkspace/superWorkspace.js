@@ -26,7 +26,7 @@ var SuperWorkspace = class SuperWorkspace {
         let previousLayout =
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
-            ) || 'half';
+            ) || 'maximize';
         const Layout = global.tilingManager.getLayoutByKey(previousLayout);
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget({
