@@ -33,10 +33,10 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
 
             this.moveAndResizeMetaWindow(
                 window,
-                workArea.x,
-                workArea.y + (index * workArea.height) / windows.length,
-                workArea.width,
-                workArea.height / windows.length
+                workArea.x + (index * workArea.width) / windows.length,
+                workArea.y,
+                workArea.width / windows.length,
+                workArea.height
             );
         });
     }
@@ -52,10 +52,10 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
 
             this.moveAndResizeMetaWindow(
                 window,
-                workArea.x + (index * workArea.width) / windows.length,
-                workArea.y,
-                workArea.width / windows.length,
-                workArea.height
+                workArea.x,
+                workArea.y + (index * workArea.height) / windows.length,
+                workArea.width,
+                workArea.height / windows.length
             );
         });
     }
