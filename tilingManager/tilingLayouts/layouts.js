@@ -26,7 +26,7 @@ const layouts = [
 ];
 
 /* exported TilingLayoutByKey */
-const TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
+var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.key] = layout;
     return layoutsByKey;
 }, {});
