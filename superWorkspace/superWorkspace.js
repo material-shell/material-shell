@@ -26,7 +26,7 @@ var SuperWorkspace = class SuperWorkspace {
         let previousLayout =
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
-            ) || 'auto-grid';
+            ) || 'maximize';
         const Layout = global.tilingManager.getLayoutByKey(previousLayout);
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget({
@@ -208,7 +208,7 @@ var SuperWorkspace = class SuperWorkspace {
         this.tilingLayout = new Layout(this);
         Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
-            this.tilingLayout.key
+            this.tilingLayout.constructor.key
         );
         log(`${this.categoryKey} ask for tiling after layout changed`);
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
@@ -276,9 +276,10 @@ var SuperWorkspace = class SuperWorkspace {
             this.emitInProgress = false;
 
             if (this.destroyed) {
-                return;
+                return GLib.SOURCE_REMOVE;
             }
             this.emit('windows-changed');
+            return GLib.SOURCE_REMOVE;
         });
     }
 

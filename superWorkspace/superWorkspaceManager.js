@@ -172,9 +172,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     currentWindowWorkspace.index()
                 );
                 log(
-                    `the superWorkspace founded is ${
-                        superWorkspace.categoryKey
-                    }`
+                    `the superWorkspace founded is ${superWorkspace.categoryKey}`
                 );
             }
         }
@@ -256,7 +254,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     _handleWindow(metaWindow) {
-        log(metaWindow);
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(metaWindow.window_type);

@@ -1,13 +1,15 @@
-const { Meta, GLib } = imports.gi;
+const { Meta, Gio, GLib } = imports.gi;
 const Main = imports.ui.main;
+const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
-        this.icon = '';
-        this.key = 'base';
+        this.icon = Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+        );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
         this.windowFocused = this.superWorkspace.windowFocused;
@@ -15,7 +17,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             'windows-changed',
             this.onWindowsChanged.bind(this)
         );
-
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
             (_, window, oldWindow) => {
@@ -28,20 +29,20 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onTile();
             }
         );
+
         this.windows = superWorkspace.windows;
     }
 
     onWindowsChanged() {
+        log('windows changed');
         this.windows = this.superWorkspace.windows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
 
-    onFocusChanged(windowFocused, oldWindowFocused) {
+    onFocusChanged(windowFocused) {
         this.windowFocused = windowFocused;
     }
 
@@ -52,6 +53,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.onTileDialogs(dialogWindows);
     }
 
+    // eslint-disable-next-line no-unused-vars
     onTileRegulars(windows) {
         // Define windows sizes and positions
     }
@@ -82,20 +84,76 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     moveMetaWindow(metaWindow, x, y) {
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_frame(false, x, y);
+            metaWindowInside.move_frame(true, x, y);
         });
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+        const gap = global.tilingManager.gap;
+        const tweenTime = global.tilingManager.tweenTime;
+        if (gap) {
+            x = x + gap / 2;
+            y = y + gap / 2;
+            width = width - gap;
+            height = height - gap;
+        }
+
+        const rect = metaWindow.get_frame_rect();
+        const buf = metaWindow.get_buffer_rect();
+        x = Math.floor(x);
+        y = Math.floor(y);
+        width = Math.floor(width);
+        height = Math.floor(height);
+        if (
+            x === rect.x &&
+            y === rect.y &&
+            width === rect.width &&
+            height === rect.height
+        ) {
+            return;
+        }
         this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_resize_frame(false, x, y, width, height);
+            const actor = metaWindowInside.get_compositor_private();
+            const oldRect = metaWindow.get_frame_rect();
+            const [px, py] = global.get_pointer();
+
+            if (metaWindow.grabbed) {
+                const aw = actor.width;
+                const ah = actor.height;
+                const grabX = (px - actor.x) / actor.width;
+                const grabY = (py - actor.y) / actor.height;
+                actor.set_pivot_point(grabX, grabY);
+                Tweener.addTween(actor, {
+                    scale_x: width / oldRect.width,
+                    scale_y: height / oldRect.height,
+                    time: tweenTime,
+                    transition: 'easeOutQuad'
+                });
+                return;
+            }
+
+            metaWindow.move_resize_frame(true, x, y, width, height);
+            const newRect = metaWindow.get_frame_rect();
+            actor.opacity = 255;
+            actor.scale_x = oldRect.width / newRect.width;
+            actor.scale_y = oldRect.height / newRect.height;
+            actor.translation_x = oldRect.x - newRect.x;
+            actor.translation_y = oldRect.y - newRect.y;
+            Tweener.addTween(actor, {
+                scale_x: 1.0,
+                scale_y: 1.0,
+                translation_x: 0,
+                translation_y: 0,
+                time: tweenTime,
+                transition: 'easeOutQuad'
+            });
         });
     }
 
     callSafely(metaWindow, callback, alreadyDelayed) {
         let actor = metaWindow.get_compositor_private();
-        //First check if the metaWindow got an actor
-        if (actor) {
+        //First check if the metaWindow got an actor and it's not already tweening
+        if (actor && actor.get_texture()) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
                 callback(metaWindow);
@@ -108,15 +166,38 @@ var BaseTilingLayout = class BaseTilingLayout {
                     delete actor.waitToBeMappedId;
                 });
             }
-        } else if (!alreadyDelayed) {
-            //If we don't have actor we hope to get it in the next loop
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.callSafely(metaWindow, callback, true);
+        } else if (!alreadyDelayed || alreadyDelayed < 20) {
+            // If we don't have actor we hope to get it in the next loop
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+                this.callSafely(
+                    metaWindow,
+                    callback,
+                    (alreadyDelayed || 0) + 1
+                );
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             // Can't do shit for now
-            log(`failed to tile ${metaWindow.get_title()}`);
+            log(
+                `Failed to tile ${metaWindow.get_title()} after ${alreadyDelayed} tries`
+            );
         }
+    }
+
+    getWorkspaceBounds() {
+        const gap = global.tilingManager.gap;
+        const {
+            x,
+            y,
+            width,
+            height
+        } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
+        return {
+            x: x + gap / 2,
+            y: y + gap / 2,
+            width: width - gap,
+            height: height - gap
+        };
     }
 
     onDestroy() {
@@ -146,6 +227,12 @@ var BaseTilingLayout = class BaseTilingLayout {
                 regularWindows.push(window);
             }
         }
+
+        log(
+            'Tiling ',
+            this.superWorkspace.categoryKey,
+            regularWindows.map(w => w.get_title())
+        );
         return [dialogWindows, regularWindows];
     }
 };

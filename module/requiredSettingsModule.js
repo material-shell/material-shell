@@ -1,6 +1,7 @@
 const { Gio } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.utils.settings;
 
 /* exported RequiredSettingsModule */
 var RequiredSettingsModule = class RequiredSettingsModule {
@@ -19,6 +20,18 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 schema: 'org.gnome.mutter',
                 key: 'workspaces-only-on-primary',
                 value: true,
+                valueType: 'boolean'
+            },
+            {
+                schema: 'org.gnome.shell.overrides',
+                key: 'edge-tiling',
+                value: false,
+                valueType: 'boolean'
+            },
+            {
+                schema: 'org.gnome.mutter',
+                key: 'edge-tiling',
+                value: false,
                 valueType: 'boolean'
             }
         ];
@@ -56,14 +69,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             });
         });
 
-        const SchemaSource = Gio.SettingsSchemaSource.new_from_directory(
-            Me.dir.get_path(),
-            Gio.SettingsSchemaSource.get_default(),
-            false
-        );
-        const bindingSettings = new Gio.Settings({
-            settings_schema: SchemaSource.lookup(Me.metadata['bindings'], true)
-        });
+        const bindingSettings = getSettings('bindings');
         this.hotkeysToRemove = bindingSettings.list_keys().map(key => {
             return bindingSettings.get_strv(key)[0];
         });

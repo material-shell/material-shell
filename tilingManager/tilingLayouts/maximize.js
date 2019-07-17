@@ -1,21 +1,16 @@
-const { St, Gio, Meta } = imports.gi;
+const { St, Meta } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const {
-    BaseTilingLayout
-} = Me.imports.tilingManager.tilingLayouts.baseTilingLayout;
+const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.key = 'maximize';
-        this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tab-symbolic.svg`
-        );
+
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
@@ -23,10 +18,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
-    }
-
-    onWindowsChanged(windows) {
-        super.onWindowsChanged(windows);
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
@@ -40,9 +31,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onTileRegulars(windows) {
         if (this.animationInProgress) return;
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
 
         windows.forEach(window => {
             if (window.grabbed) return;
@@ -83,6 +71,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     animateTransition(direction) {
+        // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -128,3 +117,5 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.onTile();
     }
 };
+
+MaximizeLayout.key = 'maximize';
