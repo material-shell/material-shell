@@ -4,7 +4,8 @@ const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { RippleContainer } = Me.imports.widget.material.rippleContainer;
+const { MatButton } = Me.imports.widget.material.button;
+
 const { TaskBar } = Me.imports.widget.taskBar;
 
 /* exported TopPanel */
@@ -27,17 +28,17 @@ var TopPanel = GObject.registerClass(
                     ),
                     style_class: 'workspace-icon'
                 }),
-                style_class: 'workspace-button',
-                reactive: true,
-                can_focus: true,
-                track_hover: true
+                style_class: 'workspace-button'
             });
 
-            iconContainer.connect('button-press-event', () => {
+            this.addButton = new MatButton({
+                child: iconContainer
+            });
+
+            this.addButton.connect('clicked', () => {
                 superWorkspace.revealBackground();
             });
 
-            this.addButton = new RippleContainer(iconContainer);
             this._leftContainer.add_child(this.addButton);
             this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
@@ -45,7 +46,7 @@ var TopPanel = GObject.registerClass(
                 style_class: 'workspace-icon'
             });
 
-            let button = new St.Bin({
+            this.tilingButton = new MatButton({
                 child: this.tilingIcon,
                 style_class: 'workspace-button',
                 reactive: true,
@@ -53,11 +54,10 @@ var TopPanel = GObject.registerClass(
                 track_hover: true
             });
 
-            button.connect('button-press-event', () => {
+            this.tilingButton.connect('clicked', () => {
                 superWorkspace.nextTiling();
             });
 
-            this.tilingButton = new RippleContainer(button);
             this.add_child(this.tilingButton);
         }
 

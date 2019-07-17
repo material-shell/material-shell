@@ -1,5 +1,4 @@
-const St = imports.gi.St;
-const GObject = imports.gi.GObject;
+const { St, GObject, Clutter } = imports.gi;
 const Tweener = imports.ui.tweener;
 
 let RippleWave = GObject.registerClass(

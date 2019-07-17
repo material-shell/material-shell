@@ -3,7 +3,7 @@ const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { RippleContainer } = Me.imports.widget.material.rippleContainer;
+const { MatButton } = Me.imports.widget.material.button;
 
 /* exported AppsButtonSubModule */
 var AppsButtonSubModule = class AppsButtonSubModule {
@@ -16,15 +16,12 @@ var AppsButtonSubModule = class AppsButtonSubModule {
             style_class: 'workspace-main-icon'
         });
 
-        let button = new St.Bin({
+        this.button = new MatButton({
             child: icon,
-            style_class: 'workspace-button',
-            reactive: true,
-            can_focus: true,
-            track_hover: true
+            style_class: 'workspace-button'
         });
 
-        button.connect('button-press-event', () => {
+        this.button.connect('clicked', () => {
             if (!Main.overview._shown) {
                 Main.overview.viewSelector.showApps();
             } else {
@@ -32,7 +29,6 @@ var AppsButtonSubModule = class AppsButtonSubModule {
             }
         });
 
-        this.button = new RippleContainer(button);
         this.button.add_style_class_name('primary-bg');
     }
 

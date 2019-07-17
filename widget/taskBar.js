@@ -8,7 +8,7 @@ const DND = imports.ui.dnd;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const { RippleContainer } = Me.imports.widget.material.rippleContainer;
+const { MatButton } = Me.imports.widget.material.button;
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
@@ -79,20 +79,6 @@ var TaskBar = GObject.registerClass(
             this.workspaceEnhancer.disconnect(this.focusId);
         }
 
-        handleDragOver() {
-            if (!this.tempDragData.draggedOverByChild) {
-                let item =
-                    this.items[this.items.length - 1] === this.tempDragData.item
-                        ? this.items[this.items.length - 2]
-                        : this.items[this.items.length - 1];
-                this._onDragOver(item, false);
-            } else {
-                this.tempDragData.draggedOverByChild = false;
-            }
-
-            return DND.DragMotionResult.MOVE_DROP;
-        }
-
         getFilteredWindows() {
             return this.workspaceEnhancer.windows.filter(window => {
                 return !window.skip_taskbar;
@@ -155,6 +141,20 @@ var TaskBar = GObject.registerClass(
                 this.height - this.taskActiveIndicator.height;
         }
 
+        handleDragOver() {
+            if (!this.tempDragData.draggedOverByChild) {
+                let item =
+                    this.items[this.items.length - 1] === this.tempDragData.item
+                        ? this.items[this.items.length - 2]
+                        : this.items[this.items.length - 1];
+                this._onDragOver(item, false);
+            } else {
+                this.tempDragData.draggedOverByChild = false;
+            }
+
+            return DND.DragMotionResult.MOVE_DROP;
+        }
+
         _onDragEnd() {
             this.taskButtonContainer.remove_child(this.dropPlaceholder);
             if (this.tempDragData.draggedOver) {
@@ -215,7 +215,8 @@ var TaskBar = GObject.registerClass(
                         taskBarItem.widthSignalId = taskBarItem.connect(
                             'notify::width',
                             () => {
-                                this._animateActiveIndicator();
+                                if (!this.tempDragData)
+                                    this._animateActiveIndicator();
                             }
                         );
                     }
@@ -254,13 +255,10 @@ let TaskBarItem = GObject.registerClass(
             }
         }
     },
-    class TaskBarItem extends St.Widget {
+    class TaskBarItem extends MatButton {
         _init(window, app, actif) {
             super._init({
-                style_class: `task-bar-item ${actif ? ' active' : ''}`,
-                reactive: true,
-                can_focus: true,
-                track_hover: true
+                style_class: `task-bar-item ${actif ? ' active' : ''}`
             });
 
             this._delegate = this;
@@ -284,10 +282,7 @@ let TaskBarItem = GObject.registerClass(
             });
 
             // CLOSE BUTTON
-            this.closeButton = new St.Bin({
-                reactive: true,
-                can_focus: true,
-                track_hover: true,
+            this.closeButton = new St.Button({
                 style_class: 'task-close-button',
                 child: new St.Icon({
                     style_class: 'task-close-icon',
@@ -297,7 +292,7 @@ let TaskBarItem = GObject.registerClass(
                 })
             });
 
-            this.closeButton.connect('button-release-event', () => {
+            this.closeButton.connect('clicked', () => {
                 this.window.delete(global.get_current_time());
             });
 
@@ -307,13 +302,12 @@ let TaskBarItem = GObject.registerClass(
                 y_align: Clutter.ActorAlign.CENTER,
                 vertical: false
             });
+
             this.container.add_child(this.icon);
             this.container.add_child(this.title);
             this.container.add_child(this.closeButton);
 
-            // RIPPLE CONTAINER
-            this.rippleContainer = new RippleContainer(this.container);
-            this.add_child(this.rippleContainer);
+            this.set_child(this.container);
 
             this.mouseData = {
                 pressed: false,
@@ -322,23 +316,63 @@ let TaskBarItem = GObject.registerClass(
                 originalSequence: null
             };
 
-            this.connect('button-press-event', (_, event) => {
-                this.mouseData.pressed = true;
-                this.mouseData.originalCoords = event.get_coords();
-                this.mouseData.originalSequence = event.get_event_sequence();
-            });
+            this.connect('event', (actor, event) => {
+                let eventType = event.type();
+                if (
+                    [
+                        Clutter.EventType.BUTTON_PRESS,
+                        Clutter.EventType.TOUCH_BEGIN
+                    ].indexOf(eventType) > -1
+                ) {
+                    this.mouseData.pressed = true;
+                    this.mouseData.originalCoords = event.get_coords();
+                    this.mouseData.originalSequence = event.get_event_sequence();
+                } else if (
+                    [
+                        Clutter.EventType.MOTION,
+                        Clutter.EventType.TOUCH_UPDATE
+                    ].indexOf(eventType) > -1
+                ) {
+                    if (this.mouseData.pressed && !this.mouseData.dragged) {
+                        let coords = event.get_coords();
+                        let scaleFactor = St.ThemeContext.get_for_stage(
+                            global.stage
+                        ).scale_factor;
+                        if (
+                            Math.abs(
+                                this.mouseData.originalCoords[0] - coords[0]
+                            ) >
+                                48 * scaleFactor &&
+                            !this.mouseData.dragged
+                        ) {
+                            this.mouseData.dragged = true;
+                            this._draggable.startDrag(
+                                this.mouseData.originalCoords[0],
+                                this.mouseData.originalCoords[1],
+                                global.get_current_time(),
+                                this.mouseData.originalSequence
+                            );
+                        }
+                    }
+                } else if (
+                    [
+                        Clutter.EventType.BUTTON_RELEASE,
+                        Clutter.EventType.TOUCH_END
+                    ].indexOf(eventType) > -1
+                ) {
+                    this.mouseData.pressed = false;
+                    this.mouseData.dragged = false;
+                    switch (event.get_button()) {
+                        case 1:
+                            this.window.activate(global.get_current_time());
+                            break;
 
-            this.connect('motion-event', (_, event) => {
-                if (this.mouseData.pressed && !this.mouseData.dragged) {
-                    let coords = event.get_coords();
-                    let scaleFactor = St.ThemeContext.get_for_stage(
-                        global.stage
-                    ).scale_factor;
-                    if (
-                        Math.abs(this.mouseData.originalCoords[0] - coords[0]) >
-                            48 * scaleFactor &&
-                        !this.mouseData.dragged
-                    ) {
+                        case 2:
+                            this.window.delete(global.get_current_time());
+                            break;
+                    }
+                } else if (eventType === Clutter.EventType.LEAVE) {
+                    if (this.mouseData.pressed && !this.mouseData.dragged) {
                         this.mouseData.dragged = true;
                         this._draggable.startDrag(
                             this.mouseData.originalCoords[0],
@@ -350,41 +384,7 @@ let TaskBarItem = GObject.registerClass(
                 }
             });
 
-            this.connect('leave-event', (actor, event) => {
-                if (this.mouseData.pressed && !this.mouseData.dragged) {
-                    this.mouseData.dragged = true;
-                    this._draggable.startDrag(
-                        this.mouseData.originalCoords[0],
-                        this.mouseData.originalCoords[1],
-                        global.get_current_time(),
-                        this.mouseData.originalSequence
-                    );
-                }
-            });
-
-            this.connect('button-release-event', (_, event) => {
-                this.mouseData.pressed = false;
-                this.mouseData.dragged = false;
-                switch (event.get_button()) {
-                    case 1:
-                        this.window.activate(global.get_current_time());
-                        break;
-
-                    case 2:
-                        this.window.delete(global.get_current_time());
-                        break;
-                }
-            });
-
             this.initDrag();
-        }
-
-        // Overide the allocate to make the rippleContainer fill the TaskBarItem
-        vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
-            let themeNode = this.get_theme_node();
-            box = themeNode.get_content_box(box);
-            this.rippleContainer.allocate(box, flags);
         }
 
         // Update the title and crop it if it's too long
@@ -423,7 +423,7 @@ let TaskBarItem = GObject.registerClass(
     }
 );
 
-let DropPlaceholder = GObject.registerClass(
+var DropPlaceholder = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
