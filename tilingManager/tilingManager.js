@@ -1,9 +1,9 @@
 const { Gio } = imports.gi;
 const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
+const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 
 const { TilingLayoutByKey } = Me.imports.tilingManager.tilingLayouts.layouts;
 
@@ -83,7 +83,7 @@ var TilingManager = class TilingManager {
         );
         if (!this.availableLayouts.length) {
             // Use maximize by default if all layouts are disabled
-            this.availableLayouts = ['maximize'];
+            this.availableLayouts = [MaximizeLayout.key];
         }
     }
 

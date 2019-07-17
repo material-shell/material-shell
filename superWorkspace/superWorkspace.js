@@ -1,11 +1,10 @@
 const { Clutter, GLib, St, Gio } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 const Background = imports.ui.background;
 
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
 
 const CategorizedAppCard =
@@ -26,7 +25,7 @@ var SuperWorkspace = class SuperWorkspace {
         let previousLayout =
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
-            ) || 'maximize';
+            ) || MaximizeLayout.key;
         const Layout = global.tilingManager.getLayoutByKey(previousLayout);
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget({
