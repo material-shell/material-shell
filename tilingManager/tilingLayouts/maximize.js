@@ -1,4 +1,4 @@
-const { St, Gio, Meta } = imports.gi;
+const { St, Meta } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -10,9 +10,7 @@ const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/maximize-symbolic.svg`
-        );
+
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
