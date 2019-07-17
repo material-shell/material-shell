@@ -21,12 +21,14 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        const newIndex = this.windows.indexOf(windowFocused);
-        const oldIndex = this.windows.indexOf(oldWindowFocused);
-        this.windowFocused = windowFocused;
-        const direction = newIndex > oldIndex ? 1 : -1;
-        this.prepareTransition(windowFocused, oldWindowFocused, direction);
-        this.animateTransition(direction);
+        if (!this.isDialog(windowFocused) && !this.isDialog(oldWindowFocused)) {
+            const newIndex = this.windows.indexOf(windowFocused);
+            const oldIndex = this.windows.indexOf(oldWindowFocused);
+            this.windowFocused = windowFocused;
+            const direction = newIndex > oldIndex ? 1 : -1;
+            this.prepareTransition(windowFocused, oldWindowFocused, direction);
+            this.animateTransition(direction);
+        }
     }
 
     onTileRegulars(windows) {
@@ -112,7 +114,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             });
         global.window_group.remove_child(this.overContainer);
         log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself after the transition`
         );
         this.onTile();
     }

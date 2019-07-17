@@ -8,7 +8,9 @@ const { Backdrop } = Me.imports.widget.backdrop;
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${
+                this.constructor.key
+            }-symbolic.svg`
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
@@ -37,7 +39,9 @@ var BaseTilingLayout = class BaseTilingLayout {
         log('windows changed');
         this.windows = this.superWorkspace.windows;
         log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
@@ -59,6 +63,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTileDialogs(windows) {
+        log('TILING DIALOG WINDOWS');
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -66,14 +71,11 @@ var BaseTilingLayout = class BaseTilingLayout {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
-
+            log('TILE', metaWindow.title);
             if (!window.backdrop) {
                 window.backdrop = new Backdrop(window);
             }
-
-            window.backdrop.raise_top();
-            metaWindow.raise();
-            window.raise_top();
+            window.backdrop.fillWorkArea();
             this.moveMetaWindow(
                 metaWindow,
                 workArea.x + workArea.width / 2 - window.width / 2,
@@ -210,18 +212,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogWindows = [];
         let regularWindows = [];
 
-        let dialogTypes = [
-            Meta.WindowType.DIALOG,
-            Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY
-        ];
-
         for (let window of this.windows) {
-            if (
-                dialogTypes.includes(window.window_type) ||
-                window.find_root_ancestor() !== window ||
-                !window.resizeable
-            ) {
+            if (this.isDialog(window)) {
                 dialogWindows.push(window);
             } else {
                 regularWindows.push(window);
@@ -234,5 +226,18 @@ var BaseTilingLayout = class BaseTilingLayout {
             regularWindows.map(w => w.get_title())
         );
         return [dialogWindows, regularWindows];
+    }
+
+    isDialog(metaWindow) {
+        if (!metaWindow) return false;
+        let dialogTypes = [
+            Meta.WindowType.DIALOG,
+            Meta.WindowType.MODAL_DIALOG,
+            Meta.WindowType.UTILITY
+        ];
+        return (
+            dialogTypes.includes(metaWindow.window_type) ||
+            !metaWindow.resizeable
+        );
     }
 };

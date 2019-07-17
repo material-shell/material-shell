@@ -149,6 +149,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             var cachedFunction = Main.wm._prepareWorkspaceSwitch;
             return function() {
                 // Before
+                log('Workspace switch animation STARTED');
+
                 global.workspaceAnimationInProgress = true;
 
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
@@ -178,26 +180,19 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     from
                 );
 
-                let curSuperWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
+                let curSuperWorkspace = (this._switchData.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                     from
-                );
-
-                this._switchData.previousFrontendContainer =
-                    curSuperWorkspace.frontendContainer;
-                this._switchData.previousFrontendContainer.show();
-                this._switchData.previousFrontendContainer.reparent(
+                ));
+                this._switchData.superWorkspace.frontendContainer.show();
+                this._switchData.superWorkspace.frontendContainer.reparent(
                     this._switchData.curGroup
                 );
-                this._switchData.backgroundContainer =
-                    curSuperWorkspace.backgroundContainer;
 
-                this._switchData.previousBackgroundActor =
-                    curSuperWorkspace.bgManager.backgroundActor;
-                this._switchData.backgroundContainer.reparent(
+                this._switchData.superWorkspace.backgroundContainer.reparent(
                     this._switchData.curGroup
                 );
-                this._switchData.backgroundContainer.lower_bottom();
-                this._switchData.backgroundContainer.show();
+                this._switchData.superWorkspace.backgroundContainer.lower_bottom();
+                this._switchData.superWorkspace.backgroundContainer.show();
                 this._switchData.curGroup.set_offscreen_redirect(
                     Clutter.OffscreenRedirect.ALWAYS
                 );
@@ -218,17 +213,15 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     let superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                         ws.index()
                     );
-                    info.frontendContainer = superWorkspace.frontendContainer;
-                    info.frontendContainer.show();
-                    info.backgroundContainer =
-                        superWorkspace.backgroundContainer;
+                    info.superWorkspace = superWorkspace;
+                    info.superWorkspace.frontendContainer.show();
 
-                    info.backgroundActor =
-                        superWorkspace.bgManager.backgroundActor;
-                    info.frontendContainer.reparent(info.actor);
-                    info.frontendContainer.raise_top();
-                    info.backgroundContainer.reparent(info.actor);
-                    info.backgroundContainer.lower_bottom();
+                    info.superWorkspace.frontendContainer.reparent(info.actor);
+                    info.superWorkspace.frontendContainer.raise_top();
+                    info.superWorkspace.backgroundContainer.reparent(
+                        info.actor
+                    );
+                    info.superWorkspace.backgroundContainer.lower_bottom();
                     info.actor.set_offscreen_redirect(
                         Clutter.OffscreenRedirect.ALWAYS
                     );
@@ -245,36 +238,32 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             var cachedFunction = Main.wm._finishWorkspaceSwitch;
             return function() {
                 let switchData = arguments[0];
-                switchData.previousFrontendContainer.reparent(
+                switchData.superWorkspace.frontendContainer.reparent(
                     Main.layoutManager.uiGroup
                 );
-                switchData.previousFrontendContainer.hide();
-                switchData.backgroundContainer.reparent(
+                switchData.superWorkspace.frontendContainer.hide();
+                switchData.superWorkspace.backgroundContainer.reparent(
                     Main.layoutManager._backgroundGroup
                 );
-                switchData.backgroundContainer.hide();
+                switchData.superWorkspace.backgroundContainer.hide();
                 for (let dir of Object.values(Meta.MotionDirection)) {
                     let info = switchData.surroundings[dir];
                     if (info) {
-                        info.frontendContainer.reparent(
+                        info.superWorkspace.frontendContainer.reparent(
                             Main.layoutManager.uiGroup
                         );
-                        info.frontendContainer.hide();
-                        info.backgroundContainer.reparent(
+                        info.superWorkspace.backgroundContainer.reparent(
                             Main.layoutManager._backgroundGroup
                         );
-                        info.backgroundContainer.hide();
                     }
                 }
 
-                global.superWorkspaceManager.getActiveSuperWorkspace().showUI();
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
                 switchData.overContainer.destroy();
                 global.workspaceAnimationInProgress = false;
                 log('Workspace switch animation ended');
-                //global.tilingManager.tileWindows();
                 return result;
             };
         })();

@@ -26,52 +26,78 @@ var Backdrop = GObject.registerClass(
                 this.destroy();
             });
 
-            window.connect('notify::visible', () => {
-                log('DIALOG', 'notify::visible');
-                this.visible = window.visible;
+            window.connect('show', () => {
+                log('DIALOG', 'show');
+                this.show();
             });
 
-            window.connect('parent-set', () => {
-                log('DIALOG', 'WINDOW', 'parent-set');
+            window.connect('hide', () => {
+                log('DIALOG', 'hide');
+                this.hide();
+            });
 
+            window.connect('parent-set', (window, oldParent) => {
+                if (!window.meta_window) return;
+                log(
+                    'parent-set',
+                    `Dialog window ${
+                        window.meta_window.title
+                    } has changed parent from ${oldParent} to ${window.get_parent()} `
+                );
+                this.window.raise_top();
                 this.followWindow();
             });
 
-            this.connect('parent-set', () => {
-                log('DIALOG', 'BACKDROP', 'parent-set');
+            window.get_meta_window().connect('focus', () => {
+                log('DIALOG', 'WINDOW', window.meta_window.title, 'focus');
+                this.highlightWindow();
+            });
 
-                if (this.destroyed) return;
-                //this.raise_top();
-                if (this.get_parent() === this.window.get_parent()) {
-                    GLib.idle_add(GLib.PRIORITY_HIGH, () => {
-                        this.get_parent().set_child_above_sibling(
-                            this.window,
-                            this
-                        );
-                        return GLib.SOURCE_REMOVE;
-                    });
-                } else {
-                    this.followWindow();
+            this.connect('queue-redraw', () => {
+                if (
+                    this.get_parent() === this.window.get_parent() &&
+                    this.get_parent().get_child_at_index(
+                        this.get_parent()
+                            .get_children()
+                            .indexOf(this) + 1
+                    ) !== this.window
+                ) {
+                    this.lower(this.window);
                 }
             });
+
+            this.connect('parent-set', (backdrop, oldParent) => {
+                if (this.destroyed) return;
+                this.fillWorkArea();
+            });
             this.followWindow();
-            //window.reparent(this);
         }
 
         followWindow() {
             let newParent = this.window.get_parent();
             if (newParent) {
                 this.reparent(newParent);
-                this.fillWorkArea();
             }
         }
 
+        highlightWindow() {
+            if (this.window.get_parent() !== this.get_parent()) return;
+            this.window.raise_top();
+            this.lower(this.window);
+        }
+
         fillWorkArea() {
+            if (!this.window.meta_window) return;
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.window.meta_window.get_monitor()
             );
+
             this.set_position(workArea.x, workArea.y);
             this.set_size(workArea.width, workArea.height);
+        }
+
+        on_destroy() {
+            global.display.disconnect(this.restackedId);
         }
     }
 );
