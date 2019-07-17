@@ -38,18 +38,11 @@ var Backdrop = GObject.registerClass(
 
             window.connect('parent-set', (window, oldParent) => {
                 if (!window.meta_window) return;
-                log(
-                    'parent-set',
-                    `Dialog window ${
-                        window.meta_window.title
-                    } has changed parent from ${oldParent} to ${window.get_parent()} `
-                );
                 this.window.raise_top();
                 this.followWindow();
             });
 
             window.get_meta_window().connect('focus', () => {
-                log('DIALOG', 'WINDOW', window.meta_window.title, 'focus');
                 this.highlightWindow();
             });
 
@@ -69,8 +62,10 @@ var Backdrop = GObject.registerClass(
             this.connect('parent-set', (backdrop, oldParent) => {
                 if (this.destroyed) return;
                 this.fillWorkArea();
+                this.highlightWindow();
             });
             this.followWindow();
+            this.highlightWindow();
         }
 
         followWindow() {
