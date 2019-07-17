@@ -90,9 +90,5 @@ var Backdrop = GObject.registerClass(
             this.set_position(workArea.x, workArea.y);
             this.set_size(workArea.width, workArea.height);
         }
-
-        on_destroy() {
-            global.display.disconnect(this.restackedId);
-        }
     }
 );
