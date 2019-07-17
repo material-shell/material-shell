@@ -18,6 +18,7 @@ const pretty_names = {
 };
 const layouts = {
     maximize: 'Maximize all windows',
+    split: 'Put all windows side by side, two at a time',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',
