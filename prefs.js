@@ -208,6 +208,7 @@ function layouts_tab(notebook) {
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
         if (layout === 'ratio') {
             const row = new Gtk.ListBoxRow();
+            const hbox = new Gtk.HBox();
             const ratio = Gtk.Scale.new_with_range(
                 Gtk.Orientation.HORIZONTAL,
                 0,
@@ -225,7 +226,21 @@ function layouts_tab(notebook) {
                 'value',
                 Gio.SettingsBindFlags.DEFAULT
             );
-            row.add(ratio);
+
+            const ratioName = new Gtk.Label({ xalign: 0 });
+            ratioName.set_markup(`<span size="medium">Ratio value</span>`);
+            const ratioDesc = new Gtk.Label({ xalign: 0 });
+            ratioDesc.set_markup(
+                '<span size="small">' +
+                    'Ratio between frame and available space.' +
+                    '</span>'
+            );
+            const vbox = new Gtk.VBox();
+            vbox.pack_start(ratioName, false, false, 0);
+            vbox.pack_start(ratioDesc, false, false, 0);
+            hbox.pack_start(vbox, true, true, 10);
+            hbox.pack_start(ratio, true, true, 0);
+            row.add(hbox);
             ks_lbox.add(row);
         }
     });
