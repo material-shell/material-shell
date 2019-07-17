@@ -1,8 +1,8 @@
 const { St, Clutter, GObject } = imports.gi;
 const Tweener = imports.ui.tweener;
 
-let RippleWave2 = GObject.registerClass(
-    class RippleWave2 extends St.Widget {
+let RippleWave = GObject.registerClass(
+    class RippleWave extends St.Widget {
         _init(mouseX, mouseY, size) {
             super._init({
                 style_class: 'ripple-wave'
@@ -93,7 +93,7 @@ var RippleBackground = GObject.registerClass(
         }
 
         createRippleWave(x, y) {
-            this.lastWave = new RippleWave2(
+            this.lastWave = new RippleWave(
                 x,
                 y,
                 Math.max(this.width, this.height)
