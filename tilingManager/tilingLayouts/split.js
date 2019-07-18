@@ -45,8 +45,9 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         }
 
         const direction = newIndex > oldIndex ? 1 : -1;
-        this.prepareTransition(this.activeWindows, oldWindows, direction);
-        this.animateTransition(direction);
+        this.onTile();
+        // this.prepareTransition(this.activeWindows, oldWindows, direction);
+        // this.animateTransition(direction);
     }
 
     onTileRegulars(windows) {
@@ -147,30 +148,36 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             .get_children()
             .reduce((w, c) => w + c.width, 0);
         if (!this.animationInProgress) {
-            log(
-                'Before',
-                this.leftWindowContainer.width,
-                this.rightWindowContainer.width,
-                leftWidth,
-                rightWidth,
-                workArea.width,
-                this.activeWindows.length
-            );
             // This seems mandatory (?)
             this.leftWindowContainer.set_width(leftWidth);
             this.rightWindowContainer.set_width(rightWidth);
-            log(
-                'After',
-                this.leftWindowContainer.width,
-                this.rightWindowContainer.width,
-                leftWidth,
-                rightWidth
-            );
+
             this.rightWindowContainer.set_position(leftWidth, 0);
             this.transitionContainer.set_position(
                 direction > 0 ? 0 : -rightWidth,
                 0
             );
+            log(
+                'left',
+                this.leftWindowContainer.x,
+                this.leftWindowContainer.y,
+                this.leftWindowContainer.width,
+                this.leftWindowContainer.height
+            );
+            this.leftWindowContainer.get_children().forEach(c => {
+                log(c.x, c.y, c.width, c.height);
+            });
+            log(
+                'right',
+                this.rightWindowContainer.x,
+                this.rightWindowContainer.y,
+                this.rightWindowContainer.width,
+                this.rightWindowContainer.height
+            );
+            this.rightWindowContainer.get_children().forEach(c => {
+                log(c.x, c.y, c.width, c.height);
+            });
+
             this.overContainer.set_clip(
                 this.monitor.x,
                 this.monitor.y,
