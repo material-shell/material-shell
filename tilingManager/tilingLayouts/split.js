@@ -5,7 +5,11 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
+const { range } = Me.imports.utils.index;
 
+// TODO: Make this configurable
+const WINDOW_PER_SCREEN = 3;
+const WINDOW_SLIDE_TWEEN_TIME = 1.0;
 /* exported SplitLayout */
 var SplitLayout = class SplitLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
@@ -21,27 +25,45 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         this.activeWindows = [];
     }
 
-    getWindowPair(window) {
-        const windowIndex = this.windows.indexOf(window);
-        return windowIndex % 2 === 0
-            ? this.windows.slice(windowIndex, windowIndex + 2)
-            : this.windows.slice(windowIndex - 1, windowIndex + 1);
-    }
-
     onFocusChanged(windowFocused, oldWindowFocused) {
         const newIndex = this.windows.indexOf(windowFocused);
         const oldIndex = this.windows.indexOf(oldWindowFocused);
-        this.activeWindows = this.getWindowPair(windowFocused);
-        if (this.activeWindows.includes(oldWindowFocused)) {
+        if (this.activeWindows.includes(windowFocused)) {
             return;
         }
+        const oldWindows = this.activeWindows;
+        if (newIndex > oldIndex) {
+            this.activeWindows = this.windows.slice(
+                newIndex - WINDOW_PER_SCREEN + 1,
+                newIndex + 1
+            );
+        } else {
+            this.activeWindows = this.windows.slice(
+                newIndex,
+                newIndex + WINDOW_PER_SCREEN
+            );
+        }
+
         const direction = newIndex > oldIndex ? 1 : -1;
-        this.prepareTransition(windowFocused, oldWindowFocused, direction);
+        this.prepareTransition(this.activeWindows, oldWindows, direction);
         this.animateTransition(direction);
     }
 
     onTileRegulars(windows) {
         if (this.animationInProgress) return;
+        if (!this.activeWindows) {
+            return;
+        }
+        this.windows
+            .filter(window => !this.activeWindows.includes(window))
+            .forEach(window => window.get_compositor_private().hide());
+        this.onTileGroup(this.activeWindows);
+        this.activeWindows.forEach(window =>
+            window.get_compositor_private().show()
+        );
+    }
+
+    onTileGroup(windows) {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, i) => {
@@ -51,17 +73,17 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             }
             const windowBounds = { ...workArea };
             if (workArea.width > workArea.height) {
-                windowBounds.width /= 2;
+                windowBounds.width /= WINDOW_PER_SCREEN;
             } else {
-                windowBounds.height /= 2;
+                windowBounds.height /= WINDOW_PER_SCREEN;
             }
-            if (i % 2 !== 0) {
-                if (workArea.width > workArea.height) {
-                    windowBounds.x += workArea.width / 2;
-                } else {
-                    windowBounds.y += workArea.height / 2;
-                }
+
+            if (workArea.width > workArea.height) {
+                windowBounds.x += (i * workArea.width) / WINDOW_PER_SCREEN;
+            } else {
+                windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
             }
+
             this.moveAndResizeMetaWindow(
                 window,
                 windowBounds.x,
@@ -69,10 +91,6 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 windowBounds.width,
                 windowBounds.height
             );
-
-            if (!this.activeWindows.includes(window)) {
-                window.get_compositor_private().hide();
-            }
         });
     }
 
@@ -85,18 +103,13 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         });
     }
 
-    prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        const newMetaWindows = this.getWindowPair(newMetaWindow);
+    prepareTransition(newMetaWindows, oldMetaWindows, direction) {
         const newWindows = newMetaWindows.map(metaWindow =>
             metaWindow.get_compositor_private()
         );
-        let oldWindows = [];
-        if (oldMetaWindow) {
-            const oldMetaWindows = this.getWindowPair(oldMetaWindow);
-            oldWindows = oldMetaWindows.map(metaWindow =>
-                metaWindow.get_compositor_private()
-            );
-        }
+        const oldWindows = oldMetaWindows
+            .filter(window => !newMetaWindows.includes(window))
+            .map(metaWindow => metaWindow.get_compositor_private());
 
         newWindows.concat(oldWindows).forEach(window => window.show());
 
@@ -115,6 +128,10 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 window.reparent(this.leftWindowContainer)
             );
         }
+
+        // Shouldn't we positionate window actor instead ?
+        this.onTileGroup(oldMetaWindows);
+        this.onTileGroup(newMetaWindows);
     }
 
     animateTransition(direction) {
@@ -123,10 +140,35 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             this.monitor.index
         );
 
+        const leftWidth = this.leftWindowContainer
+            .get_children()
+            .reduce((w, c) => w + c.width, 0);
+        const rightWidth = this.leftWindowContainer
+            .get_children()
+            .reduce((w, c) => w + c.width, 0);
         if (!this.animationInProgress) {
-            this.rightWindowContainer.set_position(workArea.width, 0);
+            log(
+                'Before',
+                this.leftWindowContainer.width,
+                this.rightWindowContainer.width,
+                leftWidth,
+                rightWidth,
+                workArea.width,
+                this.activeWindows.length
+            );
+            // This seems mandatory (?)
+            this.leftWindowContainer.set_width(leftWidth);
+            this.rightWindowContainer.set_width(rightWidth);
+            log(
+                'After',
+                this.leftWindowContainer.width,
+                this.rightWindowContainer.width,
+                leftWidth,
+                rightWidth
+            );
+            this.rightWindowContainer.set_position(leftWidth, 0);
             this.transitionContainer.set_position(
-                direction > 0 ? 0 : -workArea.width,
+                direction > 0 ? 0 : -rightWidth,
                 0
             );
             this.overContainer.set_clip(
@@ -140,8 +182,8 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         }
 
         Tweener.addTween(this.transitionContainer, {
-            x: direction > 0 ? -workArea.width : 0,
-            time: 0.25,
+            x: direction > 0 ? -leftWidth : 0,
+            time: WINDOW_SLIDE_TWEEN_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
                 this.animationInProgress = false;
