@@ -5,8 +5,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
-const { range } = Me.imports.utils.index;
-const { Column, Row } = Me.imports.widget.layout;
+const { Row } = Me.imports.widget.layout;
 
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
