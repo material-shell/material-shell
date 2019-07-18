@@ -84,6 +84,8 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             const i = j + offset;
             if (window.grabbed) return;
             if (window.get_maximized()) {
+                Main.wm.skipNextEffect(window.get_compositor_private());
+
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             }
             const windowBounds = {
