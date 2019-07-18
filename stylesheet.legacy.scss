@@ -1,4 +1,12 @@
-@import 'settings';
+$color-primary: #ff9800;
+$color-bg: rgb(25, 25, 25);
+$color-fg: rgb(200, 200, 200);
+$color-active-bg: rgba(255, 255, 255, 0.12);
+$color-hover-bg: rgba(255, 255, 255, 0.04);
+$color-active-fg: rgb(255, 255, 255);
+$ripple: rgba(255, 255, 255, 0.16);
+$shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+$panel-size: 48px;
 
 .primary-bg {
     background-color: $color-primary;
@@ -110,7 +118,6 @@
             }
             .task-close-icon {
                 icon-size: 18px;
-                color: $color-fg;
             }
         }
     }
@@ -122,13 +129,11 @@
 
 .system-status-icon {
     height: 24px;
-    color: $color-fg;
 }
 
 .clock-display {
     * {
         padding: 4px 0px !important;
-        color: $color-fg;
     }
 }
 
@@ -147,14 +152,10 @@
         }
         .mat-card-title-label {
             font-size: 24px;
-            color: $color-fg;
         }
     }
     .mat-card-content {
         padding: 24px;
-        * {
-            color: $color-fg;
-        }
     }
 }
 
@@ -165,5 +166,5 @@
 }
 
 .backdrop-container {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
