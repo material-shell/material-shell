@@ -88,7 +88,13 @@ var BaseTilingLayout = class BaseTilingLayout {
         });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate) {
+        if (!animate) {
+            this.callSafely(metaWindow, () => {
+                metaWindow.move_resize_frame(true, x, y, width, height);
+            });
+            return;
+        }
         const gap = global.tilingManager.gap;
         const tweenTime = global.tilingManager.tweenTime;
         if (gap) {

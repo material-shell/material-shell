@@ -36,7 +36,8 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
                 workArea.x + (index * workArea.width) / windows.length,
                 workArea.y,
                 workArea.width / windows.length,
-                workArea.height
+                workArea.height,
+                true
             );
         });
     }
@@ -55,7 +56,8 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
                 workArea.x,
                 workArea.y + (index * workArea.height) / windows.length,
                 workArea.width,
-                workArea.height / windows.length
+                workArea.height / windows.length,
+                true
             );
         });
     }

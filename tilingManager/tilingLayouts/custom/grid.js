@@ -35,7 +35,8 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                     index == windows.length - 1
                         ? // If last window fill remaining space
                           height * (columns * rows - index)
-                        : height
+                        : height,
+                    true
                 );
             });
         });
