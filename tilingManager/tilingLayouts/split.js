@@ -17,10 +17,6 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
 
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
-        this.leftWindowContainer = new St.Widget();
-        this.rightWindowContainer = new St.Widget();
-        this.transitionContainer.add_actor(this.leftWindowContainer);
-        this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
         this.activeWindows = [];
     }
@@ -46,8 +42,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
 
         const direction = newIndex > oldIndex ? 1 : -1;
         this.onTile();
-        // this.prepareTransition(this.activeWindows, oldWindows, direction);
-        // this.animateTransition(direction);
+        this.transition(this.activeWindows, oldWindows, direction);
     }
 
     onTileRegulars(windows) {
@@ -64,15 +59,25 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         );
     }
 
-    onTileGroup(windows) {
-        const workArea = this.getWorkspaceBounds();
+    onTileGroup(windows, offset) {
+        // Get the full workArea here and not workspaceBounds which have gaps
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+        offset = offset || 0;
 
-        windows.forEach((window, i) => {
+        windows.forEach((window, j) => {
+            const i = j + offset;
             if (window.grabbed) return;
             if (window.get_maximized()) {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             }
-            const windowBounds = { ...workArea };
+            const windowBounds = {
+                x: workArea.x,
+                y: workArea.y,
+                width: workArea.width,
+                height: workArea.height
+            };
             if (workArea.width > workArea.height) {
                 windowBounds.width /= WINDOW_PER_SCREEN;
             } else {
@@ -104,79 +109,39 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         });
     }
 
-    prepareTransition(newMetaWindows, oldMetaWindows, direction) {
-        const newWindows = newMetaWindows.map(metaWindow =>
-            metaWindow.get_compositor_private()
+    transition(newMetaWindows, oldMetaWindows, direction) {
+        newMetaWindows = newMetaWindows.filter(
+            window => !oldMetaWindows.includes(window)
         );
-        const oldWindows = oldMetaWindows
-            .filter(window => !newMetaWindows.includes(window))
-            .map(metaWindow => metaWindow.get_compositor_private());
 
-        newWindows.concat(oldWindows).forEach(window => window.show());
+        newMetaWindows
+            .concat(oldMetaWindows)
+            .map(metaWindow => metaWindow.get_compositor_private())
+            .forEach(window => {
+                window.reparent(this.transitionContainer);
+                window.show();
+            });
 
-        if (direction > 0) {
-            oldWindows.forEach(window =>
-                window.reparent(this.leftWindowContainer)
-            );
-            newWindows.forEach(window =>
-                window.reparent(this.rightWindowContainer)
-            );
-        } else {
-            oldWindows.forEach(window =>
-                window.reparent(this.rightWindowContainer)
-            );
-            newWindows.forEach(window =>
-                window.reparent(this.leftWindowContainer)
-            );
-        }
+        this.onTileGroup(
+            direction > 0
+                ? [...oldMetaWindows, ...newMetaWindows]
+                : [...newMetaWindows, ...oldMetaWindows],
+            direction > 0 ? 0 : -newMetaWindows.length + 1
+        );
 
-        // Shouldn't we positionate window actor instead ?
-        this.onTileGroup(oldMetaWindows);
-        this.onTileGroup(newMetaWindows);
-    }
-
-    animateTransition(direction) {
         // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
 
-        const leftWidth = this.leftWindowContainer
-            .get_children()
-            .reduce((w, c) => w + c.width, 0);
-        const rightWidth = this.leftWindowContainer
-            .get_children()
-            .reduce((w, c) => w + c.width, 0);
-        if (!this.animationInProgress) {
-            // This seems mandatory (?)
-            this.leftWindowContainer.set_width(leftWidth);
-            this.rightWindowContainer.set_width(rightWidth);
+        const shift =
+            (workArea.width * newMetaWindows.length) / WINDOW_PER_SCREEN;
 
-            this.rightWindowContainer.set_position(leftWidth, 0);
+        if (!this.animationInProgress) {
             this.transitionContainer.set_position(
-                direction > 0 ? 0 : -rightWidth,
+                direction > 0 ? 0 : -shift,
                 0
             );
-            log(
-                'left',
-                this.leftWindowContainer.x,
-                this.leftWindowContainer.y,
-                this.leftWindowContainer.width,
-                this.leftWindowContainer.height
-            );
-            this.leftWindowContainer.get_children().forEach(c => {
-                log(c.x, c.y, c.width, c.height);
-            });
-            log(
-                'right',
-                this.rightWindowContainer.x,
-                this.rightWindowContainer.y,
-                this.rightWindowContainer.width,
-                this.rightWindowContainer.height
-            );
-            this.rightWindowContainer.get_children().forEach(c => {
-                log(c.x, c.y, c.width, c.height);
-            });
 
             this.overContainer.set_clip(
                 this.monitor.x,
@@ -189,7 +154,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         }
 
         Tweener.addTween(this.transitionContainer, {
-            x: direction > 0 ? -leftWidth : 0,
+            x: direction > 0 ? -shift : 0,
             time: WINDOW_SLIDE_TWEEN_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
@@ -200,12 +165,9 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.leftWindowContainer
-            .get_children()
-            .concat(this.rightWindowContainer.get_children())
-            .forEach(window => {
-                window.reparent(global.window_group);
-            });
+        this.transitionContainer.get_children().forEach(window => {
+            window.reparent(global.window_group);
+        });
         global.window_group.remove_child(this.overContainer);
         log(
             `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
