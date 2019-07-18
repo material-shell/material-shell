@@ -3,14 +3,10 @@ const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const { range } = Me.imports.utils.index;
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
-
-const range = to =>
-    Array(to)
-        .fill(0)
-        .map((_, i) => i);
 
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseGrabbableLayout {
@@ -39,7 +35,8 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                     index == windows.length - 1
                         ? // If last window fill remaining space
                           height * (columns * rows - index)
-                        : height
+                        : height,
+                    true
                 );
             });
         });

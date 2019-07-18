@@ -85,12 +85,18 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveMetaWindow(metaWindow, x, y) {
-        this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_frame(true, x, y);
+        this.callSafely(metaWindow, () => {
+            metaWindow.move_frame(true, x, y);
         });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate) {
+        if (!animate) {
+            this.callSafely(metaWindow, () => {
+                metaWindow.move_resize_frame(true, x, y, width, height);
+            });
+            return;
+        }
         const gap = global.tilingManager.gap;
         const tweenTime = global.tilingManager.tweenTime;
         if (gap) {
@@ -114,8 +120,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         ) {
             return;
         }
-        this.callSafely(metaWindow, metaWindowInside => {
-            const actor = metaWindowInside.get_compositor_private();
+        this.callSafely(metaWindow, () => {
+            const actor = metaWindow.get_compositor_private();
             const oldRect = metaWindow.get_frame_rect();
             const [px, py] = global.get_pointer();
 
@@ -158,12 +164,12 @@ var BaseTilingLayout = class BaseTilingLayout {
         if (actor && actor.get_texture()) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
-                callback(metaWindow);
+                callback();
             } else {
                 // Wait for it to be mapped
                 if (actor.waitToBeMappedId) return;
                 actor.waitToBeMappedId = actor.connect('notify::mapped', () => {
-                    callback(metaWindow);
+                    callback();
                     actor.disconnect(actor.waitToBeMappedId);
                     delete actor.waitToBeMappedId;
                 });

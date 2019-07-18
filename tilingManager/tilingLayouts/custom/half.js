@@ -41,7 +41,8 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.x,
                     workArea.y,
                     masterWidth,
-                    workArea.height
+                    workArea.height,
+                    true
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -50,7 +51,8 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.y +
                         ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
-                    workArea.height / (windows.length - 1)
+                    workArea.height / (windows.length - 1),
+                    true
                 );
             }
         });
@@ -74,7 +76,8 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                     workArea.x,
                     workArea.y,
                     workArea.width,
-                    masterHeight
+                    masterHeight,
+                    true
                 );
             } else {
                 this.moveAndResizeMetaWindow(
@@ -83,7 +86,8 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
                         ((index - 1) * workArea.width) / (windows.length - 1),
                     workArea.y + masterHeight,
                     workArea.width / (windows.length - 1),
-                    workArea.height - masterHeight
+                    workArea.height - masterHeight,
+                    true
                 );
             }
         });

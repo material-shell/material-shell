@@ -46,7 +46,8 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 windowArea.x,
                 windowArea.y,
                 windowArea.width,
-                windowArea.height
+                windowArea.height,
+                true
             );
         });
     }
