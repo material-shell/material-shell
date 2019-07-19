@@ -74,20 +74,30 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             return bindingSettings.get_strv(key)[0];
         });
 
-        let setting = new Gio.Settings({
-            schema_id: 'org.gnome.shell.keybindings'
-        });
+        for (let schema of [
+            'org.gnome.desktop.wm.keybindings',
+            'org.gnome.shell.keybindings',
+            'org.gnome.mutter.keybindings',
+            'org.gnome.mutter.wayland.keybindings'
+        ]) {
+            let setting = new Gio.Settings({
+                schema_id: schema
+            });
 
-        setting.list_keys().forEach(key => {
-            let shortcut = setting.get_strv(key);
-            if (shortcut[0] && this.hotkeysToRemove.indexOf(shortcut[0]) > -1) {
-                setting.set_strv(key, ['']);
-                Main.notify(
-                    'Material-shell',
-                    `This extension has unset the ${key} hotkey to override it`
-                );
-            }
-        });
+            setting.list_keys().forEach(key => {
+                let shortcut = setting.get_strv(key);
+                if (
+                    shortcut[0] &&
+                    this.hotkeysToRemove.indexOf(shortcut[0]) > -1
+                ) {
+                    setting.set_strv(key, ['']);
+                    Main.notify(
+                        'Material-shell',
+                        `This extension has unset the ${key} hotkey to override it`
+                    );
+                }
+            });
+        }
     }
 
     disable() {
