@@ -71,7 +71,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 superWorkspace => superWorkspace.category.primary
             ).length - this.workspaceManager.n_workspaces
         );
-        log('diff');
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         for (var i = 0; i < diff; i++) {
             if (
@@ -212,6 +211,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     onNewWindow(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
         metaWindow.handledByMaterialShell = true;
+        if (!Me.loaded) {
+            metaWindow.get_compositor_private().hide();
+        }
         this.addWindowToAppropriateSuperWorkspace(metaWindow);
     }
 

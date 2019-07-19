@@ -37,10 +37,14 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         windows.forEach(window => {
             if (window.grabbed) return;
             if (!window.maximized_horizontally) {
+                Main.wm.skipNextEffect(window.get_compositor_private());
                 window.maximize(Meta.MaximizeFlags.BOTH);
             }
 
-            if (window !== this.windowFocused) {
+            if (
+                window !== this.windowFocused ||
+                !this.superWorkspace.isDisplayed()
+            ) {
                 window.get_compositor_private().hide();
             }
         });

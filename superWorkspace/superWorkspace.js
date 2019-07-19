@@ -282,5 +282,15 @@ var SuperWorkspace = class SuperWorkspace {
         this.apps = apps;
         this.categorizedAppCard._loadApps(apps);
     }
+
+    isDisplayed() {
+        if (this.monitor.index !== Main.layoutManager.primaryIndex) {
+            return true;
+        } else {
+            return (
+                this === global.superWorkspaceManager.getActiveSuperWorkspace()
+            );
+        }
+    }
 };
 Signals.addSignalMethods(SuperWorkspace.prototype);

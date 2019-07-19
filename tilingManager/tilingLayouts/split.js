@@ -4,58 +4,50 @@ const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
+const {
+    BaseGrabbableLayout
+} = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 const { Row } = Me.imports.widget.layout;
 
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 0.25;
 /* exported SplitLayout */
-var SplitLayout = class SplitLayout extends BaseTilingLayout {
+var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
 
         this.overContainer = new St.Widget();
         this.transitionContainer = new Row();
         this.overContainer.add_actor(this.transitionContainer);
-        this.activeWindows = [];
+        const { regularWindows } = this.getDialogAndRegularWindows();
+        this.baseIndex = Math.min(
+            regularWindows.indexOf(this.windowFocused),
+            regularWindows.length - WINDOW_PER_SCREEN
+        );
+        this.activeWindows = regularWindows.slice(
+            this.baseIndex,
+            this.baseIndex + WINDOW_PER_SCREEN
+        );
+        this.resizeAll();
     }
 
     onWindowsChanged() {
+        this.resizeAll();
         const { regularWindows } = this.getDialogAndRegularWindows();
-        let oldWindows = null;
-        if (
-            // We have an active window that has been closed
-            this.activeWindows.some(window => !regularWindows.includes(window))
-        ) {
-            // baseIndex should be kept with enough window on screen
-            this.baseIndex = Math.min(
-                this.baseIndex,
-                regularWindows.length - WINDOW_PER_SCREEN
-            );
-            // Keeping previous windows
-            oldWindows = this.activeWindows;
-            // Resetting activeWindows from base
-            this.activeWindows = regularWindows.slice(
-                this.baseIndex,
-                this.baseIndex + WINDOW_PER_SCREEN
-            );
-        } else {
-            // Keeping left active window as base
-            // (index will change if the array has changed)
-            this.baseIndex = regularWindows.indexOf(this.activeWindows[0]);
-        }
-
-        if (oldWindows) {
-            // We need to transition here because focus won't change
-            this.transition(this.activeWindows, oldWindows);
-        }
-
+        this.baseIndex = Math.min(
+            regularWindows.indexOf(this.windowFocused),
+            regularWindows.length - WINDOW_PER_SCREEN
+        );
+        this.activeWindows = regularWindows.slice(
+            this.baseIndex,
+            this.baseIndex + WINDOW_PER_SCREEN
+        );
         super.onWindowsChanged(); // Calls onTile
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        super.onFocusChanged();
+        super.onFocusChanged(windowFocused, oldWindowFocused);
         if (this.activeWindows.includes(windowFocused)) {
             return;
         }
@@ -76,8 +68,30 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             );
         }
         this.baseIndex = regularWindows.indexOf(this.activeWindows[0]);
-        if (regularWindows.length > WINDOW_PER_SCREEN) {
+        if (Me.loaded && regularWindows.length > WINDOW_PER_SCREEN) {
             this.transition(this.activeWindows, oldWindows);
+        }
+    }
+
+    resizeAll() {
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+        const { regularWindows } = this.getDialogAndRegularWindows();
+        for (let window of regularWindows) {
+            if (window.get_maximized()) {
+                Main.wm.skipNextEffect(window.get_compositor_private());
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
+            }
+            let windowRect = window.get_frame_rect();
+            this.moveAndResizeMetaWindow(
+                window,
+                windowRect.x,
+                windowRect.y,
+                workArea.width / 2,
+                workArea.height,
+                false
+            );
         }
     }
 
@@ -86,20 +100,19 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
 
         const { regularWindows } = this.getDialogAndRegularWindows();
         regularWindows
-            .filter(window => !this.activeWindows.includes(window))
+            .filter(
+                window =>
+                    !this.superWorkspace.isDisplayed() ||
+                    !this.activeWindows.includes(window)
+            )
             .forEach(window => window.get_compositor_private().hide());
 
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-
         this.activeWindows.forEach((window, i) => {
             if (window.grabbed) return;
-            if (window.get_maximized()) {
-                Main.wm.skipNextEffect(window.get_compositor_private());
 
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-            }
             const windowBounds = {
                 x: workArea.x,
                 y: workArea.y,
@@ -117,7 +130,6 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             } else {
                 windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
             }
-
             this.moveAndResizeMetaWindow(
                 window,
                 windowBounds.x,
@@ -127,9 +139,11 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 regularWindows.length < WINDOW_PER_SCREEN
             );
         });
-        this.activeWindows.forEach(window =>
-            window.get_compositor_private().show()
-        );
+        if (this.superWorkspace.isDisplayed()) {
+            this.activeWindows.forEach(window =>
+                window.get_compositor_private().show()
+            );
+        }
     }
 
     onDestroy() {
@@ -163,6 +177,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
     }
 
     transition(newMetaWindows, oldMetaWindows) {
+        log('start transition');
         const { regularWindows } = this.getDialogAndRegularWindows();
         newMetaWindows = newMetaWindows.filter(
             window => !oldMetaWindows.includes(window)
@@ -244,7 +259,9 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         });
         global.window_group.remove_child(this.overContainer);
         log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself after the transition`
         );
         this.onTile();
     }

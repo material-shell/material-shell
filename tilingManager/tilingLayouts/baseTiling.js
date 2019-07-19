@@ -8,7 +8,9 @@ const { Backdrop } = Me.imports.widget.backdrop;
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${
+                this.constructor.key
+            }-symbolic.svg`
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
@@ -36,9 +38,13 @@ var BaseTilingLayout = class BaseTilingLayout {
     onWindowsChanged() {
         this.windows = this.superWorkspace.windows;
         log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
+            `${
+                this.superWorkspace.categoryKey
+            } tilingLayout tile itself from onWindowsChanged event`
         );
-        this.onTile();
+        if (Me.loaded) {
+            this.onTile();
+        }
     }
 
     onFocusChanged(windowFocused) {
@@ -87,7 +93,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate) {
-        if (!animate) {
+        if (!animate || !this.superWorkspace.isDisplayed()) {
             this.callSafely(metaWindow, () => {
                 metaWindow.move_resize_frame(true, x, y, width, height);
             });
