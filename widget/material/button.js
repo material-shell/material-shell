@@ -7,7 +7,9 @@ const { RippleBackground } = Me.imports.widget.material.rippleBackground;
 var MatButton = GObject.registerClass(
     {
         Signals: {
-            clicked: {}
+            clicked: {
+                param_types: [GObject.TYPE_INT]
+            }
         }
     },
     class MatButton extends St.Widget {
@@ -38,7 +40,7 @@ var MatButton = GObject.registerClass(
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.pressed) {
-                        this.emit('clicked');
+                        this.emit('clicked', event.get_button());
                         this.pressed = false;
                     }
                 } else if (eventType === Clutter.EventType.LEAVE) {
