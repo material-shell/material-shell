@@ -8,9 +8,7 @@ const { Backdrop } = Me.imports.widget.backdrop;
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${
-                this.constructor.key
-            }-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
@@ -36,12 +34,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onWindowsChanged() {
-        log('windows changed');
         this.windows = this.superWorkspace.windows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         this.onTile();
     }
@@ -51,7 +46,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTile() {
-        log('tile for real', this.superWorkspace.categoryKey);
+        log('Tile', this.superWorkspace.categoryKey);
         let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);
@@ -63,7 +58,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTileDialogs(windows) {
-        log('TILING DIALOG WINDOWS');
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -71,7 +65,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
-            log('TILE', metaWindow.title);
             if (!window.backdrop) {
                 window.backdrop = new Backdrop(window);
             }
@@ -226,11 +219,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
         }
 
-        log(
-            'Tiling ',
-            this.superWorkspace.categoryKey,
-            regularWindows.map(w => w.get_title())
-        );
         return [dialogWindows, regularWindows];
     }
 

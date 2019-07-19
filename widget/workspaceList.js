@@ -80,7 +80,6 @@ var WorkspaceList = GObject.registerClass(
                 workspaceButton.connect('drag-over', (_, before) => {
                     this.tempDragData.draggedOverByChild = true;
                     this._onDragOver(workspaceButton, before);
-                    log('here');
                     //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
                 });
 
