@@ -47,7 +47,10 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     onTile() {
         log('Tile', this.superWorkspace.categoryKey);
-        let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
+        const {
+            dialogWindows,
+            regularWindows
+        } = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);
     }
@@ -219,7 +222,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
         }
 
-        return [dialogWindows, regularWindows];
+        return { dialogWindows, regularWindows };
     }
 
     isDialog(metaWindow) {
