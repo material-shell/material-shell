@@ -36,7 +36,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             this.baseIndex = this.windows.indexOf(this.activeWindows[0]);
         }
 
-        // this.transition(this.activeWindows, oldWindows, -1);
+        this.transition(this.activeWindows, oldWindows, -1);
 
         super.onWindowsChanged();
     }
@@ -135,6 +135,9 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         newMetaWindows = newMetaWindows.filter(
             window => !oldMetaWindows.includes(window)
         );
+        oldMetaWindows = oldMetaWindows.filter(window =>
+            window.get_compositor_private()
+        );
         this.transitionContainer.remove_all_children();
 
         let allMetaWindows =
@@ -157,13 +160,6 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 /* window.reparent(this.transitionContainer);*/
                 window.hide();
             });
-
-        /* this.onTileGroup(
-            direction > 0
-                ? [...oldMetaWindows, ...newMetaWindows]
-                : [...newMetaWindows, ...oldMetaWindows],
-            direction > 0 ? 0 : -newMetaWindows.length + 1
-        ); */
 
         // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
