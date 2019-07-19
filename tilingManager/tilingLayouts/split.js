@@ -76,7 +76,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             );
         }
         this.baseIndex = regularWindows.indexOf(this.activeWindows[0]);
-        if (regularWindows.length > 2) {
+        if (regularWindows.length > WINDOW_PER_SCREEN) {
             this.transition(this.activeWindows, oldWindows);
         }
     }
@@ -124,7 +124,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 windowBounds.y,
                 windowBounds.width,
                 windowBounds.height,
-                regularWindows.length < 3
+                regularWindows.length < WINDOW_PER_SCREEN
             );
         });
         this.activeWindows.forEach(window =>
