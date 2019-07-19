@@ -21,6 +21,8 @@ const pretty_names = {
     'move-window-bottom': 'Move the current window to lower workspace',
     'cycle-tiling-layout':
         'Cycle around the tiling layout on the current workspace',
+    'reverse-cycle-tiling-layout':
+        'Cycle around in reverse order the tiling layout on the current workspace',
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen'
 };

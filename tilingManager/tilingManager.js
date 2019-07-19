@@ -61,7 +61,7 @@ var TilingManager = class TilingManager {
                                             key ==
                                             superWorkspace.tilingLayout.key
                                         ) {
-                                            superWorkspace.nextTiling();
+                                            superWorkspace.nextTiling(1);
                                         }
                                     }
                                 );
