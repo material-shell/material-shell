@@ -47,6 +47,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
+        if (this.isDialog(windowFocused) || this.isDialog(oldWindowFocused))
+            return;
+
         super.onFocusChanged(windowFocused, oldWindowFocused);
         if (this.activeWindows.includes(windowFocused)) {
             return;
@@ -95,10 +98,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         }
     }
 
-    onTileRegulars(windows) {
+    onTileRegulars(regularWindows) {
         if (this.animationInProgress || !this.activeWindows) return;
 
-        const { regularWindows } = this.getDialogAndRegularWindows();
         regularWindows
             .filter(
                 window =>
