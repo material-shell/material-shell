@@ -196,7 +196,9 @@ var WorkspaceList = GObject.registerClass(
                 }
             }
             this.buttonActive = this.getButtonFromCategoryKey(categoryKey);
+            this.buttonActive.hide()
             this.buttonActive.add_style_class_name('active');
+            this.buttonActive.show()
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
                 .scale_factor;
             Tweener.addTween(this.workspaceActiveIndicator, {
@@ -254,7 +256,7 @@ var WorkspaceButton = GObject.registerClass(
                         )
                     )
                     .activate(global.get_current_time());
-            });
+            }); 
 
             this.mouseData = {
                 pressed: false,

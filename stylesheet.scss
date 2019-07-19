@@ -1,7 +1,12 @@
 @import 'settings';
+@import 'funcs';
 
 .primary-bg {
     background-color: $color-primary;
+}
+
+.workspace-button .workspace-icon {
+    color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .workspace-button {
@@ -9,7 +14,8 @@
     &.active {
         background-color: $color-active-bg;
         .workspace-icon {
-            color: $color-active-fg;
+            //color: $color-active-fg;
+            color: dark-or-light($dark-mode, $color-active-bg, $color-primary) !important;
         }
     }
 }
@@ -24,18 +30,32 @@
 .workspace-main-icon {
     width: 24px;
     height: 24px;
-    color: $color-active-fg;
+    color: dark-or-light($dark-mode, $color-active-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
-.workspace-icon {
-    width: 24px;
-    height: 24px;
-    color: $color-fg;
+@if $dark-mode {
+    .workspace-icon, .plus-icon {
+        width: 24px;
+        height: 24px;
+        color: $color-fg;
+    }
+} @else {
+    .workspace-icon {
+        width: 24px;
+        height: 24px;
+        color: $color-fg;
+    }
+    .plus-icon {
+        width: 24px;
+        height: 24px;
+        color: $color-fg !important;
+    }
 }
 
 .workspace-active-indicator {
     width: 3px;
     height: 48px;
+    background-color: dark-or-light($dark-mode, $color-primary, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .ripple-wave {
@@ -51,7 +71,7 @@
 
 #panel {
     width: $panel-size;
-    background-color: $color-bg;
+    background-color: dark-or-light($dark-mode, $color-bg, $color-primary);
     box-shadow: $shadow;
     #panelLeft,
     #panelCenter {
@@ -71,7 +91,8 @@
 }
 
 .task-active-indicator {
-    background: $color-active-fg;
+    //background: $color-active-fg;
+    background: dark-or-light($dark-mode, $color-active-fg, $color-primary);
     height: 2px;
 }
 
@@ -84,7 +105,11 @@
     &.active {
         .task-bar-item-content {
             .task-bar-item-title {
-                color: $color-active-fg;
+                //color: $color-active-fg;
+                color: dark-or-light($dark-mode, $color-active-fg, $color-primary);
+            }
+            .task-close-button .task-close-icon {
+                color: dark-or-light($dark-mode, $color-fg, $color-primary);
             }
         }
     }
@@ -122,13 +147,13 @@
 
 .system-status-icon {
     height: 24px;
-    color: $color-fg;
+    color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .clock-display {
     * {
         padding: 4px 0px !important;
-        color: $color-fg;
+        color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
     }
 }
 
@@ -147,7 +172,6 @@
         }
         .mat-card-title-label {
             font-size: 24px;
-            color: $color-fg;
         }
     }
     .mat-card-content {
@@ -165,5 +189,6 @@
 }
 
 .backdrop-container {
-    background: rgba(255, 255, 255, 0.5);
+    //background: rgba(255, 255, 255, 0.5);
+    background: dark-or-light($dark-mode, rgba(0,0,0,0.5), rgba(255,255,255,0.5));
 }

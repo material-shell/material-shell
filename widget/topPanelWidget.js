@@ -26,7 +26,7 @@ var TopPanel = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    style_class: 'workspace-icon'
+                    style_class: 'plus-icon'
                 }),
                 style_class: 'workspace-button'
             });

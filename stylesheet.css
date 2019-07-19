@@ -1,55 +1,80 @@
+/* Dark Mode Settings */
 /*
 $color-primary: #ff9800;
-$color-bg: rgb(200, 200, 200);
-$color-fg: rgb(25, 25, 25);
+$color-bg: rgb(25, 25, 25);
+$color-fg: rgb(200, 200, 200);
 $color-active-bg: rgba(255, 255, 255, 0.12);
 $color-hover-bg: rgba(255, 255, 255, 0.04);
-$color-active-fg: rgb(0,0,0);
-$ripple: rgba(0, 0, 0, 0.16);
+$color-active-fg: rgb(255, 255, 255);
+$ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 */
+/* Light Mode Settings */
+/**
+ * Calculate the luminance for a color.
+ * See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
+ */
+/**
+ * Calculate the contrast ratio between two colors.
+ * See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
+ */
+/**
+ * Determine whether to use dark or light text on top of given color.
+ * Returns black for dark text and white for light text.
+ */
 .primary-bg {
-  background-color: #ff9800;
+  background-color: #3f51b5;
+}
+
+.workspace-button .workspace-icon {
+  color: #eeeeee;
 }
 
 .workspace-button {
   padding: 12px;
 }
 .workspace-button.active {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(0, 0, 0, 0.12);
 }
 .workspace-button.active .workspace-icon {
-  color: white;
+  color: #3f51b5 !important;
 }
 
 .workspace-button:hover {
   background-color: rgba(255, 255, 255, 0.04);
 }
 .workspace-button:hover .workspace-icon {
-  color: white;
+  color: black;
 }
 
 .workspace-main-icon {
   width: 24px;
   height: 24px;
-  color: white;
+  color: #eeeeee;
 }
 
 .workspace-icon {
   width: 24px;
   height: 24px;
-  color: #c8c8c8;
+  color: #323232;
+}
+
+.plus-icon {
+  width: 24px;
+  height: 24px;
+  color: #323232 !important;
 }
 
 .workspace-active-indicator {
   width: 3px;
   height: 48px;
+  background-color: #eeeeee;
 }
 
 .ripple-wave {
   border-radius: 2000px;
-  background-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(0, 0, 0, 0.16);
 }
 
 #leftPanelBox,
@@ -59,7 +84,7 @@ $panel-size: 48px;
 
 #panel {
   width: 48px;
-  background-color: #191919;
+  background-color: #3f51b5;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 #panel #panelLeft,
@@ -73,12 +98,12 @@ $panel-size: 48px;
 
 #topPanel {
   height: 48px;
-  background-color: #191919;
+  background-color: #eeeeee;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
 .task-active-indicator {
-  background: white;
+  background: #3f51b5;
   height: 2px;
 }
 
@@ -90,7 +115,10 @@ $panel-size: 48px;
   background-color: rgba(255, 255, 255, 0.04);
 }
 .task-bar-item.active .task-bar-item-content .task-bar-item-title {
-  color: white;
+  color: #3f51b5;
+}
+.task-bar-item.active .task-bar-item-content .task-close-button .task-close-icon {
+  color: #3f51b5;
 }
 .task-bar-item .task-bar-item-content {
   padding: 0px 8px;
@@ -104,7 +132,7 @@ $panel-size: 48px;
   margin-right: 8px;
   font-weight: 600;
   font-size: 14px;
-  color: #c8c8c8;
+  color: #323232;
 }
 .task-bar-item .task-bar-item-content .task-close-button {
   border-radius: 20px;
@@ -116,7 +144,7 @@ $panel-size: 48px;
 }
 .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
   icon-size: 18px;
-  color: #c8c8c8;
+  color: #323232;
 }
 
 .panel-button {
@@ -125,22 +153,22 @@ $panel-size: 48px;
 
 .system-status-icon {
   height: 24px;
-  color: #c8c8c8;
+  color: #eeeeee;
 }
 
 .clock-display * {
   padding: 4px 0px !important;
-  color: #c8c8c8;
+  color: #eeeeee;
 }
 
 .mat-card {
-  background-color: #191919;
+  background-color: #eeeeee;
   border-radius: 6px;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 .mat-card .mat-card-title {
-  background-color: rgba(255, 255, 255, 0.12);
-  color: white;
+  background-color: rgba(0, 0, 0, 0.12);
+  color: black;
   height: 72px;
   padding: 0px 24px;
 }
@@ -150,13 +178,12 @@ $panel-size: 48px;
 }
 .mat-card .mat-card-title .mat-card-title-label {
   font-size: 24px;
-  color: #c8c8c8;
 }
 .mat-card .mat-card-content {
   padding: 24px;
 }
 .mat-card .mat-card-content * {
-  color: #c8c8c8;
+  color: #323232;
 }
 
 .categorized-app-card .overview-icon {
