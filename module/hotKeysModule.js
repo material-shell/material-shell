@@ -87,6 +87,142 @@ var HotKeysModule = class HotKeysModule {
                     .delete(global.get_current_time());
             }
         );
+
+        Main.wm.addKeybinding(
+            'move-window-left',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const superWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                let currentFocusIndex = superWorkspace.windows.indexOf(
+                    superWorkspace.windowFocused
+                );
+                if (currentFocusIndex > 0) {
+                    let previousMetaWindows =
+                        superWorkspace.windows[currentFocusIndex - 1];
+                    superWorkspace.swapWindows(
+                        superWorkspace.windowFocused,
+                        previousMetaWindows
+                    );
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-right',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const superWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                let currentFocusIndex = superWorkspace.windows.indexOf(
+                    superWorkspace.windowFocused
+                );
+                if (currentFocusIndex < superWorkspace.windows.length - 1) {
+                    let nextMetaWindows =
+                        superWorkspace.windows[currentFocusIndex + 1];
+                    superWorkspace.swapWindows(
+                        superWorkspace.windowFocused,
+                        nextMetaWindows
+                    );
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-top',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index(
+                    global.display.focus_window.get_workspace().index() - 1
+                );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-bottom',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index(
+                    global.display.focus_window.get_workspace().index() + 1
+                );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'cycle-tiling-layout',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                global.superWorkspaceManager
+                    .getActiveSuperWorkspace()
+                    .nextTiling();
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'toggle-material-shell-ui',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                global.superWorkspaceManager.noUImode = !global
+                    .superWorkspaceManager.noUImode;
+                Main.panel.get_parent().visible = !global.superWorkspaceManager
+                    .noUImode;
+                Main.panel
+                    .get_parent()
+                    .set_width(global.superWorkspaceManager.noUImode ? 0 : -1);
+                Main.layoutManager.panelBox.visible = !global
+                    .superWorkspaceManager.noUImode;
+
+                Main.layoutManager.panelBox.set_height(
+                    global.superWorkspaceManager.noUImode ? 0 : -1
+                );
+                Main.layoutManager.monitors.forEach(monitor => {
+                    let superWorkspace;
+                    if (Main.layoutManager.primaryIndex === monitor.index) {
+                        superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
+                    } else {
+                        superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                            monitor.index
+                        )[0];
+                    }
+                    Main.layoutManager._queueUpdateRegions();
+                    superWorkspace.updateUI();
+                    superWorkspace.panel.set_height(
+                        global.superWorkspaceManager.noUImode ? 0 : -1
+                    );
+                    superWorkspace.tilingLayout.onTile();
+                });
+            }
+        );
     }
 
     disable() {}

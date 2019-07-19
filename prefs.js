@@ -14,7 +14,15 @@ const pretty_names = {
     'next-window': 'Focus the next window',
     'previous-workspace': 'Focus the previous workspace',
     'next-workspace': 'Focus the next workspace',
-    'kill-focused-window': 'kill the current window'
+    'kill-focused-window': 'kill the current window',
+    'move-window-left': 'Move the current window to the left',
+    'move-window-right': 'Move the current window to the right',
+    'move-window-top': 'Move the current window to upper workspace',
+    'move-window-bottom': 'Move the current window to lower workspace',
+    'cycle-tiling-layout':
+        'Cycle around the tiling layout on the current workspace',
+    'toggle-material-shell-ui':
+        'Toggle the material-shell UI to simulate fullscreen'
 };
 const layouts = {
     maximize: 'Maximize all windows',

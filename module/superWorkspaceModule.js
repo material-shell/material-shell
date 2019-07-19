@@ -29,9 +29,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: global.display,
             id: global.display.connect('in-fullscreen-changed', () => {
                 Main.layoutManager.monitors.forEach(monitor => {
-                    let isFullscreen = global.display.get_monitor_in_fullscreen(
-                        monitor.index
-                    );
                     let superWorkspace;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
                         superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
@@ -40,11 +37,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                             monitor.index
                         )[0];
                     }
-                    if (isFullscreen) {
-                        superWorkspace.frontendContainer.hide();
-                    } else {
-                        superWorkspace.frontendContainer.show();
-                    }
+                    superWorkspace.updateUI();
                 });
             })
         });
@@ -77,9 +70,11 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 () => {
                     log('active-workspace-changed');
                     let newSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
-                    this.currentSuperWorkspace.hideUI();
+                    this.currentSuperWorkspace.uiVisible = false;
+                    this.currentSuperWorkspace.updateUI();
                     this.currentSuperWorkspace = newSuperWorkspace;
-                    this.currentSuperWorkspace.showUI();
+                    this.currentSuperWorkspace.uiVisible = true;
+                    this.currentSuperWorkspace.updateUI();
                 }
             )
         });
@@ -183,7 +178,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 let curSuperWorkspace = (this._switchData.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
                     from
                 ));
-                this._switchData.superWorkspace.frontendContainer.show();
+                this._switchData.superWorkspace.uiVisible = true;
+                this._switchData.superWorkspace.updateUI();
                 this._switchData.superWorkspace.frontendContainer.reparent(
                     this._switchData.curGroup
                 );
@@ -192,7 +188,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     this._switchData.curGroup
                 );
                 this._switchData.superWorkspace.backgroundContainer.lower_bottom();
-                this._switchData.superWorkspace.backgroundContainer.show();
                 this._switchData.curGroup.set_offscreen_redirect(
                     Clutter.OffscreenRedirect.ALWAYS
                 );
@@ -214,8 +209,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                         ws.index()
                     );
                     info.superWorkspace = superWorkspace;
-                    info.superWorkspace.frontendContainer.show();
-
+                    info.superWorkspace.uiVisible = true;
+                    info.superWorkspace.updateUI();
                     info.superWorkspace.frontendContainer.reparent(info.actor);
                     info.superWorkspace.frontendContainer.raise_top();
                     info.superWorkspace.backgroundContainer.reparent(
@@ -241,11 +236,11 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 switchData.superWorkspace.frontendContainer.reparent(
                     Main.layoutManager.uiGroup
                 );
-                switchData.superWorkspace.frontendContainer.hide();
                 switchData.superWorkspace.backgroundContainer.reparent(
                     Main.layoutManager._backgroundGroup
                 );
-                switchData.superWorkspace.backgroundContainer.hide();
+                switchData.superWorkspace.uiVisible = false;
+                switchData.superWorkspace.updateUI();
                 for (let dir of Object.values(Meta.MotionDirection)) {
                     let info = switchData.surroundings[dir];
                     if (info) {
@@ -276,7 +271,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
                 let currentWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
-                currentWorkspace.showUI();
+                currentWorkspace.uiVisible = true;
+                currentWorkspace.updateUI();
 
                 return result;
             };

@@ -22,15 +22,14 @@ var SuperWorkspace = class SuperWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.category = category;
         this.windows = [];
+        this.uiVisible = visible;
         let previousLayout =
             Me.stateManager.getState(
                 `${this.categoryKey}_${this.monitor.index}`
             ) || MaximizeLayout.key;
         const Layout = global.tilingManager.getLayoutByKey(previousLayout);
         this.tilingLayout = new Layout(this);
-        this.frontendContainer = new St.Widget({
-            visible: visible
-        });
+        this.frontendContainer = new St.Widget();
 
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
 
@@ -42,9 +41,7 @@ var SuperWorkspace = class SuperWorkspace {
             });
         }
 
-        this.backgroundContainer = new St.Widget({
-            visible: visible
-        });
+        this.backgroundContainer = new St.Widget();
 
         this.bgManager = new Background.BackgroundManager({
             container: this.backgroundContainer,
@@ -66,7 +63,6 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundContainer.add_child(this.backgroundStackLayout);
 
         this.windowFocused = null;
-        this.windowFocusIndex = null;
 
         this.focusEventId = global.display.connect(
             'notify::focus-window',
@@ -80,7 +76,6 @@ var SuperWorkspace = class SuperWorkspace {
                     windowFocused = windowFocused.get_transient_for();
                     index = this.windows.indexOf(windowFocused);
                 }
-                this.windowFocusIndex = index;
                 this.onFocus(windowFocused);
             }
         );
@@ -91,15 +86,11 @@ var SuperWorkspace = class SuperWorkspace {
                 this.updateTopBarPositionAndSize();
             }
         );
-
-        if (this.monitorIsPrimary) {
-            this.frontendContainer.hide();
-            this.backgroundContainer.hide();
-        }
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
         Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
         this.updateTopBarPositionAndSize();
+        this.updateUI();
     }
 
     destroy() {
@@ -164,9 +155,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (windowFocusIndex === this.windows.length - 1) {
             return;
         }
-        this.windows[this.windowFocusIndex + 1].activate(
-            global.get_current_time()
-        );
+        this.windows[windowFocusIndex + 1].activate(global.get_current_time());
     }
 
     focusPrevious() {
@@ -214,14 +203,21 @@ var SuperWorkspace = class SuperWorkspace {
         this.tilingLayout.onTile();
     }
 
-    showUI() {
-        this.frontendContainer.show();
-        this.backgroundContainer.show();
+    shouldPanelBeVisible() {
+        let containFullscreenWindow = this.windows.some(metaWindow => {
+            return metaWindow.is_fullscreen();
+        });
+        return (
+            !containFullscreenWindow &&
+            (global.superWorkspaceManager &&
+                !global.superWorkspaceManager.noUImode)
+        );
     }
 
-    hideUI() {
-        this.frontendContainer.hide();
-        this.backgroundContainer.hide();
+    updateUI() {
+        this.frontendContainer.visible = this.uiVisible;
+        this.panel.visible = this.uiVisible && this.shouldPanelBeVisible();
+        this.backgroundContainer.visible = this.uiVisible;
     }
 
     revealBackground() {
