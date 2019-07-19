@@ -22,7 +22,22 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
     }
 
     onWindowsChanged() {
-        this.activeWindows = this.getActiveWindows();
+        const oldWindows = this.activeWindows;
+        if (this.activeWindows.some(window => !this.windows.includes(window))) {
+            this.baseIndex = Math.min(
+                this.baseIndex,
+                this.windows.length - WINDOW_PER_SCREEN
+            );
+            this.activeWindows = this.windows.slice(
+                this.baseIndex,
+                this.baseIndex + WINDOW_PER_SCREEN
+            );
+        } else {
+            this.baseIndex = this.windows.indexOf(this.activeWindows[0]);
+        }
+
+        // this.transition(this.activeWindows, oldWindows, -1);
+
         super.onWindowsChanged();
     }
 
@@ -34,28 +49,20 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             return;
         }
         const oldWindows = this.activeWindows;
-        this.activeFromStart = oldIndex < newIndex;
-        this.activeIndex = newIndex;
-        this.activeWindows = this.getActiveWindows();
-        const direction = newIndex > oldIndex ? 1 : -1;
-        //this.onTile();
-        this.transition(this.activeWindows, oldWindows, direction);
-    }
-
-    getActiveWindows() {
-        let activeWindows;
-        if (this.activeFromStart) {
-            activeWindows = this.windows.slice(
-                this.activeIndex - WINDOW_PER_SCREEN + 1,
-                this.activeIndex + 1
+        if (oldIndex < newIndex) {
+            this.activeWindows = this.windows.slice(
+                newIndex - WINDOW_PER_SCREEN + 1,
+                newIndex + 1
             );
         } else {
-            activeWindows = this.windows.slice(
-                this.activeIndex,
-                this.activeIndex + WINDOW_PER_SCREEN
+            this.activeWindows = this.windows.slice(
+                newIndex,
+                newIndex + WINDOW_PER_SCREEN
             );
         }
-        return activeWindows;
+        this.baseIndex = this.windows.indexOf(this.activeWindows[0]);
+        const direction = newIndex > oldIndex ? 1 : -1;
+        this.transition(this.activeWindows, oldWindows, direction);
     }
 
     onTileRegulars(windows) {
