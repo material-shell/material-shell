@@ -288,7 +288,7 @@ var SuperWorkspace = class SuperWorkspace {
             return true;
         } else {
             return (
-                this === global.superWorkspaceManager.getActiveSuperWorkspace()
+                this === this.superWorkspaceManager.getActiveSuperWorkspace()
             );
         }
     }
