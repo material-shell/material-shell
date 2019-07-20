@@ -3,7 +3,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
-const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
+const { NoTitleBar } = Me.imports.tilingManager.noTitleBar;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -34,6 +34,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
 
         this.windows = superWorkspace.windows;
+        this.noTitleBar = new NoTitleBar();
     }
 
     onWindowsChanged() {
@@ -242,7 +243,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
     }
 
-    setTitleBarVis(window, vis) {
-        new NoTitleBarModule().setWindowTitleBarVis(window, vis);
+    setTitleBarVisibilty(window, vis) {
+        this.noTitleBar.setWindowTitleBarVisibilty(window, vis);
     }
 };

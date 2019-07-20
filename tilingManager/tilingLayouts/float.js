@@ -18,7 +18,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
 
   onTileRegulars(windows) {
     windows.forEach(window=>{
-      this.setTitleBarVis(window, true);
+      this.setTitleBarVisibilty(window, true);
     })
   }
 
