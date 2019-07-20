@@ -19,6 +19,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             if (!this.appsByCategory[key].length) continue;
             if (category.primary) {
                 let superWorkspace = new SuperWorkspace(
+                    this,
                     key,
                     category,
                     this.appsByCategory[key],
@@ -36,6 +37,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                         continue;
                     }
                     let superWorkspace = new SuperWorkspace(
+                        this,
                         key,
                         category,
                         this.appsByCategory[key],

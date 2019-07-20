@@ -13,7 +13,15 @@ const CategorizedAppCard =
 const { Stack } = Me.imports.widget.layout;
 
 var SuperWorkspace = class SuperWorkspace {
-    constructor(categoryKey, category, apps, monitor, visible) {
+    constructor(
+        superWorkspaceManager,
+        categoryKey,
+        category,
+        apps,
+        monitor,
+        visible
+    ) {
+        this.superWorkspaceManager = superWorkspaceManager;
         this.categoryKey = categoryKey;
         this.category = category;
         this.monitor = monitor;
@@ -209,8 +217,7 @@ var SuperWorkspace = class SuperWorkspace {
         });
         return (
             !containFullscreenWindow &&
-            (global.superWorkspaceManager &&
-                !global.superWorkspaceManager.noUImode)
+            (this.superWorkspaceManager && !this.superWorkspaceManager.noUImode)
         );
     }
 
