@@ -28,6 +28,8 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                 const window = windows[index];
                 if (!window) return;
 
+                this.setTitleBarVis(window, false);
+
                 if (window.get_maximized())
                     window.unmaximize(Meta.MaximizeFlags.BOTH);
 

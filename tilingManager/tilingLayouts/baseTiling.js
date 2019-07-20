@@ -3,6 +3,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
+const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -239,5 +240,9 @@ var BaseTilingLayout = class BaseTilingLayout {
             dialogTypes.includes(metaWindow.window_type) ||
             !metaWindow.resizeable
         );
+    }
+
+    setTitleBarVis(window, vis) {
+        new NoTitleBarModule().setWindowTitleBarVis(window, vis);
     }
 };

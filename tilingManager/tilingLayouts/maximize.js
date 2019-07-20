@@ -43,6 +43,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             if (window !== this.windowFocused) {
                 window.get_compositor_private().hide();
             }
+            this.setTitleBarVis(window, false);
         });
     }
 

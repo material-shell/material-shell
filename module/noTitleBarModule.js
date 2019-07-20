@@ -9,13 +9,18 @@ const GLib = imports.gi.GLib;
 var NoTitleBarModule = class NoTitleBarModule {
     constructor() {}
 
+    setWindowTitleBarVis(window, vis) {
+        global.log("setWindowTitleBarVis " + vis)
+        if (!this._handleWindow(window)) return;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.toggleTitleBar(this.getWindowXID(window), !vis);
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
     enable() {
         global.display.connect('window-created', (display, window) => {
-            if (!this._handleWindow(window)) return;
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.toggleTitleBar(this.getWindowXID(window), true);
-                return GLib.SOURCE_REMOVE;
-            });
+            setWindowTitleBarVis(window, false);
         });
     }
 
