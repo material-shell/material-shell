@@ -51,7 +51,14 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 #### Window manipulation
 * `Super+Q` Kill the current window focused.
 * `Super+[MouseDrag]` Move window around.
+* `Super+Shift+A` Move the current window to the left.
+* `Super+Shift+D` Move the current window to the right.
+* `Super+Shift+W` Move the current window to the upper workspace.
+* `Super+Shift+S` Move the current window to the lower workspace.
 
+#### Extra Hotkeys
+* `Super+Space` Cycle the tiling layout of the current workspace.
+* `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
 ## Optional Configuration
 * Get [Plata Theme](https://gitlab.com/tista500/plata-theme) as the GTK and shell theme 

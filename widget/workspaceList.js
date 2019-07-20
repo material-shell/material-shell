@@ -191,14 +191,18 @@ var WorkspaceList = GObject.registerClass(
 
         activeButtonForIndex(categoryKey) {
             if (this.buttonActive) {
-                if (this.buttonActive.has_style_class_name('active')) {
-                    this.buttonActive.remove_style_class_name('active');
+                if (
+                    this.buttonActive.actorContainer.has_style_class_name(
+                        'active'
+                    )
+                ) {
+                    this.buttonActive.actorContainer.remove_style_class_name(
+                        'active'
+                    );
                 }
             }
             this.buttonActive = this.getButtonFromCategoryKey(categoryKey);
-            this.buttonActive.hide()
-            this.buttonActive.add_style_class_name('active');
-            this.buttonActive.show()
+            this.buttonActive.actorContainer.add_style_class_name('active');
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
                 .scale_factor;
             Tweener.addTween(this.workspaceActiveIndicator, {

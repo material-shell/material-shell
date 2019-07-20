@@ -57,11 +57,14 @@ var TaskBar = GObject.registerClass(
                     );
 
                     if (previousItem) {
-                        global.log(previousItem)
-                        global.log("has_style_class_name: " + previousItem.has_style_class_name('active'))
-                        if (previousItem.has_style_class_name('active')) {
-                            previousItem.remove_style_class_name('active');
-                            global.log("has_style_class_name: " + previousItem.has_style_class_name('active'))
+                        if (
+                            previousItem.actorContainer.has_style_class_name(
+                                'active'
+                            )
+                        ) {
+                            previousItem.actorContainer.remove_style_class_name(
+                                'active'
+                            );
                         }
                     }
 
@@ -70,9 +73,7 @@ var TaskBar = GObject.registerClass(
 
                     //if you change the class before animate the indicator there is an issue for retrieving the item.x
                     this._animateActiveIndicator();
-                    nextItem.add_style_class_name('active');
-                    global.log("has_style_class_name: " + nextItem.has_style_class_name('active'));
-                    this.updateItems()
+                    nextItem.actorContainer.add_style_class_name('active');
                 }
             );
 
