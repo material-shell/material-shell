@@ -26,7 +26,7 @@ var TopPanel = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    style_class: 'workspace-icon'
+                    style_class: 'plus-icon'
                 }),
                 style_class: 'workspace-button'
             });
@@ -48,7 +48,7 @@ var TopPanel = GObject.registerClass(
 
             this.tilingButton = new MatButton({
                 child: this.tilingIcon,
-                style_class: 'workspace-button',
+                style_class: 'tiling-button',
                 reactive: true,
                 can_focus: true,
                 track_hover: true
