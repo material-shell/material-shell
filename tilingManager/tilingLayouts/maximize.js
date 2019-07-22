@@ -1,4 +1,4 @@
-const { St, Meta } = imports.gi;
+const { St, Meta, Clutter } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -46,6 +46,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 !this.superWorkspace.isDisplayed()
             ) {
                 window.get_compositor_private().hide();
+            } else {
+                window.get_compositor_private().show();
             }
         });
     }
@@ -60,20 +62,23 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        const newWindow = newMetaWindow.get_compositor_private();
-        let oldWindow = null;
-        if (oldMetaWindow) oldWindow = oldMetaWindow.get_compositor_private();
-
-        newWindow.show();
-        if (oldWindow) oldWindow.show();
-
         if (direction > 0) {
-            if (oldWindow) oldWindow.reparent(this.leftWindowContainer);
-            newWindow.reparent(this.rightWindowContainer);
+            if (oldMetaWindow) {
+                let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
+                oldWindowClone.reparent(this.leftWindowContainer);
+            }
+            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
+            newWindowClone.reparent(this.rightWindowContainer);
         } else {
-            newWindow.reparent(this.leftWindowContainer);
-            if (oldWindow) oldWindow.reparent(this.rightWindowContainer);
+            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
+            newWindowClone.reparent(this.leftWindowContainer);
+            if (oldMetaWindow) {
+                let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
+                oldWindowClone.reparent(this.rightWindowContainer);
+            }
         }
+        if (oldMetaWindow) oldMetaWindow.get_compositor_private().hide();
+        newMetaWindow.get_compositor_private().hide();
     }
 
     animateTransition(direction) {
@@ -110,12 +115,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.leftWindowContainer
-            .get_children()
-            .concat(this.rightWindowContainer.get_children())
-            .forEach(window => {
-                window.reparent(global.window_group);
-            });
+        this.leftWindowContainer.remove_all_children();
+        this.rightWindowContainer.remove_all_children();
         global.window_group.remove_child(this.overContainer);
         log(
             `${
