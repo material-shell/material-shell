@@ -127,7 +127,7 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        log(`window ${window.get_id()} added to ${this.categoryKey}`);
+        log(`window ${window.get_title()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
         this.windows.push(window);
         this.onFocus(window);
@@ -137,7 +137,7 @@ var SuperWorkspace = class SuperWorkspace {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        log(`window ${window.get_id()} remove from ${this.categoryKey}`);
+        log(`window ${window.get_title()} removed from ${this.categoryKey}`);
 
         this.windows.splice(windowIndex, 1);
         if (window === this.windowFocused) {
