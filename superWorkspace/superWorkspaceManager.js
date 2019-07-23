@@ -210,16 +210,14 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         }
     }
 
-    onNewWindow(metaWindow) {
+    onNewWindow(metaWindow, alreadyExisting) {
         if (!this._handleWindow(metaWindow)) return;
+        // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
-        if (!Me.loaded) {
-            metaWindow.get_compositor_private().hide();
-        }
-        this.addWindowToAppropriateSuperWorkspace(metaWindow);
+        this.addWindowToAppropriateSuperWorkspace(metaWindow, !alreadyExisting);
     }
 
-    addWindowToAppropriateSuperWorkspace(metaWindow) {
+    addWindowToAppropriateSuperWorkspace(metaWindow, swapOnly) {
         if (!metaWindow.handledByMaterialShell) return;
 
         log(
@@ -278,7 +276,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             metaWindow.change_workspace(workspaceOfSuperWorkspace);
         }
 
-        if (!Me.loaded) {
+        if (!swapOnly) {
             log(
                 `Placing existing window ${metaWindow.get_title()} at extension launch on ${
                     superWorkspace.categoryKey
@@ -290,7 +288,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     dispatchExistingWindows() {
         global.get_window_actors().forEach(windowActor => {
-            this.onNewWindow(windowActor.metaWindow);
+            this.onNewWindow(windowActor.metaWindow, true);
         });
     }
 
