@@ -139,15 +139,17 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.windows.indexOf(window) >= 0) return;
         log(`window ${window.get_title()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
+        const oldWindows = [...this.windows];
         this.windows.push(window);
         this.onFocus(window);
-        this.emitWindowsChanged();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
         log(`window ${window.get_title()} removed from ${this.categoryKey}`);
+        const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
         if (window === this.windowFocused) {
@@ -157,15 +159,16 @@ var SuperWorkspace = class SuperWorkspace {
                 this.onFocus(newWindowToFocus);
             }
         }
-        this.emitWindowsChanged();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     swapWindows(firstWindow, secondWindow) {
         const firstIndex = this.windows.indexOf(firstWindow);
         const secondIndex = this.windows.indexOf(secondWindow);
+        const oldWindows = [...this.windows];
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
-        this.emitWindowsChanged();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     focusNext() {
@@ -191,21 +194,23 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     setWindowBefore(windowToMove, windowRelative) {
+        const oldWindows = [...this.windows];
         let windowToMoveIndex = this.windows.indexOf(windowToMove);
         this.windows.splice(windowToMoveIndex, 1);
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChanged();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
+        const oldWindows = [...this.windows];
         let windowToMoveIndex = this.windows.indexOf(windowToMove);
         this.windows.splice(windowToMoveIndex, 1);
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChanged();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     nextTiling() {
@@ -279,9 +284,22 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundShown = false;
     }
 
-    emitWindowsChangedDebounced() {
+    emitWindowsChangedDebounced(newWindows, oldWindows) {
+        // Get first debounced oldWindows
+        const firstOldWindows = this.emitWindowsChangedDebounced
+            ._debouncedArgs[0][1];
+        // And compare it with the new newWindows
+        if (
+            newWindows.length === firstOldWindows.length &&
+            newWindows.every((window, i) => firstOldWindows[i] === window)
+        ) {
+            // If it's the same, the changes have compensated themselves
+            // So in the end nothing happened:
+            return;
+        }
+
         if (!this.destroyed) {
-            this.emit('windows-changed');
+            this.emit('windows-changed', newWindows, oldWindows);
         }
     }
 

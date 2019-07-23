@@ -35,8 +35,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.windows = superWorkspace.windows;
     }
 
-    onWindowsChanged() {
-        this.windows = this.superWorkspace.windows;
+    onWindowsChanged(superWorkspace, newWindows) {
+        this.windows = newWindows;
         log(
             `${
                 this.superWorkspace.categoryKey

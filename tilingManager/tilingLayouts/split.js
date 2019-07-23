@@ -32,8 +32,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         this.resizeAll();
     }
 
-    onWindowsChanged() {
+    onWindowsChanged(superWorkspace, newWindows, oldWindows) {
         this.resizeAll();
+        this.windows = newWindows; // Because we need this for the next line
         const { regularWindows } = this.getDialogAndRegularWindows();
         this.baseIndex = Math.min(
             regularWindows.indexOf(this.windowFocused),
@@ -43,7 +44,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             this.baseIndex,
             this.baseIndex + WINDOW_PER_SCREEN
         );
-        super.onWindowsChanged(); // Calls onTile
+        super.onWindowsChanged(superWorkspace, newWindows, oldWindows); // Calls onTile
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
