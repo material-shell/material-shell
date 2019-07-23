@@ -60,6 +60,11 @@
       <summary>Gap size around tiled windows</summary>
       <description>Determines the gap size between windows</description>
     </key>
+    <key name="screen-gap" type="i">
+      <default>0</default>
+      <summary>Gap size around tiled windows</summary>
+      <description>Determines the screen edge gap size between windows</description>
+    </key>
     <key name="tween-time" type="d">
       <default>0.25</default>
       <summary>Animation duration</summary>
