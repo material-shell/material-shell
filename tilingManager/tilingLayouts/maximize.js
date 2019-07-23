@@ -62,7 +62,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        if (!oldMetaWindow.get_compositor_private()) {
+        if (oldMetaWindow && oldMetaWindow.get_compositor_private()) {
             oldMetaWindow = null;
         }
         if (direction > 0) {
