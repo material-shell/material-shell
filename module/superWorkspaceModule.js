@@ -9,7 +9,7 @@ const {
     SuperWorkspaceManager
 } = Me.imports.superWorkspace.superWorkspaceManager;
 
-const WINDOW_ANIMATION_TIME = imports.ui.windowManager;
+const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
 /* exported SuperWorkspaceModule */
 var SuperWorkspaceModule = class SuperWorkspaceModule {
     constructor() {
