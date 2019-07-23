@@ -32,7 +32,6 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
             windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
-            this.setTitleBarVisibilty(window, false);
 
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
@@ -67,7 +66,6 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
             windows.length > 1 ? workArea.height / 2 : workArea.height;
 
         windows.forEach((window, index) => {
-            this.setTitleBarVisibilty(window, false);
 
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);

@@ -17,7 +17,6 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            this.setTitleBarVisibilty(window, false);
 
             if (window.get_maximized())
                 window.unmaximize(Meta.MaximizeFlags.BOTH);

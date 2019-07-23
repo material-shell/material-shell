@@ -9,20 +9,27 @@ const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
 /* exported FloatLayout */
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
 
-  onTile() {
-    log('tile for real', this.superWorkspace.categoryKey);
-    let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
-    this.onTileRegulars(regularWindows);
-    this.onTileDialogs(dialogWindows);
-  }
-
-  onTileRegulars(windows) {
-    windows.forEach(window=>{
+  constructor(superWorkspace) {
+    super(superWorkspace)
+    this.windows.forEach(window=>{
       this.setTitleBarVisibilty(window, true);
-    })
+    });
   }
 
-  onTileDialogs(windows) {
+  onWindowsChanged() {
+    super.onWindowsChanged();
+    this.windows.forEach(window=>{
+      this.setTitleBarVisibilty(window, true);
+    });
+  }
+
+  onDestroy() {
+    this.windows.forEach(window=>{
+      this.setTitleBarVisibilty(window, false);
+    });
+    super.onDestroy();
+  }
+  onTile() {
   }
 };
 
