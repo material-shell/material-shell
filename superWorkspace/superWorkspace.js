@@ -6,11 +6,14 @@ const Background = imports.ui.background;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
+const { debounce } = Me.imports.utils.index;
 
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
 
 const { Stack } = Me.imports.widget.layout;
+
+const EMIT_DEBOUNCE_DELAY = 150;
 
 var SuperWorkspace = class SuperWorkspace {
     constructor(
@@ -40,6 +43,13 @@ var SuperWorkspace = class SuperWorkspace {
         this.frontendContainer = new St.Widget();
 
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
+
+        // Only emit window changed after EMIT_DEBOUNCE_DELAY ms without call
+        // This prevents multiple tiling on window add for instance
+        this.emitWindowsChanged = debounce(
+            this.emitWindowsChangedDebounced,
+            EMIT_DEBOUNCE_DELAY
+        );
 
         this.panel = new TopPanel(this);
 
@@ -131,7 +141,7 @@ var SuperWorkspace = class SuperWorkspace {
         window.workspaceEnhancer = this;
         this.windows.push(window);
         this.onFocus(window);
-        this.throttleEmit();
+        this.emitWindowsChanged();
     }
 
     removeWindow(window) {
@@ -147,7 +157,7 @@ var SuperWorkspace = class SuperWorkspace {
                 this.onFocus(newWindowToFocus);
             }
         }
-        this.throttleEmit();
+        this.emitWindowsChanged();
     }
 
     swapWindows(firstWindow, secondWindow) {
@@ -155,7 +165,7 @@ var SuperWorkspace = class SuperWorkspace {
         const secondIndex = this.windows.indexOf(secondWindow);
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
-        this.throttleEmit();
+        this.emitWindowsChanged();
     }
 
     focusNext() {
@@ -186,7 +196,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.throttleEmit();
+        this.emitWindowsChanged();
     }
 
     setWindowAfter(windowToMove, windowRelative) {
@@ -195,7 +205,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.throttleEmit();
+        this.emitWindowsChanged();
     }
 
     nextTiling() {
@@ -269,20 +279,10 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundShown = false;
     }
 
-    throttleEmit() {
-        if (this.emitInProgress) {
-            return;
-        }
-        this.emitInProgress = true;
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.emitInProgress = false;
-
-            if (this.destroyed) {
-                return GLib.SOURCE_REMOVE;
-            }
+    emitWindowsChangedDebounced() {
+        if (!this.destroyed) {
             this.emit('windows-changed');
-            return GLib.SOURCE_REMOVE;
-        });
+        }
     }
 
     setApps(apps) {
