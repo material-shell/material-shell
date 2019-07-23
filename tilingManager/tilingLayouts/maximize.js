@@ -62,6 +62,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     prepareTransition(newMetaWindow, oldMetaWindow, direction) {
+        if (!oldMetaWindow.get_compositor_private()) {
+            oldMetaWindow = null;
+        }
         if (direction > 0) {
             if (oldMetaWindow) {
                 let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
@@ -119,9 +122,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.rightWindowContainer.remove_all_children();
         global.window_group.remove_child(this.overContainer);
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself after the transition`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
         );
         this.onTile();
     }
