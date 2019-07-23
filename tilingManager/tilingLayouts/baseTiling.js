@@ -1,4 +1,4 @@
-const { Meta, Gio, GLib } = imports.gi;
+const { Meta, Gio, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
