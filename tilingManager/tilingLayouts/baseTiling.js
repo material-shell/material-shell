@@ -26,6 +26,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.workAreaChangedId = global.display.connect(
             'workareas-changed',
             () => {
+                log('workareas-changed');
                 this.onTile();
             }
         );

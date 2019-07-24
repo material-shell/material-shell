@@ -214,6 +214,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         if (!this._handleWindow(metaWindow)) return;
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
+        if (!Me.loaded) {
+            metaWindow.get_compositor_private().hide();
+        }
         this.addWindowToAppropriateSuperWorkspace(metaWindow);
     }
 

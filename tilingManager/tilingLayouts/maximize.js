@@ -34,21 +34,28 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileRegulars(windows) {
-        if (this.animationInProgress) return;
+        const workArea = this.getWorkspaceBounds();
 
         windows.forEach(window => {
-            if (window.grabbed) return;
-            if (!window.maximized_horizontally) {
-                Main.wm.skipNextEffect(window.get_compositor_private());
-                window.maximize(Meta.MaximizeFlags.BOTH);
+            if (window.get_maximized()) {
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
             }
-
+            this.moveAndResizeMetaWindow(
+                window,
+                workArea.x,
+                workArea.y,
+                workArea.width,
+                workArea.height,
+                true
+            );
             if (
                 window !== this.windowFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
+                log('HideT', window.get_title());
                 window.get_compositor_private().hide();
             } else {
+                log('ShowT', window.get_title());
                 window.get_compositor_private().show();
             }
         });
@@ -64,26 +71,41 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        if (oldMetaWindow && oldMetaWindow.get_compositor_private()) {
+        if (
+            oldMetaWindow &&
+            (!oldMetaWindow.get_compositor_private() || oldMetaWindow.grabbed)
+        ) {
             oldMetaWindow = null;
         }
-        if (direction > 0) {
-            if (oldMetaWindow) {
-                let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
-                oldWindowClone.reparent(this.leftWindowContainer);
-            }
-            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
-            newWindowClone.reparent(this.rightWindowContainer);
-        } else {
-            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
-            newWindowClone.reparent(this.leftWindowContainer);
-            if (oldMetaWindow) {
-                let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
-                oldWindowClone.reparent(this.rightWindowContainer);
-            }
+        if (
+            newMetaWindow &&
+            (!newMetaWindow.get_compositor_private() || newMetaWindow.grabbed)
+        ) {
+            newMetaWindow = null;
         }
-        if (oldMetaWindow) oldMetaWindow.get_compositor_private().hide();
-        newMetaWindow.get_compositor_private().hide();
+        if (!oldMetaWindow && !newMetaWindow) {
+            log('Refusing to animate empty windows');
+            return;
+        }
+        const containers = [
+            this.leftWindowContainer,
+            this.rightWindowContainer
+        ];
+        if (direction < 0) {
+            containers.reverse();
+        }
+        const [oldContainer, newContainer] = containers;
+
+        if (oldMetaWindow) {
+            let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
+            oldWindowClone.reparent(oldContainer);
+            oldMetaWindow.get_compositor_private().hide();
+        }
+        if (newMetaWindow) {
+            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
+            newWindowClone.reparent(newContainer);
+            newMetaWindow.get_compositor_private().hide();
+        }
     }
 
     animateTransition(direction) {

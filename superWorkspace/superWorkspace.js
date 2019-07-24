@@ -194,15 +194,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (windowFocused === this.windowFocused) {
             return;
         }
-        // This async call prevent a ghost window bug on maximise drag out
-        // Not sure why...
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.emit(
-                'window-focused-changed',
-                windowFocused,
-                this.windowFocused
-            );
-        });
+        this.emit('window-focused-changed', windowFocused, this.windowFocused);
         this.windowFocused = windowFocused;
     }
 
