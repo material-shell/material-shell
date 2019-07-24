@@ -3,14 +3,15 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
+const { debounce } = Me.imports.utils.index;
+
+const FOCUS_DEBOUNCE_DELAY = 100;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${
-                this.constructor.key
-            }-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
@@ -19,10 +20,14 @@ var BaseTilingLayout = class BaseTilingLayout {
             'windows-changed',
             this.onWindowsChanged.bind(this)
         );
+        this.onFocusChangedDebounced = debounce(
+            this.onFocusChangedDedup,
+            FOCUS_DEBOUNCE_DELAY
+        );
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
             (_, window, oldWindow) => {
-                this.onFocusChanged(window, oldWindow);
+                this.onFocusChangedDebounced(window, oldWindow);
             }
         );
         this.workAreaChangedId = global.display.connect(
@@ -38,13 +43,26 @@ var BaseTilingLayout = class BaseTilingLayout {
     onWindowsChanged(superWorkspace, newWindows) {
         this.windows = newWindows;
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
         );
         if (Me.loaded) {
             this.onTile();
         }
+    }
+
+    onFocusChangedDedup(windowFocused, oldWindowFocused) {
+        // Use indirection here for inheritance
+        // And to prevent focus change with no change
+        if ('_debouncedArgs' in this.onFocusChangedDedup) {
+            const firstOldFocusedWindow = this.onFocusChangedDedup
+                ._debouncedArgs[0][1];
+            if (firstOldFocusedWindow === windowFocused) {
+                log('Window focus compensated during debounce, doing nothing');
+                return;
+            }
+            oldWindowFocused = firstOldFocusedWindow;
+        }
+        this.onFocusChanged(windowFocused, oldWindowFocused);
     }
 
     onFocusChanged(windowFocused) {
@@ -52,7 +70,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onTile() {
-        log('Tile', this.superWorkspace.categoryKey);
+        log(`Tile ${this.superWorkspace.categoryKey}`);
         const {
             dialogWindows,
             regularWindows
@@ -109,7 +127,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
 
         const rect = metaWindow.get_frame_rect();
-        const buf = metaWindow.get_buffer_rect();
         x = Math.floor(x);
         y = Math.floor(y);
         width = Math.floor(width);
@@ -128,8 +145,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             const [px, py] = global.get_pointer();
 
             if (metaWindow.grabbed) {
-                const aw = actor.width;
-                const ah = actor.height;
                 const grabX = (px - actor.x) / actor.width;
                 const grabY = (py - actor.y) / actor.height;
                 actor.set_pivot_point(grabX, grabY);

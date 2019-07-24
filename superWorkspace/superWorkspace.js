@@ -13,7 +13,7 @@ const CategorizedAppCard =
 
 const { Stack } = Me.imports.widget.layout;
 
-const EMIT_DEBOUNCE_DELAY = 150;
+const EMIT_DEBOUNCE_DELAY = 100;
 
 var SuperWorkspace = class SuperWorkspace {
     constructor(
@@ -46,8 +46,8 @@ var SuperWorkspace = class SuperWorkspace {
 
         // Only emit window changed after EMIT_DEBOUNCE_DELAY ms without call
         // This prevents multiple tiling on window add for instance
-        this.emitWindowsChanged = debounce(
-            this.emitWindowsChangedDebounced,
+        this.emitWindowsChangedDebounced = debounce(
+            this.emitWindowsChanged,
             EMIT_DEBOUNCE_DELAY
         );
 
@@ -142,7 +142,7 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
         this.windows.push(window);
         this.onFocus(window);
-        this.emitWindowsChanged(this.windows, oldWindows);
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     removeWindow(window) {
@@ -159,7 +159,7 @@ var SuperWorkspace = class SuperWorkspace {
                 this.onFocus(newWindowToFocus);
             }
         }
-        this.emitWindowsChanged(this.windows, oldWindows);
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     swapWindows(firstWindow, secondWindow) {
@@ -168,7 +168,7 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
-        this.emitWindowsChanged(this.windows, oldWindows);
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     focusNext() {
@@ -200,7 +200,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChanged(this.windows, oldWindows);
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
@@ -210,7 +210,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChanged(this.windows, oldWindows);
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     nextTiling() {
@@ -284,18 +284,25 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundShown = false;
     }
 
-    emitWindowsChangedDebounced(newWindows, oldWindows) {
-        // Get first debounced oldWindows
-        const firstOldWindows = this.emitWindowsChangedDebounced
-            ._debouncedArgs[0][1];
-        // And compare it with the new newWindows
-        if (
-            newWindows.length === firstOldWindows.length &&
-            newWindows.every((window, i) => firstOldWindows[i] === window)
-        ) {
-            // If it's the same, the changes have compensated themselves
-            // So in the end nothing happened:
-            return;
+    emitWindowsChanged(newWindows, oldWindows) {
+        // In case of direct call check if it has _debouncedArgs
+        if ('_debouncedArgs' in this.emitWindowsChanged) {
+            // Get first debounced oldWindows
+            const firstOldWindows = this.emitWindowsChanged
+                ._debouncedArgs[0][1];
+            // And compare it with the new newWindows
+            if (
+                newWindows.length === firstOldWindows.length &&
+                newWindows.every((window, i) => firstOldWindows[i] === window)
+            ) {
+                // If it's the same, the changes have compensated themselves
+                // So in the end nothing happened:
+                log(
+                    'Windows change compensated during debounce, doing nothing'
+                );
+                return;
+            }
+            oldWindows = firstOldWindows;
         }
 
         if (!this.destroyed) {
