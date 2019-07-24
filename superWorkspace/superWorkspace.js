@@ -144,8 +144,8 @@ var SuperWorkspace = class SuperWorkspace {
         window.workspaceEnhancer = this;
         const oldWindows = [...this.windows];
         this.windows.push(window);
-        // Focusing window if the window comes from another screen for example
-        if (window === global.display.focus_window) {
+        // Focusing window if the window comes from a drag and drop
+        if (window.grabbed) {
             this.onFocus(window);
         }
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
