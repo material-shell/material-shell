@@ -36,16 +36,13 @@ var BaseTilingLayout = class BaseTilingLayout {
                 this.onTile();
             }
         );
-
-        this.windows = superWorkspace.windows;
     }
 
-    onWindowsChanged(superWorkspace, newWindows) {
-        this.windows = newWindows;
-        log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
-        );
+    onWindowsChanged() {
         if (Me.loaded) {
+            log(
+                `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
+            );
             this.onTile();
         }
     }
@@ -235,7 +232,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogWindows = [];
         let regularWindows = [];
 
-        for (let window of this.windows) {
+        for (let window of this.superWorkspace.windows) {
             if (this.isDialog(window)) {
                 dialogWindows.push(window);
             } else {

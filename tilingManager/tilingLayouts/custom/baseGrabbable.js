@@ -19,20 +19,24 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                     let windowRect = window.get_frame_rect();
                     let x = windowRect.x + windowRect.width / 2;
                     let y = windowRect.y + windowRect.height / 2;
-                    const windowHovered = this.windows.find(windowToCheck => {
-                        if (windowToCheck === this.grabWindow) return false;
-                        let rect = windowToCheck.get_frame_rect();
-                        return (
-                            x >= rect.x &&
-                            x <= rect.x + rect.width &&
-                            y >= rect.y &&
-                            y <= rect.y + rect.height
-                        );
-                    });
+                    const windowHovered = this.superWorkspace.windows.find(
+                        windowToCheck => {
+                            if (windowToCheck === this.grabWindow) return false;
+                            let rect = windowToCheck.get_frame_rect();
+                            return (
+                                x >= rect.x &&
+                                x <= rect.x + rect.width &&
+                                y >= rect.y &&
+                                y <= rect.y + rect.height
+                            );
+                        }
+                    );
                     if (
                         windowHovered &&
-                        this.windows.indexOf(windowHovered) > -1 &&
-                        this.windows.indexOf(this.grabWindow) > -1 &&
+                        this.superWorkspace.windows.indexOf(windowHovered) >
+                            -1 &&
+                        this.superWorkspace.windows.indexOf(this.grabWindow) >
+                            -1 &&
                         !Tweener.getTweenCount(
                             windowHovered.get_compositor_private()
                         )

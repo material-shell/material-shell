@@ -22,8 +22,10 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onFocusChanged(windowFocused, oldWindowFocused) {
         if (!this.isDialog(windowFocused) && !this.isDialog(oldWindowFocused)) {
-            const newIndex = this.windows.indexOf(windowFocused);
-            const oldIndex = this.windows.indexOf(oldWindowFocused);
+            const newIndex = this.superWorkspace.windows.indexOf(windowFocused);
+            const oldIndex = this.superWorkspace.windows.indexOf(
+                oldWindowFocused
+            );
             this.windowFocused = windowFocused;
             const direction = newIndex > oldIndex ? 1 : -1;
             this.prepareTransition(windowFocused, oldWindowFocused, direction);
@@ -54,7 +56,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.windows.forEach(window => {
+        this.superWorkspace.windows.forEach(window => {
             if (window !== this.windowFocused) {
                 window.get_compositor_private().show();
             }

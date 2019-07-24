@@ -9,7 +9,7 @@ const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
     onTile() {}
 
-    onTileDialogs(windows) {}
+    onTileDialogs() {}
 };
 
 FloatLayout.key = 'float';

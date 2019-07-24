@@ -34,7 +34,6 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onWindowsChanged(superWorkspace, newWindows, oldWindows) {
         this.resizeAll();
-        this.windows = newWindows; // Because we need this for the next line
         const { regularWindows } = this.getDialogAndRegularWindows();
         this.baseIndex = Math.min(
             regularWindows.indexOf(this.windowFocused),
@@ -151,7 +150,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.windows.forEach(window => {
+        this.superWorkspace.windows.forEach(window => {
             if (!this.activeWindows.includes(window)) {
                 window.get_compositor_private().show();
             }
@@ -262,9 +261,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         });
         global.window_group.remove_child(this.overContainer);
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself after the transition`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
         );
         this.onTile();
     }
