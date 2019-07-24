@@ -9,8 +9,9 @@ const {
 
 /* exported SimpleLayout */
 var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
-    onTileRegulars(windows) {
-        if (!windows.length) return;
+    onTileRegulars(windows, skip) {
+        super.onTileRegulars(windows);
+        if (!windows.length || skip) return;
 
         const workArea = this.getWorkspaceBounds();
 
@@ -27,9 +28,6 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             this.moveAndResizeMetaWindow(
                 window,
                 workArea.x + (index * workArea.width) / windows.length,
@@ -47,9 +45,6 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             this.moveAndResizeMetaWindow(
                 window,
                 workArea.x,

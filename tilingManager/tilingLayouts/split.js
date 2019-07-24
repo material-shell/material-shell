@@ -84,11 +84,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     resizeAll() {
         const workArea = this.getWorkspaceBounds(true);
         const { regularWindows } = this.getDialogAndRegularWindows();
-        for (let window of regularWindows) {
-            if (window.get_maximized()) {
-                Main.wm.skipNextEffect(window.get_compositor_private());
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-            }
+        regularWindows.forEach(window => {
             let windowRect = window.get_frame_rect();
 
             if (workArea.width > workArea.height) {
@@ -104,10 +100,11 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 workArea.height,
                 false
             );
-        }
+        });
     }
 
-    onTileRegulars(regularWindows) {
+    onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         const workArea = this.getWorkspaceBounds(true);
 
         this.activeWindows.forEach((window, i) => {
@@ -134,10 +131,10 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 windowBounds.y,
                 windowBounds.width,
                 windowBounds.height,
-                regularWindows.length < WINDOW_PER_SCREEN
+                windows.length < WINDOW_PER_SCREEN
             );
         });
-        regularWindows.forEach(window => {
+        windows.forEach(window => {
             if (
                 !this.activeWindows.includes(window) ||
                 !this.superWorkspace.isDisplayed()

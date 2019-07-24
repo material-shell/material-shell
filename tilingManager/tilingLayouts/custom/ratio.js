@@ -9,15 +9,13 @@ const {
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         if (!windows.length) return;
         const ratio = global.tilingManager.ratio;
 
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             let windowArea = {
                 x: workArea.x,
                 y: workArea.y

@@ -6,6 +6,7 @@ const { SimpleLayout } = Me.imports.tilingManager.tilingLayouts.custom.simple;
 /* exported SimpleVerticalLayout */
 var SimpleVerticalLayout = class SimpleVerticalLayout extends SimpleLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows, true);
         super.onTileVertical(windows);
     }
 };

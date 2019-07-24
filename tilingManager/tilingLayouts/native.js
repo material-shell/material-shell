@@ -6,7 +6,8 @@ const {
 
 /* exported NativeLayout */
 var NativeLayout = class NativeLayout extends BaseGrabbableLayout {
-    onTileRegulars() {
+    onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         // Sadly these functions are not js bound (yet)
         //
         // if (!windows.length) return;

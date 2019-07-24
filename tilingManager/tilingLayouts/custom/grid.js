@@ -10,6 +10,7 @@ const {
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         if (!windows.length) return;
 
         const workArea = this.getWorkspaceBounds();
@@ -22,9 +23,6 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                 const index = j + i * rows;
                 const window = windows[index];
                 if (!window) return;
-
-                if (window.get_maximized())
-                    window.unmaximize(Meta.MaximizeFlags.BOTH);
 
                 this.moveAndResizeMetaWindow(
                     window,

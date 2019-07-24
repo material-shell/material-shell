@@ -6,6 +6,7 @@ const { HalfLayout } = Me.imports.tilingManager.tilingLayouts.custom.half;
 /* exported HalfHorizontalLayout */
 var HalfHorizontalLayout = class HalfHorizontalLayout extends HalfLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows, true);
         super.onTileHorizontal(windows);
     }
 };

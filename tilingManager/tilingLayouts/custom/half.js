@@ -9,8 +9,9 @@ const {
 
 /* exported HalfLayout */
 var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
-    onTileRegulars(windows) {
-        if (!windows.length) return;
+    onTileRegulars(windows, skip) {
+        super.onTileRegulars(windows);
+        if (!windows.length || skip) return;
 
         const workArea = this.getWorkspaceBounds();
 
@@ -30,9 +31,6 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
             windows.length > 1 ? workArea.width / 2 : workArea.width;
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             if (index === 0) {
                 this.moveAndResizeMetaWindow(
                     window,
@@ -65,9 +63,6 @@ var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
             windows.length > 1 ? workArea.height / 2 : workArea.height;
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             if (index === 0) {
                 this.moveAndResizeMetaWindow(
                     window,

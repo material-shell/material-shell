@@ -57,8 +57,14 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.onTileDialogs(dialogWindows);
     }
 
-    // eslint-disable-next-line no-unused-vars
     onTileRegulars(windows) {
+        windows
+            .filter(window => window.get_maximized())
+            .forEach(window => {
+                Main.wm.skipNextEffect(window.get_compositor_private());
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
+            });
+
         // Define windows sizes and positions
     }
 
