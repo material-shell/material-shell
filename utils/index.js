@@ -19,9 +19,7 @@ var debounce = (fun, delay) => {
             GLib.source_remove(timeout);
         }
         timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
-            fun._debouncedArgs = debouncedArgs;
-            fun.apply(context, args);
-            delete fun._debouncedArgs;
+            fun.apply(context, [...args, debouncedArgs]);
             timeout = null;
             debouncedArgs = [];
             return GLib.SOURCE_REMOVE;

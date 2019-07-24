@@ -70,6 +70,11 @@ function loaded(disconnect) {
     }
     Me.loaded = true;
     Main.wm._blockAnimations = false;
+
+    // Notify superWorkspace that this extension has been loaded
+    global.superWorkspaceManager.superWorkspaces.map(superWorkspace =>
+        superWorkspace.emit('extension-loaded')
+    );
 }
 
 // eslint-disable-next-line no-unused-vars

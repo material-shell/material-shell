@@ -3,9 +3,6 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
-const { debounce } = Me.imports.utils.index;
-
-const FOCUS_DEBOUNCE_DELAY = 100;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -20,14 +17,10 @@ var BaseTilingLayout = class BaseTilingLayout {
             'windows-changed',
             this.onWindowsChanged.bind(this)
         );
-        this.onFocusChangedDebounced = debounce(
-            this.onFocusChangedDedup,
-            FOCUS_DEBOUNCE_DELAY
-        );
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
             (_, window, oldWindow) => {
-                this.onFocusChangedDebounced(window, oldWindow);
+                this.onFocusChanged(window, oldWindow);
             }
         );
         this.workAreaChangedId = global.display.connect(
@@ -45,21 +38,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             );
             this.onTile();
         }
-    }
-
-    onFocusChangedDedup(windowFocused, oldWindowFocused) {
-        // Use indirection here for inheritance
-        // And to prevent focus change with no change
-        if ('_debouncedArgs' in this.onFocusChangedDedup) {
-            const firstOldFocusedWindow = this.onFocusChangedDedup
-                ._debouncedArgs[0][1];
-            if (firstOldFocusedWindow === windowFocused) {
-                log('Window focus compensated during debounce, doing nothing');
-                return;
-            }
-            oldWindowFocused = firstOldFocusedWindow;
-        }
-        this.onFocusChanged(windowFocused, oldWindowFocused);
     }
 
     onFocusChanged(windowFocused) {

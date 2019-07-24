@@ -86,13 +86,11 @@ var SuperWorkspace = class SuperWorkspace {
             'notify::focus-window',
             () => {
                 let windowFocused = global.display.focus_window;
-                let index = this.windows.indexOf(windowFocused);
-                if (index === -1) {
+                if (!this.windows.includes(windowFocused)) {
                     return;
                 }
                 if (windowFocused.is_attached_dialog()) {
                     windowFocused = windowFocused.get_transient_for();
-                    index = this.windows.indexOf(windowFocused);
                 }
                 this.onFocus(windowFocused);
             }
@@ -103,6 +101,10 @@ var SuperWorkspace = class SuperWorkspace {
             () => {
                 this.updateTopBarPositionAndSize();
             }
+        );
+        this.loadedSignalId = this.connect(
+            'extension-loaded',
+            this.handleExtensionLoaded.bind(this)
         );
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
@@ -116,6 +118,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.backgroundContainer) this.backgroundContainer.destroy();
         global.display.disconnect(this.focusEventId);
         global.display.disconnect(this.workAreaChangedId);
+        this.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
         this.destroyed = true;
     }
@@ -141,7 +144,6 @@ var SuperWorkspace = class SuperWorkspace {
         window.workspaceEnhancer = this;
         const oldWindows = [...this.windows];
         this.windows.push(window);
-        this.onFocus(window);
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
@@ -152,13 +154,6 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
-        if (window === this.windowFocused) {
-            let newWindowToFocus =
-                this.windows[windowIndex - 1] || this.windows[0];
-            if (newWindowToFocus) {
-                this.onFocus(newWindowToFocus);
-            }
-        }
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
@@ -168,7 +163,7 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
-        this.emitWindowsChangedDebounced(this.windows, oldWindows);
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     focusNext() {
@@ -200,7 +195,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChangedDebounced(this.windows, oldWindows);
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
@@ -210,7 +205,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChangedDebounced(this.windows, oldWindows);
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     nextTiling() {
@@ -284,12 +279,11 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundShown = false;
     }
 
-    emitWindowsChanged(newWindows, oldWindows) {
+    emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
         // In case of direct call check if it has _debouncedArgs
-        if ('_debouncedArgs' in this.emitWindowsChanged) {
+        if (debouncedArgs) {
             // Get first debounced oldWindows
-            const firstOldWindows = this.emitWindowsChanged
-                ._debouncedArgs[0][1];
+            const firstOldWindows = debouncedArgs[0][1];
             // And compare it with the new newWindows
             if (
                 newWindows.length === firstOldWindows.length &&
@@ -306,7 +300,14 @@ var SuperWorkspace = class SuperWorkspace {
         }
 
         if (!this.destroyed) {
-            this.emit('windows-changed', newWindows, oldWindows);
+            // Make it async to prevent concurrent debounce calls
+            if (debouncedArgs) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    this.emit('windows-changed', newWindows, oldWindows);
+                });
+            } else {
+                this.emit('windows-changed', newWindows, oldWindows);
+            }
         }
     }
 
@@ -322,6 +323,12 @@ var SuperWorkspace = class SuperWorkspace {
             return (
                 this === this.superWorkspaceManager.getActiveSuperWorkspace()
             );
+        }
+    }
+
+    handleExtensionLoaded() {
+        if (this.windows.length) {
+            this.onFocus(this.windows.slice(-1)[0]);
         }
     }
 };
