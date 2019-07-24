@@ -118,7 +118,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.backgroundContainer) this.backgroundContainer.destroy();
         global.display.disconnect(this.focusEventId);
         global.display.disconnect(this.workAreaChangedId);
-        this.disconnect(this.loadedSignalId);
+        Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
         this.destroyed = true;
     }
@@ -345,6 +345,13 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     handleExtensionLoaded() {
+        this.windows
+            .map(metaWindow => metaWindow.get_compositor_private())
+            .filter(window => window)
+            .forEach(window =>
+                this.isDisplayed() ? window.show() : window.hide()
+            );
+
         this.focusLastWindow();
     }
 };
