@@ -185,7 +185,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
     }
 
-    getWorkspaceBounds() {
+    getWorkspaceBounds(noGaps) {
         const gap = global.tilingManager.gap;
         const {
             x,
@@ -193,6 +193,14 @@ var BaseTilingLayout = class BaseTilingLayout {
             width,
             height
         } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
+        if (noGaps) {
+            return {
+                x,
+                y,
+                width,
+                height
+            };
+        }
         return {
             x: x + gap / 2,
             y: y + gap / 2,

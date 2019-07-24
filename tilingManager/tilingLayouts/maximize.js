@@ -34,7 +34,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileRegulars(windows) {
-        const workArea = this.getWorkspaceBounds();
+        const workArea = this.getWorkspaceBounds(true);
 
         windows.forEach(window => {
             if (window.get_maximized()) {
@@ -52,10 +52,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 window !== this.windowFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
-                log('HideT', window.get_title());
                 window.get_compositor_private().hide();
             } else {
-                log('ShowT', window.get_title());
                 window.get_compositor_private().show();
             }
         });

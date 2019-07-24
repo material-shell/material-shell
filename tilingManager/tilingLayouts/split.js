@@ -1,4 +1,4 @@
-const { St, Meta, Shell, GLib } = imports.gi;
+const { St, Meta, Shell } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -7,7 +7,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
-const { Row } = Me.imports.widget.layout;
+const { Column, Row } = Me.imports.widget.layout;
 
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
@@ -18,7 +18,10 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         super(superWorkspace);
 
         this.overContainer = new St.Widget();
-        this.transitionContainer = new Row();
+        const workArea = this.getWorkspaceBounds(true);
+        this.transitionContainer = new (workArea.width > workArea.height
+            ? Row
+            : Column)();
         this.overContainer.add_actor(this.transitionContainer);
         const { regularWindows } = this.getDialogAndRegularWindows();
         this.baseIndex = Math.min(
@@ -77,9 +80,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     resizeAll() {
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds(true);
         const { regularWindows } = this.getDialogAndRegularWindows();
         for (let window of regularWindows) {
             if (window.get_maximized()) {
@@ -99,22 +100,10 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     onTileRegulars(regularWindows) {
-        if (this.animationInProgress || !this.activeWindows) return;
 
-        regularWindows
-            .filter(
-                window =>
-                    !this.superWorkspace.isDisplayed() ||
-                    !this.activeWindows.includes(window)
-            )
-            .forEach(window => window.get_compositor_private().hide());
+        const workArea = this.getWorkspaceBounds(true);
 
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
         this.activeWindows.forEach((window, i) => {
-            if (window.grabbed) return;
-
             const windowBounds = {
                 x: workArea.x,
                 y: workArea.y,
@@ -141,11 +130,16 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 regularWindows.length < WINDOW_PER_SCREEN
             );
         });
-        if (this.superWorkspace.isDisplayed()) {
-            this.activeWindows.forEach(window =>
-                window.get_compositor_private().show()
-            );
-        }
+        regularWindows.forEach(window => {
+            if (
+                !this.activeWindows.includes(window) ||
+                !this.superWorkspace.isDisplayed()
+            ) {
+                window.get_compositor_private().hide();
+            } else {
+                window.get_compositor_private().show();
+            }
+        });
     }
 
     onDestroy() {
@@ -163,25 +157,20 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         newMetaWindows = newMetaWindows.filter(
             window => !oldMetaWindows.includes(window)
         );
-        oldMetaWindows = oldMetaWindows.filter(window =>
-            window.get_compositor_private()
-        );
         this.transitionContainer.remove_all_children();
         const direction =
             regularWindows.indexOf(newMetaWindows[0]) -
             regularWindows.indexOf(oldMetaWindows[0]);
 
-        let allMetaWindows =
+        const allMetaWindows =
             direction > 0
                 ? oldMetaWindows.concat(newMetaWindows)
                 : newMetaWindows.concat(oldMetaWindows);
 
-        const allWindows = allMetaWindows.map(metaWindow =>
-            metaWindow.get_compositor_private()
-        );
-        allWindows.forEach(window => window.show());
-
         allMetaWindows
+            .filter(
+                window => window.get_compositor_private() && !window.grabbed
+            )
             .map(metaWindow => metaWindow.get_compositor_private())
             .forEach(window => {
                 let rect = window.meta_window.get_frame_rect();
@@ -197,19 +186,31 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 window.hide();
             });
 
-        // Get the full workArea here and not workspaceBounds which have gaps
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
-
-        const shift =
-            (workArea.width * newMetaWindows.length) / WINDOW_PER_SCREEN;
+        const workArea = this.getWorkspaceBounds(true);
+        let xFrom = workArea.x;
+        let xTo = workArea.x;
+        let yFrom = workArea.y;
+        let yTo = workArea.y;
+        if (workArea.width > workArea.height) {
+            const shift =
+                (workArea.width * newMetaWindows.length) / WINDOW_PER_SCREEN;
+            if (direction > 0) {
+                xTo -= shift;
+            } else {
+                xFrom -= shift;
+            }
+        } else {
+            const shift =
+                (workArea.height * newMetaWindows.length) / WINDOW_PER_SCREEN;
+            if (direction > 0) {
+                yTo -= shift;
+            } else {
+                yFrom -= shift;
+            }
+        }
 
         if (!this.animationInProgress) {
-            this.transitionContainer.set_position(
-                workArea.x + (direction > 0 ? 0 : -shift),
-                workArea.y
-            );
+            this.transitionContainer.set_position(xFrom, yFrom);
 
             this.overContainer.set_clip(
                 this.monitor.x,
@@ -222,7 +223,8 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         }
 
         Tweener.addTween(this.transitionContainer, {
-            x: workArea.x + (direction > 0 ? -shift : 0),
+            x: xTo,
+            y: yTo,
             time: WINDOW_SLIDE_TWEEN_TIME,
             transition: 'easeOutQuad',
             onComplete: () => {
