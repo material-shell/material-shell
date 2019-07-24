@@ -102,7 +102,7 @@ var SuperWorkspace = class SuperWorkspace {
                 this.updateTopBarPositionAndSize();
             }
         );
-        this.loadedSignalId = this.connect(
+        this.loadedSignalId = Me.connect(
             'extension-loaded',
             this.handleExtensionLoaded.bind(this)
         );
@@ -144,6 +144,10 @@ var SuperWorkspace = class SuperWorkspace {
         window.workspaceEnhancer = this;
         const oldWindows = [...this.windows];
         this.windows.push(window);
+        // Focusing window if the window comes from another screen for example
+        if (window === global.display.focus_window) {
+            this.onFocus(window);
+        }
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
@@ -154,6 +158,10 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
+        // If there's no more focused window on this workspace focus the last one
+        if (window === this.windowFocused) {
+            this.focusLastWindow();
+        }
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
@@ -183,8 +191,18 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     onFocus(windowFocused) {
-        if (windowFocused === this.windowFocused) return;
-        this.emit('window-focused-changed', windowFocused, this.windowFocused);
+        if (windowFocused === this.windowFocused) {
+            return;
+        }
+        // This async call prevent a ghost window bug on maximise drag out
+        // Not sure why...
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.emit(
+                'window-focused-changed',
+                windowFocused,
+                this.windowFocused
+            );
+        });
         this.windowFocused = windowFocused;
     }
 
@@ -326,10 +344,16 @@ var SuperWorkspace = class SuperWorkspace {
         }
     }
 
-    handleExtensionLoaded() {
+    focusLastWindow() {
         if (this.windows.length) {
-            this.onFocus(this.windows.slice(-1)[0]);
+            const lastWindow = this.windows.slice(-1)[0];
+            log('Focusing ', lastWindow.get_title());
+            this.onFocus(lastWindow);
         }
+    }
+
+    handleExtensionLoaded() {
+        this.focusLastWindow();
     }
 };
 Signals.addSignalMethods(SuperWorkspace.prototype);

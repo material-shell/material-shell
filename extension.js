@@ -1,5 +1,6 @@
 const { GLib } = imports.gi;
 const Main = imports.ui.main;
+const Signals = imports.signals;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
@@ -20,6 +21,7 @@ function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
+    Signals.addSignalMethods(Me);
     global.materialShell = Me;
     Me.stateManager = new StateManager();
     Me.loaded = false;
@@ -70,11 +72,7 @@ function loaded(disconnect) {
     }
     Me.loaded = true;
     Main.wm._blockAnimations = false;
-
-    // Notify superWorkspace that this extension has been loaded
-    global.superWorkspaceManager.superWorkspaces.map(superWorkspace =>
-        superWorkspace.emit('extension-loaded')
-    );
+    Me.emit('extension-loaded');
 }
 
 // eslint-disable-next-line no-unused-vars
