@@ -18,11 +18,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         super(superWorkspace);
 
         this.overContainer = new St.Widget();
-        const workArea = this.getWorkspaceBounds(true);
-        this.transitionContainer = new (workArea.width > workArea.height
-            ? Row
-            : Column)();
-        this.overContainer.add_actor(this.transitionContainer);
+
         const { regularWindows } = this.getDialogAndRegularWindows();
         this.baseIndex = Math.min(
             regularWindows.indexOf(this.windowFocused),
@@ -32,7 +28,13 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             this.baseIndex,
             this.baseIndex + WINDOW_PER_SCREEN
         );
+        this.addTransitionContainer();
         this.resizeAll();
+    }
+
+    onWorkAreasChanged() {
+        this.addTransitionContainer();
+        super.onWorkAreasChanged();
     }
 
     onWindowsChanged(superWorkspace, newWindows, oldWindows) {
@@ -88,11 +90,17 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             }
             let windowRect = window.get_frame_rect();
+
+            if (workArea.width > workArea.height) {
+                workArea.width /= WINDOW_PER_SCREEN;
+            } else {
+                workArea.height /= WINDOW_PER_SCREEN;
+            }
             this.moveAndResizeMetaWindow(
                 window,
                 windowRect.x,
                 windowRect.y,
-                workArea.width / 2,
+                workArea.width,
                 workArea.height,
                 false
             );
@@ -100,7 +108,6 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     onTileRegulars(regularWindows) {
-
         const workArea = this.getWorkspaceBounds(true);
 
         this.activeWindows.forEach((window, i) => {
@@ -140,6 +147,16 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 window.get_compositor_private().show();
             }
         });
+    }
+
+    addTransitionContainer() {
+        const workArea = this.getWorkspaceBounds(true);
+        this.overContainer.remove_all_children();
+        this.transitionContainer = new (workArea.width > workArea.height
+            ? Row
+            : Column)();
+
+        this.overContainer.add_actor(this.transitionContainer);
     }
 
     onDestroy() {
