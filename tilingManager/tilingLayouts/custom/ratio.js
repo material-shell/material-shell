@@ -1,12 +1,10 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
+const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
-const { getSettings } = Me.imports.utils.settings;
 
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseGrabbableLayout {

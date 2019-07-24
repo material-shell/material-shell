@@ -1,4 +1,3 @@
-const Main = imports.ui.main;
 const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;

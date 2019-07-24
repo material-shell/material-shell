@@ -1,6 +1,4 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
-const Tweener = imports.ui.tweener;
+const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();

@@ -1,5 +1,4 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
+const { Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
