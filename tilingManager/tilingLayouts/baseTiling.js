@@ -91,6 +91,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+        log("moveAndResizeMetaWindow called for window with title " + metaWindow.get_title())
         const workArea = this.getWorkspaceBounds();
         log(JSON.stringify(workArea))
         let screenCollisionFlags = {
@@ -135,25 +136,30 @@ var BaseTilingLayout = class BaseTilingLayout {
                 y += (screenGap/2);
             } else {
                 log("y: Using gap")
-                y += (gap);
+                y += (gap/2);
             }
             
             // Horizontal
             // width
             if (screenCollisionFlags.left !== screenCollisionFlags.right) {
+                log("w: Using half gap half screen gap")
                 width -= (gap+screenGap)/2;
             } else {
                 // they are equal here so only check one
                 if (screenCollisionFlags.left) {
+                    log("w: Using screen gap")
                     width -= screenGap;
                 } else {
+                    log("w: Using gap")
                     width -= gap;
                 }
             }
             // x
             if (screenCollisionFlags.left) {
+                log("x: Using screen gap")
                 x += (screenGap/2);
             } else {
+                log("x: Using gap")
                 x += (gap/2);
             }
         } else if (gap) {
@@ -205,6 +211,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             actor.scale_y = oldRect.height / newRect.height;
             actor.translation_x = oldRect.x - newRect.x;
             actor.translation_y = oldRect.y - newRect.y;
+            log("y: " + oldRect.y + " o/n " + newRect.y)
             Tweener.addTween(actor, {
                 scale_x: 1.0,
                 scale_y: 1.0,
