@@ -7,6 +7,7 @@ const { getSettings } = Me.imports.utils.settings;
 var HotKeysModule = class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
+        this.alreadyAssignedPanelConnections = false;
     }
 
     enable() {
@@ -199,6 +200,19 @@ var HotKeysModule = class HotKeysModule {
                 Main.panel
                     .get_parent()
                     .set_width(global.superWorkspaceManager.noUImode ? 0 : -1);
+                if (!this.alreadyAssignedPanelConnections) {
+                    Main.panel
+                        .get_parent()
+                        .connect("hide", ()=>{
+                            if (!global.superWorkspaceManager.noUImode) Main.panel.get_parent().show();
+                        });
+                    Main.panel
+                        .get_parent()
+                        .connect("show", ()=>{
+                            if (global.superWorkspaceManager.noUImode) Main.panel.get_parent().hide();
+                        });
+                    this.alreadyAssignedPanelConnections = true;
+                }
                 Main.layoutManager.panelBox.visible = !global
                     .superWorkspaceManager.noUImode;
 
