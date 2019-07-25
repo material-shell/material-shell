@@ -55,6 +55,7 @@ var CategorizedAppCard = GObject.registerClass(
             return appsInfo.filter(appInfo => {
                 const appCategories = appInfo.get_categories() || '';
                 const appCategoriesList = appCategories.split(';');
+                const appName = appInfo.get_name();
                 let flagIncluded = false;
                 let flagExcluded = false;
                 appCategoriesList.forEach(category => {
@@ -69,6 +70,10 @@ var CategorizedAppCard = GObject.registerClass(
                             category
                         ) >= 0;
                 });
+                flagIncluded = flagIncluded ||
+                    this.workspaceCategory.applicationsIncluded.indexOf(appName) >= 0;
+                flagExcluded = flagExcluded ||
+                    this.workspaceCategory.applicationsExcluded.indexOf(appName) >= 0;
                 return flagIncluded && !flagExcluded && appInfo.should_show();
             });
         }

@@ -20,6 +20,8 @@ var WorkspaceCategories = {
             'Security',
             'Game'
         ],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -31,6 +33,8 @@ var WorkspaceCategories = {
         title: _('Development'),
         categoriesIncluded: ['Development'],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -50,6 +54,8 @@ var WorkspaceCategories = {
             'ContactManagement'
         ],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -61,6 +67,8 @@ var WorkspaceCategories = {
         title: _('Office'),
         categoriesIncluded: ['Office', 'FileManager'],
         categoriesExcluded: ['ContactManagement'],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -72,6 +80,8 @@ var WorkspaceCategories = {
         title: _('Graphics'),
         categoriesIncluded: ['Graphics'],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -83,6 +93,8 @@ var WorkspaceCategories = {
         title: _('Multimedia'),
         categoriesIncluded: ['AudioVideo'],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -94,6 +106,8 @@ var WorkspaceCategories = {
         title: _('Games'),
         categoriesIncluded: ['Game'],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
         primary: true
@@ -105,6 +119,8 @@ var WorkspaceCategories = {
         title: _('Others'),
         categoriesIncluded: [],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: false,
         acceptOrphans: true,
         primary: true
@@ -116,6 +132,8 @@ var WorkspaceCategories = {
         title: _('All applications'),
         categoriesIncluded: [],
         categoriesExcluded: [],
+        applicationsIncluded: [],
+        applicationsExcluded: [],
         acceptAll: true,
         acceptOrphans: false,
         primary: false
