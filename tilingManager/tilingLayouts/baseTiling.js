@@ -135,7 +135,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 y += (screenGap/2);
             } else {
                 log("y: Using gap")
-                y += (gap/2);
+                y += (gap);
             }
             
             // Horizontal
@@ -252,18 +252,28 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     getWorkspaceBounds() {
         const gap = global.tilingManager.gap;
+        const screenGap = global.tilingManager.screenGap;
         const {
             x,
             y,
             width,
             height
         } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
-        return {
-            x: x + gap / 2,
-            y: y + gap / 2,
-            width: width - gap,
-            height: height - gap
-        };
+        if (screenGap || screenGap === 0) {
+            return {
+                x: x + screenGap / 2,
+                y: y + screenGap / 2,
+                width: width - screenGap,
+                height: height - screenGap
+            }
+        } else {
+            return {
+                x: x + gap / 2,
+                y: y + gap / 2,
+                width: width - gap,
+                height: height - gap
+            };
+        }
     }
 
     onDestroy() {
