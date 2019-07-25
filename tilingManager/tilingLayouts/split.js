@@ -1,6 +1,5 @@
-const { St, Meta, Shell } = imports.gi;
+const { St, Shell } = imports.gi;
 const Tweener = imports.ui.tweener;
-const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 

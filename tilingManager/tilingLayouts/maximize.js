@@ -1,4 +1,4 @@
-const { St, Meta } = imports.gi;
+const { St } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
