@@ -1,12 +1,15 @@
-@import 'settings';
-@import 'funcs';
+$color-primary: #3f51b5;
+$color-bg: rgb(25, 25, 25);
+$color-fg: rgb(200, 200, 200);
+$color-active-bg: rgba(255, 255, 255, 0.12);
+$color-hover-bg: rgba(255, 255, 255, 0.04);
+$color-active-fg: rgb(255, 255, 255);
+$ripple: rgba(255, 255, 255, 0.16);
+$shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+$panel-size: 48px;
 
 .primary-bg {
     background-color: $color-primary;
-}
-
-.workspace-button .workspace-icon {
-    color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .workspace-button {
@@ -14,16 +17,8 @@
     &.active {
         background-color: $color-active-bg;
         .workspace-icon {
-            //color: $color-active-fg;
-            color: dark-or-light($dark-mode, $color-primary, $color-bg) !important;
+            color: $color-active-fg;
         }
-    }
-}
-
-@if not $dark-mode {
-    .tiling-button {
-        padding: 12px;
-        color: $color-bg;
     }
 }
 
@@ -37,32 +32,18 @@
 .workspace-main-icon {
     width: 24px;
     height: 24px;
-    color: dark-or-light($dark-mode, $color-active-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
+    color: $color-active-fg;
 }
 
-@if $dark-mode {
-    .workspace-icon, .plus-icon {
-        width: 24px;
-        height: 24px;
-        color: $color-fg;
-    }
-} @else {
-    .workspace-icon {
-        width: 24px;
-        height: 24px;
-        color: $color-fg;
-    }
-    .plus-icon {
-        width: 24px;
-        height: 24px;
-        color: $color-fg !important;
-    }
+.workspace-icon {
+    width: 24px;
+    height: 24px;
+    color: $color-fg;
 }
 
 .workspace-active-indicator {
     width: 3px;
     height: 48px;
-    background-color: dark-or-light($dark-mode, $color-primary, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .ripple-wave {
@@ -78,7 +59,7 @@
 
 #panel {
     width: $panel-size;
-    background-color: dark-or-light($dark-mode, $color-bg, $color-primary);
+    background-color: $color-bg;
     box-shadow: $shadow;
     #panelLeft,
     #panelCenter {
@@ -98,8 +79,7 @@
 }
 
 .task-active-indicator {
-    //background: $color-active-fg;
-    background: dark-or-light($dark-mode, $color-active-fg, $color-primary);
+    background: $color-active-fg;
     height: 2px;
 }
 
@@ -112,11 +92,7 @@
     &.active {
         .task-bar-item-content {
             .task-bar-item-title {
-                //color: $color-active-fg;
-                color: dark-or-light($dark-mode, $color-active-fg, $color-primary);
-            }
-            .task-close-button .task-close-icon {
-                color: dark-or-light($dark-mode, $color-fg, $color-primary);
+                color: $color-active-fg;
             }
         }
     }
@@ -142,7 +118,6 @@
             }
             .task-close-icon {
                 icon-size: 18px;
-                color: $color-fg;
             }
         }
     }
@@ -154,13 +129,11 @@
 
 .system-status-icon {
     height: 24px;
-    color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
 }
 
 .clock-display {
     * {
         padding: 4px 0px !important;
-        color: dark-or-light($dark-mode, $color-fg, choose-contrast-color($color-primary, $color-fg, $color-bg));
     }
 }
 
@@ -183,9 +156,6 @@
     }
     .mat-card-content {
         padding: 24px;
-        * {
-            color: $color-fg;
-        }
     }
 }
 
@@ -196,6 +166,5 @@
 }
 
 .backdrop-container {
-    //background: rgba(255, 255, 255, 0.5);
-    background: dark-or-light($dark-mode, rgba(0,0,0,0.5), rgba(255,255,255,0.5));
+    background: rgba(0, 0, 0, 0.5);
 }

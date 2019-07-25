@@ -1,191 +1,115 @@
-/* Dark Mode Settings */
-/* Light Mode Settings */
-/**
- * Calculate the luminance for a color.
- * See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
- */
-/**
- * Calculate the contrast ratio between two colors.
- * See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
- */
-/**
- * Determine whether to use dark or light text on top of given color.
- * Returns black for dark text and white for light text.
- */
 .primary-bg {
-  background-color: #3f51b5;
-}
-
-.workspace-button .workspace-icon {
-  color: #eeeeee;
-}
+  background-color: #3f51b5; }
 
 .workspace-button {
-  padding: 12px;
-}
-.workspace-button.active {
-  background-color: rgba(0, 0, 0, 0.12);
-}
-.workspace-button.active .workspace-icon {
-  color: #eeeeee !important;
-}
-
-.tiling-button {
-  padding: 12px;
-  color: #eeeeee;
-}
+  padding: 12px; }
+  .workspace-button.active {
+    background-color: rgba(255, 255, 255, 0.12); }
+    .workspace-button.active .workspace-icon {
+      color: white; }
 
 .workspace-button:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-}
-.workspace-button:hover .workspace-icon {
-  color: black;
-}
+  background-color: rgba(255, 255, 255, 0.04); }
+  .workspace-button:hover .workspace-icon {
+    color: white; }
 
 .workspace-main-icon {
   width: 24px;
   height: 24px;
-  color: #eeeeee;
-}
+  color: white; }
 
 .workspace-icon {
   width: 24px;
   height: 24px;
-  color: #323232;
-}
-
-.plus-icon {
-  width: 24px;
-  height: 24px;
-  color: #323232 !important;
-}
+  color: #c8c8c8; }
 
 .workspace-active-indicator {
   width: 3px;
-  height: 48px;
-  background-color: #eeeeee;
-}
+  height: 48px; }
 
 .ripple-wave {
   border-radius: 2000px;
-  background-color: rgba(0, 0, 0, 0.16);
-}
+  background-color: rgba(255, 255, 255, 0.16); }
 
 #leftPanelBox,
 #leftDashSpacer {
-  width: 48px;
-}
+  width: 48px; }
 
 #panel {
   width: 48px;
-  background-color: #3f51b5;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
-}
-#panel #panelLeft,
-#panel #panelCenter {
-  spacing: 0px;
-}
+  background-color: #191919;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  #panel #panelLeft,
+  #panel #panelCenter {
+    spacing: 0px; }
 
 #topBarSpacer {
-  height: 48px;
-}
+  height: 48px; }
 
 #topPanel {
   height: 48px;
-  background-color: #eeeeee;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
-}
+  background-color: #191919;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
 
 .task-active-indicator {
-  background: #3f51b5;
-  height: 2px;
-}
+  background: white;
+  height: 2px; }
 
 .task-bar-item {
   font-size: 14px;
-  height: 48px;
-}
-.task-bar-item:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-}
-.task-bar-item.active .task-bar-item-content .task-bar-item-title {
-  color: #3f51b5;
-}
-.task-bar-item.active .task-bar-item-content .task-close-button .task-close-icon {
-  color: #3f51b5;
-}
-.task-bar-item .task-bar-item-content {
-  padding: 0px 8px;
-}
-.task-bar-item .task-bar-item-content .app-icon {
-  icon-size: 24px;
-  margin-right: 8px;
-}
-.task-bar-item .task-bar-item-content .task-bar-item-title {
-  max-width: 248px;
-  margin-right: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  color: #323232;
-}
-.task-bar-item .task-bar-item-content .task-close-button {
-  border-radius: 20px;
-  width: 24px;
-  height: 20px;
-}
-.task-bar-item .task-bar-item-content .task-close-button:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-}
-.task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-  icon-size: 18px;
-  color: #323232;
-}
+  height: 48px; }
+  .task-bar-item:hover {
+    background-color: rgba(255, 255, 255, 0.04); }
+  .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+    color: white; }
+  .task-bar-item .task-bar-item-content {
+    padding: 0px 8px; }
+    .task-bar-item .task-bar-item-content .app-icon {
+      icon-size: 24px;
+      margin-right: 8px; }
+    .task-bar-item .task-bar-item-content .task-bar-item-title {
+      max-width: 248px;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #c8c8c8; }
+    .task-bar-item .task-bar-item-content .task-close-button {
+      border-radius: 20px;
+      width: 24px;
+      height: 20px; }
+      .task-bar-item .task-bar-item-content .task-close-button:hover {
+        background-color: rgba(255, 255, 255, 0.04); }
+      .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+        icon-size: 18px; }
 
 .panel-button {
-  text-align: center;
-}
+  text-align: center; }
 
 .system-status-icon {
-  height: 24px;
-  color: #eeeeee;
-}
+  height: 24px; }
 
 .clock-display * {
-  padding: 4px 0px !important;
-  color: #eeeeee;
-}
+  padding: 4px 0px !important; }
 
 .mat-card {
-  background-color: #eeeeee;
+  background-color: #191919;
   border-radius: 6px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
-}
-.mat-card .mat-card-title {
-  background-color: rgba(0, 0, 0, 0.12);
-  color: black;
-  height: 72px;
-  padding: 0px 24px;
-}
-.mat-card .mat-card-title .mat-card-title-icon {
-  icon-size: 40px;
-  margin-right: 16px;
-}
-.mat-card .mat-card-title .mat-card-title-label {
-  font-size: 24px;
-}
-.mat-card .mat-card-content {
-  padding: 24px;
-}
-.mat-card .mat-card-content * {
-  color: #323232;
-}
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .mat-card .mat-card-title {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: white;
+    height: 72px;
+    padding: 0px 24px; }
+    .mat-card .mat-card-title .mat-card-title-icon {
+      icon-size: 40px;
+      margin-right: 16px; }
+    .mat-card .mat-card-title .mat-card-title-label {
+      font-size: 24px; }
+  .mat-card .mat-card-content {
+    padding: 24px; }
 
 .categorized-app-card .overview-icon {
-  margin: 8px;
-}
+  margin: 8px; }
 
 .backdrop-container {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/*# sourceMappingURL=stylesheet.css.map */
+  background: rgba(0, 0, 0, 0.5); }
