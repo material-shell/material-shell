@@ -123,18 +123,33 @@ var BaseTilingLayout = class BaseTilingLayout {
         ) {
             return;
         }
+
         this.callSafely(metaWindow, () => {
             const actor = metaWindow.get_compositor_private();
-            const oldRect = metaWindow.get_frame_rect();
+            let {
+                x: oldX,
+                y: oldY,
+                width: oldWidth,
+                height: oldHeight
+            } = actor;
             const [px, py] = global.get_pointer();
+
+            if (actor.has_clip) {
+                const [, , clipWidth, clipHeight] = actor.get_clip();
+                oldWidth = clipWidth;
+                oldHeight = clipHeight;
+                actor.set_z_position(0);
+                actor.remove_clip();
+            }
 
             if (metaWindow.grabbed) {
                 const grabX = (px - actor.x) / actor.width;
                 const grabY = (py - actor.y) / actor.height;
                 actor.set_pivot_point(grabX, grabY);
+
                 Tweener.addTween(actor, {
-                    scale_x: width / oldRect.width,
-                    scale_y: height / oldRect.height,
+                    scale_x: width / rect.width,
+                    scale_y: height / rect.height,
                     time: tweenTime,
                     transition: 'easeOutQuad'
                 });
@@ -142,12 +157,37 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
 
             metaWindow.move_resize_frame(true, x, y, width, height);
-            const newRect = metaWindow.get_frame_rect();
+            let {
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            } = actor;
+            const frame = metaWindow.get_frame_rect();
+
+            if (frame.width !== width || frame.height !== height) {
+                log(
+                    'Force resize of',
+                    metaWindow.get_title(),
+                    `${newWidth}x${newHeight} -> ${width}x${height}`
+                );
+                // Some windows have invisible padding
+                // actor is larger in this case and we need to clip
+                // only visible area
+                actor.set_clip(frame.x - newX, frame.y - newY, width, height);
+                // This is a gore hack to prevent clipped areas
+                // to be drawn with garbage on top of other windows.
+                // For some reasons this seems to force correct damaging.
+                actor.set_z_position(0.01);
+                newWidth = width;
+                newHeight = height;
+            }
+
             actor.opacity = 255;
-            actor.scale_x = oldRect.width / newRect.width;
-            actor.scale_y = oldRect.height / newRect.height;
-            actor.translation_x = oldRect.x - newRect.x;
-            actor.translation_y = oldRect.y - newRect.y;
+            actor.scale_x = oldWidth / newWidth;
+            actor.scale_y = oldHeight / newHeight;
+            actor.translation_x = oldX - newX;
+            actor.translation_y = oldY - newY;
             Tweener.addTween(actor, {
                 scale_x: 1.0,
                 scale_y: 1.0,
