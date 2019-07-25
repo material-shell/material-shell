@@ -19,17 +19,23 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
         this.overContainer = new St.Widget();
 
+        this.updateActiveWindowsFromFocused();
+        this.addTransitionContainer();
+    }
+
+    updateActiveWindowsFromFocused() {
         const { regularWindows } = this.getDialogAndRegularWindows();
-        this.baseIndex = Math.min(
-            regularWindows.indexOf(this.windowFocused),
-            regularWindows.length - WINDOW_PER_SCREEN
+        this.baseIndex = Math.max(
+            0,
+            Math.min(
+                regularWindows.indexOf(this.windowFocused),
+                regularWindows.length - WINDOW_PER_SCREEN
+            )
         );
         this.activeWindows = regularWindows.slice(
             this.baseIndex,
             this.baseIndex + WINDOW_PER_SCREEN
         );
-        this.addTransitionContainer();
-        this.resizeAll();
     }
 
     onWorkAreasChanged() {
@@ -38,16 +44,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     onWindowsChanged(superWorkspace, newWindows, oldWindows) {
-        this.resizeAll();
-        const { regularWindows } = this.getDialogAndRegularWindows();
-        this.baseIndex = Math.min(
-            regularWindows.indexOf(this.windowFocused),
-            regularWindows.length - WINDOW_PER_SCREEN
-        );
-        this.activeWindows = regularWindows.slice(
-            this.baseIndex,
-            this.baseIndex + WINDOW_PER_SCREEN
-        );
+        this.updateActiveWindowsFromFocused();
         super.onWindowsChanged(superWorkspace, newWindows, oldWindows); // Calls onTile
     }
 
@@ -81,32 +78,31 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         }
     }
 
-    resizeAll() {
-        const workArea = this.getWorkspaceBounds(true);
-        const { regularWindows } = this.getDialogAndRegularWindows();
-        regularWindows.forEach(window => {
-            let windowRect = window.get_frame_rect();
-
-            if (workArea.width > workArea.height) {
-                workArea.width /= WINDOW_PER_SCREEN;
-            } else {
-                workArea.height /= WINDOW_PER_SCREEN;
-            }
-            this.moveAndResizeMetaWindow(
-                window,
-                windowRect.x,
-                windowRect.y,
-                workArea.width,
-                workArea.height,
-                false
-            );
-        });
-    }
-
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         const workArea = this.getWorkspaceBounds(true);
-
+        // Sizing inactive windows
+        windows
+            .filter(window => {
+                !this.activeWindows.includes(window);
+            })
+            .forEach(window => {
+                this.moveAndResizeMetaWindow(
+                    window,
+                    workArea.x,
+                    workArea.y,
+                    workArea.width /
+                        (workArea.width > workArea.height
+                            ? WINDOW_PER_SCREEN
+                            : 1),
+                    workArea.height /
+                        (workArea.width <= workArea.height
+                            ? WINDOW_PER_SCREEN
+                            : 1),
+                    false
+                );
+            });
+        // Positionning active windows
         this.activeWindows.forEach((window, i) => {
             const windowBounds = {
                 x: workArea.x,
@@ -116,15 +112,12 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             };
             if (workArea.width > workArea.height) {
                 windowBounds.width /= WINDOW_PER_SCREEN;
-            } else {
-                windowBounds.height /= WINDOW_PER_SCREEN;
-            }
-
-            if (workArea.width > workArea.height) {
                 windowBounds.x += (i * workArea.width) / WINDOW_PER_SCREEN;
             } else {
+                windowBounds.height /= WINDOW_PER_SCREEN;
                 windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
             }
+
             this.moveAndResizeMetaWindow(
                 window,
                 windowBounds.x,
@@ -166,7 +159,6 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     transition(newMetaWindows, oldMetaWindows) {
-        log('start transition');
         const { regularWindows } = this.getDialogAndRegularWindows();
         newMetaWindows = newMetaWindows.filter(
             window => !oldMetaWindows.includes(window)
@@ -249,9 +241,12 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     endTransition() {
-        this.activeWindows.forEach(window => {
-            window.get_compositor_private().show();
-        });
+        this.activeWindows
+            .map(metaWindow => metaWindow.get_compositor_private())
+            .filter(window => window)
+            .forEach(window => {
+                window.show();
+            });
         global.window_group.remove_child(this.overContainer);
         log(
             `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
