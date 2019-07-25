@@ -57,7 +57,7 @@ var AppsManager = class AppsManager {
 
     static getWorkspaceCategoriesForApp(appInfo) {
         const appCategoriesList = (appInfo.get_categories() || '').split(';');
-        const appName = (appInfo.get_name() || '');
+        const appId = (appInfo.get_id() || '');
 
         let categoryKeys = [];
         for (let [key, category] of Object.entries(WorkspaceCategories)) {
@@ -72,9 +72,9 @@ var AppsManager = class AppsManager {
                     category.categoriesExcluded.indexOf(appCategory) >= 0;
             });
             flagIncluded = flagIncluded ||
-                category.applicationsIncluded.indexOf(appName) >= 0;
+                category.applicationsIncluded.indexOf(appId) >= 0;
             flagExcluded = flagExcluded ||
-                category.applicationsExcluded.indexOf(appName) >= 0;
+                category.applicationsExcluded.indexOf(appId) >= 0;
             if (flagIncluded && !flagExcluded) {
                 categoryKeys.push(key);
             }
