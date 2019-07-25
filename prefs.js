@@ -294,30 +294,6 @@ function layouts_settings_tab(notebook) {
 
     parent_vbox.add(gaphbox);
 
-    const sgaphbox = new Gtk.HBox();
-    const sgap = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1);
-    settings.bind(
-        'screen-gap',
-        gap.get_adjustment(),
-        'value',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-
-    const sgapname = new Gtk.Label({ xalign: 0 });
-    sgapname.set_markup(`<span size="medium">Screen edge gap size</span>`);
-    const sgapdesc = new Gtk.Label({ xalign: 0 });
-    sgapdesc.set_markup(
-        `<span size="small">Determines the screen endge gap size in pixel between windows</span>`
-    );
-
-    const sgapvbox = new Gtk.VBox();
-    sgapvbox.pack_start(sgapname, false, false, 0);
-    sgapvbox.pack_start(sgapdesc, false, false, 0);
-    sgaphbox.pack_start(sgapvbox, true, true, 10);
-    sgaphbox.pack_end(sgap, true, true, 0);
-
-    parent_vbox.add(sgaphbox);
-
     const tweentimehbox = new Gtk.HBox();
     const tweentime = Gtk.Scale.new_with_range(
         Gtk.Orientation.HORIZONTAL,
