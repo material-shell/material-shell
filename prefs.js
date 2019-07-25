@@ -298,7 +298,7 @@ function layouts_settings_tab(notebook) {
     const sgap = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1);
     settings.bind(
         'screen-gap',
-        gap.get_adjustment(),
+        sgap.get_adjustment(),
         'value',
         Gio.SettingsBindFlags.DEFAULT
     );
@@ -307,7 +307,7 @@ function layouts_settings_tab(notebook) {
     sgapname.set_markup(`<span size="medium">Screen edge gap size</span>`);
     const sgapdesc = new Gtk.Label({ xalign: 0 });
     sgapdesc.set_markup(
-        `<span size="small">Determines the screen endge gap size in pixel between windows</span>`
+        `<span size="small">Determines the screen edge gap size in pixel between windows</span>`
     );
 
     const sgapvbox = new Gtk.VBox();

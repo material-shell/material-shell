@@ -91,9 +91,73 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
+        const workArea = this.getWorkspaceBounds();
+        log(JSON.stringify(workArea))
+        let screenCollisionFlags = {
+            up: y === workArea.y,
+            down: (y + height) === (workArea.height + workArea.y),
+            left: x === workArea.x,
+            right: (x + width) === (workArea.width + workArea.x)
+        };
         const gap = global.tilingManager.gap;
+        log("gap=" + gap)
+        const screenGap = global.tilingManager.screenGap;
+        log("screenGap=" + screenGap)
         const tweenTime = global.tilingManager.tweenTime;
-        if (gap) {
+        if (gap && (screenGap || screenGap === 0)) {
+            log("Using screenGap")
+            log("y=" + y, "y+height=" + (y+ height) + ",workArea.height=" + (workArea.height + workArea.y))
+            log("Up:    " + screenCollisionFlags.up)
+            log("Down:  " + screenCollisionFlags.down)
+            log(screenCollisionFlags.up === screenCollisionFlags.down);
+            log("x=" + x, "x+width= " + (x+width) + ",workArea.width= " + (workArea.width + workArea.y))
+            log("Left:  " + screenCollisionFlags.left)
+            log("Right: " + screenCollisionFlags.right)
+            log(screenCollisionFlags.left === screenCollisionFlags.right);
+            // Vertical
+            // height
+            if (screenCollisionFlags.up !== screenCollisionFlags.down) {
+                log("h: Using half gap half screen gap")
+                height -= (gap+screenGap)/2;
+            } else {
+                // they are equal here so only check one
+                if (screenCollisionFlags.up) {
+                    log("h: Using screen gap")
+                    height -= screenGap;
+                } else {
+                    log("h: Using gap")
+                    height -= gap;
+                }
+            }
+            // y
+            if (screenCollisionFlags.up) {
+                log("y: Using screen gap")
+                y += (screenGap/2);
+            } else {
+                log("y: Using gap")
+                y += (gap/2);
+            }
+            
+            // Horizontal
+            // width
+            if (screenCollisionFlags.left !== screenCollisionFlags.right) {
+                width -= (gap+screenGap)/2;
+            } else {
+                // they are equal here so only check one
+                if (screenCollisionFlags.left) {
+                    width -= screenGap;
+                } else {
+                    width -= gap;
+                }
+            }
+            // x
+            if (screenCollisionFlags.left) {
+                x += (screenGap/2);
+            } else {
+                x += (gap/2);
+            }
+        } else if (gap) {
+            log("Only using gap")
             x = x + gap / 2;
             y = y + gap / 2;
             width = width - gap;

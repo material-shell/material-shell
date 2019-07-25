@@ -20,6 +20,10 @@ var TilingManager = class TilingManager {
                 this.gap = schema.get_int('gap');
                 this.tileWindows();
             }),
+            this.layoutsSettings.connect('changed::screen-gap', (schema, key) => {
+                this.screenGap = schema.get_int('screen-gap');
+                this.tileWindows();
+            }),
             this.layoutsSettings.connect(
                 'changed::tween-time',
                 (schema, key) => {
