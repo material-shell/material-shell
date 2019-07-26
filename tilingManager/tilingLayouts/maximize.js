@@ -44,6 +44,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 workArea.y,
                 workArea.width,
                 workArea.height,
+                true,
                 true
             );
             if (

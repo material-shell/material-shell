@@ -98,7 +98,8 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                         (workArea.width <= workArea.height
                             ? WINDOW_PER_SCREEN
                             : 1),
-                    false
+                    false,
+                    true
                 );
             });
         // Positionning active windows
@@ -123,7 +124,8 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 windowBounds.y,
                 windowBounds.width,
                 windowBounds.height,
-                windows.length < WINDOW_PER_SCREEN
+                windows.length < WINDOW_PER_SCREEN,
+                true
             );
         });
         windows.forEach(window => {

@@ -94,20 +94,21 @@ var BaseTilingLayout = class BaseTilingLayout {
         });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate) {
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate, noGaps) {
+        const gap = global.tilingManager.gap;
+        const tweenTime = global.tilingManager.tweenTime;
+        if (gap && !noGaps) {
+            x = x + gap / 2;
+            y = y + gap / 2;
+            width = width - gap;
+            height = height - gap;
+        }
+
         if (!animate || !this.superWorkspace.isDisplayed()) {
             this.callSafely(metaWindow, () => {
                 metaWindow.move_resize_frame(true, x, y, width, height);
             });
             return;
-        }
-        const gap = global.tilingManager.gap;
-        const tweenTime = global.tilingManager.tweenTime;
-        if (gap) {
-            x = x + gap / 2;
-            y = y + gap / 2;
-            width = width - gap;
-            height = height - gap;
         }
 
         const rect = metaWindow.get_frame_rect();
