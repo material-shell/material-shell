@@ -14,6 +14,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.workspaceManager = global.workspace_manager;
         this.enabled = false;
         this.signals = [];
+        this.created_windows = [];
     }
 
     enable() {
@@ -83,7 +84,11 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
                 log('window-created');
-                global.superWorkspaceManager.onNewWindow(metaWindow);
+                if (Meta.is_wayland_compositor()) {
+                    this._listenToFirstFrame(metaWindow);
+                } else {
+                    global.superWorkspaceManager.onNewWindow(metaWindow);
+                }
             })
         });
 
@@ -118,6 +123,13 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             signal.from.disconnect(signal.id);
         });
         this.signals = [];
+
+        this.created_windows.forEach(record => {
+            record.actor.disconnect(record.signalFrame);
+            record.actor.disconnect(record.signalDestroy);
+        });
+        this.created_windows =[];
+
         this.topBarSpacer.destroy();
         global.superWorkspaceManager.destroy();
         delete global.superWorkspaceManager;
@@ -357,4 +369,31 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             })
         });
     }
+
+    _listenToFirstFrame(metaWindow) {
+        let actor = metaWindow.get_compositor_private();
+        this.created_windows.push({
+            window: metaWindow,
+            actor: actor,
+            signalFrame: actor.connect("first-frame", (actor) => {
+                let index = this.created_windows.findIndex((record) => { return record.actor === actor });
+                if (index === -1) return;
+
+                let record = this.created_windows.splice(index, 1)[0];
+                record.actor.disconnect(record.signalFrame);
+                record.actor.disconnect(record.signalDestroy);
+
+                global.superWorkspaceManager.onNewWindow(record.window);
+            }),
+            signalDestroy: actor.connect("destroy", (actor) => {
+                let index = this.created_windows.findIndex((record) => { return record.actor === actor });
+                if (index === -1) return;
+
+                let record = this.created_windows.splice(index, 1)[0];
+                record.actor.disconnect(record.signalFrame);
+                record.actor.disconnect(record.signalDestroy);
+            })
+        });
+    }
+
 };

@@ -237,7 +237,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||
-            !metaWindow.resizeable
+            !metaWindow.resizeable ||
+            Meta.is_wayland_compositor() && metaWindow.get_transient_for() != null
         );
     }
 };
