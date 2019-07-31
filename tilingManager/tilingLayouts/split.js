@@ -79,7 +79,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
-        const workArea = this.getWorkspaceBounds(true);
+        const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
         windows
             .filter(window => {
@@ -141,7 +141,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     addTransitionContainer() {
-        const workArea = this.getWorkspaceBounds(true);
+        const workArea = this.getWorkspaceBounds();
         this.overContainer.remove_all_children();
         this.transitionContainer = new (workArea.width > workArea.height
             ? Row
@@ -193,7 +193,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 window.hide();
             });
 
-        const workArea = this.getWorkspaceBounds(true);
+        const workArea = this.getWorkspaceBounds();
         let xFrom = workArea.x;
         let xTo = workArea.x;
         let yFrom = workArea.y;

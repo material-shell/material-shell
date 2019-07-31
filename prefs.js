@@ -182,7 +182,7 @@ function layoutsSettingsTab(notebook) {
     const settings = getSettings('layouts');
     const itemRows = [];
 
-    const gap = Gtk.SpinButton.new_with_range(0, 250, 1);
+    const gap = Gtk.SpinButton.new_with_range(0, 1000, 1);
     settings.bind(
         'gap',
         gap.get_adjustment(),
@@ -211,7 +211,7 @@ function layoutsSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
-    const screenGap = Gtk.SpinButton.new_with_range(0, 250, 1);
+    const screenGap = Gtk.SpinButton.new_with_range(0, 1000, 1);
     settings.bind(
         'screen-gap',
         screenGap.get_adjustment(),

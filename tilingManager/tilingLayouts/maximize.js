@@ -35,7 +35,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
-        const workArea = this.getWorkspaceBounds(true);
+        const workArea = this.getWorkspaceBounds();
 
         windows.forEach(window => {
             this.moveAndResizeMetaWindow(

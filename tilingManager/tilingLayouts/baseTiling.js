@@ -95,13 +95,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate, noGaps) {
-        const gap = global.tilingManager.gap;
         const tweenTime = global.tilingManager.tweenTime;
-        if (gap && !noGaps) {
-            x = x + gap / 2;
-            y = y + gap / 2;
-            width = width - gap;
-            height = height - gap;
+        if (!noGaps) {
+            ({ x, y, width, height } = this.applyGaps({ x, y, width, height }));
         }
 
         if (!animate || !this.superWorkspace.isDisplayed()) {
@@ -234,31 +230,66 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
     }
 
-    getWorkspaceBounds(noGaps) {
-        const gap = global.tilingManager.useScreenGap
-            ? global.tilingManager.screenGap * 2
-            : global.tilingManager.gap;
-
+    getWorkspaceBounds() {
         const {
             x,
             y,
             width,
             height
         } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
-        if (noGaps) {
-            return {
-                x,
-                y,
-                width,
-                height
-            };
-        }
         return {
-            x: x + gap / 2,
-            y: y + gap / 2,
-            width: width - gap,
-            height: height - gap
+            x,
+            y,
+            width,
+            height
         };
+    }
+
+    applyGaps(window) {
+        // Reduces window size according to gap setting
+        const gap = global.tilingManager.gap;
+        const screenGap = global.tilingManager.screenGap;
+        const useScreenGap = global.tilingManager.useScreenGap;
+
+        if (!gap && (!useScreenGap || !screenGap)) {
+            return window;
+        }
+        let { x, y, width, height } = window;
+
+        const bounds = this.getWorkspaceBounds();
+        const edgeGap = useScreenGap ? screenGap : gap;
+        const halfGap = gap / 2;
+
+        if (window.x === bounds.x) {
+            // Window is at screen left edge
+            x += edgeGap;
+            width -= edgeGap;
+        } else {
+            x += halfGap;
+            width -= halfGap;
+        }
+        if (window.y === bounds.y) {
+            // Window is at screen top edge
+            y += edgeGap;
+            height -= edgeGap;
+        } else {
+            y += halfGap;
+            height -= halfGap;
+        }
+        if (window.x + window.width === bounds.x + bounds.width) {
+            // Window is at screen right edge
+            width -= edgeGap;
+        } else {
+            width -= halfGap;
+        }
+        if (window.y + window.height === bounds.y + bounds.height) {
+            // Window is at screen bottom edge
+            height -= edgeGap;
+        } else {
+            height -= halfGap;
+        }
+
+        return { x, y, width, height };
     }
 
     onDestroy() {
