@@ -30,8 +30,7 @@ const layouts = {
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',
     'half-vertical': 'Tile windows vertically',
-    ratio:
-        'Tile windows in both way according to the ratio of the remaining space',
+    ratio: 'Tile windows according to the ratio of remaining space',
     grid: 'Tile windows according to a regular grid',
     simple: 'Split screen unidirectionally according to screen ratio',
     'simple-horizontal': 'Split screen horizontally',
@@ -153,17 +152,7 @@ function layoutsTab(notebook) {
         rows.push(makeItemRow(name, description, item));
 
         if (layout === 'ratio') {
-            const ratio = Gtk.Scale.new_with_range(
-                Gtk.Orientation.HORIZONTAL,
-                0,
-                1,
-                0.01
-            );
-            ratio.add_mark(
-                0.6180339887498948,
-                Gtk.PositionType.BOTTOM,
-                'Golden Ratio'
-            );
+            const ratio = Gtk.SpinButton.new_with_range(0, 1, 0.01);
             settings.bind(
                 'ratio-value',
                 ratio.get_adjustment(),
@@ -193,7 +182,7 @@ function layoutsSettingsTab(notebook) {
     const settings = getSettings('layouts');
     const itemRows = [];
 
-    const gap = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 250, 1);
+    const gap = Gtk.SpinButton.new_with_range(0, 250, 1);
     settings.bind(
         'gap',
         gap.get_adjustment(),
@@ -222,12 +211,7 @@ function layoutsSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
-    const screenGap = Gtk.Scale.new_with_range(
-        Gtk.Orientation.HORIZONTAL,
-        0,
-        250,
-        1
-    );
+    const screenGap = Gtk.SpinButton.new_with_range(0, 250, 1);
     settings.bind(
         'screen-gap',
         screenGap.get_adjustment(),
@@ -248,22 +232,13 @@ function layoutsSettingsTab(notebook) {
         )
     );
 
-    const tweentime = Gtk.Scale.new_with_range(
-        Gtk.Orientation.HORIZONTAL,
-        0,
-        1,
-        0.01
-    );
+    const tweentime = Gtk.SpinButton.new_with_range(0, 1, 0.01);
     settings.bind(
         'tween-time',
         tweentime.get_adjustment(),
         'value',
         Gio.SettingsBindFlags.DEFAULT
     );
-
-    tweentime.add_mark(0.1, Gtk.PositionType.BOTTOM, 'Fast');
-    tweentime.add_mark(0.25, Gtk.PositionType.BOTTOM, 'Smooth');
-    tweentime.add_mark(0.75, Gtk.PositionType.BOTTOM, 'Mesmerizing');
 
     itemRows.push(
         makeItemRow(

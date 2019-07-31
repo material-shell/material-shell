@@ -25,7 +25,7 @@ var makeItemRow = (name, description, item) => {
 
     const rowHBox = new Gtk.HBox();
     rowHBox.pack_start(labelsVBox, true, true, 10);
-    rowHBox.pack_start(item, true, true, 0); // Should be true, true?
+    rowHBox.pack_start(item, false, false, 0);
 
     const listRow = new Gtk.ListBoxRow();
     listRow.add(rowHBox);
