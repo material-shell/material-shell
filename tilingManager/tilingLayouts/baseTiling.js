@@ -235,7 +235,10 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     getWorkspaceBounds(noGaps) {
-        const gap = global.tilingManager.gap;
+        const gap = global.tilingManager.useScreenGap
+            ? global.tilingManager.screenGap * 2
+            : global.tilingManager.gap;
+
         const {
             x,
             y,
