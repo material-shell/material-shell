@@ -14,10 +14,6 @@ let RippleWave = GObject.registerClass(
             this.mouseX = mouseX;
             this.mouseY = mouseY;
             this.waveSize = size / 4;
-            this.x = Math.round(this.mouseX - this.width / 2);
-            this.y = Math.round(this.mouseY - this.height / 2);
-            //this.set_pivot_point(mouseX / this.width, mouseY / this.height);
-            //this.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
             Tweener.addTween(this, {
                 waveSize: this.fullSize,
                 time: this.fullSize / 600,
@@ -42,7 +38,6 @@ let RippleWave = GObject.registerClass(
             this.height = waveSize;
             this.x = Math.round(this.mouseX - this.width / 2);
             this.y = Math.round(this.mouseY - this.height / 2);
-            this.queue_redraw();
         }
 
         get waveSize() {
