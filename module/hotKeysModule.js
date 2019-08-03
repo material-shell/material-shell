@@ -192,7 +192,7 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                /* global.superWorkspaceManager.noUImode = !global
+                global.superWorkspaceManager.noUImode = !global
                     .superWorkspaceManager.noUImode;
                 Main.panel.get_parent().visible = !global.superWorkspaceManager
                     .noUImode;
@@ -220,9 +220,6 @@ var HotKeysModule = class HotKeysModule {
                         global.superWorkspaceManager.noUImode ? 0 : -1
                     );
                     superWorkspace.tilingLayout.onTile();
-                }); */
-                global.get_window_actors().forEach(windowActor => {
-                    Main.wm.getWindowClone(windowActor.meta_window);
                 });
             }
         );
