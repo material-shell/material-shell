@@ -18,15 +18,14 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals = [];
         Main.wm.getWindowClone = function(metaWindow) {
             let windowActor = metaWindow.get_compositor_private();
-            let actorContent = Shell.util_get_content_for_window_actor(
+            /* let actorContent = Shell.util_get_content_for_window_actor(
                 windowActor,
                 metaWindow.get_frame_rect()
             );
-            let actorClone = new St.Widget({ content: actorContent });
-            actorClone.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS);
-            /* let clone = new Clutter.Clone({
-                source: windowActor.get_texture()
-            }); */
+            let actorClone = new St.Widget({ content: actorContent }); */
+            let actorClone = new Clutter.Clone({
+                source: windowActor
+            });
 
             let constraint = new Clutter.BindConstraint({
                 source: windowActor,
@@ -165,7 +164,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         Main.wm._prepareWorkspaceSwitch = function(from, to, direction) {
             if (this._switchData) return;
 
-            let wgroup = global.window_group;
+            let wgroup = Main.uiGroup;
             let windows = global.get_window_actors();
             let switchData = {};
 
@@ -185,7 +184,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             switchData.overContainer.add_actor(switchData.container);
 
             wgroup.add_actor(switchData.movingWindowBin);
-            wgroup.add_actor(switchData.overContainer);
+            wgroup.insert_child_above(
+                switchData.overContainer,
+                global.window_group
+            );
 
             let primaryMonitorGeometry = global.display.get_monitor_geometry(
                 global.display.get_primary_monitor()
@@ -241,6 +243,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 );
 
                 info.superWorkspace.backgroundContainer.reparent(info.actor);
+
                 info.superWorkspace.uiVisible = true;
                 info.superWorkspace.updateUI();
                 info.superWorkspace.frontendContainer.reparent(info.actor);
@@ -260,12 +263,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     actor.reparent(switchData.movingWindowBin);
                 } else if (window.get_workspace().index() == from) {
                     actor.reparent(switchData.curGroup);
-                    actor.lower(switchData.superWorkspace.frontendContainer);
                 } else {
-                    let visible = false;
                     for (let dir of Object.values(Meta.MotionDirection)) {
                         let info = switchData.surroundings[dir];
-
                         if (
                             !info ||
                             info.index != window.get_workspace().index()
@@ -273,12 +273,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                             continue;
 
                         actor.reparent(info.actor);
-                        actor.lower(info.superWorkspace.frontendContainer);
-                        visible = true;
+                        //actor.lower(info.superWorkspace.frontendContainer);
                         break;
                     }
-
-                    actor.visible = visible;
                 }
             }
 
@@ -302,13 +299,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             );
             switchData.superWorkspace.uiVisible = false;
             switchData.superWorkspace.updateUI();
-            global.get_window_actors().forEach(window => {
-                if (
-                    window.get_meta_window().get_workspace() !=
-                    global.workspace_manager.get_active_workspace()
-                )
-                    window.hide();
-            });
+
             for (let dir of Object.values(Meta.MotionDirection)) {
                 let info = switchData.surroundings[dir];
                 if (info) {
@@ -321,7 +312,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 }
             }
             Tweener.removeTweens(switchData.container);
-            switchData.container.destroy();
+            switchData.overContainer.destroy();
             switchData.movingWindowBin.destroy();
 
             this._movingWindow = null;
