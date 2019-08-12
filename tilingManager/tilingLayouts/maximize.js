@@ -34,6 +34,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileRegulars(windows) {
+        if (this.animationInProgress) {
+            return;
+        }
         windows.forEach(window => {
             if (
                 window !== this.windowFocused ||
