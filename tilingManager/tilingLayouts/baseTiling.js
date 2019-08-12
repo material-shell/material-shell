@@ -129,7 +129,6 @@ var BaseTilingLayout = class BaseTilingLayout {
                 width: oldWidth,
                 height: oldHeight
             } = actor;
-            const [px, py] = global.get_pointer();
 
             if (actor.has_clip) {
                 const [, , clipWidth, clipHeight] = actor.get_clip();
@@ -140,16 +139,21 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
 
             if (metaWindow.grabbed) {
-                const grabX = (px - actor.x) / actor.width;
-                const grabY = (py - actor.y) / actor.height;
-                actor.set_pivot_point(grabX, grabY);
+                // Removing this for now since on drop animation start with the
+                // original grabbed actor size making it wonky.
 
-                Tweener.addTween(actor, {
-                    scale_x: width / rect.width,
-                    scale_y: height / rect.height,
-                    time: tweenTime,
-                    transition: 'easeOutQuad'
-                });
+                // This sizes the grabbed actor to the drop area:
+                // const [px, py] = global.get_pointer();
+                // const grabX = (px - actor.x) / actor.width;
+                // const grabY = (py - actor.y) / actor.height;
+                // actor.set_pivot_point(grabX, grabY);
+                //
+                // Tweener.addTween(actor, {
+                //     scale_x: width / rect.width,
+                //     scale_y: height / rect.height,
+                //     time: tweenTime,
+                //     transition: 'easeOutQuad'
+                // });
                 return;
             }
 
