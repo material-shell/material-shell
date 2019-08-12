@@ -1,4 +1,4 @@
-const { St } = imports.gi;
+const { St, Meta } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -34,25 +34,16 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileRegulars(windows) {
-        super.onTileRegulars(windows);
-        const workArea = this.getWorkspaceBounds();
-
         windows.forEach(window => {
-            this.moveAndResizeMetaWindow(
-                window,
-                workArea.x,
-                workArea.y,
-                workArea.width,
-                workArea.height,
-                true,
-                true
-            );
             if (
                 window !== this.windowFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
                 window.get_compositor_private().hide();
             } else {
+                if (!window.grabbed && !window.maximized_horizontally) {
+                    window.maximize(Meta.MaximizeFlags.BOTH);
+                }
                 window.get_compositor_private().show();
             }
         });
