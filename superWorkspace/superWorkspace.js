@@ -145,7 +145,12 @@ var SuperWorkspace = class SuperWorkspace {
         const oldWindows = [...this.windows];
         this.windows.push(window);
         // Focusing window if the window comes from a drag and drop
-        if (window.grabbed) {
+        // or if there's no focused window
+        if (
+            window.grabbed ||
+            !this.windowFocused ||
+            !this.windows.includes(this.windowFocused)
+        ) {
             this.onFocus(window);
         }
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
@@ -194,8 +199,13 @@ var SuperWorkspace = class SuperWorkspace {
         if (windowFocused === this.windowFocused) {
             return;
         }
-        this.emit('window-focused-changed', windowFocused, this.windowFocused);
+        const oldFocusedWindow = this.windowFocused;
         this.windowFocused = windowFocused;
+        this.emit(
+            'window-focused-changed',
+            this.windowFocused,
+            oldFocusedWindow
+        );
     }
 
     setWindowBefore(windowToMove, windowRelative) {
@@ -339,8 +349,10 @@ var SuperWorkspace = class SuperWorkspace {
     focusLastWindow() {
         if (this.windows.length) {
             const lastWindow = this.windows.slice(-1)[0];
-            log('Focusing ', lastWindow.get_title());
+            log('Focusing last window', lastWindow.get_title());
             this.onFocus(lastWindow);
+        } else {
+            this.windowFocused = null;
         }
     }
 
