@@ -27,7 +27,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         this.baseIndex = Math.max(
             0,
             Math.min(
-                regularWindows.indexOf(this.windowFocused),
+                regularWindows.indexOf(this.superWorkspace.windowFocused),
                 regularWindows.length - WINDOW_PER_SCREEN
             )
         );

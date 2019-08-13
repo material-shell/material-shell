@@ -12,7 +12,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
-        this.windowFocused = this.superWorkspace.windowFocused;
         this.windowChangedId = this.superWorkspace.connect(
             'windows-changed',
             this.onWindowsChanged.bind(this)
@@ -43,9 +42,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
     }
 
-    onFocusChanged(windowFocused) {
-        this.windowFocused = windowFocused;
-    }
+    onFocusChanged() {}
 
     onTile() {
         log(`Tile ${this.superWorkspace.categoryKey}`);

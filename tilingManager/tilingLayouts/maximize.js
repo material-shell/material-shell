@@ -26,7 +26,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             const oldIndex = this.superWorkspace.windows.indexOf(
                 oldWindowFocused
             );
-            this.windowFocused = windowFocused;
             const direction = newIndex > oldIndex ? 1 : -1;
             this.prepareTransition(windowFocused, oldWindowFocused, direction);
             this.animateTransition(direction);
@@ -39,12 +38,13 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
         windows.forEach(window => {
             if (
-                window !== this.windowFocused ||
+                window !== this.superWorkspace.windowFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
                 window.get_compositor_private().hide();
             } else {
                 if (!window.grabbed && !window.maximized_horizontally) {
+                    Main.wm.skipNextEffect(window.get_compositor_private());
                     window.maximize(Meta.MaximizeFlags.BOTH);
                 }
                 window.get_compositor_private().show();
@@ -55,7 +55,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     onDestroy() {
         super.onDestroy();
         this.superWorkspace.windows.forEach(window => {
-            if (window !== this.windowFocused) {
+            if (window !== this.superWorkspace.windowFocused) {
                 window.get_compositor_private().show();
             }
         });
