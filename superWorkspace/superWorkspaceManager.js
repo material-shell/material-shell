@@ -217,6 +217,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         if (!Me.loaded) {
             metaWindow.get_compositor_private().hide();
         }
+        
         this.addWindowToAppropriateSuperWorkspace(metaWindow);
     }
 
@@ -231,7 +232,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         const currentWindowWorkspace = metaWindow.get_workspace();
         /*  const focusedMonitorIndex = global.display.get_current_monitor(); */
 
-        let superWorkspace;
+        const myWorkspaceIndex = metaWindow.get_workspace().index();
+        let superWorkspace = this.getPrimarySuperWorkspaceByIndex(myWorkspaceIndex); // this.getActiveSuperWorkspace();
+        /*
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             log(
                 'Window is on external monitor try to find right Superworkspace'
@@ -265,7 +268,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 );
             }
         }
-
+        */
         let workspaceOfSuperWorkspace = this.getWorkspaceOfSuperWorkspace(
             superWorkspace
         );
