@@ -37,17 +37,23 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             return;
         }
         windows.forEach(window => {
+            const actor = window.get_compositor_private();
             if (
                 window !== this.superWorkspace.windowFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
-                window.get_compositor_private().hide();
+                actor.hide();
             } else {
+                // Unclip windows in maximize
+                if (actor.has_clip) {
+                    actor.set_z_position(0);
+                    actor.remove_clip();
+                }
                 if (!window.grabbed && !window.maximized_horizontally) {
-                    Main.wm.skipNextEffect(window.get_compositor_private());
+                    Main.wm.skipNextEffect(actor);
                     window.maximize(Meta.MaximizeFlags.BOTH);
                 }
-                window.get_compositor_private().show();
+                actor.show();
             }
         });
     }
