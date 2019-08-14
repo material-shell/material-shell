@@ -108,7 +108,7 @@ var SuperWorkspace = class SuperWorkspace {
         );
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
-        Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
+        // Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
         this.updateTopBarPositionAndSize();
         this.updateUI();
     }

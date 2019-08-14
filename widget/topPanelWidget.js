@@ -18,8 +18,8 @@ var TopPanel = GObject.registerClass(
             this.superWorkspace = superWorkspace;
             this._leftContainer = new St.BoxLayout();
 
-            this.taskBar = new TaskBar(superWorkspace);
-            this._leftContainer.add_child(this.taskBar);
+            // this.taskBar = new TaskBar(superWorkspace);
+            // this._leftContainer.add_child(this.taskBar);
 
             let iconContainer = new St.Bin({
                 child: new St.Icon({
@@ -40,7 +40,7 @@ var TopPanel = GObject.registerClass(
             });
 
             this._leftContainer.add_child(this.addButton);
-            this.add_child(this._leftContainer);
+            // this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
                 gicon: superWorkspace.tilingLayout.icon,
                 style_class: 'workspace-icon'
@@ -62,7 +62,7 @@ var TopPanel = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            // this.set_allocation(box, flags);
 
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
@@ -72,10 +72,13 @@ var TopPanel = GObject.registerClass(
             this._leftContainer.allocate(box, flags);
 
             let tilingButtonBox = new Clutter.ActorBox();
-            tilingButtonBox.x1 = box.x2;
-            tilingButtonBox.x2 = box.x2 + 48 * scaleFactor;
-            tilingButtonBox.y1 = box.y1;
-            tilingButtonBox.y2 = box.y2;
+            tilingButtonBox.x1 = box.x1;
+            tilingButtonBox.x2 = box.x1 + 48 * scaleFactor;
+            tilingButtonBox.y1 = box.y1 + 24 * scaleFactor;
+            tilingButtonBox.y2 = box.y2 + 48 * scaleFactor;
+
+            this.set_allocation(tilingButtonBox, flags);
+
             this.tilingButton.allocate(tilingButtonBox, flags);
         }
     }

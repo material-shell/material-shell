@@ -28,7 +28,7 @@ function init() {
     disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
     modules = [
         new RequiredSettingsModule(),
-        new LeftPanelModule(),
+        // new LeftPanelModule(),
         new TilingModule(),
         new SuperWorkspaceModule(),
         // new NoTitleBarModule(),

@@ -39,7 +39,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
     enable() {
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
-        Main.layoutManager.panelBox.add_child(this.topBarSpacer);
+        // Main.layoutManager.panelBox.add_child(this.topBarSpacer);
 
         global.superWorkspaceManager = new SuperWorkspaceManager(
             AppsManager.groupAppsByCategory(AppsManager.getApps())
@@ -76,11 +76,11 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             opacity: 0
         });
 
-        Main.overview._overview.remove_child(this.legacyPanelGhost);
+        /* Main.overview._overview.remove_child(this.legacyPanelGhost);
         Main.overview._overview.insert_child_at_index(
             this.myPanelGhost,
             this.legacyPanelGhostIndex
-        );
+        ); */
 
         this.overrideWindowManagerFunctions();
 
