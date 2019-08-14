@@ -10,12 +10,12 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             schema_id: 'org.gnome.mutter'
         });
         this.settingsToForce = [
-            {
+            /* {
                 schema: 'org.gnome.mutter',
                 key: 'dynamic-workspaces',
                 value: false,
                 valueType: 'boolean'
-            },
+            }, */
             {
                 schema: 'org.gnome.mutter',
                 key: 'workspaces-only-on-primary',

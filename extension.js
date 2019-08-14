@@ -31,7 +31,7 @@ function init() {
         new LeftPanelModule(),
         new TilingModule(),
         new SuperWorkspaceModule(),
-        new NoTitleBarModule(),
+        // new NoTitleBarModule(),
         new HotKeysModule()
     ];
 }

@@ -57,7 +57,7 @@ var SuperWorkspace = class SuperWorkspace {
             Main.layoutManager._trackActor(this.panel, {
                 affectsStruts: true
             });
-        }
+        } 
 
         this.backgroundContainer = new St.Widget();
 

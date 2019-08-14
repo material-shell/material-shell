@@ -56,7 +56,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         activeSuperWorkspace.updateUI();
 
         this.workspaceList = new WorkspaceList(this);
-        Main.panel._leftBox.add_child(this.workspaceList);
+        // Main.panel._leftBox.add_child(this.workspaceList);
         this.dispatchExistingWindows();
     }
 
