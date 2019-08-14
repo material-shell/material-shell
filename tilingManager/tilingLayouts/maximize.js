@@ -18,6 +18,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
+        this.windowNotDialogFocused =
+            !this.isDialog(this.superWorkspace.windowFocused) &&
+            this.superWorkspace.windowFocused;
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
@@ -26,6 +29,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             const oldIndex = this.superWorkspace.windows.indexOf(
                 oldWindowFocused
             );
+            this.windowNotDialogFocused = windowFocused;
             const direction = newIndex > oldIndex ? 1 : -1;
             this.prepareTransition(windowFocused, oldWindowFocused, direction);
             this.animateTransition(direction);
@@ -39,7 +43,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         windows.forEach(window => {
             const actor = window.get_compositor_private();
             if (
-                window !== this.superWorkspace.windowFocused ||
+                window !== this.windowNotDialogFocused ||
                 !this.superWorkspace.isDisplayed()
             ) {
                 actor.hide();
@@ -61,7 +65,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     onDestroy() {
         super.onDestroy();
         this.superWorkspace.windows.forEach(window => {
-            if (window !== this.superWorkspace.windowFocused) {
+            if (window !== this.windowNotDialogFocused) {
                 window.get_compositor_private().show();
             }
         });
