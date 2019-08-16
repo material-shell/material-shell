@@ -14,17 +14,17 @@ const { RatioLayout } = custom.ratio;
 const { GridLayout } = custom.grid;
 
 const layouts = [
-    // MaximizeLayout,
-    // SplitLayout,
+    MaximizeLayout,
+    SplitLayout,
     GridLayout,
-    // HalfLayout,
-    // HalfHorizontalLayout,
-    // HalfVerticalLayout,
+    HalfLayout,
+    HalfHorizontalLayout,
+    HalfVerticalLayout,
     RatioLayout,
     FloatLayout,
     SimpleLayout,
-    // SimpleHorizontalLayout,
-    // SimpleVerticalLayout
+    SimpleHorizontalLayout,
+    SimpleVerticalLayout
 ];
 
 /* exported TilingLayoutByKey */
