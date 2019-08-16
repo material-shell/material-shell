@@ -1,12 +1,12 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.materialshell.layouts" path="/org/gnome/shell/extensions/materialshell/layouts/">
     <key name="maximize" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Maximize layout</summary>
       <description>Maximize all windows</description>
     </key>
     <key name="split" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Split layout</summary>
       <description>Put all windows side by side, two at a time</description>
     </key>
@@ -26,12 +26,12 @@
       <description>Tile windows vertically</description>
     </key>
     <key name="ratio" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Ratio based grid layout</summary>
       <description>Tile windows in both way according to the ratio of the remaining space</description>
     </key>
     <key name="ratio-value" type="d">
-      <default>0.6180339887498948</default>
+      <default>0.45</default>
       <summary>Ratio of the ratio layout</summary>
       <description>Determines the ratio of the tiling</description>
     </key>
@@ -41,7 +41,7 @@
       <description>Tile windows according to a regular grid</description>
     </key>
     <key name="float" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Float layout</summary>
       <description>No tiling is done, windows are floating freely</description>
     </key>
@@ -61,17 +61,17 @@
       <description>Split screen vertically</description>
     </key>
     <key name="gap" type="i">
-      <default>0</default>
+      <default>8</default>
       <summary>Gap size around tiled windows</summary>
       <description>Determines the gap size between windows</description>
     </key>
     <key name="use-screen-gap" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Use a different gap size for screen</summary>
       <description>Determines whether to use the screen gap config</description>
     </key>
     <key name="screen-gap" type="i">
-      <default>0</default>
+      <default>48</default>
       <summary>Screen gap size around tiled windows</summary>
       <description>Determines the screen edge gap size between windows</description>
     </key>
