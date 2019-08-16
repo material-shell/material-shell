@@ -163,7 +163,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             } = actor;
             const frame = metaWindow.get_frame_rect();
 
-            if (frame.width !== width || frame.height !== height) {
+            if (frame.width < width || frame.height < height) {
                 log(
                     'Force resize of',
                     metaWindow.get_title(),

@@ -1,12 +1,12 @@
 const { GObject, St, Clutter, Gio } = imports.gi;
 
-const Main = imports.ui.main;
+// const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
 
-const { TaskBar } = Me.imports.widget.taskBar;
+// const { TaskBar } = Me.imports.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
