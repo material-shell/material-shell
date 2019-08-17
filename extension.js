@@ -1,4 +1,7 @@
 const { GLib } = imports.gi;
+const Main = imports.ui.main;
+const Signals = imports.signals;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     DisableIncompatibleExtensionsModule
@@ -11,15 +14,17 @@ const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
 const { StateManager } = Me.imports.stateManager;
 
-let disableIncompatibleExtensionsModule, modules;
+let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
+    Signals.addSignalMethods(Me);
     global.materialShell = Me;
     Me.stateManager = new StateManager();
+    Me.loaded = false;
     disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
     modules = [
         new RequiredSettingsModule(),
@@ -36,6 +41,7 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+    Main.wm._blockAnimations = true;
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         //Then disable incompatibles extensions;
@@ -44,9 +50,29 @@ function enable() {
             modules.forEach(module => {
                 module.enable();
             });
+            if (Main.layoutManager._startingUp) {
+                _startupPreparedId = Main.layoutManager.connect(
+                    'startup-complete',
+                    () => loaded(true)
+                );
+            } else {
+                loaded(false);
+            }
         });
         return GLib.SOURCE_REMOVE;
     });
+}
+
+function loaded(disconnect) {
+    log('----------------');
+    log('EXTENSION LOADED');
+    log('----------------');
+    if (disconnect) {
+        Main.layoutManager.disconnect(_startupPreparedId);
+    }
+    Me.loaded = true;
+    Main.wm._blockAnimations = false;
+    Me.emit('extension-loaded');
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -57,4 +83,5 @@ function disable() {
     modules.reverse().forEach(module => {
         module.disable();
     });
+    Me.loaded = false;
 }
