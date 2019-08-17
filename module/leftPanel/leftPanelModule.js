@@ -33,9 +33,11 @@ var LeftPanelModule = class LeftPanelModule {
         this.panel.statusArea.activities.actor.hide();
 
         // 6- Remove the appMenu button because we can't really hide it.
-        this.panel._leftBox.remove_child(
-            this.panel.statusArea.appMenu.actor.get_parent()
-        );
+        if (this.panel.statusArea.appMenu) {
+            this.panel._leftBox.remove_child(
+                this.panel.statusArea.appMenu.actor.get_parent()
+            );
+        }
 
         this.subModules.forEach(subModule => {
             subModule.enable();
@@ -47,9 +49,11 @@ var LeftPanelModule = class LeftPanelModule {
             subModule.disable();
         });
 
-        this.panel._leftBox.add_child(
-            this.panel.statusArea.appMenu.actor.get_parent()
-        );
+        if (this.panel.statusArea.appMenu) {
+            this.panel._leftBox.add_child(
+                this.panel.statusArea.appMenu.actor.get_parent()
+            );
+        }
         this.panel.statusArea.activities.actor.show();
     }
 };

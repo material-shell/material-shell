@@ -18,13 +18,18 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
+        this.windowNotDialogFocused =
+            !this.isDialog(this.superWorkspace.windowFocused) &&
+            this.superWorkspace.windowFocused;
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
         if (!this.isDialog(windowFocused) && !this.isDialog(oldWindowFocused)) {
-            const newIndex = this.windows.indexOf(windowFocused);
-            const oldIndex = this.windows.indexOf(oldWindowFocused);
-            this.windowFocused = windowFocused;
+            const newIndex = this.superWorkspace.windows.indexOf(windowFocused);
+            const oldIndex = this.superWorkspace.windows.indexOf(
+                oldWindowFocused
+            );
+            this.windowNotDialogFocused = windowFocused;
             const direction = newIndex > oldIndex ? 1 : -1;
             this.prepareTransition(windowFocused, oldWindowFocused, direction);
             this.animateTransition(direction);
@@ -32,43 +37,75 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileRegulars(windows) {
-        if (this.animationInProgress) return;
-
+        if (this.animationInProgress) {
+            return;
+        }
         windows.forEach(window => {
-            if (window.grabbed) return;
-            if (!window.maximized_horizontally) {
-                window.maximize(Meta.MaximizeFlags.BOTH);
-            }
-
-            if (window !== this.windowFocused) {
-                window.get_compositor_private().hide();
+            const actor = window.get_compositor_private();
+            if (
+                window !== this.windowNotDialogFocused ||
+                !this.superWorkspace.isDisplayed()
+            ) {
+                actor.hide();
+            } else {
+                // Unclip windows in maximize
+                if (actor.has_clip) {
+                    actor.set_z_position(0);
+                    actor.remove_clip();
+                }
+                if (!window.grabbed && !window.maximized_horizontally) {
+                    Main.wm.skipNextEffect(actor);
+                    window.maximize(Meta.MaximizeFlags.BOTH);
+                }
+                actor.show();
             }
         });
     }
 
     onDestroy() {
         super.onDestroy();
-        this.windows.forEach(window => {
-            if (window !== this.windowFocused) {
+        this.superWorkspace.windows.forEach(window => {
+            if (window !== this.windowNotDialogFocused) {
                 window.get_compositor_private().show();
             }
         });
     }
 
     prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        const newWindow = newMetaWindow.get_compositor_private();
-        let oldWindow = null;
-        if (oldMetaWindow) oldWindow = oldMetaWindow.get_compositor_private();
+        if (
+            oldMetaWindow &&
+            (!oldMetaWindow.get_compositor_private() || oldMetaWindow.grabbed)
+        ) {
+            oldMetaWindow = null;
+        }
+        if (
+            newMetaWindow &&
+            (!newMetaWindow.get_compositor_private() || newMetaWindow.grabbed)
+        ) {
+            newMetaWindow = null;
+        }
+        if (!oldMetaWindow && !newMetaWindow) {
+            log('Refusing to animate empty windows');
+            return;
+        }
+        const containers = [
+            this.leftWindowContainer,
+            this.rightWindowContainer
+        ];
+        if (direction < 0) {
+            containers.reverse();
+        }
+        const [oldContainer, newContainer] = containers;
 
-        newWindow.show();
-        if (oldWindow) oldWindow.show();
-
-        if (direction > 0) {
-            if (oldWindow) oldWindow.reparent(this.leftWindowContainer);
-            newWindow.reparent(this.rightWindowContainer);
-        } else {
-            newWindow.reparent(this.leftWindowContainer);
-            if (oldWindow) oldWindow.reparent(this.rightWindowContainer);
+        if (oldMetaWindow) {
+            let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
+            oldWindowClone.reparent(oldContainer);
+            oldMetaWindow.get_compositor_private().hide();
+        }
+        if (newMetaWindow) {
+            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
+            newWindowClone.reparent(newContainer);
+            newMetaWindow.get_compositor_private().hide();
         }
     }
 
@@ -106,17 +143,11 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.leftWindowContainer
-            .get_children()
-            .concat(this.rightWindowContainer.get_children())
-            .forEach(window => {
-                window.reparent(global.window_group);
-            });
+        this.leftWindowContainer.remove_all_children();
+        this.rightWindowContainer.remove_all_children();
         global.window_group.remove_child(this.overContainer);
         log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself after the transition`
+            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
         );
         this.onTile();
     }

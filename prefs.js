@@ -1,20 +1,61 @@
-// Library imports
-const { GObject, Gdk, Gtk, Gio } = imports.gi;
+const { GObject, Gtk, Gio } = imports.gi;
 
-const Lang = imports.lang;
-
-// Extension imports
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
 
+// eslint-disable-next-line no-unused-vars
 function init() {}
 
-const pretty_names = {
+const makePage = (title, content) => {
+    const tabWindow = new Gtk.ScrolledWindow({ vexpand: true });
+    tabWindow.add(content);
+    const tabLabel = new Gtk.Label({
+        label: title,
+        halign: Gtk.Align.START,
+        use_markup: false
+    });
+    return [tabWindow, tabLabel];
+};
+
+const makeItemRow = (name, description, item) => {
+    const nameLabel = new Gtk.Label({ xalign: 0 });
+    nameLabel.set_markup(`<span size="medium">${name}</span>`);
+
+    const descriptionLabel = new Gtk.Label({ xalign: 0 });
+    descriptionLabel.set_markup(`<span size="small">${description}</span>`);
+
+    const labelsVBox = new Gtk.VBox();
+    labelsVBox.pack_start(nameLabel, false, false, 0);
+    labelsVBox.pack_start(descriptionLabel, false, false, 0);
+
+    const rowHBox = new Gtk.HBox();
+    rowHBox.pack_start(labelsVBox, true, true, 10);
+    rowHBox.pack_start(item, false, false, 0);
+
+    const listRow = new Gtk.ListBoxRow();
+    listRow.add(rowHBox);
+
+    return listRow;
+};
+
+const makeItemList = rows => {
+    const listBox = new Gtk.ListBox({
+        valign: Gtk.Align.START
+    });
+    const listWrapper = new Gtk.VBox({
+        border_width: 10
+    });
+    rows.forEach(row => listBox.add(row));
+    listWrapper.add(listBox);
+    return listWrapper;
+};
+
+const hotKeysLabels = {
     'previous-window': 'Focus the previous window',
     'next-window': 'Focus the next window',
     'previous-workspace': 'Focus the previous workspace',
     'next-workspace': 'Focus the next workspace',
-    'kill-focused-window': 'kill the current window',
+    'kill-focused-window': 'Kill the current window',
     'move-window-left': 'Move the current window to the left',
     'move-window-right': 'Move the current window to the right',
     'move-window-top': 'Move the current window to upper workspace',
@@ -24,55 +65,42 @@ const pretty_names = {
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen'
 };
+
 const layouts = {
     maximize: 'Maximize all windows',
+    split: 'Put all windows side by side, two at a time',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',
     'half-vertical': 'Tile windows vertically',
-    ratio:
-        'Tile windows in both way according to the ratio of the remaining space',
+    ratio: 'Tile windows according to the ratio of remaining space',
     grid: 'Tile windows according to a regular grid',
     simple: 'Split screen unidirectionally according to screen ratio',
     'simple-horizontal': 'Split screen horizontally',
     'simple-vertical': 'Split screen vertically'
 };
+
+// eslint-disable-next-line no-unused-vars
 function buildPrefsWidget() {
-    let notebook = new Gtk.Notebook();
-    accel_tab(notebook);
-    layouts_tab(notebook);
-    layouts_settings_tab(notebook);
-    /* basics_tab(notebook);
+    const notebook = new Gtk.Notebook();
+    accelTab(notebook);
+    layoutsTab(notebook);
+    layoutsSettingsTab(notebook);
 
-    presets_tab(notebook);
-    margins_tab(notebook);
-    help_tab(notebook); */
-
-    let main_vbox = new Gtk.Box({
+    let mainVBox = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 10,
         border_width: 10
     });
-
-    main_vbox.pack_start(notebook, true, true, 0);
-
-    main_vbox.show_all();
-
-    return main_vbox;
+    mainVBox.pack_start(notebook, true, true, 0);
+    mainVBox.show_all();
+    return mainVBox;
 }
 
-function accel_tab(notebook) {
+function accelTab(notebook) {
     const settings = getSettings('bindings');
 
-    let ks_grid = new Gtk.Grid({
-        column_spacing: 10,
-        margin: 24,
-        orientation: Gtk.Orientation.VERTICAL,
-        row_spacing: 10
-    });
-
-    let model = new Gtk.ListStore();
-
+    const model = new Gtk.ListStore();
     model.set_column_types([
         GObject.TYPE_STRING,
         GObject.TYPE_STRING,
@@ -80,258 +108,189 @@ function accel_tab(notebook) {
         GObject.TYPE_INT
     ]);
 
-    for (let key in pretty_names) {
-        append_hotkey(model, settings, key, pretty_names[key]);
-    }
-
-    let treeview = new Gtk.TreeView({
-        expand: true,
-        model: model
+    Object.entries(hotKeysLabels).forEach(([key, label]) => {
+        const [accelKey, mods] = Gtk.accelerator_parse(
+            settings.get_strv(key)[0]
+        );
+        const row = model.insert(55);
+        model.set(row, [0, 1, 2, 3], [key, label, mods, accelKey]);
     });
 
-    let col;
-    let cellrend;
-
-    cellrend = new Gtk.CellRendererText();
-
-    col = new Gtk.TreeViewColumn({
+    const cellTextRenderer = new Gtk.CellRendererText();
+    const actionColumn = new Gtk.TreeViewColumn({
         title: 'Action',
         expand: true
     });
+    actionColumn.pack_start(cellTextRenderer, true);
+    actionColumn.add_attribute(cellTextRenderer, 'text', 1);
 
-    col.pack_start(cellrend, true);
-    col.add_attribute(cellrend, 'text', 1);
-
-    treeview.append_column(col);
-
-    cellrend = new Gtk.CellRendererAccel({
+    const cellAccelRenderer = new Gtk.CellRendererAccel({
         editable: true,
         'accel-mode': Gtk.CellRendererAccelMode.GTK
     });
-
-    cellrend.connect('accel-cleared', function(rend, str_iter) {
-        let [success, iter] = model.get_iter_from_string(str_iter);
-
+    cellAccelRenderer.connect('accel-cleared', (rend, strIter) => {
+        const [success, iter] = model.get_iter_from_string(strIter);
         if (!success) {
             throw new Error('Something be broken, yo.');
         }
 
-        let name = model.get_value(iter, 0);
+        const name = model.get_value(iter, 0);
         model.set(iter, [3], [0]);
         settings.set_strv(name, ['']);
     });
-
-    cellrend.connect('accel-edited', function(rend, str_iter, key, mods) {
-        let value = Gtk.accelerator_name(key, mods);
-
-        let [success, iter] = model.get_iter_from_string(str_iter);
-
+    cellAccelRenderer.connect('accel-edited', (rend, strIter, key, mods) => {
+        const value = Gtk.accelerator_name(key, mods);
+        const [success, iter] = model.get_iter_from_string(strIter);
         if (!success) {
             throw new Error('Something be broken, yo.');
         }
 
-        let name = model.get_value(iter, 0);
-
+        const name = model.get_value(iter, 0);
         model.set(iter, [2, 3], [mods, key]);
-
-        global.log('Changing value for ' + name + ': ' + value);
-
         settings.set_strv(name, [value]);
     });
 
-    col = new Gtk.TreeViewColumn({
+    const hotkeyColumn = new Gtk.TreeViewColumn({
         title: 'hotkeys'
     });
+    hotkeyColumn.pack_end(cellAccelRenderer, false);
+    hotkeyColumn.add_attribute(cellAccelRenderer, 'accel-mods', 2);
+    hotkeyColumn.add_attribute(cellAccelRenderer, 'accel-key', 3);
 
-    col.pack_end(cellrend, false);
-    col.add_attribute(cellrend, 'accel-mods', 2);
-    col.add_attribute(cellrend, 'accel-key', 3);
+    const treeview = new Gtk.TreeView({
+        expand: true,
+        model: model
+    });
+    treeview.append_column(actionColumn);
+    treeview.append_column(hotkeyColumn);
 
-    treeview.append_column(col);
-
-    let text = 'Keyboard shortcuts.';
-    ks_grid.add(
+    const accelGrid = new Gtk.Grid({
+        column_spacing: 10,
+        margin: 24,
+        orientation: Gtk.Orientation.VERTICAL,
+        row_spacing: 10
+    });
+    accelGrid.add(
         new Gtk.Label({
-            label: text,
+            label: 'Keyboard shortcuts.',
             halign: Gtk.Align.START,
             justify: Gtk.Justification.LEFT,
             use_markup: false,
             wrap: true
         })
     );
-    ks_grid.add(treeview);
+    accelGrid.add(treeview);
 
-    let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
-    ks_window.add(ks_grid);
-    let ks_label = new Gtk.Label({
-        label: 'Shortcuts',
-        halign: Gtk.Align.START,
-        use_markup: false
-    });
-    notebook.append_page(ks_window, ks_label);
+    notebook.append_page(...makePage('Shortcuts', accelGrid));
 }
 
-function layouts_tab(notebook) {
+function layoutsTab(notebook) {
     const settings = getSettings('layouts');
-
-    let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
-    const ks_lbox = new Gtk.ListBox({
-        valign: Gtk.Align.START
-    });
-    const w_box = new Gtk.VBox({
-        border_width: 10
-    });
-
-    w_box.add(ks_lbox);
-    ks_window.add(w_box);
-    let ks_label = new Gtk.Label({
-        label: 'Layouts',
-        halign: Gtk.Align.START,
-        use_markup: false
-    });
-    Object.entries(layouts).forEach(([layout, description]) => {
-        const row = new Gtk.ListBoxRow();
-        const hbox = new Gtk.HBox();
-        let item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
-
-        const name = new Gtk.Label({ xalign: 0 });
-        name.set_markup(
-            `<span size="medium">${layout
-                .replace('-', ' ')
-                .replace(/^\w/g, c => c.toUpperCase())}</span>`
-        );
-        const desc = new Gtk.Label({ xalign: 0 });
-        desc.set_markup(`<span size="small">${description}</span>`);
-
-        const vbox = new Gtk.VBox();
-        vbox.pack_start(name, false, false, 0);
-        vbox.pack_start(desc, false, false, 0);
-        hbox.pack_start(vbox, true, true, 10);
-        hbox.pack_start(item, false, false, 0);
-
-        row.add(hbox);
-
-        ks_lbox.add(row);
-
+    const layoutItemCreator = (rows, [layout, description]) => {
+        const name = layout
+            .replace('-', ' ')
+            .replace(/^\w/g, c => c.toUpperCase());
+        const item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
+        rows.push(makeItemRow(name, description, item));
+
         if (layout === 'ratio') {
-            const row = new Gtk.ListBoxRow();
-            const hbox = new Gtk.HBox();
-            const ratio = Gtk.Scale.new_with_range(
-                Gtk.Orientation.HORIZONTAL,
-                0,
-                1,
-                0.01
-            );
-            ratio.add_mark(
-                0.6180339887498948,
-                Gtk.PositionType.BOTTOM,
-                'Golden Ratio'
-            );
+            const ratio = Gtk.SpinButton.new_with_range(0, 1, 0.01);
             settings.bind(
                 'ratio-value',
                 ratio.get_adjustment(),
                 'value',
                 Gio.SettingsBindFlags.DEFAULT
             );
-
-            const ratioName = new Gtk.Label({ xalign: 0 });
-            ratioName.set_markup(`<span size="medium">Ratio value</span>`);
-            const ratioDesc = new Gtk.Label({ xalign: 0 });
-            ratioDesc.set_markup(
-                '<span size="small">' +
-                    'Ratio between frame and available space.' +
-                    '</span>'
+            rows.push(
+                makeItemRow(
+                    'Ratio value',
+                    'Ratio between frame and available space.',
+                    ratio
+                )
             );
-            const vbox = new Gtk.VBox();
-            vbox.pack_start(ratioName, false, false, 0);
-            vbox.pack_start(ratioDesc, false, false, 0);
-            hbox.pack_start(vbox, true, true, 10);
-            hbox.pack_start(ratio, true, true, 0);
-            row.add(hbox);
-            ks_lbox.add(row);
         }
-    });
-    notebook.append_page(ks_window, ks_label);
+        return rows;
+    };
+
+    notebook.append_page(
+        ...makePage(
+            'Layouts',
+            makeItemList(Object.entries(layouts).reduce(layoutItemCreator, []))
+        )
+    );
 }
 
-function layouts_settings_tab(notebook) {
+function layoutsSettingsTab(notebook) {
     const settings = getSettings('layouts');
+    const itemRows = [];
 
-    let ks_window = new Gtk.ScrolledWindow({ vexpand: true });
-    const parent_vbox = new Gtk.VBox({
-        valign: Gtk.Align.START,
-        border_width: 10
-    });
-    ks_window.add(parent_vbox);
-    let ks_label = new Gtk.Label({
-        label: 'Tiling settings',
-        halign: Gtk.Align.START,
-        use_markup: false
-    });
-
-    const gaphbox = new Gtk.HBox();
-    const gap = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 50, 1);
+    const gap = Gtk.SpinButton.new_with_range(0, 1000, 1);
     settings.bind(
         'gap',
         gap.get_adjustment(),
         'value',
         Gio.SettingsBindFlags.DEFAULT
     );
-
-    const gapname = new Gtk.Label({ xalign: 0 });
-    gapname.set_markup(`<span size="medium">Gap size</span>`);
-    const gapdesc = new Gtk.Label({ xalign: 0 });
-    gapdesc.set_markup(
-        `<span size="small">Determines the gap size in pixel between windows</span>`
+    itemRows.push(
+        makeItemRow(
+            'Gap size',
+            'Determines the gap size in pixel between windows.',
+            gap
+        )
+    );
+    const useScreenGap = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Use a different gap size for screen',
+            'Determines whether to use a different screen gap config.',
+            useScreenGap
+        )
+    );
+    settings.bind(
+        'use-screen-gap',
+        useScreenGap,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
     );
 
-    const gapvbox = new Gtk.VBox();
-    gapvbox.pack_start(gapname, false, false, 0);
-    gapvbox.pack_start(gapdesc, false, false, 0);
-    gaphbox.pack_start(gapvbox, true, true, 10);
-    gaphbox.pack_end(gap, true, true, 0);
-
-    parent_vbox.add(gaphbox);
-
-    const tweentimehbox = new Gtk.HBox();
-    const tweentime = Gtk.Scale.new_with_range(
-        Gtk.Orientation.HORIZONTAL,
-        0,
-        1,
-        0.01
+    const screenGap = Gtk.SpinButton.new_with_range(0, 1000, 1);
+    settings.bind(
+        'screen-gap',
+        screenGap.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
     );
+    settings.bind(
+        'use-screen-gap',
+        screenGap,
+        'sensitive',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    itemRows.push(
+        makeItemRow(
+            'Screen edge gap size',
+            'Determines the screen edge gap size in pixel between windows.',
+            screenGap
+        )
+    );
+
+    const tweentime = Gtk.SpinButton.new_with_range(0, 1, 0.01);
     settings.bind(
         'tween-time',
         tweentime.get_adjustment(),
         'value',
         Gio.SettingsBindFlags.DEFAULT
     );
-    tweentime.add_mark(0.1, Gtk.PositionType.BOTTOM, 'Fast');
-    tweentime.add_mark(0.25, Gtk.PositionType.BOTTOM, 'Smooth');
-    tweentime.add_mark(0.75, Gtk.PositionType.BOTTOM, 'Mesmerizing');
 
-    const tweentimename = new Gtk.Label({ xalign: 0 });
-    tweentimename.set_markup(`<span size="medium">Animation duration</span>`);
-    const tweentimedesc = new Gtk.Label({ xalign: 0 });
-    tweentimedesc.set_markup(
-        `<span size="small">Ajust duration (in seconds) of window move/resize animation</span>`
+    itemRows.push(
+        makeItemRow(
+            'Animation duration',
+            'Ajust duration (in seconds) of window move/resize animation.',
+            tweentime
+        )
     );
-
-    const tweentimevbox = new Gtk.VBox();
-    tweentimevbox.pack_start(tweentimename, false, false, 0);
-    tweentimevbox.pack_start(tweentimedesc, false, false, 0);
-    tweentimehbox.pack_start(tweentimevbox, true, true, 10);
-    tweentimehbox.pack_start(tweentime, true, true, 0);
-
-    parent_vbox.add(tweentimehbox);
-    notebook.append_page(ks_window, ks_label);
-}
-
-function append_hotkey(model, settings, name, pretty_name) {
-    let [key, mods] = Gtk.accelerator_parse(settings.get_strv(name)[0]);
-
-    let row = model.insert(55);
-
-    model.set(row, [0, 1, 2, 3], [name, pretty_name, mods, key]);
+    notebook.append_page(
+        ...makePage('Tiling settings', makeItemList(itemRows))
+    );
 }
