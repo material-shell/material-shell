@@ -1,7 +1,9 @@
 # Material Shell
-## A material tiling shell replacement for GNOME Shell to simplify your workflow and accelerate your productivity.
+### A simple yet productivity oriented GNOME shell replacement that provide an innovante and automated mouse/keyboard workflow with the goal to be easier and faster to use and propose a great user experience.
 
-The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome). This GNOME Shell extension provides a performant, opinionated mouse/keyboard workflow and follows the [Material Design guidelines](https://material.io).
+### Made by following the [Material Design guidelines](https://material.io) which help us to propose an aesthetic and accessible interface.
+
+###[Read more about the workflow and Material-shell](./documentation/material-shell.md)
 
 ## Demo
 
@@ -63,3 +65,5 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 ## Optional Configuration
 * Get [Plata Theme](https://gitlab.com/tista500/plata-theme) as the GTK and shell theme 
 * Get [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme) as the icon theme
+
+The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
