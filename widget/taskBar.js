@@ -35,10 +35,7 @@ var TaskBar = GObject.registerClass(
 
             workspaceEnhancer.connect('windows-changed', () => {
                 this.updateItems();
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
-                    this._animateActiveIndicator();
-                    return GLib.SOURCE_REMOVE;
-                });
+                this._animateActiveIndicator();
             });
 
             this.focusId = workspaceEnhancer.connect(

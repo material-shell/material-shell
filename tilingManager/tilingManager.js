@@ -1,4 +1,3 @@
-const { Gio } = imports.gi;
 const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -16,27 +15,31 @@ var TilingManager = class TilingManager {
         this.windows = [];
         this.layoutsSettings = getSettings('layouts');
         this.settingsSignals = [
-            this.layoutsSettings.connect('changed::gap', (schema, key) => {
+            this.layoutsSettings.connect('changed::gap', schema => {
                 this.gap = schema.get_int('gap');
                 this.tileWindows();
             }),
-            this.layoutsSettings.connect(
-                'changed::tween-time',
-                (schema, key) => {
-                    this.tweenTime = schema.get_double('tween-time');
-                }
-            ),
-            this.layoutsSettings.connect(
-                'changed::ratio-value',
-                (schema, key) => {
-                    this.ratio = schema.get_double('ratio-value');
-                    this.tileWindows();
-                }
-            )
+            this.layoutsSettings.connect('changed::use-screen-gap', schema => {
+                this.useScreenGap = schema.get_boolean('use-screen-gap');
+                this.tileWindows();
+            }),
+            this.layoutsSettings.connect('changed::screen-gap', schema => {
+                this.screenGap = schema.get_int('screen-gap');
+                this.tileWindows();
+            }),
+            this.layoutsSettings.connect('changed::tween-time', schema => {
+                this.tweenTime = schema.get_double('tween-time');
+            }),
+            this.layoutsSettings.connect('changed::ratio-value', schema => {
+                this.ratio = schema.get_double('ratio-value');
+                this.tileWindows();
+            })
         ];
 
         this.ratio = this.layoutsSettings.get_double('ratio-value');
         this.gap = this.layoutsSettings.get_int('gap');
+        this.useScreenGap = this.layoutsSettings.get_boolean('use-screen-gap');
+        this.screenGap = this.layoutsSettings.get_int('screen-gap');
         this.tweenTime = this.layoutsSettings.get_double('tween-time');
 
         this.allLayouts = Object.keys(TilingLayoutByKey);

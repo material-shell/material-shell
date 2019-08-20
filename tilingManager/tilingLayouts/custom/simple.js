@@ -1,6 +1,3 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
@@ -10,8 +7,9 @@ const {
 
 /* exported SimpleLayout */
 var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
-    onTileRegulars(windows) {
-        if (!windows.length) return;
+    onTileRegulars(windows, skip) {
+        super.onTileRegulars(windows);
+        if (!windows.length || skip) return;
 
         const workArea = this.getWorkspaceBounds();
 
@@ -28,15 +26,13 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             this.moveAndResizeMetaWindow(
                 window,
                 workArea.x + (index * workArea.width) / windows.length,
                 workArea.y,
                 workArea.width / windows.length,
-                workArea.height
+                workArea.height,
+                true
             );
         });
     }
@@ -47,15 +43,13 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             this.moveAndResizeMetaWindow(
                 window,
                 workArea.x,
                 workArea.y + (index * workArea.height) / windows.length,
                 workArea.width,
-                workArea.height / windows.length
+                workArea.height / windows.length,
+                true
             );
         });
     }

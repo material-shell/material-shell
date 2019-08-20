@@ -1,6 +1,3 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
@@ -10,6 +7,7 @@ const {
 /* exported NativeLayout */
 var NativeLayout = class NativeLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         // Sadly these functions are not js bound (yet)
         //
         // if (!windows.length) return;

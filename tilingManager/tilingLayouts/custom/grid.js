@@ -1,20 +1,14 @@
-const Main = imports.ui.main;
-const { Meta } = imports.gi;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const { range } = Me.imports.utils.index;
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 
-const range = to =>
-    Array(to)
-        .fill(0)
-        .map((_, i) => i);
-
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         if (!windows.length) return;
 
         const workArea = this.getWorkspaceBounds();
@@ -28,9 +22,6 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                 const window = windows[index];
                 if (!window) return;
 
-                if (window.get_maximized())
-                    window.unmaximize(Meta.MaximizeFlags.BOTH);
-
                 this.moveAndResizeMetaWindow(
                     window,
                     workArea.x + i * width,
@@ -39,7 +30,8 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                     index == windows.length - 1
                         ? // If last window fill remaining space
                           height * (columns * rows - index)
-                        : height
+                        : height,
+                    true
                 );
             });
         });
