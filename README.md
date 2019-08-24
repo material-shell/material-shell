@@ -42,6 +42,9 @@ yay -S gnome-shell-extension-material-shell-git
 gnome-shell-extension-tool -e material-shell@papyelgringo
 ```
 
+### Distribution packages
+- Fedora: `sudo dnf install gnome-shell-extension-material-shell`
+
 ## Workflow Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
 #### Desktop navigation
