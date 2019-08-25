@@ -324,7 +324,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||
-            !metaWindow.resizeable
+            !metaWindow.resizeable ||
+            (metaWindow.get_transient_for() != null && metaWindow.skip_taskbar)
         );
     }
 
