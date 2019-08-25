@@ -6,20 +6,17 @@ const Meta = imports.gi.Meta;
 const GLib = imports.gi.GLib;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { NoTitleBar } = Me.imports.tilingManager.noTitleBar;
+const WindowUtils = Me.imports.utils.windows;
 
 /* exported NoTitleBarModule */
 var NoTitleBarModule = class NoTitleBarModule {
-    constructor() {
-        this._noTitleBar = new NoTitleBar();
-    }
+    constructor() {}
 
     enable() {
         global.display.connect('window-created', (display, window) => {
-            this._noTitleBar.setWindowTitleBarVisibilty(window, false);
+            WindowUtils.setTitleBarVisibility(window, false);
         });
     }
 
     disable() {}
-
 };

@@ -3,7 +3,6 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
-const { NoTitleBar } = Me.imports.tilingManager.noTitleBar;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -327,9 +326,5 @@ var BaseTilingLayout = class BaseTilingLayout {
             !metaWindow.resizeable ||
             (metaWindow.get_transient_for() != null && metaWindow.skip_taskbar)
         );
-    }
-
-    setTitleBarVisibilty(window, vis) {
-        this.noTitleBar.setWindowTitleBarVisibilty(window, vis);
     }
 };
