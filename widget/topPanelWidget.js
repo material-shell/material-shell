@@ -54,8 +54,9 @@ var TopPanel = GObject.registerClass(
                 track_hover: true
             });
 
-            this.tilingButton.connect('clicked', () => {
-                superWorkspace.nextTiling();
+            this.tilingButton.connect('clicked', (actor, button) => {
+                // Go in reverse direction on right click (button: 3)
+                superWorkspace.nextTiling(button === 3 ? -1 : 1);
             });
 
             this.add_child(this.tilingButton);

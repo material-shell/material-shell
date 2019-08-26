@@ -182,7 +182,18 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 global.superWorkspaceManager
                     .getActiveSuperWorkspace()
-                    .nextTiling();
+                    .nextTiling(1);
+            }
+        );
+        Main.wm.addKeybinding(
+            'reverse-cycle-tiling-layout',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                global.superWorkspaceManager
+                    .getActiveSuperWorkspace()
+                    .nextTiling(-1);
             }
         );
 

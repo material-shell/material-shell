@@ -64,7 +64,7 @@ var TilingManager = class TilingManager {
                                             key ==
                                             superWorkspace.tilingLayout.key
                                         ) {
-                                            superWorkspace.nextTiling();
+                                            superWorkspace.nextTiling(1);
                                         }
                                     }
                                 );
@@ -98,16 +98,18 @@ var TilingManager = class TilingManager {
         return TilingLayoutByKey[key];
     }
 
-    getNextLayout(currentLayout) {
+    getNextLayout(currentLayout, direction) {
         let { key } = currentLayout.constructor;
         if (!this.availableLayouts.includes(key)) {
             key = this.availableLayouts[0];
         }
+        let nextIndex = this.availableLayouts.indexOf(key) + direction;
+        if (nextIndex < 0) {
+            nextIndex += this.availableLayouts.length;
+        }
+        nextIndex = nextIndex % this.availableLayouts.length;
         // Get the next layout available
-        const newKey = this.availableLayouts[
-            (this.availableLayouts.indexOf(key) + 1) %
-                this.availableLayouts.length
-        ];
+        const newKey = this.availableLayouts[nextIndex];
         // And returns it
         return TilingLayoutByKey[newKey];
     }

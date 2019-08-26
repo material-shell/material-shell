@@ -228,9 +228,12 @@ var SuperWorkspace = class SuperWorkspace {
         this.emitWindowsChanged(this.windows, oldWindows);
     }
 
-    nextTiling() {
+    nextTiling(direction) {
         this.tilingLayout.onDestroy();
-        const Layout = global.tilingManager.getNextLayout(this.tilingLayout);
+        const Layout = global.tilingManager.getNextLayout(
+            this.tilingLayout,
+            direction
+        );
         this.tilingLayout = new Layout(this);
         Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
