@@ -14,7 +14,9 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.monitor = superWorkspace.monitor;
         this.windowChangedId = this.superWorkspace.connect(
             'windows-changed',
-            this.onWindowsChanged.bind(this)
+            (_, windows, oldWindows) => {
+                this.onWindowsChanged(windows, oldWindows);
+            }
         );
         this.windowFocusedChangedId = this.superWorkspace.connect(
             'window-focused-changed',
