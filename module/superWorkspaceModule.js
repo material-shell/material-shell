@@ -2,18 +2,39 @@ const { Clutter, St, Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Tweener = imports.ui.tweener;
 
 const { AppsManager } = Me.imports.superWorkspace.appsManager;
 const {
     SuperWorkspaceManager
 } = Me.imports.superWorkspace.superWorkspaceManager;
 
+const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
 /* exported SuperWorkspaceModule */
 var SuperWorkspaceModule = class SuperWorkspaceModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
         this.enabled = false;
         this.signals = [];
+        Main.wm.getWindowClone = function(metaWindow) {
+            let windowActor = metaWindow.get_compositor_private();
+            /* let actorContent = Shell.util_get_content_for_window_actor(
+                windowActor,
+                metaWindow.get_frame_rect()
+            );
+            let actorClone = new St.Widget({ content: actorContent }); */
+            let actorClone = new Clutter.Clone({
+                source: windowActor
+            });
+
+            let constraint = new Clutter.BindConstraint({
+                source: windowActor,
+                coordinate: Clutter.BindCoordinate.ALL
+            });
+
+            actorClone.add_constraint(constraint);
+            return actorClone;
+        };
     }
 
     enable() {
@@ -140,128 +161,195 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
          *  2- Add the panels and backgrounds to the animated container so they will follow the transition animation.
          */
         this.original_prepareWorkspaceSwitch = Main.wm._prepareWorkspaceSwitch;
-        Main.wm._prepareWorkspaceSwitch = (function() {
-            var cachedFunction = Main.wm._prepareWorkspaceSwitch;
-            return function() {
-                // Before
-                log('Workspace switch animation STARTED');
+        Main.wm._prepareWorkspaceSwitch = function(from, to, direction) {
+            if (this._switchData) return;
 
-                global.workspaceAnimationInProgress = true;
+            let wgroup = Main.uiGroup;
+            let windows = global.get_window_actors();
+            let switchData = {};
 
-                var result = cachedFunction.apply(this, arguments); // use .apply() to call it
-                // After
-                //Main.messageTray._escapeTray();
-                // Creating a new container over the switchData,container
-                let primaryMonitorGeometry = global.display.get_monitor_geometry(
-                    global.display.get_primary_monitor()
-                );
-                this._switchData.overContainer = new St.Widget();
-                this._switchData.overContainer.set_clip(
-                    primaryMonitorGeometry.x,
-                    primaryMonitorGeometry.y,
-                    primaryMonitorGeometry.width,
-                    primaryMonitorGeometry.height
-                );
-                this._switchData.container.reparent(
-                    this._switchData.overContainer
-                );
-                global.window_group.add_child(this._switchData.overContainer);
+            this._switchData = switchData;
+            switchData.curGroup = new Clutter.Actor();
+            switchData.movingWindowBin = new Clutter.Actor();
+            switchData.windows = [];
+            switchData.surroundings = {};
+            switchData.gestureActivated = false;
+            switchData.inProgress = false;
 
-                let from = arguments[0];
-                let to = arguments[1];
-                let direction = arguments[2];
+            switchData.container = new Clutter.Actor();
+            switchData.container.add_actor(switchData.curGroup);
 
-                let curWs = global.workspace_manager.get_workspace_by_index(
-                    from
-                );
+            // Creating a new container over the switchData,container
+            switchData.overContainer = new Clutter.Actor();
+            switchData.overContainer.add_actor(switchData.container);
 
-                let curSuperWorkspace = (this._switchData.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
-                    from
-                ));
-                this._switchData.superWorkspace.uiVisible = true;
-                this._switchData.superWorkspace.updateUI();
-                this._switchData.superWorkspace.frontendContainer.reparent(
-                    this._switchData.curGroup
-                );
+            wgroup.add_actor(switchData.movingWindowBin);
+            wgroup.insert_child_above(
+                switchData.overContainer,
+                global.window_group
+            );
 
-                this._switchData.superWorkspace.backgroundContainer.reparent(
-                    this._switchData.curGroup
-                );
-                this._switchData.superWorkspace.backgroundContainer.lower_bottom();
-                this._switchData.curGroup.set_offscreen_redirect(
-                    Clutter.OffscreenRedirect.ALWAYS
-                );
-                for (let dir of Object.values(Meta.MotionDirection)) {
-                    let ws = null;
+            let primaryMonitorGeometry = global.display.get_monitor_geometry(
+                global.display.get_primary_monitor()
+            );
+            switchData.overContainer.set_clip(
+                primaryMonitorGeometry.x,
+                primaryMonitorGeometry.y,
+                primaryMonitorGeometry.width,
+                primaryMonitorGeometry.height
+            );
 
-                    if (to < 0) ws = curWs.get_neighbor(dir);
-                    else if (dir == direction)
-                        ws = global.workspace_manager.get_workspace_by_index(
-                            to
-                        );
+            let workspaceManager = global.workspace_manager;
+            let curWs = workspaceManager.get_workspace_by_index(from);
 
-                    if (ws == null || ws == curWs) {
-                        continue;
-                    }
+            switchData.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
+                from
+            );
 
-                    let info = this._switchData.surroundings[dir];
-                    let superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
-                        ws.index()
-                    );
-                    info.superWorkspace = superWorkspace;
-                    info.superWorkspace.uiVisible = true;
-                    info.superWorkspace.updateUI();
-                    info.superWorkspace.frontendContainer.reparent(info.actor);
-                    info.superWorkspace.frontendContainer.raise_top();
-                    info.superWorkspace.backgroundContainer.reparent(
-                        info.actor
-                    );
-                    info.superWorkspace.backgroundContainer.lower_bottom();
-                    info.actor.set_offscreen_redirect(
-                        Clutter.OffscreenRedirect.ALWAYS
-                    );
+            switchData.superWorkspace.uiVisible = true;
+            switchData.superWorkspace.updateUI();
+            switchData.superWorkspace.backgroundContainer.reparent(
+                switchData.curGroup
+            );
+            switchData.superWorkspace.frontendContainer.reparent(
+                switchData.curGroup
+            );
+
+            for (let dir of Object.values(Meta.MotionDirection)) {
+                let ws = null;
+
+                if (to < 0) ws = curWs.get_neighbor(dir);
+                else if (dir == direction)
+                    ws = workspaceManager.get_workspace_by_index(to);
+
+                if (ws == null || ws == curWs) {
+                    switchData.surroundings[dir] = null;
+                    continue;
                 }
-                return result;
-            };
-        })();
+
+                let info = {
+                    index: ws.index(),
+                    actor: new Clutter.Actor()
+                };
+                switchData.surroundings[dir] = info;
+                switchData.container.add_actor(info.actor);
+                info.actor.raise_top();
+
+                let [x, y] = this._getPositionForDirection(dir);
+                info.actor.set_position(x, y);
+
+                info.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
+                    ws.index()
+                );
+
+                info.superWorkspace.backgroundContainer.reparent(info.actor);
+
+                info.superWorkspace.uiVisible = true;
+                info.superWorkspace.updateUI();
+                info.superWorkspace.frontendContainer.reparent(info.actor);
+            }
+
+            switchData.movingWindowBin.raise_top();
+
+            for (let i = 0; i < windows.length; i++) {
+                let window = windows[i].get_meta_window();
+                let actor = this.getWindowClone(window);
+
+                if (!window.showing_on_its_workspace()) continue;
+
+                if (window.is_on_all_workspaces()) continue;
+
+                if (this._movingWindow && window == this._movingWindow) {
+                    actor.reparent(switchData.movingWindowBin);
+                } else if (window.get_workspace().index() == from) {
+                    actor.reparent(switchData.curGroup);
+                } else {
+                    for (let dir of Object.values(Meta.MotionDirection)) {
+                        let info = switchData.surroundings[dir];
+                        if (
+                            !info ||
+                            info.index != window.get_workspace().index()
+                        )
+                            continue;
+
+                        actor.reparent(info.actor);
+                        //actor.lower(info.superWorkspace.frontendContainer);
+                        break;
+                    }
+                }
+            }
+
+            switchData.superWorkspace.frontendContainer.reparent(
+                switchData.curGroup
+            );
+        };
 
         /*
          * Override the _finishWorkspaceSwitch to clear the changes of _prepareWorkspaceSwitch
          */
         this.original_finishWorkspaceSwitch = Main.wm._finishWorkspaceSwitch;
-        Main.wm._finishWorkspaceSwitch = (function() {
-            var cachedFunction = Main.wm._finishWorkspaceSwitch;
-            return function() {
-                let switchData = arguments[0];
-                switchData.superWorkspace.frontendContainer.reparent(
-                    Main.layoutManager.uiGroup
-                );
-                switchData.superWorkspace.backgroundContainer.reparent(
-                    Main.layoutManager._backgroundGroup
-                );
-                switchData.superWorkspace.uiVisible = false;
-                switchData.superWorkspace.updateUI();
-                for (let dir of Object.values(Meta.MotionDirection)) {
-                    let info = switchData.surroundings[dir];
-                    if (info) {
-                        info.superWorkspace.frontendContainer.reparent(
-                            Main.layoutManager.uiGroup
-                        );
-                        info.superWorkspace.backgroundContainer.reparent(
-                            Main.layoutManager._backgroundGroup
-                        );
-                    }
-                }
 
-                // Before
-                var result = cachedFunction.apply(this, arguments); // use .apply() to call it
-                // After
-                switchData.overContainer.destroy();
-                global.workspaceAnimationInProgress = false;
-                log('Workspace switch animation ended');
-                return result;
-            };
-        })();
+        Main.wm._finishWorkspaceSwitch = function(switchData) {
+            this._switchData = null;
+            switchData.superWorkspace.frontendContainer.reparent(
+                Main.layoutManager.uiGroup
+            );
+            switchData.superWorkspace.backgroundContainer.reparent(
+                Main.layoutManager._backgroundGroup
+            );
+            switchData.superWorkspace.uiVisible = false;
+            switchData.superWorkspace.updateUI();
+
+            for (let dir of Object.values(Meta.MotionDirection)) {
+                let info = switchData.surroundings[dir];
+                if (info) {
+                    info.superWorkspace.frontendContainer.reparent(
+                        Main.layoutManager.uiGroup
+                    );
+                    info.superWorkspace.backgroundContainer.reparent(
+                        Main.layoutManager._backgroundGroup
+                    );
+                }
+            }
+            Tweener.removeTweens(switchData.container);
+            switchData.overContainer.destroy();
+            switchData.movingWindowBin.destroy();
+
+            this._movingWindow = null;
+        };
+
+        Main.wm.__switchWorkspace = function(shellwm, from, to, direction) {
+            if (!Main.sessionMode.hasWorkspaces || !this._shouldAnimate()) {
+                shellwm.completed_switch_workspace();
+                return;
+            }
+
+            // If we come from a gesture, switchData will already be set,
+            // and we don't want to overwrite it.
+            if (!this._switchData)
+                this._prepareWorkspaceSwitch(from, to, direction);
+
+            this._switchData.inProgress = true;
+
+            let [xDest, yDest] = this._getPositionForDirection(direction);
+
+            /* @direction is the direction that the "camera" moves, so the
+             * screen contents have to move one screen's worth in the
+             * opposite direction.
+             */
+            xDest = -xDest;
+            yDest = -yDest;
+
+            Tweener.addTween(this._switchData.container, {
+                translate_x: xDest,
+                translate_y: yDest,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: this._switchWorkspaceDone,
+                onCompleteScope: this,
+                onCompleteParams: [shellwm]
+            });
+        };
 
         this.original_actionMoveWorkspace = Main.wm.actionMoveWorkspace;
         Main.wm.actionMoveWorkspace = (function() {

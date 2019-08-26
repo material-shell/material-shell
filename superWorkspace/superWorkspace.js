@@ -1,4 +1,4 @@
-const { Clutter, GLib, St, Gio } = imports.gi;
+const { Clutter, GLib, St } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 const Background = imports.ui.background;
@@ -6,14 +6,25 @@ const Background = imports.ui.background;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
+const { debounce } = Me.imports.utils.index;
 
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
 
 const { Stack } = Me.imports.widget.layout;
 
+const EMIT_DEBOUNCE_DELAY = 100;
+
 var SuperWorkspace = class SuperWorkspace {
-    constructor(categoryKey, category, apps, monitor, visible) {
+    constructor(
+        superWorkspaceManager,
+        categoryKey,
+        category,
+        apps,
+        monitor,
+        visible
+    ) {
+        this.superWorkspaceManager = superWorkspaceManager;
         this.categoryKey = categoryKey;
         this.category = category;
         this.monitor = monitor;
@@ -32,6 +43,13 @@ var SuperWorkspace = class SuperWorkspace {
         this.frontendContainer = new St.Widget();
 
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
+
+        // Only emit window changed after EMIT_DEBOUNCE_DELAY ms without call
+        // This prevents multiple tiling on window add for instance
+        this.emitWindowsChangedDebounced = debounce(
+            this.emitWindowsChanged,
+            EMIT_DEBOUNCE_DELAY
+        );
 
         this.panel = new TopPanel(this);
 
@@ -55,7 +73,7 @@ var SuperWorkspace = class SuperWorkspace {
             y: monitor.y,
             width: monitor.width,
             height: monitor.height,
-            //This St.Bin fix an Incredible Bug which the source is Unknown that make the AppCard to fill his parent when clicking on app icon SOMETIMES.
+            // This St.Bin fix an Incredible Bug which the source is Unknown that make the AppCard to fill his parent when clicking on app icon SOMETIMES.
             // Since the St.Bin take the size of the AppCard the bug is invisible...
             children: [new St.Bin({ child: this.categorizedAppCard })]
         });
@@ -68,13 +86,11 @@ var SuperWorkspace = class SuperWorkspace {
             'notify::focus-window',
             () => {
                 let windowFocused = global.display.focus_window;
-                let index = this.windows.indexOf(windowFocused);
-                if (index === -1) {
+                if (!this.windows.includes(windowFocused)) {
                     return;
                 }
                 if (windowFocused.is_attached_dialog()) {
                     windowFocused = windowFocused.get_transient_for();
-                    index = this.windows.indexOf(windowFocused);
                 }
                 this.onFocus(windowFocused);
             }
@@ -85,6 +101,10 @@ var SuperWorkspace = class SuperWorkspace {
             () => {
                 this.updateTopBarPositionAndSize();
             }
+        );
+        this.loadedSignalId = Me.connect(
+            'extension-loaded',
+            this.handleExtensionLoaded.bind(this)
         );
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
@@ -98,6 +118,7 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.backgroundContainer) this.backgroundContainer.destroy();
         global.display.disconnect(this.focusEventId);
         global.display.disconnect(this.workAreaChangedId);
+        Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
         this.destroyed = true;
     }
@@ -119,35 +140,43 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        log(`window ${window.get_id()} added to ${this.categoryKey}`);
+        log(`window ${window.get_title()} added to ${this.categoryKey}`);
         window.workspaceEnhancer = this;
+        const oldWindows = [...this.windows];
         this.windows.push(window);
-        this.onFocus(window);
-        this.throttleEmit();
+        // Focusing window if the window comes from a drag and drop
+        // or if there's no focused window
+        if (
+            window.grabbed ||
+            !this.windowFocused ||
+            !this.windows.includes(this.windowFocused)
+        ) {
+            this.onFocus(window);
+        }
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        log(`window ${window.get_id()} remove from ${this.categoryKey}`);
+        log(`window ${window.get_title()} removed from ${this.categoryKey}`);
+        const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
+        // If there's no more focused window on this workspace focus the last one
         if (window === this.windowFocused) {
-            let newWindowToFocus =
-                this.windows[windowIndex - 1] || this.windows[0];
-            if (newWindowToFocus) {
-                this.onFocus(newWindowToFocus);
-            }
+            this.focusLastWindow();
         }
-        this.throttleEmit();
+        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     swapWindows(firstWindow, secondWindow) {
         const firstIndex = this.windows.indexOf(firstWindow);
         const secondIndex = this.windows.indexOf(secondWindow);
+        const oldWindows = [...this.windows];
         this.windows[firstIndex] = secondWindow;
         this.windows[secondIndex] = firstWindow;
-        this.throttleEmit();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     focusNext() {
@@ -167,27 +196,36 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     onFocus(windowFocused) {
-        if (windowFocused === this.windowFocused) return;
-        this.emit('window-focused-changed', windowFocused, this.windowFocused);
+        if (windowFocused === this.windowFocused) {
+            return;
+        }
+        const oldFocusedWindow = this.windowFocused;
         this.windowFocused = windowFocused;
+        this.emit(
+            'window-focused-changed',
+            this.windowFocused,
+            oldFocusedWindow
+        );
     }
 
     setWindowBefore(windowToMove, windowRelative) {
+        const oldWindows = [...this.windows];
         let windowToMoveIndex = this.windows.indexOf(windowToMove);
         this.windows.splice(windowToMoveIndex, 1);
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.throttleEmit();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
+        const oldWindows = [...this.windows];
         let windowToMoveIndex = this.windows.indexOf(windowToMove);
         this.windows.splice(windowToMoveIndex, 1);
 
         let windowRelativeIndex = this.windows.indexOf(windowRelative);
         this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.throttleEmit();
+        this.emitWindowsChanged(this.windows, oldWindows);
     }
 
     nextTiling(direction) {
@@ -212,8 +250,7 @@ var SuperWorkspace = class SuperWorkspace {
         });
         return (
             !containFullscreenWindow &&
-            (global.superWorkspaceManager &&
-                !global.superWorkspaceManager.noUImode)
+            (this.superWorkspaceManager && !this.superWorkspaceManager.noUImode)
         );
     }
 
@@ -265,25 +302,72 @@ var SuperWorkspace = class SuperWorkspace {
         this.backgroundShown = false;
     }
 
-    throttleEmit() {
-        if (this.emitInProgress) {
-            return;
-        }
-        this.emitInProgress = true;
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.emitInProgress = false;
-
-            if (this.destroyed) {
-                return GLib.SOURCE_REMOVE;
+    emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
+        // In case of direct call check if it has _debouncedArgs
+        if (debouncedArgs) {
+            // Get first debounced oldWindows
+            const firstOldWindows = debouncedArgs[0][1];
+            // And compare it with the new newWindows
+            if (
+                newWindows.length === firstOldWindows.length &&
+                newWindows.every((window, i) => firstOldWindows[i] === window)
+            ) {
+                // If it's the same, the changes have compensated themselves
+                // So in the end nothing happened:
+                log(
+                    'Windows change compensated during debounce, doing nothing'
+                );
+                return;
             }
-            this.emit('windows-changed');
-            return GLib.SOURCE_REMOVE;
-        });
+            oldWindows = firstOldWindows;
+        }
+
+        if (!this.destroyed) {
+            // Make it async to prevent concurrent debounce calls
+            if (debouncedArgs) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    this.emit('windows-changed', newWindows, oldWindows);
+                });
+            } else {
+                this.emit('windows-changed', newWindows, oldWindows);
+            }
+        }
     }
 
     setApps(apps) {
         this.apps = apps;
         this.categorizedAppCard._loadApps(apps);
+    }
+
+    isDisplayed() {
+        if (this.monitor.index !== Main.layoutManager.primaryIndex) {
+            return true;
+        } else {
+            return (
+                this === this.superWorkspaceManager.getActiveSuperWorkspace()
+            );
+        }
+    }
+
+    focusLastWindow() {
+        if (this.windows.length) {
+            const lastWindow = this.windows.slice(-1)[0];
+            log('Focusing last window', lastWindow.get_title());
+            this.onFocus(lastWindow);
+        } else {
+            this.windowFocused = null;
+        }
+    }
+
+    handleExtensionLoaded() {
+        this.windows
+            .map(metaWindow => metaWindow.get_compositor_private())
+            .filter(window => window)
+            .forEach(window =>
+                this.isDisplayed() ? window.show() : window.hide()
+            );
+
+        this.focusLastWindow();
     }
 };
 Signals.addSignalMethods(SuperWorkspace.prototype);

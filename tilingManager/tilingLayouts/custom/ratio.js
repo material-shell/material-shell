@@ -1,25 +1,19 @@
-const Main = imports.ui.main;
-const { Meta, Gio } = imports.gi;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
-const { getSettings } = Me.imports.utils.settings;
 
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
+        super.onTileRegulars(windows);
         if (!windows.length) return;
         const ratio = global.tilingManager.ratio;
 
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            if (window.get_maximized())
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-
             let windowArea = {
                 x: workArea.x,
                 y: workArea.y
@@ -46,7 +40,8 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 windowArea.x,
                 windowArea.y,
                 windowArea.width,
-                windowArea.height
+                windowArea.height,
+                true
             );
         });
     }

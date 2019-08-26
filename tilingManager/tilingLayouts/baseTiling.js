@@ -8,13 +8,10 @@ const { Backdrop } = Me.imports.widget.backdrop;
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(superWorkspace) {
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${
-                this.constructor.key
-            }-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
-        this.windowFocused = this.superWorkspace.windowFocused;
         this.windowChangedId = this.superWorkspace.connect(
             'windows-changed',
             this.onWindowsChanged.bind(this)
@@ -27,43 +24,48 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
         this.workAreaChangedId = global.display.connect(
             'workareas-changed',
-            () => {
-                this.onTile();
-            }
+            this.onWorkAreasChanged.bind(this)
         );
-
-        this.windows = superWorkspace.windows;
     }
 
-    onWindowsChanged() {
-        log('windows changed');
-        this.windows = this.superWorkspace.windows;
-        log(
-            `${
-                this.superWorkspace.categoryKey
-            } tilingLayout tile itself from onWindowsChanged event`
-        );
+    onWorkAreasChanged() {
+        log('workareas-changed');
         this.onTile();
     }
 
-    onFocusChanged(windowFocused) {
-        this.windowFocused = windowFocused;
+    onWindowsChanged() {
+        if (Me.loaded) {
+            log(
+                `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
+            );
+            this.onTile();
+        }
     }
 
+    onFocusChanged() {}
+
     onTile() {
-        log('tile for real', this.superWorkspace.categoryKey);
-        let [dialogWindows, regularWindows] = this.getDialogAndRegularWindows();
+        log(`Tile ${this.superWorkspace.categoryKey}`);
+        const {
+            dialogWindows,
+            regularWindows
+        } = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);
     }
 
-    // eslint-disable-next-line no-unused-vars
     onTileRegulars(windows) {
+        windows
+            .filter(window => window.get_maximized())
+            .forEach(window => {
+                Main.wm.skipNextEffect(window.get_compositor_private());
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
+            });
+
         // Define windows sizes and positions
     }
 
     onTileDialogs(windows) {
-        log('TILING DIALOG WINDOWS');
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -71,7 +73,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
-            log('TILE', metaWindow.title);
             if (!window.backdrop) {
                 window.backdrop = new Backdrop(window);
             }
@@ -85,23 +86,25 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveMetaWindow(metaWindow, x, y) {
-        this.callSafely(metaWindow, metaWindowInside => {
-            metaWindowInside.move_frame(true, x, y);
+        this.callSafely(metaWindow, () => {
+            metaWindow.move_frame(true, x, y);
         });
     }
 
-    moveAndResizeMetaWindow(metaWindow, x, y, width, height) {
-        const gap = global.tilingManager.gap;
+    moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate, noGaps) {
         const tweenTime = global.tilingManager.tweenTime;
-        if (gap) {
-            x = x + gap / 2;
-            y = y + gap / 2;
-            width = width - gap;
-            height = height - gap;
+        if (!noGaps) {
+            ({ x, y, width, height } = this.applyGaps({ x, y, width, height }));
+        }
+
+        if (!animate || !this.superWorkspace.isDisplayed()) {
+            this.callSafely(metaWindow, () => {
+                metaWindow.move_resize_frame(true, x, y, width, height);
+            });
+            return;
         }
 
         const rect = metaWindow.get_frame_rect();
-        const buf = metaWindow.get_buffer_rect();
         x = Math.floor(x);
         y = Math.floor(y);
         width = Math.floor(width);
@@ -114,33 +117,75 @@ var BaseTilingLayout = class BaseTilingLayout {
         ) {
             return;
         }
-        this.callSafely(metaWindow, metaWindowInside => {
-            const actor = metaWindowInside.get_compositor_private();
-            const oldRect = metaWindow.get_frame_rect();
-            const [px, py] = global.get_pointer();
+
+        this.callSafely(metaWindow, () => {
+            const actor = metaWindow.get_compositor_private();
+            let {
+                x: oldX,
+                y: oldY,
+                width: oldWidth,
+                height: oldHeight
+            } = actor;
+
+            if (actor.has_clip) {
+                const [, , clipWidth, clipHeight] = actor.get_clip();
+                oldWidth = clipWidth;
+                oldHeight = clipHeight;
+                actor.set_z_position(0);
+                actor.remove_clip();
+            }
 
             if (metaWindow.grabbed) {
-                const aw = actor.width;
-                const ah = actor.height;
-                const grabX = (px - actor.x) / actor.width;
-                const grabY = (py - actor.y) / actor.height;
-                actor.set_pivot_point(grabX, grabY);
-                Tweener.addTween(actor, {
-                    scale_x: width / oldRect.width,
-                    scale_y: height / oldRect.height,
-                    time: tweenTime,
-                    transition: 'easeOutQuad'
-                });
+                // Removing this for now since on drop animation start with the
+                // original grabbed actor size making it wonky.
+
+                // This sizes the grabbed actor to the drop area:
+                // const [px, py] = global.get_pointer();
+                // const grabX = (px - actor.x) / actor.width;
+                // const grabY = (py - actor.y) / actor.height;
+                // actor.set_pivot_point(grabX, grabY);
+                //
+                // Tweener.addTween(actor, {
+                //     scale_x: width / rect.width,
+                //     scale_y: height / rect.height,
+                //     time: tweenTime,
+                //     transition: 'easeOutQuad'
+                // });
                 return;
             }
 
             metaWindow.move_resize_frame(true, x, y, width, height);
-            const newRect = metaWindow.get_frame_rect();
+            let {
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            } = actor;
+            const frame = metaWindow.get_frame_rect();
+
+            if (frame.width !== width || frame.height !== height) {
+                log(
+                    'Force resize of',
+                    metaWindow.get_title(),
+                    `${newWidth}x${newHeight} -> ${width}x${height}`
+                );
+                // Some windows have invisible padding
+                // actor is larger in this case and we need to clip
+                // only visible area
+                actor.set_clip(frame.x - newX, frame.y - newY, width, height);
+                // This is a gore hack to prevent clipped areas
+                // to be drawn with garbage on top of other windows.
+                // For some reasons this seems to force correct damaging.
+                actor.set_z_position(0.01);
+                newWidth = width;
+                newHeight = height;
+            }
+
             actor.opacity = 255;
-            actor.scale_x = oldRect.width / newRect.width;
-            actor.scale_y = oldRect.height / newRect.height;
-            actor.translation_x = oldRect.x - newRect.x;
-            actor.translation_y = oldRect.y - newRect.y;
+            actor.scale_x = oldWidth / newWidth;
+            actor.scale_y = oldHeight / newHeight;
+            actor.translation_x = oldX - newX;
+            actor.translation_y = oldY - newY;
             Tweener.addTween(actor, {
                 scale_x: 1.0,
                 scale_y: 1.0,
@@ -158,12 +203,12 @@ var BaseTilingLayout = class BaseTilingLayout {
         if (actor && actor.get_texture()) {
             // We need the actor to be mapped to remove random crashes
             if (actor.mapped) {
-                callback(metaWindow);
+                callback();
             } else {
                 // Wait for it to be mapped
                 if (actor.waitToBeMappedId) return;
                 actor.waitToBeMappedId = actor.connect('notify::mapped', () => {
-                    callback(metaWindow);
+                    callback();
                     actor.disconnect(actor.waitToBeMappedId);
                     delete actor.waitToBeMappedId;
                 });
@@ -187,7 +232,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     getWorkspaceBounds() {
-        const gap = global.tilingManager.gap;
         const {
             x,
             y,
@@ -195,11 +239,58 @@ var BaseTilingLayout = class BaseTilingLayout {
             height
         } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
         return {
-            x: x + gap / 2,
-            y: y + gap / 2,
-            width: width - gap,
-            height: height - gap
+            x,
+            y,
+            width,
+            height
         };
+    }
+
+    applyGaps(window) {
+        // Reduces window size according to gap setting
+        const gap = global.tilingManager.gap;
+        const screenGap = global.tilingManager.screenGap;
+        const useScreenGap = global.tilingManager.useScreenGap;
+
+        if (!gap && (!useScreenGap || !screenGap)) {
+            return window;
+        }
+        let { x, y, width, height } = window;
+
+        const bounds = this.getWorkspaceBounds();
+        const edgeGap = useScreenGap ? screenGap : gap;
+        const halfGap = gap / 2;
+
+        if (window.x === bounds.x) {
+            // Window is at screen left edge
+            x += edgeGap;
+            width -= edgeGap;
+        } else {
+            x += halfGap;
+            width -= halfGap;
+        }
+        if (window.y === bounds.y) {
+            // Window is at screen top edge
+            y += edgeGap;
+            height -= edgeGap;
+        } else {
+            y += halfGap;
+            height -= halfGap;
+        }
+        if (window.x + window.width === bounds.x + bounds.width) {
+            // Window is at screen right edge
+            width -= edgeGap;
+        } else {
+            width -= halfGap;
+        }
+        if (window.y + window.height === bounds.y + bounds.height) {
+            // Window is at screen bottom edge
+            height -= edgeGap;
+        } else {
+            height -= halfGap;
+        }
+
+        return { x, y, width, height };
     }
 
     onDestroy() {
@@ -212,7 +303,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogWindows = [];
         let regularWindows = [];
 
-        for (let window of this.windows) {
+        for (let window of this.superWorkspace.windows) {
             if (this.isDialog(window)) {
                 dialogWindows.push(window);
             } else {
@@ -220,12 +311,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             }
         }
 
-        log(
-            'Tiling ',
-            this.superWorkspace.categoryKey,
-            regularWindows.map(w => w.get_title())
-        );
-        return [dialogWindows, regularWindows];
+        return { dialogWindows, regularWindows };
     }
 
     isDialog(metaWindow) {
@@ -237,7 +323,8 @@ var BaseTilingLayout = class BaseTilingLayout {
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||
-            !metaWindow.resizeable
+            !metaWindow.resizeable ||
+            (metaWindow.get_transient_for() != null && metaWindow.skip_taskbar)
         );
     }
 };

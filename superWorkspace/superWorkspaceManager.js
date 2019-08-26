@@ -19,6 +19,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             if (!this.appsByCategory[key].length) continue;
             if (category.primary) {
                 let superWorkspace = new SuperWorkspace(
+                    this,
                     key,
                     category,
                     this.appsByCategory[key],
@@ -36,6 +37,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                         continue;
                     }
                     let superWorkspace = new SuperWorkspace(
+                        this,
                         key,
                         category,
                         this.appsByCategory[key],
@@ -71,7 +73,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 superWorkspace => superWorkspace.category.primary
             ).length - this.workspaceManager.n_workspaces
         );
-        log('diff');
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         for (var i = 0; i < diff; i++) {
             if (
@@ -211,7 +212,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     onNewWindow(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
+        // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
+        if (!Me.loaded) {
+            metaWindow.get_compositor_private().hide();
+        }
         this.addWindowToAppropriateSuperWorkspace(metaWindow);
     }
 
@@ -247,7 +252,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             });
 
             if (!superWorkspace) {
-                log('No superWorkspace by app founded');
+                log('No superWorkspace by app found');
 
                 log(
                     'Window is on primary monitor try to find right Superworkspace'
@@ -256,9 +261,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     currentWindowWorkspace.index()
                 );
                 log(
-                    `the superWorkspace founded is ${
-                        superWorkspace.categoryKey
-                    }`
+                    `the superWorkspace found is ${superWorkspace.categoryKey}`
                 );
             }
         }
@@ -271,12 +274,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             workspaceOfSuperWorkspace !== currentWindowWorkspace
         ) {
             log(
-                `the window is not on the correct workspace so it's moved to  ${workspaceOfSuperWorkspace.index()}`
+                `${metaWindow.get_title()} is not on the correct workspace (${currentWindowWorkspace.index()}) so it's moved to ${workspaceOfSuperWorkspace.index()}`
             );
             metaWindow.change_workspace(workspaceOfSuperWorkspace);
         }
 
-        log(superWorkspace.categoryKey);
         superWorkspace.addWindow(metaWindow);
     }
 
@@ -294,10 +296,15 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        log(`metaWindow ${metaWindow.get_id()} entered in workspace`);
-        this.getPrimarySuperWorkspaceByIndex(workspace.index()).addWindow(
-            metaWindow
+        const superWorkspace = this.getPrimarySuperWorkspaceByIndex(
+            workspace.index()
         );
+        log(
+            `${metaWindow.get_title()} entered workspace ${
+                superWorkspace.categoryKey
+            } on ${workspace.index()}`
+        );
+        superWorkspace.addWindow(metaWindow);
     }
 
     windowLeftWorkspace(metaWindow, workspace) {
@@ -307,10 +314,15 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        log(`metaWindow ${metaWindow.get_id()} left a workspace`);
-        this.getPrimarySuperWorkspaceByIndex(workspace.index()).removeWindow(
-            metaWindow
+        const superWorkspace = this.getPrimarySuperWorkspaceByIndex(
+            workspace.index()
         );
+        log(
+            `${metaWindow.get_title()} left workspace ${
+                superWorkspace.categoryKey
+            } on ${workspace.index()}`
+        );
+        superWorkspace.removeWindow(metaWindow);
     }
 
     windowEnteredMonitor(metaWindow, monitorIndex) {
@@ -321,9 +333,15 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].addWindow(
-            metaWindow
+        const superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+            monitorIndex
+        )[0];
+        log(
+            `${metaWindow.get_title()} entered workspace ${
+                superWorkspace.categoryKey
+            } through monitor ${monitorIndex}`
         );
+        superWorkspace.addWindow(metaWindow);
     }
 
     windowLeftMonitor(metaWindow, monitorIndex) {
@@ -334,9 +352,15 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        this.getSuperWorkspacesOfMonitorIndex(monitorIndex)[0].removeWindow(
-            metaWindow
+        const superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+            monitorIndex
+        )[0];
+        log(
+            `${metaWindow.get_title()} left workspace ${
+                superWorkspace.categoryKey
+            } on monitor ${monitorIndex}`
         );
+        superWorkspace.removeWindow(metaWindow);
     }
 
     _handleWindow(metaWindow) {
