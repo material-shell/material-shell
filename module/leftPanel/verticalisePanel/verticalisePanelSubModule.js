@@ -107,6 +107,25 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         this.panel._leftCorner.actor.hide();
         this.panel._rightCorner.actor.hide();
         this.rectangularClockSubModule.enable();
+
+        this.leftBoxActorAddedSignal = this.panel._leftBox.connect(
+            'actor-added',
+            (_, actor) => {
+                this.recursivelySetVertical(actor, true);
+            }
+        );
+        this.centerBoxActorAddedSignal = this.panel._centerBox.connect(
+            'actor-added',
+            (_, actor) => {
+                this.recursivelySetVertical(actor, true);
+            }
+        );
+        this.rightBoxActorAddedSignal = this.panel._rightBox.connect(
+            'actor-added',
+            (_, actor) => {
+                this.recursivelySetVertical(actor, true);
+            }
+        );
     }
 
     disable() {
@@ -121,6 +140,9 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         this.panel._leftCorner.actor.show();
         this.panel._rightCorner.actor.show();
         this.rectangularClockSubModule.disable();
+        this.panel._leftBox.disconnect(this.leftBoxActorAddedSignal);
+        this.panel._centerBox.disconnect(this.centerBoxActorAddedSignal);
+        this.panel._rightBox.disconnect(this.rightBoxActorAddedSignal);
     }
 
     recursivelySetVertical(actor, value) {

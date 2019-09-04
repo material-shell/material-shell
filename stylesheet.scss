@@ -62,7 +62,8 @@ $panel-size: 48px;
     background-color: $color-bg;
     box-shadow: $shadow;
     #panelLeft,
-    #panelCenter {
+    #panelCenter,
+    #panelRight {
         // spacing between activities<>app menu and such
         spacing: 0px;
     }
@@ -125,10 +126,19 @@ $panel-size: 48px;
 
 .panel-button {
     text-align: center;
+    padding: 0px;
+    spacing: 0px;
+    > * {
+        width: $panel-size - 20px;
+        padding: 4px 0px;
+        margin: 0px;
+    }
 }
 
 .system-status-icon {
     height: 24px;
+    width: 24px;
+    padding: 0px;
 }
 
 .clock-display {
