@@ -1,3 +1,5 @@
+const { GLib } = imports.gi;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
@@ -7,8 +9,10 @@ const WindowUtils = Me.imports.utils.windows;
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-        this.superWorkspace.windows.forEach(window => {
-            WindowUtils.setTitleBarVisibility(window, true);
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.superWorkspace.windows.forEach(window => {
+                WindowUtils.updateTitleBarVisibility(window);
+            });
         });
     }
 
@@ -23,18 +27,20 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
             newWindows.length,
             leavingWindows.length
         );
-        leavingWindows.forEach(window => {
+        /*         leavingWindows.forEach(window => {
             WindowUtils.setTitleBarVisibility(window, false);
         });
 
         this.superWorkspace.windows.forEach(window => {
             WindowUtils.setTitleBarVisibility(window, true);
-        });
+        }); */
     }
 
     onDestroy() {
-        this.superWorkspace.windows.forEach(window => {
-            WindowUtils.setTitleBarVisibility(window, false);
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.superWorkspace.windows.forEach(window => {
+                WindowUtils.updateTitleBarVisibility(window);
+            });
         });
         super.onDestroy();
     }

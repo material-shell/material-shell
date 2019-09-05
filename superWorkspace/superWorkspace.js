@@ -7,6 +7,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.utils.index;
+const WindowUtils = Me.imports.utils.windows;
 
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
@@ -141,7 +142,8 @@ var SuperWorkspace = class SuperWorkspace {
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
         log(`window ${window.get_title()} added to ${this.categoryKey}`);
-        window.workspaceEnhancer = this;
+        window.superWorkspace = this;
+        WindowUtils.updateTitleBarVisibility(window);
         const oldWindows = [...this.windows];
         this.windows.push(window);
         // Focusing window if the window comes from a drag and drop

@@ -8,7 +8,6 @@ const {
 } = Me.imports.module.disableIncompatibleExtensionsModule;
 const { LeftPanelModule } = Me.imports.module.leftPanel.leftPanelModule;
 const { SuperWorkspaceModule } = Me.imports.module.superWorkspaceModule;
-const { NoTitleBarModule } = Me.imports.module.noTitleBarModule;
 const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
@@ -31,7 +30,6 @@ function init() {
         new LeftPanelModule(),
         new TilingModule(),
         new SuperWorkspaceModule(),
-        new NoTitleBarModule(),
         new HotKeysModule()
     ];
 }
