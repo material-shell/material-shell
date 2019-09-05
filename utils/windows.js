@@ -14,17 +14,21 @@ var updateTitleBarVisibility = function(window) {
 
 var setTitleBarVisibility = function(window, visible) {
     //if (!_handleWindow(window)) return;
+    let windowXID = getWindowXID(window);
+    if (!windowXID) return;
+
     Util.spawn([
         'xprop',
         '-id',
-        getWindowXID(window),
+        windowXID,
         '-f',
         '_MOTIF_WM_HINTS',
         '32c',
         '-set',
         '_MOTIF_WM_HINTS',
-        `2, 0, ${visible ? '1' : '2'} 0`
+        `2, 0, ${visible ? '1' : '2'} 0, 0`
     ]);
+
     window.titleBarVisible = visible;
 };
 /* 
