@@ -1,3 +1,6 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
+
 /* exported RectangularClockSubModule */
 var RectangularClockSubModule = class RectangularClockSubModule {
     constructor(dateMenu) {
@@ -6,7 +9,10 @@ var RectangularClockSubModule = class RectangularClockSubModule {
 
     enable() {
         this.dateMenu._clock.time_only = true;
-        this.indicatorPad = this.dateMenu.actor
+        this.indicatorPad = (ShellVersionMatch('3.32')
+            ? this.dateMenu.actor
+            : this.dateMenu
+        )
             .get_child_at_index(0)
             .get_child_at_index(0);
         this.indicatorPad.hide();
