@@ -1,5 +1,11 @@
-const ExtensionUtils = imports.misc.extensionUtils;
+const { Gio } = imports.gi;
+
 const Main = imports.ui.main;
+
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
+
 /* exported DisableIncompatibleExtensionsModule */
 var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsModule {
     constructor() {
@@ -36,8 +42,9 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
 
     enable() {
         for (let incompatibleExtension of this.incompatibleExtensions) {
-            let extension =
-                ExtensionUtils.extensions[incompatibleExtension.uuid];
+            let extension = ShellVersionMatch('3.32')
+                ? ExtensionUtils.extensions[incompatibleExtension.uuid]
+                : Main.extensionManager.lookup(incompatibleExtension.uuid);
             if (extension) {
                 incompatibleExtension.disable(extension);
             }
