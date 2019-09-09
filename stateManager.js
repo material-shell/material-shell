@@ -29,7 +29,6 @@ var StateManager = class StateManager {
                     file.load_contents_async(null, (obj, res) => {
                         let [success, contents] = obj.load_contents_finish(res);
                         if (success) {
-                            log('success');
                             this.state = JSON.parse(
                                 imports.byteArray.toString(contents)
                             );
@@ -71,7 +70,7 @@ var StateManager = class StateManager {
         );
     }
     getState(key) {
-        return this.state[key] || undefined;
+        if (this.state[key]) return this.state[key];
     }
     setState(key, value) {
         if (!value) {

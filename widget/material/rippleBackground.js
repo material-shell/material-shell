@@ -7,16 +7,23 @@ let RippleWave = GObject.registerClass(
             super._init({
                 style_class: 'ripple-wave'
             });
-            this.fullSize = size * 3;
-            this.width = 0;
-            this.height = 0;
-
+            this.set_pivot_point(0.5, 0.5);
             this.mouseX = mouseX;
             this.mouseY = mouseY;
-            this.waveSize = size / 4;
+
+            this.fullSize = size * 3;
+            this.width = this.fullSize;
+            this.height = this.fullSize;
+            this.x = Math.round(this.mouseX - this.width / 2);
+            this.y = Math.round(this.mouseY - this.height / 2);
+            this.scale_x = 32 / this.fullSize;
+            this.scale_y = 32 / this.fullSize;
+
+            //this.waveSize = size / 4;
             Tweener.addTween(this, {
-                waveSize: this.fullSize,
-                time: this.fullSize / 600,
+                scale_x: 1,
+                scale_y: 1,
+                time: this.fullSize / 800,
                 transition: 'easeOutQuad'
             });
         }
@@ -30,18 +37,6 @@ let RippleWave = GObject.registerClass(
                     this.destroy();
                 }
             });
-        }
-
-        set waveSize(waveSize) {
-            this._waveSize = waveSize;
-            this.width = waveSize;
-            this.height = waveSize;
-            this.x = Math.round(this.mouseX - this.width / 2);
-            this.y = Math.round(this.mouseY - this.height / 2);
-        }
-
-        get waveSize() {
-            return this._waveSize;
         }
     }
 );
