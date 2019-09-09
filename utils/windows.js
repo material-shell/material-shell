@@ -14,7 +14,7 @@ var updateTitleBarVisibility = function(window) {
 
 var setTitleBarVisibility = function(window, visible) {
     let windowXID = getWindowXID(window);
-    if (!windowXID) return;
+    if (!windowXID || window.is_client_decorated()) return;
 
     Util.spawn([
         'xprop',
