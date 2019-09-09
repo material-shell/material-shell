@@ -7,6 +7,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.widget.taskBar;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
@@ -204,16 +205,30 @@ var WorkspaceList = GObject.registerClass(
             this.buttonActive.actorContainer.add_style_class_name('active');
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
                 .scale_factor;
-            Tweener.addTween(this.workspaceActiveIndicator, {
-                translation_y:
-                    48 *
-                    scaleFactor *
-                    this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                        categoryKey
-                    ),
-                time: 0.25,
-                transition: 'easeOutQuad'
-            });
+
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(this.workspaceActiveIndicator, {
+                    translation_y:
+                        48 *
+                        scaleFactor *
+                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                            categoryKey
+                        ),
+                    time: 0.25,
+                    transition: 'easeOutQuad'
+                });
+            } else {
+                this.workspaceActiveIndicator.ease({
+                    translation_y:
+                        48 *
+                        scaleFactor *
+                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                            categoryKey
+                        ),
+                    duration: 250,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+            }
         }
 
         getButtonFromCategoryKey(categoryKey) {

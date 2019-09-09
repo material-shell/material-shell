@@ -7,7 +7,7 @@ var updateTitleBarVisibility = function(window) {
     let superWorkspaceIsInFloatLayout =
         window.superWorkspace.tilingLayout.constructor.key === 'float';
     let shouldTitleBarBeVisible = superWorkspaceIsInFloatLayout;
-    if (window.titleBarVisible != shouldTitleBarBeVisible) {
+    if (window.titleBarVisible !== shouldTitleBarBeVisible) {
         setTitleBarVisibility(window, shouldTitleBarBeVisible);
     }
 };

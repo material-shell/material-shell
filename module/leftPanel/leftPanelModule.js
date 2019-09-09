@@ -1,18 +1,19 @@
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const VerticalisePanelSubModule =
-    Me.imports.module.leftPanel.verticalisePanel.verticalisePanelSubModule
-        .VerticalisePanelSubModule;
-const PanelToLeftSubModule =
-    Me.imports.module.leftPanel.panelToLeftSubModule.PanelToLeftSubModule;
-const AppsButtonSubModule =
-    Me.imports.module.leftPanel.appsButtonSubModule.AppsButtonSubModule;
-const MaterializePanelSubModule =
-    Me.imports.module.leftPanel.materializePanelSubModule
-        .MaterializePanelSubModule;
-const HideDashModule =
-    Me.imports.module.leftPanel.hideDashModule.HideDashModule;
+const {
+    VerticalisePanelSubModule
+} = Me.imports.module.leftPanel.verticalisePanel.verticalisePanelSubModule;
+const {
+    PanelToLeftSubModule
+} = Me.imports.module.leftPanel.panelToLeftSubModule;
+const { AppsButtonSubModule } = Me.imports.module.leftPanel.appsButtonSubModule;
+const {
+    MaterializePanelSubModule
+} = Me.imports.module.leftPanel.materializePanelSubModule;
+const { HideDashModule } = Me.imports.module.leftPanel.hideDashModule;
+
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported LeftPanelModule */
 var LeftPanelModule = class LeftPanelModule {
@@ -30,13 +31,18 @@ var LeftPanelModule = class LeftPanelModule {
 
     enable() {
         // 5- Hide the activities button
-        this.panel.statusArea.activities.actor.hide();
+        if (ShellVersionMatch('3.32')) {
+            this.panel.statusArea.activities.actor.hide();
+        } else {
+            this.panel.statusArea.activities.hide();
+        }
 
         // 6- Remove the appMenu button because we can't really hide it.
         if (this.panel.statusArea.appMenu) {
-            this.panel._leftBox.remove_child(
-                this.panel.statusArea.appMenu.actor.get_parent()
-            );
+            let appMenuActor = ShellVersionMatch('3.32')
+                ? this.panel.statusArea.appMenu.actor
+                : this.panel.statusArea.appMenu;
+            this.panel._leftBox.remove_child(appMenuActor.get_parent());
         }
 
         this.subModules.forEach(subModule => {
@@ -50,10 +56,15 @@ var LeftPanelModule = class LeftPanelModule {
         });
 
         if (this.panel.statusArea.appMenu) {
-            this.panel._leftBox.add_child(
-                this.panel.statusArea.appMenu.actor.get_parent()
-            );
+            let appMenuActor = ShellVersionMatch('3.32')
+                ? this.panel.statusArea.appMenu.actor
+                : this.panel.statusArea.appMenu;
+            this.panel._leftBox.add_child(appMenuActor.get_parent());
         }
-        this.panel.statusArea.activities.actor.show();
+        if (ShellVersionMatch('3.32')) {
+            this.panel.statusArea.activities.actor.show();
+        } else {
+            this.panel.statusArea.activities.show();
+        }
     }
 };

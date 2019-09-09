@@ -1,8 +1,9 @@
-const { Meta, Gio, GLib } = imports.gi;
+const { Meta, Gio, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Backdrop } = Me.imports.widget.backdrop;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
@@ -188,14 +189,26 @@ var BaseTilingLayout = class BaseTilingLayout {
             actor.scale_y = oldHeight / newHeight;
             actor.translation_x = oldX - newX;
             actor.translation_y = oldY - newY;
-            Tweener.addTween(actor, {
-                scale_x: 1.0,
-                scale_y: 1.0,
-                translation_x: 0,
-                translation_y: 0,
-                time: tweenTime,
-                transition: 'easeOutQuad'
-            });
+
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(actor, {
+                    scale_x: 1.0,
+                    scale_y: 1.0,
+                    translation_x: 0,
+                    translation_y: 0,
+                    time: tweenTime,
+                    transition: 'easeOutQuad'
+                });
+            } else {
+                actor.ease({
+                    scale_x: 1.0,
+                    scale_y: 1.0,
+                    translation_x: 0,
+                    translation_y: 0,
+                    duration: tweenTime * 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+            }
         });
     }
 
