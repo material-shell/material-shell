@@ -1,16 +1,16 @@
-const { St, Shell } = imports.gi;
+const { St, Shell, Clutter } = imports.gi;
 const Tweener = imports.ui.tweener;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 const { Column, Row } = Me.imports.widget.layout;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
-const WINDOW_SLIDE_TWEEN_TIME = 0.25;
+const WINDOW_SLIDE_TWEEN_TIME = 250;
 /* exported SplitLayout */
 var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     constructor(superWorkspace) {
@@ -229,16 +229,29 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             this.animationInProgress = true;
         }
 
-        Tweener.addTween(this.transitionContainer, {
-            x: xTo,
-            y: yTo,
-            time: WINDOW_SLIDE_TWEEN_TIME,
-            transition: 'easeOutQuad',
-            onComplete: () => {
-                this.animationInProgress = false;
-                this.endTransition();
-            }
-        });
+        if (ShellVersionMatch('3.32')) {
+            Tweener.addTween(this.transitionContainer, {
+                x: xTo,
+                y: yTo,
+                time: WINDOW_SLIDE_TWEEN_TIME / 1000,
+                transition: 'easeOutQuad',
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                }
+            });
+        } else {
+            this.transitionContainer.ease({
+                x: xTo,
+                y: yTo,
+                duration: WINDOW_SLIDE_TWEEN_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                }
+            });
+        }
     }
 
     endTransition() {

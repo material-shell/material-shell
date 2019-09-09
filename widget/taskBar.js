@@ -1,14 +1,13 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 
-const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const GLib = imports.gi.GLib;
 const DND = imports.ui.dnd;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { MatButton } = Me.imports.widget.material.button;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
@@ -223,22 +222,40 @@ var TaskBar = GObject.registerClass(
                             }
                         );
                     }
-                    Tweener.addTween(this.taskActiveIndicator, {
-                        x: taskBarItem.x,
-                        width: taskBarItem.width,
-                        time: 0.25,
-                        transition: 'easeOutQuad'
-                    });
+                    if (ShellVersionMatch('3.32')) {
+                        Tweener.addTween(this.taskActiveIndicator, {
+                            x: taskBarItem.x,
+                            width: taskBarItem.width,
+                            time: 0.25,
+                            transition: 'easeOutQuad'
+                        });
+                    } else {
+                        this.taskActiveIndicator.ease({
+                            x: taskBarItem.x,
+                            width: taskBarItem.width,
+                            duration: 250,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                        });
+                    }
+
                     return;
                 }
             }
-
-            Tweener.addTween(this.taskActiveIndicator, {
-                x: 0,
-                width: 0,
-                time: 0.25,
-                transition: 'easeOutQuad'
-            });
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(this.taskActiveIndicator, {
+                    x: 0,
+                    width: 0,
+                    time: 0.25,
+                    transition: 'easeOutQuad'
+                });
+            } else {
+                this.taskActiveIndicator.ease({
+                    x: 0,
+                    width: 0,
+                    duration: 250,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+            }
         }
 
         getTaskBarItemOfWindow(window) {

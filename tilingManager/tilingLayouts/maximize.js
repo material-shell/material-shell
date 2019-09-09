@@ -1,10 +1,11 @@
-const { St, Meta } = imports.gi;
+const { St, Meta, Clutter } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
@@ -131,15 +132,27 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             this.animationInProgress = true;
         }
 
-        Tweener.addTween(this.transitionContainer, {
-            x: direction > 0 ? -workArea.width : 0,
-            time: 0.25,
-            transition: 'easeOutQuad',
-            onComplete: () => {
-                this.animationInProgress = false;
-                this.endTransition();
-            }
-        });
+        if (ShellVersionMatch('3.32')) {
+            Tweener.addTween(this.transitionContainer, {
+                x: direction > 0 ? -workArea.width : 0,
+                time: 0.25,
+                transition: 'easeOutQuad',
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                }
+            });
+        } else {
+            this.transitionContainer.ease({
+                x: direction > 0 ? -workArea.width : 0,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                }
+            });
+        }
     }
 
     endTransition() {

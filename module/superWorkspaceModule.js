@@ -8,6 +8,7 @@ const { AppsManager } = Me.imports.superWorkspace.appsManager;
 const {
     SuperWorkspaceManager
 } = Me.imports.superWorkspace.superWorkspaceManager;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
 /* exported SuperWorkspaceModule */
@@ -311,7 +312,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     );
                 }
             }
-            Tweener.removeTweens(switchData.container);
+            if (ShellVersionMatch('3.32')) {
+                Tweener.removeTweens(switchData.container);
+            } else {
+                switchData.container.remove_all_transitions();
+            }
+
             switchData.overContainer.destroy();
             switchData.movingWindowBin.destroy();
 
@@ -339,16 +345,25 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
              */
             xDest = -xDest;
             yDest = -yDest;
-
-            Tweener.addTween(this._switchData.container, {
-                translate_x: xDest,
-                translate_y: yDest,
-                time: WINDOW_ANIMATION_TIME,
-                transition: 'easeOutQuad',
-                onComplete: this._switchWorkspaceDone,
-                onCompleteScope: this,
-                onCompleteParams: [shellwm]
-            });
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(this._switchData.container, {
+                    translate_x: xDest,
+                    translate_y: yDest,
+                    time: WINDOW_ANIMATION_TIME,
+                    transition: 'easeOutQuad',
+                    onComplete: this._switchWorkspaceDone,
+                    onCompleteScope: this,
+                    onCompleteParams: [shellwm]
+                });
+            } else {
+                this._switchData.container.ease({
+                    translate_x: xDest,
+                    translate_y: yDest,
+                    duration: WINDOW_ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => this._switchWorkspaceDone(shellwm)
+                });
+            }
         };
 
         this.original_actionMoveWorkspace = Main.wm.actionMoveWorkspace;
