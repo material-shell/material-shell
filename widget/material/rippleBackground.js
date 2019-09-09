@@ -33,11 +33,7 @@ let RippleWave = GObject.registerClass(
                     scale_x: 1,
                     scale_y: 1,
                     duration: (this.fullSize / 800) * 1000,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.animationInProgress = false;
-                        this.endTransition();
-                    }
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
             }
         }
