@@ -81,11 +81,8 @@ var TaskBar = GObject.registerClass(
         }
 
         updateItems() {
-            this.items.forEach(item => {
-                item.destroy();
-            });
-            this.items = [];
-            this.getFilteredWindows().forEach(window => {
+            this.items.forEach(item => item.destroy());
+            this.items = this.getFilteredWindows().map(window => {
                 let item = new TaskBarItem(
                     window,
                     this.tracker.get_window_app(window),
@@ -95,28 +92,28 @@ var TaskBar = GObject.registerClass(
                     let itemIndex = this.getFilteredWindows().indexOf(
                         item.window
                     );
-                    const dropPlaceholder = new DropPlaceholder();
-                    dropPlaceholder.connect('drag-dropped', () => {
+                    dragData = {
+                        item: item,
+                        initialIndex: itemIndex,
+                        dropPlaceholder: new DropPlaceholder(),
+                        originalTaskBar: this,
+                        currentTaskBar: this
+                    };
+                    dragData.dropPlaceholder.connect('drag-dropped', () => {
                         dragData.item.reparent(
                             dragData.currentTaskBar.taskButtonContainer
                         );
                     });
-                    dropPlaceholder.connect('drag-over', () => {
+                    dragData.dropPlaceholder.connect('drag-over', () => {
                         dragData.draggedOverByChild = true;
                     });
-                    dragData = {
-                        item: item,
-                        initialIndex: itemIndex,
-                        dropPlaceholder,
-                        originalTaskBar: this,
-                        currentTaskBar: this
-                    };
-                    dropPlaceholder.resize(item);
+
+                    dragData.dropPlaceholder.resize(item);
                     dragData.currentTaskBar.taskButtonContainer.add_child(
-                        dropPlaceholder
+                        dragData.dropPlaceholder
                     );
                     dragData.currentTaskBar.taskButtonContainer.set_child_at_index(
-                        dropPlaceholder,
+                        dragData.dropPlaceholder,
                         itemIndex
                     );
                     this.taskActiveIndicator.hide();
@@ -125,6 +122,12 @@ var TaskBar = GObject.registerClass(
                 item._draggable.connect('drag-cancelled', () => {
                     delete dragData.draggedOver;
                     delete dragData.draggedBefore;
+                    if (dragData.originalTaskBar !== dragData.currentTaskBar) {
+                        dragData.dropPlaceholder.reparent(
+                            dragData.originalTaskBar.taskButtonContainer
+                        );
+                        dragData.currentTaskBar = dragData.originalTaskBar;
+                    }
                     dragData.currentTaskBar.taskButtonContainer.set_child_at_index(
                         dragData.dropPlaceholder,
                         dragData.initialIndex
@@ -136,7 +139,6 @@ var TaskBar = GObject.registerClass(
                 item.connect('drag-over', (_, before) => {
                     dragData.draggedOverByChild = true;
                     this._onDragOver(item, before);
-                    //this.taskButtonContainer.set_child_before(dragData.dropPlaceholder, dragData.draggedBefore ? index : index + 1);
                 });
 
                 item.connect('drag-dropped', () => {
@@ -146,7 +148,7 @@ var TaskBar = GObject.registerClass(
                 });
 
                 this.taskButtonContainer.add_child(item);
-                this.items.push(item);
+                return item;
             });
             this.taskActiveIndicator.translation_y =
                 this.height - this.taskActiveIndicator.height;
@@ -180,7 +182,8 @@ var TaskBar = GObject.registerClass(
             if (dragData.draggedOver) {
                 if (dragData.draggedBefore) {
                     dragData.currentTaskBar.superWorkspace.setWindowBefore(
-                        dragData.item.window
+                        dragData.item.window,
+                        dragData.draggedOver.window
                     );
                 } else {
                     dragData.currentTaskBar.superWorkspace.setWindowAfter(
@@ -188,15 +191,6 @@ var TaskBar = GObject.registerClass(
                         dragData.draggedOver.window
                     );
                 }
-                // this.taskButtonContainer.set_child_at_index(
-                //     dragData.item,
-                //     dragData.draggedBefore ? index : index + 1
-                // );
-            } else {
-                dragData.currentTaskBar.taskButtonContainer.set_child_at_index(
-                    dragData.item,
-                    dragData.initialIndex
-                );
             }
 
             dragData.currentTaskBar.superWorkspace.onFocus(
@@ -292,7 +286,7 @@ var TaskBar = GObject.registerClass(
         }
 
         _onDestroy() {
-            this.superWorkspaceSignals.map(signal =>
+            this.superWorkspaceSignals.forEach(signal =>
                 this.superWorkspace.disconnect(signal)
             );
         }
