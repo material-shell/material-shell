@@ -9,10 +9,12 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
+let dragData = null;
+
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(workspaceEnhancer) {
+        _init(superWorkspace) {
             super._init({
                 name: 'taskBar'
             });
@@ -23,188 +25,227 @@ var TaskBar = GObject.registerClass(
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.BoxLayout({});
             this.add_child(this.taskButtonContainer);
-            this.dropPlaceholder = new DropPlaceholder();
-            this.dropPlaceholder.connect('drag-dropped', () => {
-                this.tempDragData.item.reparent(this.taskButtonContainer);
-            });
-            this.dropPlaceholder.connect('drag-over', () => {
-                this.tempDragData.draggedOverByChild = true;
-            });
-            this.workspaceEnhancer = workspaceEnhancer;
-
-            workspaceEnhancer.connect('windows-changed', () => {
-                this.updateItems();
-                this._animateActiveIndicator();
-            });
-
-            this.focusId = workspaceEnhancer.connect(
-                'window-focused-changed',
-                (_, windowFocused) => {
-                    if (windowFocused === this.windowFocused) {
-                        return;
-                    }
-
-                    let previousItem = this.getTaskBarItemOfWindow(
-                        this.windowFocused
-                    );
-                    this.windowFocused = windowFocused;
-                    let nextItem = this.getTaskBarItemOfWindow(
-                        this.windowFocused
-                    );
-
-                    if (previousItem) {
-                        if (
-                            previousItem.actorContainer.has_style_class_name(
-                                'active'
-                            )
-                        ) {
-                            previousItem.actorContainer.remove_style_class_name(
-                                'active'
-                            );
-                        }
-                    }
-
-                    if (!nextItem) return;
-
-                    //if you change the class before animate the indicator there is an issue for retrieving the item.x
-                    this._animateActiveIndicator();
-                    nextItem.actorContainer.add_style_class_name('active');
-                }
-            );
+            this.superWorkspace = superWorkspace;
+            this.connect('destroy', this._onDestroy.bind(this));
+            this.superWorkspaceSignals = [
+                superWorkspace.connect(
+                    'windows-changed',
+                    this.onWindowsChanged.bind(this)
+                ),
+                superWorkspace.connect(
+                    'window-focused-changed',
+                    this.onFocusChanged.bind(this)
+                )
+            ];
 
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
         }
 
-        on_destroy() {
-            this.workspaceEnhancer.disconnect(this.focusId);
+        onWindowsChanged() {
+            this.updateItems();
+            this._animateActiveIndicator();
+        }
+
+        onFocusChanged(superWorkspace, windowFocused) {
+            if (windowFocused === this.windowFocused) {
+                return;
+            }
+
+            let previousItem = this.getTaskBarItemOfWindow(this.windowFocused);
+            this.windowFocused = windowFocused;
+            let nextItem = this.getTaskBarItemOfWindow(this.windowFocused);
+
+            if (previousItem) {
+                if (
+                    previousItem.actorContainer.has_style_class_name('active')
+                ) {
+                    previousItem.actorContainer.remove_style_class_name(
+                        'active'
+                    );
+                }
+            }
+
+            if (!nextItem) return;
+
+            //if you change the class before animate the indicator there is an issue for retrieving the item.x
+            this._animateActiveIndicator();
+            nextItem.actorContainer.add_style_class_name('active');
         }
 
         getFilteredWindows() {
-            return this.workspaceEnhancer.windows.filter(window => {
+            return this.superWorkspace.windows.filter(window => {
                 return !window.skip_taskbar;
             });
         }
 
         updateItems() {
-            this.items.forEach(item => {
-                item.destroy();
-            });
-            this.items = [];
-            this.getFilteredWindows().forEach(window => {
-                let item = new TaskBarItem(
+            this.items.forEach(item => item.destroy());
+            this.items = this.getFilteredWindows().map(window => {
+                const item = new TaskBarItem(
                     window,
                     this.tracker.get_window_app(window),
                     window === this.windowFocused
                 );
                 item._draggable.connect('drag-begin', () => {
-                    let itemIndex = this.getFilteredWindows().indexOf(
+                    const initialIndex = this.getFilteredWindows().indexOf(
                         item.window
                     );
-                    this.tempDragData = {
-                        item: item,
-                        initialIndex: itemIndex
+                    const dropPlaceholder = new DropPlaceholder(TaskBarItem);
+                    dragData = {
+                        item,
+                        initialIndex,
+                        dropPlaceholder,
+                        originalTaskBar: this,
+                        currentTaskBar: this
                     };
-                    this.dropPlaceholder.resize(item);
-                    this.taskButtonContainer.add_child(this.dropPlaceholder);
+                    dropPlaceholder.connect('drag-dropped', () => {
+                        dragData.item.reparent(
+                            dragData.currentTaskBar.taskButtonContainer
+                        );
+                    });
+                    dropPlaceholder.connect('drag-over', () => {
+                        dragData.draggedOverByChild = true;
+                    });
+
+                    dropPlaceholder.resize(item);
+                    this.taskButtonContainer.add_child(dropPlaceholder);
                     this.taskButtonContainer.set_child_at_index(
-                        this.dropPlaceholder,
-                        itemIndex
+                        dropPlaceholder,
+                        initialIndex
                     );
                     this.taskActiveIndicator.hide();
                 });
 
                 item._draggable.connect('drag-cancelled', () => {
-                    delete this.tempDragData.draggedOver;
-                    delete this.tempDragData.draggedBefore;
-                    this.taskButtonContainer.set_child_at_index(
-                        this.dropPlaceholder,
-                        this.tempDragData.initialIndex
+                    delete dragData.draggedOver;
+                    delete dragData.draggedBefore;
+                    const {
+                        originalTaskBar,
+                        currentTaskBar: initialCurrentTaskBar,
+                        dropPlaceholder,
+                        initialIndex
+                    } = dragData;
+                    let currentTaskBar = initialCurrentTaskBar;
+
+                    if (originalTaskBar !== currentTaskBar) {
+                        dropPlaceholder.reparent(
+                            originalTaskBar.taskButtonContainer
+                        );
+                        currentTaskBar = originalTaskBar;
+                    }
+                    currentTaskBar.taskButtonContainer.set_child_at_index(
+                        dropPlaceholder,
+                        initialIndex
                     );
+                    dragData.currentTaskBar = currentTaskBar;
                 });
 
                 item._draggable.connect('drag-end', this._onDragEnd.bind(this));
 
                 item.connect('drag-over', (_, before) => {
-                    this.tempDragData.draggedOverByChild = true;
+                    dragData.draggedOverByChild = true;
                     this._onDragOver(item, before);
-                    //this.taskButtonContainer.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
                 });
 
                 item.connect('drag-dropped', () => {
-                    this.tempDragData.item.reparent(this.taskButtonContainer);
+                    const { item, currentTaskBar } = dragData;
+                    item.reparent(currentTaskBar.taskButtonContainer);
                 });
 
                 this.taskButtonContainer.add_child(item);
-                this.items.push(item);
+                return item;
             });
             this.taskActiveIndicator.translation_y =
                 this.height - this.taskActiveIndicator.height;
         }
 
         handleDragOver() {
-            if (!this.tempDragData.draggedOverByChild) {
-                let item =
-                    this.items[this.items.length - 1] === this.tempDragData.item
+            const { item: dragItem, draggedOverByChild } = dragData;
+            if (!draggedOverByChild) {
+                const item =
+                    this.items[this.items.length - 1] === dragItem
                         ? this.items[this.items.length - 2]
                         : this.items[this.items.length - 1];
                 this._onDragOver(item, false);
             } else {
-                this.tempDragData.draggedOverByChild = false;
+                dragData.draggedOverByChild = false;
             }
 
             return DND.DragMotionResult.MOVE_DROP;
         }
 
         _onDragEnd() {
-            this.taskButtonContainer.remove_child(this.dropPlaceholder);
-            if (this.tempDragData.draggedOver) {
-                if (this.tempDragData.draggedBefore) {
-                    this.workspaceEnhancer.setWindowBefore(
-                        this.tempDragData.item.window,
-                        this.tempDragData.draggedOver.window
-                    );
-                } else {
-                    this.workspaceEnhancer.setWindowAfter(
-                        this.tempDragData.item.window,
-                        this.tempDragData.draggedOver.window
-                    );
-                }
-                //this.taskButtonContainer.set_child_at_index(this.tempDragData.item, this.tempDragData.draggedBefore ? index : index + 1);
-            } else {
-                this.taskButtonContainer.set_child_at_index(
-                    this.tempDragData.item,
-                    this.tempDragData.initialIndex
+            const {
+                item,
+                originalTaskBar,
+                currentTaskBar,
+                dropPlaceholder,
+                draggedOver,
+                draggedBefore
+            } = dragData;
+
+            currentTaskBar.taskButtonContainer.remove_child(dropPlaceholder);
+            dropPlaceholder.destroy();
+
+            if (originalTaskBar !== currentTaskBar) {
+                item.window.move_to_monitor(
+                    currentTaskBar.superWorkspace.monitor.index
                 );
             }
+            if (draggedOver) {
+                if (draggedBefore) {
+                    currentTaskBar.superWorkspace.setWindowBefore(
+                        item.window,
+                        draggedOver.window
+                    );
+                } else {
+                    currentTaskBar.superWorkspace.setWindowAfter(
+                        item.window,
+                        draggedOver.window
+                    );
+                }
+            }
+
+            currentTaskBar.superWorkspace.onFocus(item.window);
             this.taskActiveIndicator.show();
-            delete this.tempDragData;
+            dragData = null;
         }
 
         _onDragOver(item, before) {
-            this.tempDragData.draggedOver = item;
-            this.tempDragData.draggedBefore = before;
-            this.dropPlaceholder.resize(this.tempDragData.item);
-            let dropPlaceholderIndex = this.taskButtonContainer
-                .get_children()
-                .indexOf(this.dropPlaceholder);
-            let itemIndex = this.taskButtonContainer
-                .get_children()
-                .indexOf(item);
-            let toIndex =
-                dropPlaceholderIndex < itemIndex ? itemIndex - 1 : itemIndex;
-            if (this.tempDragData.draggedBefore) {
-                this.taskButtonContainer.set_child_at_index(
-                    this.dropPlaceholder,
-                    toIndex
-                );
-            } else {
-                this.taskButtonContainer.set_child_at_index(
-                    this.dropPlaceholder,
-                    toIndex + 1
-                );
+            dragData.draggedOver = item;
+            dragData.draggedBefore = before;
+
+            const {
+                currentTaskBar: initialCurrentTaskBar,
+                dropPlaceholder,
+                draggedOver,
+                draggedBefore
+            } = dragData;
+            let currentTaskBar = initialCurrentTaskBar;
+
+            if (currentTaskBar !== this) {
+                dropPlaceholder.reparent(this.taskButtonContainer);
+                currentTaskBar = this;
             }
+
+            dropPlaceholder.resize(draggedOver);
+
+            const dropPlaceholderIndex = currentTaskBar.taskButtonContainer
+                .get_children()
+                .indexOf(dropPlaceholder);
+            const itemIndex = currentTaskBar.taskButtonContainer
+                .get_children()
+                .indexOf(draggedOver);
+            const toIndex =
+                dropPlaceholderIndex < itemIndex ? itemIndex - 1 : itemIndex;
+            currentTaskBar.taskButtonContainer.set_child_at_index(
+                dropPlaceholder,
+                toIndex + (draggedBefore ? 0 : 1)
+            );
+
+            dragData.currentTaskBar = currentTaskBar;
         }
 
         _animateActiveIndicator() {
@@ -217,8 +258,7 @@ var TaskBar = GObject.registerClass(
                         taskBarItem.widthSignalId = taskBarItem.connect(
                             'notify::width',
                             () => {
-                                if (!this.tempDragData)
-                                    this._animateActiveIndicator();
+                                if (!dragData) this._animateActiveIndicator();
                             }
                         );
                     }
@@ -263,6 +303,12 @@ var TaskBar = GObject.registerClass(
                 return item.window === window;
             });
         }
+
+        _onDestroy() {
+            this.superWorkspaceSignals.forEach(signal =>
+                this.superWorkspace.disconnect(signal)
+            );
+        }
     }
 );
 
@@ -275,7 +321,7 @@ let TaskBarItem = GObject.registerClass(
             }
         }
     },
-    class TaskBarItem extends MatButton {
+    class InnerTaskBarItem extends MatButton {
         _init(window, app, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`
@@ -423,20 +469,24 @@ let TaskBarItem = GObject.registerClass(
                 manualMode: true
             });
 
-            this._draggable.connect('drag-end', (_, time, success, test) => {
+            this._draggable.connect('drag-end', () => {
                 this.mouseData.pressed = false;
                 this.mouseData.dragged = false;
             });
         }
 
-        handleDragOver(source, actor, x, y, time) {
-            //return this._workspace.handleDragOver(source, actor, x, y, time);
+        handleDragOver(source, actor, x) {
+            if (!(source instanceof TaskBarItem)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
             this.emit('drag-over', x < this.width / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source, actor, x, y, time) {
-            //this._workspace.acceptDrop(source, actor, x, y, time);
+        acceptDrop(source) {
+            if (!(source instanceof TaskBarItem)) {
+                return false;
+            }
             this.emit('drag-dropped');
             return true;
         }
@@ -451,18 +501,25 @@ var DropPlaceholder = GObject.registerClass(
         }
     },
     class DropPlaceholder extends St.Widget {
-        _init(window, app, actif) {
+        _init(targetClass) {
             super._init();
+            this.targetClass = targetClass;
             this.set_style('background:rgba(255,255,255,0.1)');
             this._delegate = this;
         }
 
-        handleDragOver(source, actor, x, y, time) {
+        handleDragOver(source) {
+            if (!(source instanceof this.targetClass)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
             this.emit('drag-over');
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source, actor, x, y, time) {
+        acceptDrop(source) {
+            if (!(source instanceof this.targetClass)) {
+                return false;
+            }
             this.emit('drag-dropped');
             return true;
         }
