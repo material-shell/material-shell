@@ -26,7 +26,7 @@ var WorkspaceList = GObject.registerClass(
             this.connect('destroy', this._onDestroy.bind(this));
 
             this.add_child(this.buttonList);
-            this.dropPlaceholder = new DropPlaceholder();
+            this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
             this.dropPlaceholder.connect('drag-dropped', () => {
                 this.tempDragData.workspaceButton.reparent(this.buttonList);
             });
@@ -254,7 +254,7 @@ var WorkspaceButton = GObject.registerClass(
             }
         }
     },
-    class WorkspaceButton extends MatButton {
+    class InnerWorkspaceButton extends MatButton {
         _init(superWorkspaceManager, categoryKey, category) {
             let icon = new St.Icon({
                 gicon: category.icon,
@@ -352,20 +352,24 @@ var WorkspaceButton = GObject.registerClass(
                 manualMode: true
             });
 
-            this._draggable.connect('drag-end', (_, time, success, test) => {
+            this._draggable.connect('drag-end', () => {
                 this.mouseData.pressed = false;
                 this.mouseData.dragged = false;
             });
         }
 
-        handleDragOver(source, actor, x, y, time) {
-            //return this._workspace.handleDragOver(source, actor, x, y, time);
+        handleDragOver(source, actor, x, y) {
+            if (!(source instanceof WorkspaceButton)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
             this.emit('drag-over', y < this.height / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source, actor, x, y, time) {
-            //this._workspace.acceptDrop(source, actor, x, y, time);
+        acceptDrop(source) {
+            if (!(source instanceof WorkspaceButton)) {
+                return false;
+            }
             this.emit('drag-dropped');
             return true;
         }

@@ -92,7 +92,7 @@ var TaskBar = GObject.registerClass(
                     const initialIndex = this.getFilteredWindows().indexOf(
                         item.window
                     );
-                    const dropPlaceholder = new DropPlaceholder();
+                    const dropPlaceholder = new DropPlaceholder(TaskBarItem);
                     dragData = {
                         item,
                         initialIndex,
@@ -321,7 +321,7 @@ let TaskBarItem = GObject.registerClass(
             }
         }
     },
-    class TaskBarItem extends MatButton {
+    class InnerTaskBarItem extends MatButton {
         _init(window, app, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`
@@ -469,20 +469,24 @@ let TaskBarItem = GObject.registerClass(
                 manualMode: true
             });
 
-            this._draggable.connect('drag-end', (_, time, success, test) => {
+            this._draggable.connect('drag-end', () => {
                 this.mouseData.pressed = false;
                 this.mouseData.dragged = false;
             });
         }
 
-        handleDragOver(source, actor, x, y, time) {
-            //return this._workspace.handleDragOver(source, actor, x, y, time);
+        handleDragOver(source, actor, x) {
+            if (!(source instanceof TaskBarItem)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
             this.emit('drag-over', x < this.width / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source, actor, x, y, time) {
-            //this._workspace.acceptDrop(source, actor, x, y, time);
+        acceptDrop(source) {
+            if (!(source instanceof TaskBarItem)) {
+                return false;
+            }
             this.emit('drag-dropped');
             return true;
         }
@@ -497,18 +501,25 @@ var DropPlaceholder = GObject.registerClass(
         }
     },
     class DropPlaceholder extends St.Widget {
-        _init(window, app, actif) {
+        _init(targetClass) {
             super._init();
+            this.targetClass = targetClass;
             this.set_style('background:rgba(255,255,255,0.1)');
             this._delegate = this;
         }
 
-        handleDragOver(source, actor, x, y, time) {
+        handleDragOver(source) {
+            if (!(source instanceof this.targetClass)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
             this.emit('drag-over');
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source, actor, x, y, time) {
+        acceptDrop(source) {
+            if (!(source instanceof this.targetClass)) {
+                return false;
+            }
             this.emit('drag-dropped');
             return true;
         }
