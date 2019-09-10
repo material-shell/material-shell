@@ -23,6 +23,8 @@ var WorkspaceList = GObject.registerClass(
                 vertical: true
             });
 
+            this.connect('destroy', this._onDestroy.bind(this));
+
             this.add_child(this.buttonList);
             this.dropPlaceholder = new DropPlaceholder();
             this.dropPlaceholder.connect('drag-dropped', () => {
@@ -237,7 +239,7 @@ var WorkspaceList = GObject.registerClass(
             });
         }
 
-        on_destroy() {
+        _onDestroy() {
             global.workspace_manager.disconnect(this.workspaceSignal);
         }
     }

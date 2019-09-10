@@ -14,7 +14,7 @@ let dragData = null;
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(workspaceEnhancer) {
+        _init(superWorkspace) {
             super._init({
                 name: 'taskBar'
             });
@@ -25,59 +25,57 @@ var TaskBar = GObject.registerClass(
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.BoxLayout({});
             this.add_child(this.taskButtonContainer);
-            this.workspaceEnhancer = workspaceEnhancer;
-
-            workspaceEnhancer.connect('windows-changed', () => {
-                this.updateItems();
-                this._animateActiveIndicator();
-            });
-
-            this.focusId = workspaceEnhancer.connect(
-                'window-focused-changed',
-                (_, windowFocused) => {
-                    if (windowFocused === this.windowFocused) {
-                        return;
-                    }
-
-                    let previousItem = this.getTaskBarItemOfWindow(
-                        this.windowFocused
-                    );
-                    this.windowFocused = windowFocused;
-                    let nextItem = this.getTaskBarItemOfWindow(
-                        this.windowFocused
-                    );
-
-                    if (previousItem) {
-                        if (
-                            previousItem.actorContainer.has_style_class_name(
-                                'active'
-                            )
-                        ) {
-                            previousItem.actorContainer.remove_style_class_name(
-                                'active'
-                            );
-                        }
-                    }
-
-                    if (!nextItem) return;
-
-                    //if you change the class before animate the indicator there is an issue for retrieving the item.x
-                    this._animateActiveIndicator();
-                    nextItem.actorContainer.add_style_class_name('active');
-                }
-            );
+            this.superWorkspace = superWorkspace;
+            this.connect('destroy', this._onDestroy.bind(this));
+            this.superWorkspaceSignals = [
+                superWorkspace.connect(
+                    'windows-changed',
+                    this.onWindowsChanged.bind(this)
+                ),
+                superWorkspace.connect(
+                    'window-focused-changed',
+                    this.onFocusChanged.bind(this)
+                )
+            ];
 
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
         }
 
-        on_destroy() {
-            this.workspaceEnhancer.disconnect(this.focusId);
+        onWindowsChanged() {
+            this.updateItems();
+            this._animateActiveIndicator();
+        }
+
+        onFocusChanged(superWorkspace, windowFocused) {
+            if (windowFocused === this.windowFocused) {
+                return;
+            }
+
+            let previousItem = this.getTaskBarItemOfWindow(this.windowFocused);
+            this.windowFocused = windowFocused;
+            let nextItem = this.getTaskBarItemOfWindow(this.windowFocused);
+
+            if (previousItem) {
+                if (
+                    previousItem.actorContainer.has_style_class_name('active')
+                ) {
+                    previousItem.actorContainer.remove_style_class_name(
+                        'active'
+                    );
+                }
+            }
+
+            if (!nextItem) return;
+
+            //if you change the class before animate the indicator there is an issue for retrieving the item.x
+            this._animateActiveIndicator();
+            nextItem.actorContainer.add_style_class_name('active');
         }
 
         getFilteredWindows() {
-            return this.workspaceEnhancer.windows.filter(window => {
+            return this.superWorkspace.windows.filter(window => {
                 return !window.skip_taskbar;
             });
         }
@@ -176,16 +174,16 @@ var TaskBar = GObject.registerClass(
 
             if (dragData.originalTaskBar !== dragData.currentTaskBar) {
                 dragData.item.window.move_to_monitor(
-                    dragData.currentTaskBar.workspaceEnhancer.monitor.index
+                    dragData.currentTaskBar.superWorkspace.monitor.index
                 );
             }
             if (dragData.draggedOver) {
                 if (dragData.draggedBefore) {
-                    dragData.currentTaskBar.workspaceEnhancer.setWindowBefore(
+                    dragData.currentTaskBar.superWorkspace.setWindowBefore(
                         dragData.item.window
                     );
                 } else {
-                    dragData.currentTaskBar.workspaceEnhancer.setWindowAfter(
+                    dragData.currentTaskBar.superWorkspace.setWindowAfter(
                         dragData.item.window,
                         dragData.draggedOver.window
                     );
@@ -201,7 +199,7 @@ var TaskBar = GObject.registerClass(
                 );
             }
 
-            dragData.currentTaskBar.workspaceEnhancer.onFocus(
+            dragData.currentTaskBar.superWorkspace.onFocus(
                 dragData.item.window
             );
             this.taskActiveIndicator.show();
@@ -291,6 +289,12 @@ var TaskBar = GObject.registerClass(
             return this.items.find(item => {
                 return item.window === window;
             });
+        }
+
+        _onDestroy() {
+            this.superWorkspaceSignals.map(signal =>
+                this.superWorkspace.disconnect(signal)
+            );
         }
     }
 );
