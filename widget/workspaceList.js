@@ -1,6 +1,7 @@
 const { Clutter, GObject, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
+const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -31,10 +32,14 @@ var WorkspaceList = GObject.registerClass(
                 DRAG_TYPES.workspaceItem
             ]);
             this.dropPlaceholder.connect('drag-dropped', () => {
-                dragData.current.workspaceButton.reparent(this.buttonList);
+                if (dragData.current.type === DRAG_TYPES.workspaceItem) {
+                    dragData.current.workspaceButton.reparent(this.buttonList);
+                }
             });
             this.dropPlaceholder.connect('drag-over', () => {
-                dragData.current.draggedOverByChild = true;
+                if (dragData.current.type === DRAG_TYPES.workspaceItem) {
+                    dragData.current.draggedOverByChild = true;
+                }
             });
             this.workspaceActiveIndicator = new St.Widget({
                 style_class: 'workspace-active-indicator'
@@ -272,15 +277,9 @@ var WorkspaceButton = GObject.registerClass(
 
             this.superWorkspaceManager = superWorkspaceManager;
             this.categoryKey = categoryKey;
-            this.connect('clicked', () => {
-                global.workspace_manager
-                    .get_workspace_by_index(
-                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                            this.categoryKey
-                        )
-                    )
-                    .activate(global.get_current_time());
-            });
+            this.connect('clicked', () =>
+                this.getWorkspace().activate(global.get_current_time())
+            );
 
             this.mouseData = {
                 pressed: false,
@@ -350,6 +349,15 @@ var WorkspaceButton = GObject.registerClass(
 
             this.initDrag();
         }
+
+        getWorkspace() {
+            return global.workspace_manager.get_workspace_by_index(
+                this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                    this.categoryKey
+                )
+            );
+        }
+
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
@@ -367,6 +375,9 @@ var WorkspaceButton = GObject.registerClass(
                 this.emit('drag-over', y < this.height / 2);
                 return DND.DragMotionResult.MOVE_DROP;
             }
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                return DND.DragMotionResult.MOVE_DROP;
+            }
             return DND.DragMotionResult.NO_DROP;
         }
 
@@ -375,6 +386,22 @@ var WorkspaceButton = GObject.registerClass(
                 this.emit('drag-dropped');
                 return true;
             }
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                const workspace = this.getWorkspace();
+                const window = dragData.current.item.window;
+                if (
+                    window.get_monitor().index !==
+                    Main.layoutManager.primaryIndex
+                ) {
+                    window.move_to_monitor(Main.layoutManager.primaryIndex);
+                }
+                window.change_workspace(workspace);
+                workspace.activate(global.get_current_time());
+
+                dragData.current.item.emit('drag-dropped');
+                return true;
+            }
+
             return false;
         }
     }
