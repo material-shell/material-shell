@@ -1,8 +1,10 @@
 const { GObject, St, Clutter, Gio } = imports.gi;
+const DND = imports.ui.dnd;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
+const { dragData, DRAG_TYPES } = Me.imports.widget.dragData;
 
 const { TaskBar } = Me.imports.widget.taskBar;
 
@@ -62,12 +64,18 @@ var TopPanel = GObject.registerClass(
         }
 
         handleDragOver() {
-            return this.taskBar.updateCurrentTaskBar();
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                return this.taskBar.updateCurrentTaskBar();
+            }
+            return DND.DragMotionResult.NO_DROP;
         }
 
         acceptDrop() {
-            this.taskBar.reparentDragItem();
-            return true;
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                this.taskBar.reparentDragItem();
+                return true;
+            }
+            return false;
         }
 
         vfunc_allocate(box, flags) {

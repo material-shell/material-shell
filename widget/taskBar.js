@@ -7,7 +7,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { MatButton } = Me.imports.widget.material.button;
-const { dragData } = Me.imports.widget.dragData;
+const { dragData, DRAG_TYPES } = Me.imports.widget.dragData;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported TaskBar */
@@ -91,8 +91,11 @@ var TaskBar = GObject.registerClass(
                     const initialIndex = this.getFilteredWindows().indexOf(
                         item.window
                     );
-                    const dropPlaceholder = new DropPlaceholder(TaskBarItem);
+                    const dropPlaceholder = new DropPlaceholder([
+                        DRAG_TYPES.taskItem
+                    ]);
                     dragData.current = {
+                        type: DRAG_TYPES.taskItem,
                         item,
                         initialIndex,
                         dropPlaceholder,
@@ -471,19 +474,19 @@ let TaskBarItem = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x) {
-            if (!(source instanceof TaskBarItem)) {
-                return DND.DragMotionResult.NO_DROP;
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                this.emit('drag-over', x < this.width / 2);
+                return DND.DragMotionResult.MOVE_DROP;
             }
-            this.emit('drag-over', x < this.width / 2);
-            return DND.DragMotionResult.MOVE_DROP;
+            return DND.DragMotionResult.NO_DROP;
         }
 
-        acceptDrop(source) {
-            if (!(source instanceof TaskBarItem)) {
-                return false;
+        acceptDrop() {
+            if (dragData.current.type === DRAG_TYPES.taskItem) {
+                this.emit('drag-dropped');
+                return true;
             }
-            this.emit('drag-dropped');
-            return true;
+            return false;
         }
     }
 );
@@ -496,27 +499,27 @@ var DropPlaceholder = GObject.registerClass(
         }
     },
     class DropPlaceholder extends St.Widget {
-        _init(targetClass) {
+        _init(allowedTypes) {
             super._init();
-            this.targetClass = targetClass;
+            this.allowedTypes = allowedTypes;
             this.set_style('background:rgba(255,255,255,0.1)');
             this._delegate = this;
         }
 
-        handleDragOver(source) {
-            if (!(source instanceof this.targetClass)) {
-                return DND.DragMotionResult.NO_DROP;
+        handleDragOver() {
+            if (this.allowedTypes.includes(dragData.current.type)) {
+                this.emit('drag-over');
+                return DND.DragMotionResult.MOVE_DROP;
             }
-            this.emit('drag-over');
-            return DND.DragMotionResult.MOVE_DROP;
+            return DND.DragMotionResult.NO_DROP;
         }
 
-        acceptDrop(source) {
-            if (!(source instanceof this.targetClass)) {
-                return false;
+        acceptDrop() {
+            if (this.allowedTypes.includes(dragData.current.type)) {
+                this.emit('drag-dropped');
+                return true;
             }
-            this.emit('drag-dropped');
-            return true;
+            return false;
         }
 
         resize(rect) {

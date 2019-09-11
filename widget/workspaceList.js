@@ -6,7 +6,7 @@ const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
-const { dragData } = Me.imports.widget.dragData;
+const { dragData, DRAG_TYPES } = Me.imports.widget.dragData;
 const { DropPlaceholder } = Me.imports.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
@@ -27,7 +27,9 @@ var WorkspaceList = GObject.registerClass(
             this.connect('destroy', this._onDestroy.bind(this));
 
             this.add_child(this.buttonList);
-            this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
+            this.dropPlaceholder = new DropPlaceholder([
+                DRAG_TYPES.workspaceItem
+            ]);
             this.dropPlaceholder.connect('drag-dropped', () => {
                 dragData.current.workspaceButton.reparent(this.buttonList);
             });
@@ -55,6 +57,7 @@ var WorkspaceList = GObject.registerClass(
                         workspaceButton.categoryKey
                     );
                     dragData.current = {
+                        type: DRAG_TYPES.workspaceItem,
                         workspaceButton: workspaceButton,
                         initialIndex: workspaceButtonIndex
                     };
@@ -360,19 +363,19 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (!(source instanceof WorkspaceButton)) {
-                return DND.DragMotionResult.NO_DROP;
+            if (dragData.current.type === DRAG_TYPES.workspaceItem) {
+                this.emit('drag-over', y < this.height / 2);
+                return DND.DragMotionResult.MOVE_DROP;
             }
-            this.emit('drag-over', y < this.height / 2);
-            return DND.DragMotionResult.MOVE_DROP;
+            return DND.DragMotionResult.NO_DROP;
         }
 
-        acceptDrop(source) {
-            if (!(source instanceof WorkspaceButton)) {
-                return false;
+        acceptDrop() {
+            if (dragData.current.type === DRAG_TYPES.workspaceItem) {
+                this.emit('drag-dropped');
+                return true;
             }
-            this.emit('drag-dropped');
-            return true;
+            return false;
         }
     }
 );
