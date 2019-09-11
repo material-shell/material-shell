@@ -1,7 +1,5 @@
 const { GObject, St, Clutter, Gio } = imports.gi;
 
-const Main = imports.ui.main;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
@@ -15,6 +13,7 @@ var TopPanel = GObject.registerClass(
             super._init({
                 name: 'topPanel'
             });
+            this._delegate = this;
             this.superWorkspace = superWorkspace;
             this._leftContainer = new St.BoxLayout();
 
@@ -55,11 +54,20 @@ var TopPanel = GObject.registerClass(
             });
 
             this.tilingButton.connect('clicked', (actor, button) => {
-                // Go in reverse direction on right click (button: 3)
+                // Go in reverse direction on right click (button: 3)
                 superWorkspace.nextTiling(button === 3 ? -1 : 1);
             });
 
             this.add_child(this.tilingButton);
+        }
+
+        handleDragOver() {
+            return this.taskBar.updateCurrentTaskBar();
+        }
+
+        acceptDrop() {
+            this.taskBar.reparentDragItem();
+            return true;
         }
 
         vfunc_allocate(box, flags) {
