@@ -316,6 +316,7 @@ let TaskBarItem = GObject.registerClass(
             this.window = window;
             this.app = app;
 
+            this.connect('destroy', this.destroy.bind(this));
             // ICON
             this.iconSize = 24;
             this.icon = app.create_icon_texture(this.iconSize);
