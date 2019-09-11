@@ -7,9 +7,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { MatButton } = Me.imports.widget.material.button;
+const { dragData } = Me.imports.widget.dragData;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
-
-let dragData = null;
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
@@ -93,7 +92,7 @@ var TaskBar = GObject.registerClass(
                         item.window
                     );
                     const dropPlaceholder = new DropPlaceholder(TaskBarItem);
-                    dragData = {
+                    dragData.current = {
                         item,
                         initialIndex,
                         dropPlaceholder,
@@ -105,7 +104,7 @@ var TaskBar = GObject.registerClass(
                         this.reparentDragItem
                     );
                     dropPlaceholder.connect('drag-over', () => {
-                        dragData.draggedOverByChild = true;
+                        dragData.current.draggedOverByChild = true;
                     });
 
                     dropPlaceholder.resize(item);
@@ -118,16 +117,18 @@ var TaskBar = GObject.registerClass(
                 });
 
                 item._draggable.connect('drag-cancelled', () => {
-                    delete dragData.draggedOver;
-                    delete dragData.draggedBefore;
+                    delete dragData.current.draggedOver;
+                    delete dragData.current.draggedBefore;
                     // We need to reparent on the original taskBar
                     // if it's a different one
-                    dragData.originalTaskBar.updateCurrentTaskBar();
+                    dragData.current.originalTaskBar.updateCurrentTaskBar();
 
                     const {
-                        currentTaskBar,
-                        dropPlaceholder,
-                        initialIndex
+                        current: {
+                            currentTaskBar,
+                            dropPlaceholder,
+                            initialIndex
+                        }
                     } = dragData;
 
                     currentTaskBar.taskButtonContainer.set_child_at_index(
@@ -139,7 +140,7 @@ var TaskBar = GObject.registerClass(
                 item._draggable.connect('drag-end', this._onDragEnd.bind(this));
 
                 item.connect('drag-over', (_, before) => {
-                    dragData.draggedOverByChild = true;
+                    dragData.current.draggedOverByChild = true;
                     this._onDragOver(item, before);
                 });
 
@@ -152,29 +153,35 @@ var TaskBar = GObject.registerClass(
         }
 
         updateCurrentTaskBar() {
-            const { dropPlaceholder } = dragData;
+            const {
+                current: { dropPlaceholder }
+            } = dragData;
 
-            if (dragData.currentTaskBar !== this) {
+            if (dragData.current.currentTaskBar !== this) {
                 dropPlaceholder.reparent(this.taskButtonContainer);
-                dragData.currentTaskBar = this;
+                dragData.current.currentTaskBar = this;
             }
 
             return DND.DragMotionResult.MOVE_DROP;
         }
 
         reparentDragItem() {
-            const { item, currentTaskBar } = dragData;
+            const {
+                current: { item, currentTaskBar }
+            } = dragData;
             item.reparent(currentTaskBar.taskButtonContainer);
         }
 
         _onDragEnd() {
             const {
-                item,
-                originalTaskBar,
-                currentTaskBar,
-                dropPlaceholder,
-                draggedOver,
-                draggedBefore
+                current: {
+                    item,
+                    originalTaskBar,
+                    currentTaskBar,
+                    dropPlaceholder,
+                    draggedOver,
+                    draggedBefore
+                }
             } = dragData;
 
             currentTaskBar.taskButtonContainer.remove_child(dropPlaceholder);
@@ -201,19 +208,21 @@ var TaskBar = GObject.registerClass(
 
             currentTaskBar.superWorkspace.onFocus(item.window);
             this.taskActiveIndicator.show();
-            dragData = null;
+            dragData.current = null;
         }
 
         _onDragOver(item, before) {
-            dragData.draggedOver = item;
-            dragData.draggedBefore = before;
+            dragData.current.draggedOver = item;
+            dragData.current.draggedBefore = before;
             this.updateCurrentTaskBar();
 
             const {
-                currentTaskBar,
-                dropPlaceholder,
-                draggedOver,
-                draggedBefore
+                current: {
+                    currentTaskBar,
+                    dropPlaceholder,
+                    draggedOver,
+                    draggedBefore
+                }
             } = dragData;
 
             dropPlaceholder.resize(draggedOver);
@@ -242,7 +251,8 @@ var TaskBar = GObject.registerClass(
                         taskBarItem.widthSignalId = taskBarItem.connect(
                             'notify::width',
                             () => {
-                                if (!dragData) this._animateActiveIndicator();
+                                if (!dragData.current)
+                                    this._animateActiveIndicator();
                             }
                         );
                     }
