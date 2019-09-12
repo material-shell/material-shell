@@ -1,6 +1,6 @@
 # Material Shell
 
-A simple and productivity-oriented GNOME Shell UI replacement that provide an innovative and automated mouse/keyboard workflow aiming to be easier and faster to use by providing a great user experience.
+A simple and productivity-oriented GNOME Shell UI replacement that provides an innovative and automated mouse/keyboard workflow aiming to be easier and faster to use by providing a great user experience.
 
 Made by following the [Material Design guidelines](https://material.io) - a solid baseline that allows us to provide an aesthetically pleasing and accessible interface.
 
