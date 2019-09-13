@@ -7,16 +7,16 @@ var Backdrop = GObject.registerClass(
             super._init({
                 reactive: false
             });
-            log('NEW BACKDROP');
+           
 
             this.add_style_class_name('backdrop-container');
             this.window = window;
             /*             this.connect('button-press-event', (actor, event) => {
-                log('PRESS ON BACKDROP');
+               
                 //this.window.get_meta_window().delete(global.get_current_time());
             });
             this.connect('button-release-event', (actor, event) => {
-                log('RELEASE ON BACKDROP');
+               
                 //this.window.get_meta_window().delete(global.get_current_time());
             }); */
 
@@ -27,12 +27,12 @@ var Backdrop = GObject.registerClass(
             });
 
             window.connect('show', () => {
-                log('DIALOG', 'show');
+               
                 this.show();
             });
 
             window.connect('hide', () => {
-                log('DIALOG', 'hide');
+               
                 this.hide();
             });
 

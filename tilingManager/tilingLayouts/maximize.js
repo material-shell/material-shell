@@ -86,7 +86,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             newMetaWindow = null;
         }
         if (!oldMetaWindow && !newMetaWindow) {
-            log('Refusing to animate empty windows');
             return;
         }
         const containers = [
@@ -159,9 +158,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.leftWindowContainer.remove_all_children();
         this.rightWindowContainer.remove_all_children();
         global.window_group.remove_child(this.overContainer);
-        log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
-        );
+
         this.onTile();
     }
 };
