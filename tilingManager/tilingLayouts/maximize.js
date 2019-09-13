@@ -59,7 +59,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             return;
         }
         windows.forEach((window, index) => {
-            log(`${window.get_title()}`);
             const actor = window.get_compositor_private();
             // Unclip windows in maximize
             if (actor.has_clip) {
@@ -70,7 +69,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 Main.wm.skipNextEffect(actor);
                 window.maximize(Meta.MaximizeFlags.BOTH);
             }
-            log(index, this.currentWindowIndex);
+
             if (
                 index !== this.currentWindowIndex ||
                 !this.superWorkspace.isDisplayed()
