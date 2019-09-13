@@ -21,12 +21,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
         let leavingWindows = oldWindows.filter(
             window => !newWindows.includes(window)
         );
-        log(
-            'leaving',
-            oldWindows.length,
-            newWindows.length,
-            leavingWindows.length
-        );
+
         /*         leavingWindows.forEach(window => {
             WindowUtils.setTitleBarVisibility(window, false);
         });

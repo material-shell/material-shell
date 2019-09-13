@@ -141,7 +141,7 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        log(`window ${window.get_title()} added to ${this.categoryKey}`);
+
         window.superWorkspace = this;
         WindowUtils.updateTitleBarVisibility(window);
         const oldWindows = [...this.windows];
@@ -161,7 +161,7 @@ var SuperWorkspace = class SuperWorkspace {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        log(`window ${window.get_title()} removed from ${this.categoryKey}`);
+
         const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
@@ -241,7 +241,7 @@ var SuperWorkspace = class SuperWorkspace {
             `${this.categoryKey}_${this.monitor.index}`,
             this.tilingLayout.constructor.key
         );
-        log(`${this.categoryKey} ask for tiling after layout changed`);
+
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.tilingLayout.onTile();
     }
@@ -316,9 +316,7 @@ var SuperWorkspace = class SuperWorkspace {
             ) {
                 // If it's the same, the changes have compensated themselves
                 // So in the end nothing happened:
-                log(
-                    'Windows change compensated during debounce, doing nothing'
-                );
+
                 return;
             }
             oldWindows = firstOldWindows;
@@ -354,7 +352,7 @@ var SuperWorkspace = class SuperWorkspace {
     focusLastWindow() {
         if (this.windows.length) {
             const lastWindow = this.windows.slice(-1)[0];
-            log('Focusing last window', lastWindow.get_title());
+
             this.onFocus(lastWindow);
         } else {
             this.windowFocused = null;
