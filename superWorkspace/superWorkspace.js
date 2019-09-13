@@ -85,7 +85,7 @@ var SuperWorkspace = class SuperWorkspace {
 
         this.focusEventId = global.display.connect(
             'notify::focus-window',
-            (display, focusWindow, old, y) => {
+            () => {
                 let windowFocused = global.display.focus_window;
                 if (!this.windows.includes(windowFocused)) {
                     return;
@@ -153,11 +153,9 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        
+
         window.superWorkspace = this;
-        window.connect('focus', () => {
-            
-        });
+        window.connect('focus', () => {});
         WindowUtils.updateTitleBarVisibility(window);
         const oldWindows = [...this.windows];
         this.windows.push(window);
@@ -165,7 +163,7 @@ var SuperWorkspace = class SuperWorkspace {
         // or if there's no focused window
         if (window.grabbed || !this.windowFocused) {
         } */
-        
+
         this.onFocus(window);
 
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
@@ -174,7 +172,7 @@ var SuperWorkspace = class SuperWorkspace {
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        
+
         const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
@@ -255,7 +253,7 @@ var SuperWorkspace = class SuperWorkspace {
             `${this.categoryKey}_${this.monitor.index}`,
             this.tilingLayout.constructor.key
         );
-        
+
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.tilingLayout.onTile();
     }
@@ -330,7 +328,7 @@ var SuperWorkspace = class SuperWorkspace {
             ) {
                 // If it's the same, the changes have compensated themselves
                 // So in the end nothing happened:
-                 
+
                 return;
             }
             oldWindows = firstOldWindows;
@@ -367,10 +365,9 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.windows.length) {
             let lastWindow =
                 this.windows[this.indexFocused] || this.windows.slice(-1)[0];
-            
+
             this.onFocus(lastWindow);
         } else {
-            
             this.onFocus(null);
         }
     }
@@ -380,7 +377,6 @@ var SuperWorkspace = class SuperWorkspace {
             .map(metaWindow => metaWindow.get_compositor_private())
             .filter(window => window)
             .forEach(window => {
-                
                 this.isDisplayed() ? window.show() : window.hide();
             });
 
