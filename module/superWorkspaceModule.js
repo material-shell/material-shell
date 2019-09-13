@@ -90,7 +90,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: this.workspaceManager.connect(
                 'active-workspace-changed',
                 () => {
-                    log('active-workspace-changed');
                     let newSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
                     this.currentSuperWorkspace.uiVisible = false;
                     this.currentSuperWorkspace.updateUI();
@@ -104,7 +103,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
-                log('window-created');
                 global.superWorkspaceManager.onNewWindow(metaWindow);
             })
         });
@@ -116,7 +114,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: Shell.AppSystem.get_default().connect(
                 'installed-changed',
                 () => {
-                    log('installed-changed');
                     this.dispatchApps();
                 }
             )
@@ -125,7 +122,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signalMonitorId = Main.layoutManager.connect(
             'monitors-changed',
             () => {
-                log('monitors-changed');
                 global.superWorkspaceManager.destroy();
                 global.superWorkspaceManager = new SuperWorkspaceManager(
                     AppsManager.groupAppsByCategory(AppsManager.getApps())
@@ -402,7 +398,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: this.workspaceManager.connect(
                 'workspace-added',
                 (_, workspace) => {
-                    log('workspace-added');
                     this.listenWorkspaceEventToDispatch(workspace);
                 }
             )
@@ -413,7 +408,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: global.display.connect(
                 'window-entered-monitor',
                 (display, monitorIndex, window) => {
-                    log('window-entered-monitor');
                     //Ignore unHandle window and window on primary screens
                     global.superWorkspaceManager.windowEnteredMonitor(
                         window,
@@ -428,12 +422,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: global.display.connect(
                 'window-left-monitor',
                 (display, monitorIndex, window) => {
-                    log('window-left-monitor');
+                    /* 
                     //Ignore unHandle window and window on primary screens
                     global.superWorkspaceManager.windowLeftMonitor(
                         window,
                         monitorIndex
-                    );
+                    ); */
                 }
             )
         });
@@ -453,10 +447,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: workspace,
             id: workspace.connect('window-removed', (workspace, window) => {
-                global.superWorkspaceManager.windowLeftWorkspace(
+                /* global.superWorkspaceManager.windowLeftWorkspace(
                     window,
                     workspace
-                );
+                ); */
             })
         });
     }

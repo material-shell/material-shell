@@ -51,7 +51,7 @@ var TilingManager = class TilingManager {
                     (schema, key) => {
                         // Compute new available layouts
                         this.refreshAvailableLayouts();
-                        log('New available', this.availableLayouts);
+
                         if (!schema.get_boolean(key)) {
                             // If a layout has been removed,
                             // change tiling of all workspaces using that layout.
@@ -59,7 +59,6 @@ var TilingManager = class TilingManager {
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                                 global.superWorkspaceManager.superWorkspaces.forEach(
                                     superWorkspace => {
-                                        log(key, superWorkspace.tilingLayout);
                                         if (
                                             key ==
                                             superWorkspace.tilingLayout.key
@@ -125,7 +124,6 @@ var TilingManager = class TilingManager {
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log('tile windows start');
             for (let monitor of Main.layoutManager.monitors) {
                 let superWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
@@ -141,13 +139,11 @@ var TilingManager = class TilingManager {
                     dialogWindows,
                     regularWindows
                 ] = this.getDialogAndRegularWindows(superWorkspace.windows); */
-                log(
-                    `${superWorkspace.categoryKey} ask for tiling from tiling Manager`
-                );
+
                 layout.onTile();
                 //this.dialogLayout.onTile(dialogWindows, monitor);
             }
-            log('tile windows end');
+
             this.tilingInProgress = false;
             return GLib.SOURCE_REMOVE;
         });

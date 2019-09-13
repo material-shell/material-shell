@@ -32,15 +32,11 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onWorkAreasChanged() {
-        log('workareas-changed');
         this.onTile();
     }
 
     onWindowsChanged() {
         if (Me.loaded) {
-            log(
-                `${this.superWorkspace.categoryKey} tilingLayout tile itself from onWindowsChanged event`
-            );
             this.onTile();
         }
     }
@@ -48,7 +44,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     onFocusChanged() {}
 
     onTile() {
-        log(`Tile ${this.superWorkspace.categoryKey}`);
         const {
             dialogWindows,
             regularWindows
@@ -167,11 +162,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             const frame = metaWindow.get_frame_rect();
 
             if (frame.width !== width || frame.height !== height) {
-                log(
-                    'Force resize of',
-                    metaWindow.get_title(),
-                    `${newWidth}x${newHeight} -> ${width}x${height}`
-                );
                 // Some windows have invisible padding
                 // actor is larger in this case and we need to clip
                 // only visible area
@@ -240,9 +230,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             });
         } else {
             // Can't do shit for now
-            log(
-                `Failed to tile ${metaWindow.get_title()} after ${alreadyDelayed} tries`
-            );
         }
     }
 

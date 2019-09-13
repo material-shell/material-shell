@@ -85,11 +85,23 @@ var SuperWorkspace = class SuperWorkspace {
 
         this.focusEventId = global.display.connect(
             'notify::focus-window',
-            () => {
+            (display, focusWindow, old, y) => {
                 let windowFocused = global.display.focus_window;
                 if (!this.windows.includes(windowFocused)) {
                     return;
                 }
+
+                /*
+                 If the current superWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
+                 We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
+                */
+                if (
+                    this.windowFocused &&
+                    !this.windowFocused.get_compositor_private()
+                ) {
+                    return;
+                }
+
                 if (windowFocused.is_attached_dialog()) {
                     windowFocused = windowFocused.get_transient_for();
                 }
@@ -141,27 +153,28 @@ var SuperWorkspace = class SuperWorkspace {
 
     addWindow(window) {
         if (this.windows.indexOf(window) >= 0) return;
-        log(`window ${window.get_title()} added to ${this.categoryKey}`);
+        
         window.superWorkspace = this;
+        window.connect('focus', () => {
+            
+        });
         WindowUtils.updateTitleBarVisibility(window);
         const oldWindows = [...this.windows];
         this.windows.push(window);
-        // Focusing window if the window comes from a drag and drop
+        /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
-        if (
-            window.grabbed ||
-            !this.windowFocused ||
-            !this.windows.includes(this.windowFocused)
-        ) {
-            this.onFocus(window);
-        }
+        if (window.grabbed || !this.windowFocused) {
+        } */
+        
+        this.onFocus(window);
+
         this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     removeWindow(window) {
         let windowIndex = this.windows.indexOf(window);
         if (windowIndex === -1) return;
-        log(`window ${window.get_title()} removed from ${this.categoryKey}`);
+        
         const oldWindows = [...this.windows];
 
         this.windows.splice(windowIndex, 1);
@@ -203,6 +216,7 @@ var SuperWorkspace = class SuperWorkspace {
         }
         const oldFocusedWindow = this.windowFocused;
         this.windowFocused = windowFocused;
+        this.indexFocused = this.windows.indexOf(this.windowFocused);
         this.emit(
             'window-focused-changed',
             this.windowFocused,
@@ -241,7 +255,7 @@ var SuperWorkspace = class SuperWorkspace {
             `${this.categoryKey}_${this.monitor.index}`,
             this.tilingLayout.constructor.key
         );
-        log(`${this.categoryKey} ask for tiling after layout changed`);
+        
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.tilingLayout.onTile();
     }
@@ -316,9 +330,7 @@ var SuperWorkspace = class SuperWorkspace {
             ) {
                 // If it's the same, the changes have compensated themselves
                 // So in the end nothing happened:
-                log(
-                    'Windows change compensated during debounce, doing nothing'
-                );
+                 
                 return;
             }
             oldWindows = firstOldWindows;
@@ -353,11 +365,13 @@ var SuperWorkspace = class SuperWorkspace {
 
     focusLastWindow() {
         if (this.windows.length) {
-            const lastWindow = this.windows.slice(-1)[0];
-            log('Focusing last window', lastWindow.get_title());
+            let lastWindow =
+                this.windows[this.indexFocused] || this.windows.slice(-1)[0];
+            
             this.onFocus(lastWindow);
         } else {
-            this.windowFocused = null;
+            
+            this.onFocus(null);
         }
     }
 
@@ -365,9 +379,10 @@ var SuperWorkspace = class SuperWorkspace {
         this.windows
             .map(metaWindow => metaWindow.get_compositor_private())
             .filter(window => window)
-            .forEach(window =>
-                this.isDisplayed() ? window.show() : window.hide()
-            );
+            .forEach(window => {
+                
+                this.isDisplayed() ? window.show() : window.hide();
+            });
 
         this.focusLastWindow();
     }

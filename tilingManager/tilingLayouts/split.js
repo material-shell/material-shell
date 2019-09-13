@@ -262,9 +262,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 window.show();
             });
         global.window_group.remove_child(this.overContainer);
-        log(
-            `${this.superWorkspace.categoryKey} tilingLayout tile itself after the transition`
-        );
+
         this.onTile();
     }
 };
