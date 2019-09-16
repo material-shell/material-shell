@@ -26,6 +26,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
+        log('onFocusChanged', this.superWorkspace.monitor.index);
         if (!this.superWorkspace.windows.includes(oldWindowFocused)) return;
         if (!this.isDialog(windowFocused)) {
             const { regularWindows } = this.getDialogAndRegularWindows();
@@ -36,11 +37,27 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onWindowsChanged(windows, oldWindows) {
-        super.onWindowsChanged();
+        log('onWindowsChanged', this.superWorkspace.monitor.index);
+
         let regularWindows = windows.filter(window => !this.isDialog(window));
         let oldRegularWindows = oldWindows.filter(
             window => !this.isDialog(window)
         );
+        // If the order of the windows changed try to follow the current visible window
+        if (oldRegularWindows.length === regularWindows.length) {
+            let currentVisibleWindow =
+                oldRegularWindows[this.currentWindowIndex];
+            let indexOfCurrentVisibleWindowInNewWindows = regularWindows.indexOf(
+                currentVisibleWindow
+            );
+            if (indexOfCurrentVisibleWindowInNewWindows !== -1) {
+                this.currentWindowIndex = indexOfCurrentVisibleWindowInNewWindows;
+            }
+        }
+
+        super.onWindowsChanged();
+
+        // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
         if (oldRegularWindows.length - regularWindows.length === 1) {
             let windowRemovedIndex = oldRegularWindows.findIndex(
                 window => !regularWindows.includes(window)
@@ -78,6 +95,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 index !== this.currentWindowIndex ||
                 !this.superWorkspace.isDisplayed()
             ) {
+                log('hide onTileRegulars', this.superWorkspace.monitor.index);
                 actor.hide();
             } else {
                 actor.show();
