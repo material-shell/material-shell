@@ -18,7 +18,11 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
-        this.currentWindowIndex = 0;
+        const { regularWindows } = this.getDialogAndRegularWindows();
+        this.currentWindowIndex = Math.max(
+            regularWindows.indexOf(this.superWorkspace.windowFocused),
+            0
+        );
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
