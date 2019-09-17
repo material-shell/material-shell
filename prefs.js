@@ -1,4 +1,4 @@
-const { GObject, Gtk, Gio } = imports.gi;
+const { GObject, Gtk, Gdk, Gio } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
@@ -88,6 +88,7 @@ function buildPrefsWidget() {
     accelTab(notebook);
     layoutsTab(notebook);
     layoutsSettingsTab(notebook);
+    themeSettingsTab(notebook);
 
     let mainVBox = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
@@ -294,5 +295,73 @@ function layoutsSettingsTab(notebook) {
     );
     notebook.append_page(
         ...makePage('Tiling settings', makeItemList(itemRows))
+    );
+}
+
+function cssHexString(css) {
+    let rrggbb = '#';
+    let start;
+    for (let loop = 0; loop < 3; loop++) {
+        let end = 0;
+        let xx = '';
+        for (let loop = 0; loop < 2; loop++) {
+            while (true) {
+                let x = css.slice(end, end + 1);
+                if ((x == '(') || (x == ',') || (x == ')'))
+                    break;
+                end++;
+            }
+            if (loop == 0) {
+                end++;
+                start = end;
+            }
+        }
+        xx = parseInt(css.slice(start, end)).toString(16);
+        if (xx.length == 1)
+            xx = '0' + xx;
+        rrggbb += xx;
+        css = css.slice(end);
+    }
+    return rrggbb;
+}
+
+function themeSettingsTab(notebook) {
+    const settings = getSettings('theme');
+    const itemRows = [];
+
+    const darkMode = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Use dark mode',
+            'Determines whether to use dark or light colors in the UI',
+            darkMode
+        )
+    );
+    settings.bind(
+        'dark-mode',
+        darkMode,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const primaryColor = new Gtk.ColorButton();
+    let rgba = new Gdk.RGBA();
+    rgba.parse(settings.get_string('primary-color'));
+    primaryColor.set_rgba(rgba);
+    itemRows.push(
+        makeItemRow(
+            'Primary color',
+            'A color that stylizes the majority of the UI',
+            primaryColor
+        )
+    )
+    primaryColor.connect("notify::color", button=>{
+        let rgba = button.get_rgba();
+        let css = rgba.to_string();
+        let hexString = cssHexString(css);
+        settings.set_string('primary-color', hexString);
+    })
+    notebook.append_page(
+        ...makePage('Theme settings', makeItemList(itemRows))
     );
 }
