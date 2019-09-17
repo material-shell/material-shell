@@ -22,6 +22,13 @@ var TaskBar = GObject.registerClass(
             this.taskActiveIndicator = new St.Widget({
                 style_class: 'task-active-indicator'
             });
+            
+            global.themeManager.addStyleKey(
+                this.taskActiveIndicator,
+                "",
+                "background: $primary;"
+            )
+
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.BoxLayout({});
             this.add_child(this.taskButtonContainer);
@@ -88,6 +95,7 @@ var TaskBar = GObject.registerClass(
                     this.tracker.get_window_app(window),
                     window === this.windowFocused
                 );
+                global.themeManager.addClassToggle(item);
                 item._draggable.connect('drag-begin', () => {
                     const initialIndex = this.getFilteredWindows().indexOf(
                         item.window
@@ -327,6 +335,11 @@ let TaskBarItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER
             });
+            global.themeManager.addStyleKey(
+                this.title,
+                "",
+                "color: $primary;"
+            );
             this.updateTitle();
             this.connectSignal = this.window.connect('notify::title', () => {
                 this.updateTitle();
@@ -342,6 +355,12 @@ let TaskBarItem = GObject.registerClass(
                     )
                 })
             });
+
+            global.themeManager.addStyleKey(
+                this.closeButton.get_first_child(),
+                "",
+                "color: $primary;"
+            );
 
             this.closeButton.connect('clicked', () => {
                 this.window.delete(global.get_current_time());

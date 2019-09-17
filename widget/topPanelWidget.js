@@ -30,6 +30,12 @@ var TopPanel = GObject.registerClass(
                 style_class: 'workspace-button'
             });
 
+            global.themeManager.addStyleKey(
+                iconContainer.get_children()[0],
+                "",
+                "color: $fg;"
+            );
+
             this.addButton = new MatButton({
                 child: iconContainer
             });
@@ -44,6 +50,12 @@ var TopPanel = GObject.registerClass(
                 gicon: superWorkspace.tilingLayout.icon,
                 style_class: 'workspace-icon'
             });
+
+            global.themeManager.addStyleKey(
+                this.tilingIcon,
+                "",
+                "color: $fg;"
+            )
 
             this.tilingButton = new MatButton({
                 child: this.tilingIcon,

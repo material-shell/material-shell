@@ -12,6 +12,7 @@ const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
 const { StateManager } = Me.imports.stateManager;
+const { ThemeModule } = Me.imports.module.themeModule;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 
@@ -27,6 +28,7 @@ function init() {
     disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
     modules = [
         new RequiredSettingsModule(),
+        new ThemeModule(),
         new LeftPanelModule(),
         new TilingModule(),
         new SuperWorkspaceModule(),

@@ -8,6 +8,12 @@ $ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 
+$light-color-bg: white;
+$light-color-fg: rgb(25, 25, 25);
+$light-color-active-bg: rgba(0, 0, 0, 0.12);
+$light-color-hover-bg: rgba(0, 0, 0, 0.04);
+$light-ripple: rgba(0, 0, 0, 0.16);
+
 .primary-bg {
     background-color: $color-primary;
 }
@@ -18,12 +24,19 @@ $panel-size: 48px;
         background-color: $color-active-bg;
         .workspace-icon {
             color: $color-active-fg;
+            // light: $primary-fg
+        }
+        &.light-mode {
+            background-color: $light-color-active-bg;
         }
     }
 }
 
 .workspace-button:hover {
     background-color: $color-hover-bg;
+    &.light-mode {
+        background-color: $light-color-active-bg;
+    }
     .workspace-icon {
         color: $color-active-fg;
     }
@@ -95,6 +108,9 @@ $panel-size: 48px;
             .task-bar-item-title {
                 color: $color-active-fg;
             }
+            .task-close-button .task-close-icon {
+                color: $color-fg;
+            }
         }
     }
     .task-bar-item-content {
@@ -119,6 +135,26 @@ $panel-size: 48px;
             }
             .task-close-icon {
                 icon-size: 18px;
+                color: $color-fg;
+            }
+        }
+    }
+    &.light-mode {
+        font-size: 14px;
+        &:hover {
+            background-color: $light-color-hover-bg;
+        }
+        .task-bar-item-content {
+            .task-bar-item-title {
+                color: $light-color-fg;
+            }
+            .task-close-button {
+                &:hover {
+                    background-color: $light-color-hover-bg;
+                }
+                .task-close-icon {
+                    color: $light-color-fg;
+                }
             }
         }
     }
@@ -149,11 +185,18 @@ $panel-size: 48px;
 
 .mat-card {
     background-color: $color-bg;
+    &.light-mode {
+        background-color: $light-color-bg;
+        color: $color-bg;
+        .overview-icon {
+            color: $color-bg;
+        }
+    }
     border-radius: 6px;
     box-shadow: $shadow;
     .mat-card-title {
         background-color: $color-active-bg;
-        color: $color-active-fg;
+        color: $color-fg;
         height: 72px;
         padding: 0px 24px;
         .mat-card-title-icon {

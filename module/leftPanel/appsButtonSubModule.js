@@ -9,7 +9,7 @@ const { MatButton } = Me.imports.widget.material.button;
 var AppsButtonSubModule = class AppsButtonSubModule {
     constructor(panel) {
         this.panel = panel;
-        let icon = new St.Icon({
+        this.icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/menu-symbolic.svg`
             ),
@@ -17,7 +17,7 @@ var AppsButtonSubModule = class AppsButtonSubModule {
         });
 
         this.button = new MatButton({
-            child: icon,
+            child: this.icon,
             style_class: 'workspace-button'
         });
 
@@ -33,6 +33,16 @@ var AppsButtonSubModule = class AppsButtonSubModule {
     }
 
     enable() {
+        global.themeManager.addStyleKey(
+            this.icon,
+            "color: white;",
+            "color: $dynamic-fg;"
+        )
+        global.themeManager.addStyleKey(
+            this.button,
+            "background-color: $primary;",
+            "background-color: $primary;"
+        )
         this.panel._leftBox.insert_child_at_index(this.button, 0);
     }
 

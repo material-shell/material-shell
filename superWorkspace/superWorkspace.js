@@ -54,6 +54,12 @@ var SuperWorkspace = class SuperWorkspace {
 
         this.panel = new TopPanel(this);
 
+        global.themeManager.addStyleKey(
+            this.panel,
+            "",
+            "background-color: $bg;"
+        );
+
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
             Main.layoutManager._trackActor(this.panel, {
                 affectsStruts: true
@@ -69,6 +75,19 @@ var SuperWorkspace = class SuperWorkspace {
         });
 
         this.categorizedAppCard = new CategorizedAppCard(this.category, apps);
+
+        /*global.themeManager.addStyleKey(
+            this.categorizedAppCard,
+            "background-color: $bg; color: $fg;",
+            "background-color: $bg; color: $fg;"
+        )*/
+        global.themeManager.addClassToggle(this.categorizedAppCard);
+        global.themeManager.addStyleKey(
+            this.categorizedAppCard.get_children()[0].get_children()[0], //appcardtitle
+            "",
+            "background-color: $primary; color: $dynamic-fg;"
+        )
+
         this.backgroundStackLayout = new Stack({
             x: monitor.x,
             y: monitor.y,

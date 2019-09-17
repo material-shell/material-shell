@@ -39,6 +39,12 @@ var WorkspaceList = GObject.registerClass(
 
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
+            global.themeManager.addStyleKey(
+                this.workspaceActiveIndicator,
+                "background-color: $primary;",
+                "background-color: $dynamic-fg;"
+            )
+
             this.add_child(this.workspaceActiveIndicator);
 
             for (let categoryKey of this.superWorkspaceManager
@@ -49,6 +55,7 @@ var WorkspaceList = GObject.registerClass(
                     categoryKey,
                     category
                 );
+                global.themeManager.addClassToggle(workspaceButton);
                 workspaceButton._draggable.connect('drag-begin', () => {
                     let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
                         workspaceButton.categoryKey
@@ -260,6 +267,11 @@ var WorkspaceButton = GObject.registerClass(
                 gicon: category.icon,
                 style_class: 'workspace-icon'
             });
+            global.themeManager.addStyleKey(
+                icon,
+                "",
+                "color: $dynamic-fg;"
+            );
             super._init({
                 child: icon,
                 style_class: 'workspace-button'

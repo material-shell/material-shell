@@ -4,5 +4,6 @@
     "uuid": "material-shell@papyelgringo",
     "shell-version": ["3.32"],
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
-    "layouts": "org.gnome.shell.extensions.materialshell.layouts"
+    "layouts": "org.gnome.shell.extensions.materialshell.layouts",
+    "theme": "org.gnome.shell.extensions.materialshell.theme"
 }

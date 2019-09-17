@@ -45,6 +45,12 @@ var LeftPanelModule = class LeftPanelModule {
             this.panel._leftBox.remove_child(appMenuActor.get_parent());
         }
 
+        global.themeManager.addStyleKey(
+            this.panel,
+            "",
+            "background-color: $primary; color: $dynamic-fg;"
+        )
+
         this.subModules.forEach(subModule => {
             subModule.enable();
         });
