@@ -11,7 +11,6 @@ const { ShellVersionMatch } = Me.imports.utils.compatibility;
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
-
         this.overContainer = new St.Widget();
         this.transitionContainer = new St.Widget();
         this.leftWindowContainer = new St.Widget();
@@ -19,21 +18,60 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         this.transitionContainer.add_actor(this.leftWindowContainer);
         this.transitionContainer.add_actor(this.rightWindowContainer);
         this.overContainer.add_actor(this.transitionContainer);
-        this.windowNotDialogFocused =
-            !this.isDialog(this.superWorkspace.windowFocused) &&
-            this.superWorkspace.windowFocused;
+        const { regularWindows } = this.getDialogAndRegularWindows();
+        this.currentWindowIndex = Math.max(
+            regularWindows.indexOf(this.superWorkspace.windowFocused),
+            0
+        );
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        if (!this.isDialog(windowFocused) && !this.isDialog(oldWindowFocused)) {
-            const newIndex = this.superWorkspace.windows.indexOf(windowFocused);
-            const oldIndex = this.superWorkspace.windows.indexOf(
-                oldWindowFocused
+        log('onFocusChanged', this.superWorkspace.monitor.index);
+        if (!this.superWorkspace.windows.includes(oldWindowFocused)) return;
+        if (!this.isDialog(windowFocused)) {
+            const { regularWindows } = this.getDialogAndRegularWindows();
+            const oldIndex = this.currentWindowIndex;
+            this.currentWindowIndex = regularWindows.indexOf(windowFocused);
+            this.animateTransition(this.currentWindowIndex, oldIndex);
+        }
+    }
+
+    onWindowsChanged(windows, oldWindows) {
+        log('onWindowsChanged', this.superWorkspace.monitor.index);
+
+        let regularWindows = windows.filter(window => !this.isDialog(window));
+        let oldRegularWindows = oldWindows.filter(
+            window => !this.isDialog(window)
+        );
+        // If the order of the windows changed try to follow the current visible window
+        if (oldRegularWindows.length === regularWindows.length) {
+            let currentVisibleWindow =
+                oldRegularWindows[this.currentWindowIndex];
+            let indexOfCurrentVisibleWindowInNewWindows = regularWindows.indexOf(
+                currentVisibleWindow
             );
-            this.windowNotDialogFocused = windowFocused;
-            const direction = newIndex > oldIndex ? 1 : -1;
-            this.prepareTransition(windowFocused, oldWindowFocused, direction);
-            this.animateTransition(direction);
+            if (indexOfCurrentVisibleWindowInNewWindows !== -1) {
+                this.currentWindowIndex = indexOfCurrentVisibleWindowInNewWindows;
+            }
+        }
+
+        super.onWindowsChanged();
+
+        // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
+        if (oldRegularWindows.length - regularWindows.length === 1) {
+            let windowRemovedIndex = oldRegularWindows.findIndex(
+                window => !regularWindows.includes(window)
+            );
+            const oldIndex =
+                windowRemovedIndex === oldRegularWindows.length - 1
+                    ? windowRemovedIndex
+                    : -1;
+
+            this.currentWindowIndex = Math.max(
+                regularWindows.indexOf(this.superWorkspace.windowFocused),
+                0
+            );
+            this.animateTransition(this.currentWindowIndex, oldIndex);
         }
     }
 
@@ -41,23 +79,25 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         if (this.animationInProgress) {
             return;
         }
-        windows.forEach(window => {
+        windows.forEach((window, index) => {
             const actor = window.get_compositor_private();
+            // Unclip windows in maximize
+            if (actor.has_clip) {
+                actor.set_z_position(0);
+                actor.remove_clip();
+            }
+            if (!window.grabbed && !window.maximized_horizontally) {
+                Main.wm.skipNextEffect(actor);
+                window.maximize(Meta.MaximizeFlags.BOTH);
+            }
+
             if (
-                window !== this.windowNotDialogFocused ||
+                index !== this.currentWindowIndex ||
                 !this.superWorkspace.isDisplayed()
             ) {
+                log('hide onTileRegulars', this.superWorkspace.monitor.index);
                 actor.hide();
             } else {
-                // Unclip windows in maximize
-                if (actor.has_clip) {
-                    actor.set_z_position(0);
-                    actor.remove_clip();
-                }
-                if (!window.grabbed && !window.maximized_horizontally) {
-                    Main.wm.skipNextEffect(actor);
-                    window.maximize(Meta.MaximizeFlags.BOTH);
-                }
                 actor.show();
             }
         });
@@ -72,22 +112,11 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         });
     }
 
-    prepareTransition(newMetaWindow, oldMetaWindow, direction) {
-        if (
-            oldMetaWindow &&
-            (!oldMetaWindow.get_compositor_private() || oldMetaWindow.grabbed)
-        ) {
-            oldMetaWindow = null;
-        }
-        if (
-            newMetaWindow &&
-            (!newMetaWindow.get_compositor_private() || newMetaWindow.grabbed)
-        ) {
-            newMetaWindow = null;
-        }
-        if (!oldMetaWindow && !newMetaWindow) {
-            return;
-        }
+    animateTransition(newIndex, oldIndex) {
+        if (newIndex === oldIndex) return;
+
+        const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
+
         const containers = [
             this.leftWindowContainer,
             this.rightWindowContainer
@@ -97,19 +126,22 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
         const [oldContainer, newContainer] = containers;
 
+        const { regularWindows } = this.getDialogAndRegularWindows();
+
+        let oldMetaWindow = regularWindows[oldIndex];
+        let newMetaWindow = regularWindows[newIndex];
+
         if (oldMetaWindow) {
             let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
             oldWindowClone.reparent(oldContainer);
             oldMetaWindow.get_compositor_private().hide();
         }
+
         if (newMetaWindow) {
             let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
             newWindowClone.reparent(newContainer);
             newMetaWindow.get_compositor_private().hide();
         }
-    }
-
-    animateTransition(direction) {
         // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
