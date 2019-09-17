@@ -8,16 +8,9 @@ var ThemeModule = class ThemeModule {
     enable() {
         this.signals = [];
         global.themeManager = new ThemeManager();
-        global.themeManager.test();
     }
 
     disable() {
-        global.themeManager.onDisable();
-        return;
-        // not needed(?)
-        this.signals.forEach(signal => {
-            signal.from.disconnect(signal.id);
-        });
-        this.signals = [];
+        global.themeManager.destroyKeysAndToggles();
     }
 };

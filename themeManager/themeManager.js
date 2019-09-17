@@ -13,34 +13,36 @@ var ThemeManager = class ThemeManager {
         this.settingsSignals = [
             this.themeSettings.connect('changed::dark-mode', schema => {
                 this.darkMode = schema.get_boolean('dark-mode');
-                this.styleElements();
+                this.styleElements(true);
             }),
             this.themeSettings.connect('changed::primary-color', schema => {
                 this.primaryColor = schema.get_string('primary-color');
-                this.styleElements();
+                this.styleElements(true);
             })
         ];
 
         this.darkMode = this.themeSettings.get_boolean('dark-mode');
         this.primaryColor = this.themeSettings.get_string('primary-color');
+        this.dynamicFG = this.generateCSSFromColor(this.chooseContrastColor(this.parseHexColor(this.primaryColor), {r:25,g:25,b:25}, {r:255,g:255,b:255}));
     }
 
     addStyleKey(object, darkStyle, lightStyle) {
         this.styleKeys.push({
             object,
             darkStyle,
-            lightStyle
+            lightStyle,
+            isNew: true
         });
-        this.styleElements();
+        this.styleElements(false);
     }
 
     addClassToggle(object) {
         this.classToggles.push(object);
-        this.styleElements();
+        this.styleElements(false);
     }
 
     computeLuminance(r, g, b) {
-        let luminanceTable = Me.imports.themeManager.luminanceTable;
+        let { luminanceTable } = Me.imports.themeManager.luminanceTable;
         let redLuminance = 0.2126 * luminanceTable[r];
         let greenLuminance = 0.7152 * luminanceTable[g];
         let blueLuminance = 0.0722 * luminanceTable[b];
@@ -48,7 +50,7 @@ var ThemeManager = class ThemeManager {
         return redLuminance + greenLuminance + blueLuminance + .05;
     }
 
-    computeContrast(bgColor, fgColor) {
+    computeContrast(fgColor, bgColor) {
         let bgLuminance = this.computeLuminance(bgColor.r, bgColor.g, bgColor.b);
         let fgLuminance = this.computeLuminance(fgColor.r, fgColor.g, fgColor.b);
 
@@ -58,7 +60,7 @@ var ThemeManager = class ThemeManager {
     chooseContrastColor(color, darkColor, lightColor) {
         let darkContrast = this.computeContrast(color, darkColor);
         let lightContrast = this.computeContrast(color, lightColor);
-        return (darkContrast > lightContrast ? darkColor : lightColor);
+        return (darkContrast >= lightContrast ? darkColor : lightColor);
     }
 
     parseHexColor(color) {
@@ -74,6 +76,7 @@ var ThemeManager = class ThemeManager {
     }
 
     generateStyleForKey(key, dynamicFG) {
+        if (key === "") return "";
         if (this.darkMode) {
             return key.replace('$primary',this.primaryColor)
                       .replace('$bg', '#191919')
@@ -108,30 +111,44 @@ var ThemeManager = class ThemeManager {
         if (toggleIndex) this.classToggles.splice(toggleIndex, 1);
     }
 
-    styleElements() {
-        let dynamicFG = this.generateCSSFromColor(this.chooseContrastColor(this.parseHexColor(this.primaryColor), {r:25,g:25,b:25}, {r:255,g:255,b:255}));
+    styleElements(restyleAllElements) {
+        if (restyleAllElements) this.dynamicFG = this.generateCSSFromColor(this.chooseContrastColor(this.parseHexColor(this.primaryColor), {r:25,g:25,b:25}, {r:255,g:255,b:255}));
+        let styleKeyPrunes = [];
+        let classTogglePrunes = [];
         this.styleKeys.forEach((key,index)=>{
-            if (!key.object) {
-                this.styleKeys.splice(index,1);
+            /*if (!key.object) {
+                styleKeyPrunes.push(index);
                 return;
+            }*/
+            try {
+                if (restyleAllElements || key.isNew) {
+                    key.object.style = this.generateStyleForKey(this.darkMode ? key.darkStyle : key.lightStyle, this.dynamicFG);
+                    key.isNew = false;
+                }
+            } catch {
+                // object may have been deallocated, remove it
+                styleKeyPrunes.push(index);
             }
-            key.object.style = this.generateStyleForKey(this.darkMode ? key.darkStyle : key.lightStyle, dynamicFG);
         });
         this.classToggles.forEach((object,index)=>{
-            if (!object) {
-                this.classToggles.splice(index,1);
+            /*if (!object) {
+                classTogglePrunes.push(index);
                 return;
-            }
-            if (this.darkMode && object.style_class.indexOf && object.style_class.indexOf("light-mode") > -1) {
-                object.remove_style_class_name("light-mode");
-            } else if (!this.darkMode && (!object.style_class.indexOf || object.style_class.indexOf("light-mode") === -1)) {
-                object.add_style_class_name("light-mode");
+            }*/
+            try {
+                if (this.darkMode && object.style_class.indexOf && object.style_class.indexOf("light-mode") > -1) {
+                    object.remove_style_class_name("light-mode");
+                } else if (!this.darkMode && (!object.style_class.indexOf || object.style_class.indexOf("light-mode") === -1)) {
+                    object.add_style_class_name("light-mode");
+                }
+            } catch {
+                classTogglePrunes.push(index);
             }
         });
-    }
-
-    test() {
-        log("material Access successful");
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            styleKeyPrunes.forEach(index=>this.styleKeys.splice(index,1));
+            classTogglePrunes.forEach(index=>this.classToggles.splice(index,1));
+        });
     }
 
     onDestroy() {
@@ -139,5 +156,11 @@ var ThemeManager = class ThemeManager {
             this.settings.disconnect(signal)
         );
         this.styleKeys = [];
+        this.classToggles = [];
+    }
+
+    destroyKeysAndToggles() {
+        this.styleKeys = [];
+        this.classToggles = [];
     }
 }

@@ -1,5 +1,6 @@
 // This is probably faster to hardcode than to compute on the fly
 
+/* exported luminanceTable */
 var luminanceTable = [
     0,
     .0003035269835488375,
