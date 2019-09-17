@@ -324,7 +324,9 @@ let TaskBarItem = GObject.registerClass(
             this.window = window;
             this.app = app;
 
-            this.connect('destroy', this.destroy.bind(this));
+            this.connect('destroy', () => {
+                this.window.disconnect(this.connectSignal);
+            });
             // ICON
             this.iconSize = 24;
             this.icon = app.create_icon_texture(this.iconSize);
@@ -341,6 +343,7 @@ let TaskBarItem = GObject.registerClass(
                 "color: $primary;"
             );
             this.updateTitle();
+
             this.connectSignal = this.window.connect('notify::title', () => {
                 this.updateTitle();
             });
@@ -460,11 +463,6 @@ let TaskBarItem = GObject.registerClass(
         // Update the title and crop it if it's too long
         updateTitle() {
             this.title.text = this.window.title;
-        }
-
-        destroy() {
-            super.destroy();
-            this.window.disconnect(this.connectSignal);
         }
 
         initDrag() {

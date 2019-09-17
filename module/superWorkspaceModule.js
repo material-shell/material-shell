@@ -422,11 +422,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             id: global.display.connect(
                 'window-left-monitor',
                 (display, monitorIndex, window) => {
+                    /* 
                     //Ignore unHandle window and window on primary screens
                     global.superWorkspaceManager.windowLeftMonitor(
                         window,
                         monitorIndex
-                    );
+                    ); */
                 }
             )
         });
@@ -446,10 +447,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: workspace,
             id: workspace.connect('window-removed', (workspace, window) => {
-                global.superWorkspaceManager.windowLeftWorkspace(
+                /* global.superWorkspaceManager.windowLeftWorkspace(
                     window,
                     workspace
-                );
+                ); */
             })
         });
     }
