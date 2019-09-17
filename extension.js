@@ -27,8 +27,8 @@ function init() {
     Me.loaded = false;
     disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
     modules = [
-        new RequiredSettingsModule(),
         new ThemeModule(),
+        new RequiredSettingsModule(),
         new LeftPanelModule(),
         new TilingModule(),
         new SuperWorkspaceModule(),

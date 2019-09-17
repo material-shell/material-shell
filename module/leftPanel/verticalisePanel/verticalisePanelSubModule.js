@@ -126,6 +126,17 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
                 this.recursivelySetVertical(actor, true);
             }
         );
+        //4- Set up theme
+        global.themeManager.addStyleKey(
+            this.panel.statusArea.dateMenu,
+            "color: $fg;",
+            "color: $dynamic-fg;"
+        );
+        global.themeManager.addStyleKey(
+            this.panel.statusArea.aggregateMenu,
+            "color: $fg;",
+            "color: $dynamic-fg;"
+        );
     }
 
     disable() {
