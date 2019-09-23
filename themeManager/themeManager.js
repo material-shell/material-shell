@@ -37,7 +37,10 @@ var ThemeManager = class ThemeManager {
     }
 
     addClassToggle(object) {
-        this.classToggles.push(object);
+        this.classToggles.push({
+            object,
+            isNew: true
+        });
         this.styleElements(false);
     }
 
@@ -104,22 +107,23 @@ var ThemeManager = class ThemeManager {
         let keyIndex = this.styleKeys.findIndex(key=>{
             return key.object === object;
         });
-        let toggleIndex = this.classToggles.findIndex(obj=>{
-            return obj === object;
+        let toggleIndex = this.classToggles.findIndex(toggle=>{
+            return toggle.object === object;
         });
         if (keyIndex) this.styleKeys.splice(keyIndex, 1);
         if (toggleIndex) this.classToggles.splice(toggleIndex, 1);
     }
 
     styleElements(restyleAllElements) {
+        log(`keys: ${this.styleKeys.length}, toggles: ${this.classToggles.length}`)
         if (restyleAllElements) this.dynamicFG = this.generateCSSFromColor(this.chooseContrastColor(this.parseHexColor(this.primaryColor), {r:25,g:25,b:25}, {r:255,g:255,b:255}));
         let styleKeyPrunes = [];
         let classTogglePrunes = [];
         this.styleKeys.forEach((key,index)=>{
-            /*if (!key.object) {
+            if (!key.object || typeof key.object.allocation === "function") { // this turns from another element to a native function when deallocated
                 styleKeyPrunes.push(index);
                 return;
-            }*/
+            }
             try {
                 if (restyleAllElements || key.isNew) {
                     key.object.style = this.generateStyleForKey(this.darkMode ? key.darkStyle : key.lightStyle, this.dynamicFG);
@@ -130,24 +134,27 @@ var ThemeManager = class ThemeManager {
                 styleKeyPrunes.push(index);
             }
         });
-        this.classToggles.forEach((object,index)=>{
-            /*if (!object) {
-                classTogglePrunes.push(index);
-                return;
-            }*/
+        this.classToggles.forEach((toggle,index)=>{
             try {
-                if (this.darkMode && object.style_class.indexOf && object.style_class.indexOf("light-mode") > -1) {
-                    object.remove_style_class_name("light-mode");
-                } else if (!this.darkMode && (!object.style_class.indexOf || object.style_class.indexOf("light-mode") === -1)) {
-                    object.add_style_class_name("light-mode");
+                if (!toggle.object || typeof toggle.object.allocation === "function") { 
+                    classTogglePrunes.push(index);
+                    return;
+                }
+                if (restyleAllElements || toggle.isNew) {
+                    if (this.darkMode && toggle.object.style_class.indexOf && toggle.object.style_class.indexOf("light-mode") > -1) {
+                        toggle.object.remove_style_class_name("light-mode");
+                    } else if (!this.darkMode && (!toggle.object.style_class.indexOf || toggle.object.style_class.indexOf("light-mode") === -1)) {
+                        toggle.object.add_style_class_name("light-mode");
+                    }
                 }
             } catch {
                 classTogglePrunes.push(index);
             }
         });
+        log(`pruning ${styleKeyPrunes.length} keys and ${classTogglePrunes.length} toggles`)
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            styleKeyPrunes.forEach(index=>this.styleKeys.splice(index,1));
-            classTogglePrunes.forEach(index=>this.classToggles.splice(index,1));
+            styleKeyPrunes.forEach((index, offset)=>this.styleKeys.splice(index-offset,1));
+            classTogglePrunes.forEach((index, offset)=>this.classToggles.splice(index-offset,1));
         });
     }
 
