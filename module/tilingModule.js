@@ -13,7 +13,7 @@ var TilingModule = class TilingModule {
         /* this.signals.push({
             from: tracker,
             id: tracker.connect('tracked-windows-changed', () => {
-               
+                
                 global.tilingManager.tileWindows();
             })
         }); */
@@ -30,7 +30,7 @@ var TilingModule = class TilingModule {
             id: global.display.connect(
                 'window-entered-monitor',
                 (display, monitorIndex, window) => {
-                   
+                    
                     this.windowChangedSomething(window);
                 }
             )
@@ -41,7 +41,7 @@ var TilingModule = class TilingModule {
             id: global.display.connect(
                 'window-left-monitor',
                 (display, monitorIndex, window) => {
-                   
+                    
                     this.windowChangedSomething(window);
                 }
             )
@@ -64,7 +64,6 @@ var TilingModule = class TilingModule {
             from: global.display,
             id: global.display.connect('grab-op-end', () => {
                 if (this.grabInProgress) {
-                   
                     this.grabInProgress = false;
                     this.grabWindow.grabbed = false;
                     global.tilingManager.tileWindows();
@@ -78,15 +77,5 @@ var TilingModule = class TilingModule {
             signal.from.disconnect(signal.id);
         });
         this.signals = [];
-    }
-
-    windowChangedSomething(window) {
-        // Probably delete
-        return;
-        let meta = Meta.WindowType;
-        let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
-        if (types.includes(window.window_type)) {
-            global.tilingManager.tileWindows();
-        }
     }
 };
