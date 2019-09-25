@@ -31,7 +31,8 @@ var ThemeManager = class ThemeManager {
             object,
             darkStyle,
             lightStyle,
-            isNew: true
+            isNew: true,
+            isValid: true
         });
         this.styleElements(false);
     }
@@ -39,7 +40,8 @@ var ThemeManager = class ThemeManager {
     addClassToggle(object) {
         this.classToggles.push({
             object,
-            isNew: true
+            isNew: true,
+            isValid: true
         });
         this.styleElements(false);
     }
@@ -120,8 +122,10 @@ var ThemeManager = class ThemeManager {
         let styleKeyPrunes = [];
         let classTogglePrunes = [];
         this.styleKeys.forEach((key,index)=>{
+            if (!key.isValid) return;
             if (!key.object || typeof key.object.allocation === "function") { // this turns from another element to a native function when deallocated
                 styleKeyPrunes.push(index);
+                key.isValid = false;
                 return;
             }
             try {
@@ -136,8 +140,10 @@ var ThemeManager = class ThemeManager {
         });
         this.classToggles.forEach((toggle,index)=>{
             try {
+                if (!toggle.isValid) return;
                 if (!toggle.object || typeof toggle.object.allocation === "function") { 
                     classTogglePrunes.push(index);
+                    toggle.isValid = false;
                     return;
                 }
                 if (restyleAllElements || toggle.isNew) {
