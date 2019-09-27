@@ -1,5 +1,4 @@
 const { Clutter, GObject, St } = imports.gi;
-const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;

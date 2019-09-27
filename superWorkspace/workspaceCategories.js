@@ -111,7 +111,7 @@ var WorkspaceCategories = {
     }, 
     external: {
         icon: Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/apps.svg`
+            `${Me.path}/assets/icons/package-symbolic.svg`
         ),
         title: _('All applications'),
         categoriesIncluded: [],

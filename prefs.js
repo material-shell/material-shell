@@ -1,7 +1,6 @@
 const { GObject, Gtk, Gio } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 const { getSettings } = Me.imports.utils.settings;
 
 // eslint-disable-next-line no-unused-vars
