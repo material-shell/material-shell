@@ -53,7 +53,7 @@
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
 
 .task-active-indicator {
-  background: cyan;
+  background: white;
   height: 2px; }
 
 .task-bar-item {

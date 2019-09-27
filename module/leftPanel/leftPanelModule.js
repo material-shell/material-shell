@@ -8,7 +8,6 @@ const {
     PanelToLeftSubModule
 } = Me.imports.module.leftPanel.panelToLeftSubModule;
 const { AppsButtonSubModule } = Me.imports.module.leftPanel.appsButtonSubModule;
-const { SettingsButtonSubModule } = Me.imports.module.leftPanel.settingsButtonSubModule;
 const {
     MaterializePanelSubModule
 } = Me.imports.module.leftPanel.materializePanelSubModule;
@@ -25,7 +24,6 @@ var LeftPanelModule = class LeftPanelModule {
             new VerticalisePanelSubModule(this.panel),
             new PanelToLeftSubModule(this.panel),
             new AppsButtonSubModule(this.panel),
-            new SettingsButtonSubModule(this.panel),
             new MaterializePanelSubModule(this.panel),
             new HideDashModule()
         ];
