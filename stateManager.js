@@ -9,6 +9,11 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 
+
+const file = Gio.File.new_for_path(REGISTRY_PATH);
+const monitor = file.monitor(Gio.FileMonitorFlags.NONE, null);
+
+
 var StateManager = class StateManager {
     constructor() {
         this.state = {};
@@ -79,5 +84,10 @@ var StateManager = class StateManager {
             this.state[key] = value;
         }
         this.saveRegistry();
+    }
+    monitor(callback) {
+        monitor.connect('changed',() => {
+            this.loadRegistry(callback);
+        });
     }
 };

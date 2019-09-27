@@ -42,9 +42,9 @@ var CategorizedAppCard = GObject.registerClass(
         _loadApps(apps) {
             let icons = [];
             for (let i = 0; i < Math.min(apps.length, 12); i++) {
-                let app = this.appSys.lookup_app(apps[i].get_id());
+                let app = this.appSys.lookup_app(apps[i]);
                 let appIcon = new AppIcon(app, {
-                    isDraggable: false
+                    isDraggable: true
                 });
                 icons.push(appIcon);
             }

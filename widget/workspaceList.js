@@ -1,5 +1,5 @@
 const { Clutter, GObject, St } = imports.gi;
-
+const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
@@ -8,6 +8,7 @@ const { MatButton } = Me.imports.widget.material.button;
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
+const { notify } = Me.imports.utils.notification;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
@@ -18,7 +19,6 @@ var WorkspaceList = GObject.registerClass(
             });
 
             this.superWorkspaceManager = superWorkspaceManager;
-
             this.buttonList = new St.BoxLayout({
                 vertical: true
             });
@@ -40,7 +40,6 @@ var WorkspaceList = GObject.registerClass(
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
             this.add_child(this.workspaceActiveIndicator);
-
             for (let categoryKey of this.superWorkspaceManager
                 .categoryKeyOrderedList) {
                 let category = WorkspaceCategories[categoryKey];
@@ -366,12 +365,56 @@ var WorkspaceButton = GObject.registerClass(
             return DND.DragMotionResult.MOVE_DROP;
         }
 
-        acceptDrop(source) {
-            if (!(source instanceof WorkspaceButton)) {
-                return false;
+        handleAppIconDrop(source) {
+            const event = Clutter.get_current_event();
+            const move = !(event.get_state() & Clutter.ModifierType.SHIFT_MASK);
+
+            const abc = this.superWorkspaceManager.appsByCategory;
+
+            const sourceCategoryKey = this.superWorkspaceManager.getActiveSuperWorkspace().categoryKey;
+            const targetCategoryKey = this.categoryKey;
+
+            if (sourceCategoryKey === targetCategoryKey) {
+                return;
             }
-            this.emit('drag-dropped');
-            return true;
+            
+            const sourcews = this.superWorkspaceManager.getSuperWorkspaceByCategoryKey(sourceCategoryKey);
+            const targetws = this.superWorkspaceManager.getSuperWorkspaceByCategoryKey(targetCategoryKey);
+            
+            const shouldAdd = !targetws.apps.includes(source.id);
+            if (shouldAdd)
+                abc.add(source.id, targetCategoryKey);
+            if (move)
+                abc.remove(source.id, sourceCategoryKey);
+            abc.persist();
+
+            sourcews.setApps(abc.getApps(sourceCategoryKey));
+            targetws.setApps(abc.getApps(targetCategoryKey));
+
+            const undo = () => {
+                if (shouldAdd)
+                    abc.remove(source.id, targetCategoryKey);
+                if (move)
+                    abc.add(source.id, sourceCategoryKey);
+                abc.persist();
+                sourcews.setApps(abc.getApps(sourceCategoryKey));
+                targetws.setApps(abc.getApps(targetCategoryKey));
+            }
+
+            const message = `${source.name} ${move ? 'moved' : 'copied'} to ${targetCategoryKey}` 
+            notify(message, '', [{label:'UNDO', callback: undo}]);
+        }
+
+        acceptDrop(source) {
+            if (source instanceof WorkspaceButton) {
+                this.emit('drag-dropped');
+                return true;
+            }     
+            if (source instanceof imports.ui.appDisplay.AppIcon) {
+                this.handleAppIconDrop(source);
+                return true;
+            }
+            return false;
         }
     }
 );

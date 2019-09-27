@@ -4,25 +4,28 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
 const { WorkspaceList } = Me.imports.widget.workspaceList;
+const { AppCategories } = Me.imports.superWorkspace.appCategories;
 
 /* exported SuperWorkspaceManager */
 var SuperWorkspaceManager = class SuperWorkspaceManager {
-    constructor(appsByCategory) {
+    constructor() {
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.superWorkspaces = [];
-        this.appsByCategory = appsByCategory;
-        this.categoryKeyOrderedList =
-            Me.stateManager.getState('categoryKeyOrderedList') || [];
+        this.categoryKeyOrderedList = Me.stateManager.getState('categoryKeyOrderedList') || [];
+
+        this.appsByCategory = new AppCategories();
+
         this.noUImode = false;
         for (let [key, category] of Object.entries(WorkspaceCategories)) {
-            if (!this.appsByCategory[key].length) continue;
+            const appsInCategory = this.appsByCategory.getApps(key);
+            if (!appsInCategory.length) continue;
             if (category.primary) {
                 let superWorkspace = new SuperWorkspace(
                     this,
                     key,
                     category,
-                    this.appsByCategory[key],
+                    appsInCategory,
                     Main.layoutManager.primaryMonitor,
                     false
                 );
@@ -40,7 +43,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                         this,
                         key,
                         category,
-                        this.appsByCategory[key],
+                        appsInCategory,
                         monitor,
                         true
                     );
@@ -246,7 +249,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 return (
                     superWorkspace.category.primary &&
                     superWorkspace.apps.findIndex(app => {
-                        return app.get_id() === appToFind.get_id();
+                        return app === appToFind.get_id();
                     }) > -1
                 );
             });

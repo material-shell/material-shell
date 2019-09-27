@@ -59,7 +59,7 @@ var WorkspaceCategories = {
             `${Me.path}/assets/icons/folder-symbolic.svg`
         ),
         title: _('Office'),
-        categoriesIncluded: ['Office', 'FileManager'],
+        categoriesIncluded: ['Office'],
         categoriesExcluded: ['ContactManagement'],
         acceptAll: false,
         acceptOrphans: false,
@@ -98,7 +98,7 @@ var WorkspaceCategories = {
         acceptOrphans: false,
         primary: true
     },
-    /*     other: {
+    other: {
         icon: Gio.icon_new_for_string(
             `${Me.path}/assets/icons/package-symbolic.svg`
         ),
@@ -108,10 +108,10 @@ var WorkspaceCategories = {
         acceptAll: false,
         acceptOrphans: true,
         primary: true
-    }, */
+    }, 
     external: {
         icon: Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/package-symbolic.svg`
+            `${Me.path}/assets/icons/apps.svg`
         ),
         title: _('All applications'),
         categoriesIncluded: [],
@@ -119,5 +119,5 @@ var WorkspaceCategories = {
         acceptAll: true,
         acceptOrphans: false,
         primary: false
-    }
+    },
 };

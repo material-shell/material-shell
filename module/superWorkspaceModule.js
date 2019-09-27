@@ -4,10 +4,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Tweener = imports.ui.tweener;
 
-const { AppsManager } = Me.imports.superWorkspace.appsManager;
-const {
-    SuperWorkspaceManager
-} = Me.imports.superWorkspace.superWorkspaceManager;
+const { SuperWorkspaceManager } = Me.imports.superWorkspace.superWorkspaceManager;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
@@ -42,9 +39,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         Main.layoutManager.panelBox.add_child(this.topBarSpacer);
 
-        global.superWorkspaceManager = new SuperWorkspaceManager(
-            AppsManager.groupAppsByCategory(AppsManager.getApps())
-        );
+        global.superWorkspaceManager = new SuperWorkspaceManager();
         this.currentSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
 
         this.signals.push({
@@ -123,9 +118,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             'monitors-changed',
             () => {
                 global.superWorkspaceManager.destroy();
-                global.superWorkspaceManager = new SuperWorkspaceManager(
-                    AppsManager.groupAppsByCategory(AppsManager.getApps())
-                );
+                global.superWorkspaceManager = new SuperWorkspaceManager();
                 this.currentSuperWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
             }
         );

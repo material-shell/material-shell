@@ -1,10 +1,15 @@
-const { GObject, Gtk, Gio } = imports.gi;
+const { GObject, Gtk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { StateManager } = Me.imports.stateManager;
+
 const { getSettings } = Me.imports.utils.settings;
 
 // eslint-disable-next-line no-unused-vars
-function init() {}
+function init() {
+    Me.stateManager = new StateManager();
+    Me.stateManager.loadRegistry(() => {});
+}
 
 const makePage = (title, content) => {
     const tabWindow = new Gtk.ScrolledWindow({ vexpand: true });
@@ -88,6 +93,7 @@ function buildPrefsWidget() {
     accelTab(notebook);
     layoutsTab(notebook);
     layoutsSettingsTab(notebook);
+    categoriesTab(notebook);
 
     let mainVBox = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
@@ -295,4 +301,13 @@ function layoutsSettingsTab(notebook) {
     notebook.append_page(
         ...makePage('Tiling settings', makeItemList(itemRows))
     );
+}
+
+function categoriesTab(notebook) {
+    // const appCategories = Me.stateManager.getState('appCategories') || [];
+    const resetButton = new Gtk.Button({label:"Restore defaults"})
+    resetButton.connect("clicked", () => {
+        Me.stateManager.setState('appCategories', []);
+    })
+    notebook.append_page(...makePage('Categories', resetButton ));
 }

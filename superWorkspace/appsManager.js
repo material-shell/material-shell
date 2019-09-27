@@ -18,10 +18,10 @@ var AppsManager = class AppsManager {
                 return false;
             }
             return appInfo.should_show();
-        });
+        }).map(app => app.get_id());
 
         return appsInstalled.sort((a, b) => {
-            return usage.compare(a.get_id(), b.get_id());
+            return usage.compare(a, b);
         });
     }
 
@@ -55,8 +55,8 @@ var AppsManager = class AppsManager {
         return appsByCategoryKeys;
     }
 
-    static getWorkspaceCategoriesForApp(appInfo) {
-        const appCategoriesList = (appInfo.get_categories() || '').split(';');
+    static getWorkspaceCategoriesForApp(appId) {
+        const appCategoriesList = (Shell.AppSystem.get_default().lookup_app(appId).app_info.get_categories() || '').split(';');
 
         let categoryKeys = [];
         for (let [key, category] of Object.entries(WorkspaceCategories)) {
