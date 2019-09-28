@@ -7,6 +7,7 @@ const {
     MatCardContent
 } = Me.imports.widget.material.card;
 const { Column, Row } = Me.imports.widget.layout;
+const Main = imports.ui.main;
 
 /* exported CategorizedAppCard */
 var CategorizedAppCard = GObject.registerClass(
@@ -37,6 +38,13 @@ var CategorizedAppCard = GObject.registerClass(
             });
             this.appSys = Shell.AppSystem.get_default();
             this._loadApps(apps);
+            /*
+                The following line prevents these errors being logged:
+                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
+                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
+                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
+            */
+            Main.overview.viewSelector._activePage = {}; 
         }
 
         _loadApps(apps) {
