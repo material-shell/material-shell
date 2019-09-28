@@ -12,9 +12,8 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.superWorkspaces = [];
-        this.categoryKeyOrderedList = Me.stateManager.getState('categoryKeyOrderedList') || [];
-
         this.appsByCategory = new AppCategories();
+        this.categoryKeyOrderedList = Me.stateManager.getState('categoryKeyOrderedList') || [];
 
         this.noUImode = false;
         for (let [key, category] of Object.entries(WorkspaceCategories)) {
