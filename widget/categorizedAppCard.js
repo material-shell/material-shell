@@ -39,10 +39,10 @@ var CategorizedAppCard = GObject.registerClass(
             this.appSys = Shell.AppSystem.get_default();
             this._loadApps(apps);
             /*
-                The following line prevents these errors being logged:
-                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
-                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
-                JS ERROR: Exception in callback for signal: item-drag-begin: TypeError: target is null
+                Prevent these errors being logged when dragging AppIcon:
+                item-drag-begin: TypeError: target is null
+                item-drag-end: TypeError: target is null
+                item-drag-cancelled: TypeError: target is null
             */
             Main.overview.viewSelector._activePage = {}; 
         }
