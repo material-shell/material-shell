@@ -4,7 +4,9 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Tweener = imports.ui.tweener;
 
-const { SuperWorkspaceManager } = Me.imports.superWorkspace.superWorkspaceManager;
+const { 
+    SuperWorkspaceManager 
+} = Me.imports.superWorkspace.superWorkspaceManager;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
