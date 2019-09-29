@@ -18,7 +18,8 @@ var WorkspaceCategories = {
             'Email',
             'ContactManagement',
             'Security',
-            'Game'
+            'Game',
+            'System'
         ],
         acceptAll: false,
         acceptOrphans: false,
@@ -29,7 +30,7 @@ var WorkspaceCategories = {
             `${Me.path}/assets/icons/code-braces-symbolic.svg`
         ),
         title: _('Development'),
-        categoriesIncluded: ['Development'],
+        categoriesIncluded: ['Development', 'WebDevelopment', 'IDE', 'TextEditor'],
         categoriesExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
@@ -81,7 +82,7 @@ var WorkspaceCategories = {
             `${Me.path}/assets/icons/play-circle-outline-symbolic.svg`
         ),
         title: _('Multimedia'),
-        categoriesIncluded: ['AudioVideo'],
+        categoriesIncluded: ['AudioVideo', 'Audio', 'Video'],
         categoriesExcluded: [],
         acceptAll: false,
         acceptOrphans: false,
@@ -94,6 +95,17 @@ var WorkspaceCategories = {
         title: _('Games'),
         categoriesIncluded: ['Game'],
         categoriesExcluded: [],
+        acceptAll: false,
+        acceptOrphans: false,
+        primary: true
+    },
+    utilities: {
+        icon: Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/utilities-symbolic.svg`
+        ),
+        title: _('Utilities'),
+        categoriesIncluded: ['System', 'Utility', 'Settings', 'Monitor'],
+        categoriesExcluded: ['Development', 'WebDevelopment', 'IDE', 'FileManager', 'TextEditor'],
         acceptAll: false,
         acceptOrphans: false,
         primary: true

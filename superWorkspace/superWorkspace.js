@@ -17,7 +17,7 @@ const { Stack } = Me.imports.widget.layout;
 const EMIT_DEBOUNCE_DELAY = 100;
 
 var SuperWorkspace = class SuperWorkspace {
-    constructor(
+    constructor (
         superWorkspaceManager,
         categoryKey,
         category,
