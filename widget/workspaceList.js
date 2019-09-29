@@ -1,5 +1,6 @@
 const { Clutter, GObject, St } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
+const AppIcon = imports.ui.appDisplay.AppIcon;
 const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -409,7 +410,7 @@ var WorkspaceButton = GObject.registerClass(
                 this.emit('drag-dropped');
                 return true;
             }     
-            if (source instanceof imports.ui.appDisplay.AppIcon) {
+            if (source instanceof AppIcon) {
                 this.handleAppIconDrop(source);
                 return true;
             }
