@@ -32,7 +32,6 @@
 }
 
 .workspace-badge {
-  background: transparent;
   width: 17px;
   height: 15px;
   color: black;
@@ -45,7 +44,7 @@
 }
 
 .workspace-badge-visible {
-  background: #FAD000;
+  background: #fad000;
 }
 
 .workspace-active-indicator {

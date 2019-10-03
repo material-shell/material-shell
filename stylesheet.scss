@@ -7,6 +7,8 @@ $color-active-fg: rgb(255, 255, 255);
 $ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
+$badge-color-bg: #fad000;
+$badge-color-fg: black;
 
 .primary-bg {
     background-color: $color-primary;
@@ -42,10 +44,9 @@ $panel-size: 48px;
 }
 
 .workspace-badge {
-    background:transparent;
     width: 17px;
     height: 15px;
-    color: black;
+    color: $badge-color-fg;
     border-radius: 8px;
     padding-top: 2px;
     font-size:10px;
@@ -55,7 +56,7 @@ $panel-size: 48px;
 }
 
 .workspace-badge-visible {
-    background: #FAD000;
+    background: $badge-color-bg;
 }
 
 .workspace-active-indicator {
