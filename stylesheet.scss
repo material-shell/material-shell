@@ -41,6 +41,23 @@ $panel-size: 48px;
     color: $color-fg;
 }
 
+.workspace-badge {
+    background:transparent;
+    width: 17px;
+    height: 15px;
+    color: black;
+    border-radius: 8px;
+    padding-top: 2px;
+    font-size:10px;
+    text-align: center;
+    margin-left:24px;
+    margin-top:24px;
+}
+
+.workspace-badge-visible {
+    background: #FAD000;
+}
+
 .workspace-active-indicator {
     width: 3px;
     height: 48px;
