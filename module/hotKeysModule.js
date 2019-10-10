@@ -203,19 +203,16 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                global.superWorkspaceManager.noUImode = !global
-                    .superWorkspaceManager.noUImode;
-                Main.panel.get_parent().visible = !global.superWorkspaceManager
-                    .noUImode;
+                let noUImode = !global.superWorkspaceManager.noUImode;
+                global.superWorkspaceManager.noUImode = noUImode;
+                Main.panel.get_parent().visible = !noUImode;
+                Main.panel.visible = !noUImode;
                 Main.panel
                     .get_parent()
-                    .set_width(global.superWorkspaceManager.noUImode ? 0 : -1);
-                Main.layoutManager.panelBox.visible = !global
-                    .superWorkspaceManager.noUImode;
+                    .set_width(noUImode ? 0 : -1);
+                Main.layoutManager.panelBox.visible = !noUImode;
 
-                Main.layoutManager.panelBox.set_height(
-                    global.superWorkspaceManager.noUImode ? 0 : -1
-                );
+                Main.layoutManager.panelBox.set_height(noUImode ? 0 : -1);
                 Main.layoutManager.monitors.forEach(monitor => {
                     let superWorkspace;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
@@ -227,9 +224,7 @@ var HotKeysModule = class HotKeysModule {
                     }
                     Main.layoutManager._queueUpdateRegions();
                     superWorkspace.updateUI();
-                    superWorkspace.panel.set_height(
-                        global.superWorkspaceManager.noUImode ? 0 : -1
-                    );
+                    superWorkspace.panel.set_height(noUImode ? 0 : -1);
                     superWorkspace.tilingLayout.onTile();
                 });
             }
