@@ -203,16 +203,16 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                let noUImode = !global.superWorkspaceManager.noUImode;
-                global.superWorkspaceManager.noUImode = noUImode;
-                Main.panel.get_parent().visible = !noUImode;
-                Main.panel.visible = !noUImode;
+                let noUImode = global.superWorkspaceManager.noUImode;
+                global.superWorkspaceManager.noUImode = !noUImode;
+                Main.panel.get_parent().visible = noUImode;
+                Main.panel.visible = noUImode;
                 Main.panel
-                    .get_parent()
-                    .set_width(noUImode ? 0 : -1);
-                Main.layoutManager.panelBox.visible = !noUImode;
-
-                Main.layoutManager.panelBox.set_height(noUImode ? 0 : -1);
+                .get_parent()
+                .set_width(!noUImode ? 0 : -1);
+                Main.layoutManager.panelBox.visible = noUImode;
+                
+                Main.layoutManager.panelBox.set_height(!noUImode ? 0 : -1);
                 Main.layoutManager.monitors.forEach(monitor => {
                     let superWorkspace;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
@@ -220,12 +220,12 @@ var HotKeysModule = class HotKeysModule {
                     } else {
                         superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                             monitor.index
-                        )[0];
-                    }
-                    Main.layoutManager._queueUpdateRegions();
-                    superWorkspace.updateUI();
-                    superWorkspace.panel.set_height(noUImode ? 0 : -1);
-                    superWorkspace.tilingLayout.onTile();
+                            )[0];
+                        }
+                        Main.layoutManager._queueUpdateRegions();
+                        superWorkspace.updateUI();
+                        superWorkspace.panel.set_height(!noUImode ? 0 : -1);
+                        superWorkspace.tilingLayout.onTile();
                 });
             }
         );
