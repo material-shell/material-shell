@@ -7,6 +7,8 @@ $color-active-fg: rgb(255, 255, 255);
 $ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
+$badge-color-bg: #fad000;
+$badge-color-fg: black;
 
 .primary-bg {
     background-color: $color-primary;
@@ -39,6 +41,22 @@ $panel-size: 48px;
     width: 24px;
     height: 24px;
     color: $color-fg;
+}
+
+.workspace-badge {
+    width: 17px;
+    height: 15px;
+    color: $badge-color-fg;
+    border-radius: 8px;
+    padding-top: 2px;
+    font-size:10px;
+    text-align: center;
+    margin-left:24px;
+    margin-top:24px;
+}
+
+.workspace-badge-visible {
+    background: $badge-color-bg;
 }
 
 .workspace-active-indicator {

@@ -43,12 +43,17 @@ var WorkspaceList = GObject.registerClass(
 
             for (let categoryKey of this.superWorkspaceManager
                 .categoryKeyOrderedList) {
-                let category = WorkspaceCategories[categoryKey];
-                let workspaceButton = new WorkspaceButton(
+                    let category = WorkspaceCategories[categoryKey];
+                    let workspaceButton = new WorkspaceButton(
                     this.superWorkspaceManager,
                     categoryKey,
                     category
                 );
+                let ws = superWorkspaceManager.getSuperWorkspaceByCategoryKey(categoryKey);
+                ws.connect('windows-changed', (_, newWindows) => {
+                    const badgeText = newWindows.length ? `${newWindows.length}` : '';
+                    workspaceButton.setBadgeText(badgeText);
+                });
                 workspaceButton._draggable.connect('drag-begin', () => {
                     let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
                         workspaceButton.categoryKey
@@ -264,6 +269,14 @@ var WorkspaceButton = GObject.registerClass(
                 child: icon,
                 style_class: 'workspace-button'
             });
+
+            this._badge = new St.Label({
+                text:'',
+                style_class: 'workspace-badge'
+            });
+
+            this.add_child(this._badge);
+
             this._delegate = this;
 
             this.superWorkspaceManager = superWorkspaceManager;
@@ -345,6 +358,14 @@ var WorkspaceButton = GObject.registerClass(
             });
 
             this.initDrag();
+        }
+        setBadgeText(text='') {
+            this._badge.text = text;
+            if (this._badge.text) {
+                this._badge.add_style_class_name('workspace-badge-visible');
+            } else {
+                this._badge.remove_style_class_name('workspace-badge-visible');
+            }
         }
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
