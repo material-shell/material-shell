@@ -203,7 +203,7 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                let noUImode = global.superWorkspaceManager.noUImode;
+                const noUImode = global.superWorkspaceManager.noUImode;
                 global.superWorkspaceManager.noUImode = !noUImode;
                 Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
