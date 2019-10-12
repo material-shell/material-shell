@@ -17,9 +17,6 @@ let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 
 // eslint-disable-next-line no-unused-vars
 function init() {
-    log('--------------');
-    log('INIT EXTENSION');
-    log('--------------');
 }
 
 // eslint-disable-next-line no-unused-vars
