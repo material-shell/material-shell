@@ -78,5 +78,6 @@ function disable() {
     modules.reverse().forEach(module => {
         module.disable();
     });
+    modules = [];
     Me.loaded = false;
 }
