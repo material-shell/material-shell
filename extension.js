@@ -24,7 +24,6 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-    Signals.addSignalMethods(Me);
     global.materialShell = Me;
     Me.stateManager = new StateManager();
     Me.loaded = false;
@@ -80,4 +79,6 @@ function disable() {
     });
     modules = [];
     Me.loaded = false;
+    delete global.materialShell;
 }
+Signals.addSignalMethods(Me);
