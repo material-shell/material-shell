@@ -22,16 +22,6 @@ function init() {
     log('--------------');
     Signals.addSignalMethods(Me);
     global.materialShell = Me;
-    Me.stateManager = new StateManager();
-    Me.loaded = false;
-    disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
-    modules = [
-        new RequiredSettingsModule(),
-        new LeftPanelModule(),
-        new TilingModule(),
-        new SuperWorkspaceModule(),
-        new HotKeysModule()
-    ];
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -39,15 +29,23 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+
     Main.wm._blockAnimations = true;
+    Me.loaded = false;
+    Me.stateManager = new StateManager();
+
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         //Then disable incompatibles extensions;
-        disableIncompatibleExtensionsModule.enable();
+        disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         Me.stateManager.loadRegistry(() => {
-            modules.forEach(module => {
-                module.enable();
-            });
+            modules = [
+                new RequiredSettingsModule(),
+                new LeftPanelModule(),
+                new TilingModule(),
+                new SuperWorkspaceModule(),
+                new HotKeysModule()
+            ];
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
                     'startup-complete',
@@ -79,7 +77,7 @@ function disable() {
     log('DISABLE EXTENSION');
     log('----------------');
     modules.reverse().forEach(module => {
-        module.disable();
+        module.destroy();
     });
     Me.loaded = false;
 }

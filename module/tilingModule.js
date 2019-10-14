@@ -3,49 +3,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 var { TilingManager } = Me.imports.tilingManager.tilingManager;
 /* exported TilingModule */
 var TilingModule = class TilingModule {
-    constructor() {}
-
-    enable() {
+    constructor() {
         this.signals = [];
         global.tilingManager = new TilingManager();
-        let tracker = Shell.WindowTracker.get_default();
-
-        /* this.signals.push({
-            from: tracker,
-            id: tracker.connect('tracked-windows-changed', () => {
-                
-                global.tilingManager.tileWindows();
-            })
-        }); */
-
-        /*         this.signals.push({
-            from: global.display,
-            id: global.display.connect('window-created', (_, metaWindow) => {
-                this.subscribeToWindowSignals(metaWindow);
-            })
-        }); */
-
-        /* this.signals.push({
-            from: global.display,
-            id: global.display.connect(
-                'window-entered-monitor',
-                (display, monitorIndex, window) => {
-                    
-                    this.windowChangedSomething(window);
-                }
-            )
-        });
-
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect(
-                'window-left-monitor',
-                (display, monitorIndex, window) => {
-                    
-                    this.windowChangedSomething(window);
-                }
-            )
-        }); */
 
         this.signals.push({
             from: global.display,
@@ -72,7 +32,7 @@ var TilingModule = class TilingModule {
         });
     }
 
-    disable() {
+    destroy() {
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });

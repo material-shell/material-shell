@@ -86,9 +86,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
 
             return [xDest, yDest];
         };
-    }
 
-    enable() {
         // 1- Set all List container to vertical
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.recursivelySetVertical(this.panel, true);
@@ -106,7 +104,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
 
         this.panel._leftCorner.actor.hide();
         this.panel._rightCorner.actor.hide();
-        this.rectangularClockSubModule.enable();
+        //this.rectangularClockSubModule.enable();
 
         this.leftBoxActorAddedSignal = this.panel._leftBox.connect(
             'actor-added',
@@ -128,7 +126,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         );
     }
 
-    disable() {
+    destroy() {
         this.recursivelySetVertical(this.panel, false);
         this.panel.__proto__[Gi.hook_up_vfunc_symbol](
             'allocate',
