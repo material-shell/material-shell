@@ -30,13 +30,11 @@ var AppsButtonSubModule = class AppsButtonSubModule {
         });
 
         this.button.add_style_class_name('primary-bg');
-    }
 
-    enable() {
         this.panel._leftBox.insert_child_at_index(this.button, 0);
     }
 
-    disable() {
+    destroy() {
         this.panel._leftBox.remove_child(this.button);
     }
 };

@@ -36,9 +36,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             actorClone.add_constraint(constraint);
             return actorClone;
         };
-    }
 
-    enable() {
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         Main.layoutManager.panelBox.add_child(this.topBarSpacer);
 
@@ -131,7 +129,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         );
     }
 
-    disable() {
+    destroy() {
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });

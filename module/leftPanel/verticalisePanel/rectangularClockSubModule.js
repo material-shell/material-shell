@@ -5,9 +5,7 @@ const { ShellVersionMatch } = Me.imports.utils.compatibility;
 var RectangularClockSubModule = class RectangularClockSubModule {
     constructor(dateMenu) {
         this.dateMenu = dateMenu;
-    }
 
-    enable() {
         this.dateMenu._clock.time_only = true;
         this.indicatorPad = (ShellVersionMatch('3.32')
             ? this.dateMenu.actor
@@ -25,7 +23,7 @@ var RectangularClockSubModule = class RectangularClockSubModule {
         );
     }
 
-    disable() {
+    destroy() {
         this.dateMenu._clock.time_only = false;
         this.dateMenu._clock.disconnect(this.connectSignal);
         this.dateMenu._clockDisplay.text = this.dateMenu._clock.clock;

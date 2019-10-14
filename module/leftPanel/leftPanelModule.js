@@ -27,9 +27,7 @@ var LeftPanelModule = class LeftPanelModule {
             new MaterializePanelSubModule(this.panel),
             new HideDashModule()
         ];
-    }
 
-    enable() {
         // 5- Hide the activities button
         if (ShellVersionMatch('3.32')) {
             this.panel.statusArea.activities.actor.hide();
@@ -44,13 +42,9 @@ var LeftPanelModule = class LeftPanelModule {
                 : this.panel.statusArea.appMenu;
             this.panel._leftBox.remove_child(appMenuActor.get_parent());
         }
-
-        this.subModules.forEach(subModule => {
-            subModule.enable();
-        });
     }
 
-    disable() {
+    destroy() {
         this.subModules.reverse().forEach(subModule => {
             subModule.disable();
         });

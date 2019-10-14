@@ -35,9 +35,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 valueType: 'boolean'
             }
         ];
-    }
 
-    enable() {
         this.signals = [];
         this.settingsToForce.forEach(settingToForce => {
             let setting = new Gio.Settings({
@@ -100,7 +98,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
         }
     }
 
-    disable() {
+    destroy() {
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.signalId);
         });

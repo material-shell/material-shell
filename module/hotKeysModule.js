@@ -7,9 +7,7 @@ const { getSettings } = Me.imports.utils.settings;
 var HotKeysModule = class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
-    }
 
-    enable() {
         const settings = getSettings('bindings');
 
         Main.wm.addKeybinding(
@@ -207,11 +205,9 @@ var HotKeysModule = class HotKeysModule {
                 global.superWorkspaceManager.noUImode = !noUImode;
                 Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
-                Main.panel
-                .get_parent()
-                .set_width(!noUImode ? 0 : -1);
+                Main.panel.get_parent().set_width(!noUImode ? 0 : -1);
                 Main.layoutManager.panelBox.visible = noUImode;
-                
+
                 Main.layoutManager.panelBox.set_height(!noUImode ? 0 : -1);
                 Main.layoutManager.monitors.forEach(monitor => {
                     let superWorkspace;
@@ -220,16 +216,16 @@ var HotKeysModule = class HotKeysModule {
                     } else {
                         superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                             monitor.index
-                            )[0];
-                        }
-                        Main.layoutManager._queueUpdateRegions();
-                        superWorkspace.updateUI();
-                        superWorkspace.panel.set_height(!noUImode ? 0 : -1);
-                        superWorkspace.tilingLayout.onTile();
+                        )[0];
+                    }
+                    Main.layoutManager._queueUpdateRegions();
+                    superWorkspace.updateUI();
+                    superWorkspace.panel.set_height(!noUImode ? 0 : -1);
+                    superWorkspace.tilingLayout.onTile();
                 });
             }
         );
     }
 
-    disable() {}
+    destroy() {}
 };

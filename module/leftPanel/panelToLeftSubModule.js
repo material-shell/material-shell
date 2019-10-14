@@ -13,9 +13,7 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             name: 'leftDashSpacer'
         });
         this.primaryMonitor = Main.layoutManager.primaryMonitor;
-    }
 
-    enable() {
         Main.overview._controls._group.insert_child_at_index(
             this.dashSpacer,
             0
@@ -67,7 +65,7 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         });
     }
 
-    disable() {
+    destroy() {
         Main.layoutManager.disconnect(this.signalMonitorId);
         Main.overview._controls._group.remove_child(this.dashSpacer); // insert on first
         this.panelBox.remove_child(this.panel);

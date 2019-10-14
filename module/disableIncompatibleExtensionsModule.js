@@ -38,9 +38,7 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
                 }
             }
         ];
-    }
 
-    enable() {
         for (let incompatibleExtension of this.incompatibleExtensions) {
             let extension = ShellVersionMatch('3.32')
                 ? ExtensionUtils.extensions[incompatibleExtension.uuid]
@@ -51,5 +49,5 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
         }
     }
 
-    disable() {}
+    destroy() {}
 };
