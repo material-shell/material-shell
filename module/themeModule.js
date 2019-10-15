@@ -118,7 +118,7 @@ var ThemeModule = class ThemeModule {
 
     disable() {
         this.settingsSignals.forEach(signal =>
-            this.settings.disconnect(signal)
+            this.themeSettings.disconnect(signal)
         );
     }
 };
