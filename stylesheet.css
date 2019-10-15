@@ -178,8 +178,18 @@
 .lightmode .panel-button {
   color: #BEEEEF;
 }
+.lightmode .mat-card {
+  background-color: #191919;
+  color: #BEEEEF;
+}
+.lightmode .mat-card .overview-icon {
+  color: #BEEEEF;
+}
 .lightmode .mat-card .mat-card-title {
   background-color: #3f51b5;
+  color: #BEEEEF;
+}
+.lightmode .mat-card .mat-card-content {
   color: #BEEEEF;
 }
 .lightmode .task-active-indicator {

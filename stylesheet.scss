@@ -203,8 +203,16 @@ $panel-size: 48px;
         color: $color-dynamic-fg;
     }
     .mat-card {
+        background-color: $color-bg;
+        color: $color-dynamic-fg;
+        .overview-icon {
+            color: $color-dynamic-fg;
+        }
         .mat-card-title {
             background-color: $color-primary;
+            color: $color-dynamic-fg;
+        }
+        .mat-card-content {
             color: $color-dynamic-fg;
         }
     }
