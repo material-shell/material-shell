@@ -37,7 +37,7 @@ var ThemeModule = class ThemeModule {
         this.getStylesheetContent(content => {
             //Replace in the content the color we want to replace
             //content = content.replace(/#3f51b5/g, '#FF1483');
-            content = content.replace(/#3f51b5/g, this.theme.colors.primary)                         // color-primary         
+            content = content.replace(/#3f51b5/g, this.theme.colors.primary.toUpperCase())           // color-primary         
                              .replace(/#191919/g, this.theme.colors.bg)                              // color-bg 
                              .replace(/#c8c8c8/g, this.theme.colors.fg)                              // color-fg           
                              .replace(/rgba\(255, 255, 255, 0\.12\)/g, this.theme.colors.active_bg)  // color-active-bg         
