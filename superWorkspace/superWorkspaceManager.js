@@ -1,6 +1,7 @@
 const { Shell, Meta } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Signals = imports.signals;
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
 const {
@@ -84,6 +85,26 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         this.workspaceList.destroy();
     }
 
+    get primarySuperWorkspaces() {
+        return this.superWorkspaces.filter(superWorkspace => {
+            return (
+                superWorkspace.monitor.index === Main.layoutManager.primaryIndex
+            );
+        });
+    }
+
+    get superWorkspacesWithCategory() {
+        return this.primarySuperWorkspaces.filter(superWorkspace => {
+            return superWorkspace.category;
+        });
+    }
+
+    get dynamicSuperWorkspaces() {
+        return this.primarySuperWorkspaces.filter(superWorkspace => {
+            return !superWorkspace.category;
+        });
+    }
+
     prepareWorkspaces() {
         let diff = Math.abs(
             this.superWorkspaces.filter(
@@ -120,7 +141,43 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     onWorkspacesChange() {
+        const nbOfDynamicWorkspaces =
+            this.workspaceManager.n_workspaces -
+            this.superWorkspacesWithCategory.length;
         log('workspacesChanged');
+
+        const nbOfDiff =
+            nbOfDynamicWorkspaces - this.dynamicSuperWorkspaces.length;
+        if (nbOfDiff === 0) return;
+        let call;
+        if (nbOfDiff > 0) {
+            log('there is more workspace');
+            call = () => {
+                let superWorkspace = new SuperWorkspace(
+                    this,
+                    Main.layoutManager.primaryMonitor,
+                    true
+                );
+                this.superWorkspaces.push(superWorkspace);
+            };
+        } else {
+            log('there is less workspace');
+            call = () => {
+                let superWorkspaceToDestroy = this.dynamicSuperWorkspaces[
+                    this.dynamicSuperWorkspaces.length - 1
+                ];
+                superWorkspaceToDestroy.destroy();
+                let indexToRemove = this.superWorkspaces.indexOf(
+                    superWorkspaceToDestroy
+                );
+                this.superWorkspaces.splice(indexToRemove, 1);
+            };
+        }
+        for (let i = 0; i < Math.abs(nbOfDiff); i++) {
+            log('call');
+            call();
+        }
+        this.emit('dynamic-super-workspaces-changed');
     }
 
     setWorkspaceBefore(categoryKeyToMove, categoryKeyRelative) {
@@ -197,11 +254,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     getPrimarySuperWorkspaceByIndex(index) {
-        return this.superWorkspaces.filter(superWorkspace => {
-            return (
-                superWorkspace.monitor.index === Main.layoutManager.primaryIndex
-            );
-        })[index];
+        return this.primarySuperWorkspaces[index];
     }
 
     getSuperWorkspaceByCategoryKey(categoryKey) {
@@ -212,7 +265,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     getWorkspaceOfSuperWorkspace(superWorkspace) {
         return this.workspaceManager.get_workspace_by_index(
-            this.categoryKeyOrderedList.indexOf(superWorkspace.categoryKey)
+            this.primarySuperWorkspaces.indexOf(superWorkspace)
         );
     }
 
@@ -366,3 +419,4 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         return types.includes(metaWindow.window_type);
     }
 };
+Signals.addSignalMethods(SuperWorkspaceManager.prototype);

@@ -42,6 +42,12 @@ var WorkspaceList = GObject.registerClass(
             this.add_child(this.workspaceActiveIndicator);
 
             this.buildButtons();
+            this.superWorkspaceManager.connect(
+                'dynamic-super-workspaces-changed',
+                () => {
+                    this.buildButtons();
+                }
+            );
             this.workspaceSignal = global.workspace_manager.connect(
                 'active-workspace-changed',
                 () => {
@@ -57,11 +63,36 @@ var WorkspaceList = GObject.registerClass(
         }
 
         buildButtons() {
-            this.superWorkspaceManager.superWorkspaces.forEach(
-                superWorkspace => {
+            log(
+                'buildButtons',
+                this.superWorkspaceManager.primarySuperWorkspaces.length
+            );
+            this.buttonList.remove_all_children();
+            this.superWorkspaceManager.primarySuperWorkspaces.forEach(
+                (superWorkspace, index) => {
+                    let icon;
+                    if (superWorkspace.category) {
+                        icon = superWorkspace.category.icon;
+                    } else {
+                        if (
+                            index ===
+                            this.superWorkspaceManager.primarySuperWorkspaces
+                                .length -
+                                1
+                        ) {
+                            icon = Gio.icon_new_for_string(
+                                `${Me.path}/assets/icons/plus-symbolic.svg`
+                            );
+                        } else {
+                            icon = Gio.icon_new_for_string(
+                                `${Me.path}/assets/icons/circle-symbolic.svg`
+                            );
+                        }
+                    }
                     let workspaceButton = new WorkspaceButton(
                         this.superWorkspaceManager,
-                        superWorkspace
+                        superWorkspace,
+                        icon
                     );
                     workspaceButton._draggable.connect('drag-begin', () => {
                         let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
@@ -245,15 +276,11 @@ var WorkspaceButton = GObject.registerClass(
         }
     },
     class InnerWorkspaceButton extends MatButton {
-        _init(superWorkspaceManager, superWorkspace) {
+        _init(superWorkspaceManager, superWorkspace, gicon) {
             this.superWorkspaceManager = superWorkspaceManager;
             this.superWorkspace = superWorkspace;
             let icon = new St.Icon({
-                gicon: superWorkspace.category
-                    ? superWorkspace.category.icon
-                    : Gio.icon_new_for_string(
-                          `${Me.path}/assets/icons/package-symbolic.svg`
-                      ),
+                gicon: gicon,
                 style_class: 'workspace-icon'
             });
             super._init({
@@ -264,7 +291,7 @@ var WorkspaceButton = GObject.registerClass(
 
             this.connect('clicked', () => {
                 this.superWorkspaceManager
-                    .getWorkspaceOfSuperWorkspace()
+                    .getWorkspaceOfSuperWorkspace(this.superWorkspace)
                     .activate(global.get_current_time());
             });
 

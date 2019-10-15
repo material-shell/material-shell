@@ -402,8 +402,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: this.workspaceManager,
             id: this.workspaceManager.connect(
                 'workspace-added',
-                (_, workspace) => {
-                    this.listenWorkspaceEventToDispatch(workspace);
+                (_, workspaceIndex) => {
+                    this.listenWorkspaceEventToDispatch(
+                        this.workspaceManager.get_workspace_by_index(
+                            workspaceIndex
+                        )
+                    );
                 }
             )
         });
