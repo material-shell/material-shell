@@ -3,6 +3,9 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
 const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
+const {
+    SuperWorkspaceWithCategory
+} = Me.imports.superWorkspace.superWorkspaceWithCategory;
 const { WorkspaceList } = Me.imports.widget.workspaceList;
 
 /* exported SuperWorkspaceManager */
@@ -15,16 +18,15 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         this.categoryKeyOrderedList =
             Me.stateManager.getState('categoryKeyOrderedList') || [];
         this.noUImode = false;
-        for (let [key, category] of Object.entries(WorkspaceCategories)) {
+        /* for (let [key, category] of Object.entries(WorkspaceCategories)) {
             if (!this.appsByCategory[key].length) continue;
             if (category.primary) {
-                let superWorkspace = new SuperWorkspace(
+                let superWorkspace = new SuperWorkspaceWithCategory(
                     this,
-                    key,
-                    category,
-                    this.appsByCategory[key],
                     Main.layoutManager.primaryMonitor,
-                    false
+                    false,
+                    key,
+                    category
                 );
                 if (this.categoryKeyOrderedList.indexOf(key) === -1) {
                     this.categoryKeyOrderedList.push(key);
@@ -36,20 +38,35 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     if (Main.layoutManager.primaryIndex === monitor.index) {
                         continue;
                     }
-                    let superWorkspace = new SuperWorkspace(
+                    let superWorkspace = new SuperWorkspaceWithCategory(
                         this,
-                        key,
-                        category,
-                        this.appsByCategory[key],
                         monitor,
-                        true
+                        true,
+                        key,
+                        category
                     );
                     this.superWorkspaces.push(superWorkspace);
                 }
             }
+        } */
+        for (let monitor of Main.layoutManager.monitors) {
+            if (Main.layoutManager.primaryIndex === monitor.index) {
+                for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
+                    log('new super workspace');
+                    let superWorkspace = new SuperWorkspace(
+                        this,
+                        Main.layoutManager.primaryMonitor,
+                        true
+                    );
+                    this.superWorkspaces.push(superWorkspace);
+                }
+            } else {
+                let superWorkspace = new SuperWorkspace(this, monitor, true);
+                this.superWorkspaces.push(superWorkspace);
+            }
         }
 
-        this.prepareWorkspaces();
+        //this.prepareWorkspaces();
         let activeSuperWorkspace = this.getActiveSuperWorkspace();
 
         activeSuperWorkspace.uiVisible = true;
@@ -100,6 +117,10 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 );
             }
         }
+    }
+
+    onWorkspacesChange() {
+        log('workspacesChanged');
     }
 
     setWorkspaceBefore(categoryKeyToMove, categoryKeyRelative) {
@@ -176,9 +197,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     getPrimarySuperWorkspaceByIndex(index) {
-        return this.getSuperWorkspaceByCategoryKey(
-            this.categoryKeyOrderedList[index]
-        );
+        return this.superWorkspaces.filter(superWorkspace => {
+            return (
+                superWorkspace.monitor.index === Main.layoutManager.primaryIndex
+            );
+        })[index];
     }
 
     getSuperWorkspaceByCategoryKey(categoryKey) {
@@ -228,11 +251,24 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
     }
 
     addWindowToAppropriateSuperWorkspace(metaWindow) {
-        if (!metaWindow.handledByMaterialShell) return;
+        const windowMonitorIndex = metaWindow.get_monitor();
+        const currentWindowWorkspace = metaWindow.get_workspace();
+        let superWorkspace;
+
+        if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
+            superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+                windowMonitorIndex
+            )[0];
+        } else {
+            superWorkspace = this.getPrimarySuperWorkspaceByIndex(
+                currentWindowWorkspace.index()
+            );
+        }
+        this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
+        /* if (!metaWindow.handledByMaterialShell) return;
 
         const windowMonitorIndex = metaWindow.get_monitor();
         const currentWindowWorkspace = metaWindow.get_workspace();
-        /*  const focusedMonitorIndex = global.display.get_current_monitor(); */
 
         let superWorkspace;
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
@@ -265,9 +301,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             workspaceOfSuperWorkspace &&
             workspaceOfSuperWorkspace !== currentWindowWorkspace
         ) {
-            metaWindow.change_workspace(workspaceOfSuperWorkspace);
+            metaWindow.change_workspace(workspaceOfSuperWorkspace); 
         }
-        this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
+        this.setWindowToSuperWorkspace(metaWindow, superWorkspace); */
     }
 
     dispatchExistingWindows() {

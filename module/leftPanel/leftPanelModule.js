@@ -46,7 +46,7 @@ var LeftPanelModule = class LeftPanelModule {
 
     destroy() {
         this.subModules.reverse().forEach(subModule => {
-            subModule.disable();
+            subModule.destroy();
         });
 
         if (this.panel.statusArea.appMenu) {

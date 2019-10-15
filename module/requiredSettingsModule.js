@@ -13,7 +13,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             {
                 schema: 'org.gnome.mutter',
                 key: 'dynamic-workspaces',
-                value: false,
+                value: true,
                 valueType: 'boolean'
             },
             {

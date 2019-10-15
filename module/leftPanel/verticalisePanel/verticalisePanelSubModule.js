@@ -136,7 +136,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
             WindowManager._getPositionForDirection;
         this.panel._leftCorner.actor.show();
         this.panel._rightCorner.actor.show();
-        this.rectangularClockSubModule.disable();
+        this.rectangularClockSubModule.destroy();
         this.panel._leftBox.disconnect(this.leftBoxActorAddedSignal);
         this.panel._centerBox.disconnect(this.centerBoxActorAddedSignal);
         this.panel._rightBox.disconnect(this.rightBoxActorAddedSignal);

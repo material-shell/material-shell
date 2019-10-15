@@ -1,4 +1,4 @@
-const { Clutter, GObject, St } = imports.gi;
+const { Clutter, GObject, St, Gio } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Tweener = imports.ui.tweener;
@@ -41,72 +41,72 @@ var WorkspaceList = GObject.registerClass(
 
             this.add_child(this.workspaceActiveIndicator);
 
-            for (let categoryKey of this.superWorkspaceManager
-                .categoryKeyOrderedList) {
-                let category = WorkspaceCategories[categoryKey];
-                let workspaceButton = new WorkspaceButton(
-                    this.superWorkspaceManager,
-                    categoryKey,
-                    category
-                );
-                workspaceButton._draggable.connect('drag-begin', () => {
-                    let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                        workspaceButton.categoryKey
-                    );
-                    this.tempDragData = {
-                        workspaceButton: workspaceButton,
-                        initialIndex: workspaceButtonIndex
-                    };
-                    this.dropPlaceholder.resize(workspaceButton);
-                    this.buttonList.add_child(this.dropPlaceholder);
-                    this.buttonList.set_child_at_index(
-                        this.dropPlaceholder,
-                        workspaceButtonIndex
-                    );
-                    this.workspaceActiveIndicator.hide();
-                });
-
-                workspaceButton._draggable.connect('drag-cancelled', () => {
-                    delete this.tempDragData.draggedOver;
-                    delete this.tempDragData.draggedBefore;
-                    this.buttonList.set_child_at_index(
-                        this.dropPlaceholder,
-                        this.tempDragData.initialIndex
-                    );
-                });
-
-                workspaceButton._draggable.connect(
-                    'drag-end',
-                    this._onDragEnd.bind(this)
-                );
-
-                workspaceButton.connect('drag-over', (_, before) => {
-                    this.tempDragData.draggedOverByChild = true;
-                    this._onDragOver(workspaceButton, before);
-                    //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
-                });
-
-                workspaceButton.connect('drag-dropped', () => {
-                    this.tempDragData.workspaceButton.reparent(this.buttonList);
-                });
-                this.buttonList.add_child(workspaceButton);
-            }
-
+            this.buildButtons();
             this.workspaceSignal = global.workspace_manager.connect(
                 'active-workspace-changed',
                 () => {
                     this.activeButtonForIndex(
-                        this.superWorkspaceManager.categoryKeyOrderedList[
-                            global.workspace_manager.get_active_workspace_index()
-                        ]
+                        global.workspace_manager.get_active_workspace_index()
                     );
                 }
             );
 
             this.activeButtonForIndex(
-                this.superWorkspaceManager.categoryKeyOrderedList[
-                    global.workspace_manager.get_active_workspace_index()
-                ]
+                global.workspace_manager.get_active_workspace_index()
+            );
+        }
+
+        buildButtons() {
+            this.superWorkspaceManager.superWorkspaces.forEach(
+                superWorkspace => {
+                    let workspaceButton = new WorkspaceButton(
+                        this.superWorkspaceManager,
+                        superWorkspace
+                    );
+                    workspaceButton._draggable.connect('drag-begin', () => {
+                        let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                            workspaceButton.categoryKey
+                        );
+                        this.tempDragData = {
+                            workspaceButton: workspaceButton,
+                            initialIndex: workspaceButtonIndex
+                        };
+                        this.dropPlaceholder.resize(workspaceButton);
+                        this.buttonList.add_child(this.dropPlaceholder);
+                        this.buttonList.set_child_at_index(
+                            this.dropPlaceholder,
+                            workspaceButtonIndex
+                        );
+                        this.workspaceActiveIndicator.hide();
+                    });
+
+                    workspaceButton._draggable.connect('drag-cancelled', () => {
+                        delete this.tempDragData.draggedOver;
+                        delete this.tempDragData.draggedBefore;
+                        this.buttonList.set_child_at_index(
+                            this.dropPlaceholder,
+                            this.tempDragData.initialIndex
+                        );
+                    });
+
+                    workspaceButton._draggable.connect(
+                        'drag-end',
+                        this._onDragEnd.bind(this)
+                    );
+
+                    workspaceButton.connect('drag-over', (_, before) => {
+                        this.tempDragData.draggedOverByChild = true;
+                        this._onDragOver(workspaceButton, before);
+                        //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
+                    });
+
+                    workspaceButton.connect('drag-dropped', () => {
+                        this.tempDragData.workspaceButton.reparent(
+                            this.buttonList
+                        );
+                    });
+                    this.buttonList.add_child(workspaceButton);
+                }
             );
         }
 
@@ -191,7 +191,7 @@ var WorkspaceList = GObject.registerClass(
             }
         }
 
-        activeButtonForIndex(categoryKey) {
+        activeButtonForIndex(index) {
             if (this.buttonActive) {
                 if (
                     this.buttonActive.actorContainer.has_style_class_name(
@@ -203,30 +203,20 @@ var WorkspaceList = GObject.registerClass(
                     );
                 }
             }
-            this.buttonActive = this.getButtonFromCategoryKey(categoryKey);
+            this.buttonActive = this.buttonList.get_child_at_index(index);
             this.buttonActive.actorContainer.add_style_class_name('active');
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
                 .scale_factor;
 
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.workspaceActiveIndicator, {
-                    translation_y:
-                        48 *
-                        scaleFactor *
-                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                            categoryKey
-                        ),
+                    translation_y: 48 * scaleFactor * index,
                     time: 0.25,
                     transition: 'easeOutQuad'
                 });
             } else {
                 this.workspaceActiveIndicator.ease({
-                    translation_y:
-                        48 *
-                        scaleFactor *
-                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                            categoryKey
-                        ),
+                    translation_y: 48 * scaleFactor * index,
                     duration: 250,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
@@ -255,9 +245,15 @@ var WorkspaceButton = GObject.registerClass(
         }
     },
     class InnerWorkspaceButton extends MatButton {
-        _init(superWorkspaceManager, categoryKey, category) {
+        _init(superWorkspaceManager, superWorkspace) {
+            this.superWorkspaceManager = superWorkspaceManager;
+            this.superWorkspace = superWorkspace;
             let icon = new St.Icon({
-                gicon: category.icon,
+                gicon: superWorkspace.category
+                    ? superWorkspace.category.icon
+                    : Gio.icon_new_for_string(
+                          `${Me.path}/assets/icons/package-symbolic.svg`
+                      ),
                 style_class: 'workspace-icon'
             });
             super._init({
@@ -266,15 +262,9 @@ var WorkspaceButton = GObject.registerClass(
             });
             this._delegate = this;
 
-            this.superWorkspaceManager = superWorkspaceManager;
-            this.categoryKey = categoryKey;
             this.connect('clicked', () => {
-                global.workspace_manager
-                    .get_workspace_by_index(
-                        this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
-                            this.categoryKey
-                        )
-                    )
+                this.superWorkspaceManager
+                    .getWorkspaceOfSuperWorkspace()
                     .activate(global.get_current_time());
             });
 

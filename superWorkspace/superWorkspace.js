@@ -17,29 +17,14 @@ const { Stack } = Me.imports.widget.layout;
 const EMIT_DEBOUNCE_DELAY = 100;
 
 var SuperWorkspace = class SuperWorkspace {
-    constructor(
-        superWorkspaceManager,
-        categoryKey,
-        category,
-        apps,
-        monitor,
-        visible
-    ) {
+    constructor(superWorkspaceManager, monitor, visible) {
         this.superWorkspaceManager = superWorkspaceManager;
-        this.categoryKey = categoryKey;
-        this.category = category;
         this.monitor = monitor;
-        this.apps = apps;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
-        this.category = category;
         this.windows = [];
         this.uiVisible = visible;
-        let previousLayout =
-            Me.stateManager.getState(
-                `${this.categoryKey}_${this.monitor.index}`
-            ) || MaximizeLayout.key;
-        const Layout = global.tilingManager.getLayoutByKey(previousLayout);
+        const Layout = global.tilingManager.getLayoutByKey('maximized');
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget();
 
@@ -68,7 +53,7 @@ var SuperWorkspace = class SuperWorkspace {
             vignette: false
         });
 
-        this.categorizedAppCard = new CategorizedAppCard(this.category, apps);
+        this.categorizedAppCard = new St.Widget();
         this.backgroundStackLayout = new Stack({
             x: monitor.x,
             y: monitor.y,
@@ -249,10 +234,6 @@ var SuperWorkspace = class SuperWorkspace {
             direction
         );
         this.tilingLayout = new Layout(this);
-        Me.stateManager.setState(
-            `${this.categoryKey}_${this.monitor.index}`,
-            this.tilingLayout.constructor.key
-        );
 
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.tilingLayout.onTile();

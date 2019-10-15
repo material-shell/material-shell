@@ -85,6 +85,13 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
         this.signals.push({
             from: this.workspaceManager,
+            id: this.workspaceManager.connect('notify::n-workspaces', () => {
+                global.superWorkspaceManager.onWorkspacesChange();
+            })
+        });
+
+        this.signals.push({
+            from: this.workspaceManager,
             id: this.workspaceManager.connect(
                 'active-workspace-changed',
                 () => {
