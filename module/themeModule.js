@@ -9,45 +9,49 @@ var ThemeModule = class ThemeModule {
     constructor() {}
 
     enable() {
+        // First start by grabbing the current material shell stylesheet content
         this.getStylesheetContent(content => {
+            //Replace in the content the color we want to replace
             content = content.replace(/#3f51b5/g, '#FF1483');
+
+            //Save the new stylesheet content in a cache file inside the cache directory
             this.replaceContentOfTheme(content, themedStylesheet => {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    let themeContext = St.ThemeContext.get_for_stage(
-                        global.stage
-                    );
-                    let previousTheme = themeContext.get_theme();
+                // Once the theme saved reload the theme by replacing the original stylesheet by the new one
+                let themeContext = St.ThemeContext.get_for_stage(global.stage);
+                let previousTheme = themeContext.get_theme();
 
-                    let theme = new St.Theme({
-                        application_stylesheet: Main.getThemeStylesheet(),
-                        default_stylesheet: Main._getDefaultStylesheet()
-                    });
-
-                    if (previousTheme) {
-                        let customStylesheets = previousTheme.get_custom_stylesheets();
-
-                        for (let i = 0; i < customStylesheets.length; i++)
-                            if (customStylesheets[i] === Me.stylesheet) {
-                                theme.load_stylesheet(themedStylesheet);
-                            } else {
-                                theme.load_stylesheet(customStylesheets[i]);
-                            }
-                    }
-                    themeContext.set_theme(theme);
-                    log('done');
+                let theme = new St.Theme({
+                    application_stylesheet: Main.getThemeStylesheet(),
+                    default_stylesheet: Main._getDefaultStylesheet()
                 });
+
+                if (previousTheme) {
+                    let customStylesheets = previousTheme.get_custom_stylesheets();
+
+                    for (let i = 0; i < customStylesheets.length; i++) {
+                        //The test to replace the original stylesheet is here
+                        if (customStylesheets[i] === Me.stylesheet) {
+                            theme.load_stylesheet(themedStylesheet);
+                        } else {
+                            theme.load_stylesheet(customStylesheets[i]);
+                        }
+                    }
+                }
+                themeContext.set_theme(theme);
             });
         });
     }
 
     getStylesheetContent(callback) {
+        //Load the content of the GFile referenced at Me.Stylesheet which is the extension css file
         Me.stylesheet.load_contents_async(null, (obj, res) => {
             let [success, contents] = obj.load_contents_finish(res);
             let content;
             if (success) {
+                //Read the binay content as string
                 content = imports.byteArray.toString(contents);
             }
-
+            // Return the content string
             callback(content);
         });
     }
@@ -61,17 +65,17 @@ var ThemeModule = class ThemeModule {
             Gio.FileCreateFlags.NONE,
             GLib.PRIORITY_DEFAULT,
             null,
-            (obj, res) => {
-                let stream = obj.replace_finish(res);
+            (file, res) => {
+                let stream = file.replace_finish(res);
 
                 stream.write_bytes_async(
                     contentBytes,
                     GLib.PRIORITY_DEFAULT,
                     null,
-                    (w_obj, w_res) => {
-                        w_obj.write_bytes_finish(w_res);
+                    (ioStream, wRes) => {
+                        ioStream.write_bytes_finish(wRes);
                         stream.close(null);
-                        callback(obj);
+                        callback(file);
                     }
                 );
             }
