@@ -1,10 +1,4 @@
 $color-primary: #3f51b5;
-$color-bg: rgb(25, 25, 25);
-$color-fg: rgb(200, 200, 200);
-$color-active-bg: rgba(255, 255, 255, 0.12);
-$color-hover-bg: rgba(255, 255, 255, 0.04);
-$color-active-fg: rgb(255, 255, 255);
-$color-dynamic-fg: #beeeef;
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
@@ -17,10 +11,10 @@ $panel-size: 48px;
         color: rgba(255, 255, 255, $opacity);
     }
     @if ($theme == 'primary') {
-        .light-primary & {
+        @at-root .light-primary#{&} {
             color: rgba(0, 0, 0, $opacity);
         }
-        .dark-primary & {
+        @at-root .dark-primary#{&} {
             color: rgba(255, 255, 255, $opacity);
         }
     }
@@ -38,6 +32,23 @@ $panel-size: 48px;
     }
 }
 
+@mixin foreground-as-background($theme, $opacity) {
+    @if ($theme == 'light') {
+        background: rgba(0, 0, 0, $opacity);
+    }
+    @if ($theme == 'dark') {
+        background: rgba(255, 255, 255, $opacity);
+    }
+    @if ($theme == 'primary') {
+        @at-root .light-primary#{&} {
+            background: rgba(0, 0, 0, $opacity);
+        }
+        @at-root .dark-primary#{&} {
+            background: rgba(255, 255, 255, $opacity);
+        }
+    }
+}
+
 @mixin hover($theme) {
     @if ($theme == 'light') {
         background: rgba(0, 0, 0, 0.04);
@@ -46,10 +57,10 @@ $panel-size: 48px;
         background: rgba(255, 255, 255, 0.04);
     }
     @if ($theme == 'primary') {
-        .light-primary & {
+        @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.04);
         }
-        .dark-primary & {
+        @at-root .dark-primary#{&} {
             background: rgba(255, 255, 255, 0.04);
         }
     }
@@ -62,10 +73,10 @@ $panel-size: 48px;
         background: rgba(255, 255, 255, 0.12);
     }
     @if ($theme == 'primary') {
-        .light-primary & {
+        @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.12);
         }
-        .dark-primary & {
+        @at-root .dark-primary#{&} {
             background: rgba(255, 255, 255, 0.12);
         }
     }
@@ -83,6 +94,18 @@ $panel-size: 48px;
     @include foreground($theme, 0.38);
 }
 
+@mixin foreground-as-background-high-emphasis($theme) {
+    @include foreground-as-background($theme, 0.87);
+}
+
+@mixin foreground-as-background-medium-emphasis($theme) {
+    @include foreground-as-background($theme, 0.6);
+}
+
+@mixin foreground-as-background-disabled($theme) {
+    @include foreground-as-background($theme, 0.38);
+}
+
 @mixin buildTheme($theme) {
     .mat-panel-button {
         height: $panel-size;
@@ -93,21 +116,9 @@ $panel-size: 48px;
         }
     }
 
-    .workspace-button {
-        .workspace-icon {
-            @include foreground-medium-emphasis($theme);
-        }
-        &.active {
-            @include active($theme);
-            .mat-panel-button-icon {
-                @include foreground-high-emphasis($theme);
-            }
-        }
-    }
-
     .workspace-active-indicator {
         @if ($theme == 'primary') {
-            @include background('light');
+            @include foreground-as-background-high-emphasis('primary');
         } @else {
             @include background('primary');
         }
@@ -182,9 +193,6 @@ $panel-size: 48px;
                 padding: 4px 0px;
                 margin: 0px;
                 @include foreground-medium-emphasis($theme);
-            }
-            .system-status-icon {
-                fill: red;
             }
         }
     }
@@ -325,7 +333,9 @@ $panel-size: 48px;
     }
 }
 
-@include buildTheme('dark');
+.dark-theme {
+    @include buildTheme('dark');
+}
 .light-theme {
     @include buildTheme('light');
 }

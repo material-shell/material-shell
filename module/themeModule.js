@@ -68,9 +68,7 @@ var ThemeModule = class ThemeModule {
             } else {
                 Main.uiGroup.add_style_class_name('light-primary');
             }
-            if (this.theme !== 'dark') {
-                Main.uiGroup.add_style_class_name(`${this.theme}-theme`);
-            }
+            Main.uiGroup.add_style_class_name(`${this.theme}-theme`);
 
             content = content.replace(/#3f51b5/g, this.primary); // color-primary
 
