@@ -55,7 +55,7 @@ var ThemeModule = class ThemeModule {
                     /rgba\(255, 255, 255, 0\.04\)/g,
                     this.theme.colors.hover_bg
                 ) // color-hover-bg
-                .replace(/#BEEEEF/g, this.theme.colors.dynamic_fg) // color-dynamic-fg
+                .replace(/#beeeef/g, this.theme.colors.dynamic_fg) // color-dynamic-fg
                 .replace(/#3f51b5/g, this.theme.colors.primary); // color-primary
 
             //Save the new stylesheet content in a cache file inside the cache directory
