@@ -37,13 +37,13 @@ var ThemeModule = class ThemeModule {
         this.getStylesheetContent(content => {
             //Replace in the content the color we want to replace
             //content = content.replace(/#3f51b5/g, '#FF1483');
-            content = content.replace(/#3f51b5/g, this.theme.colors.primary.toUpperCase())           // color-primary         
-                             .replace(/#191919/g, this.theme.colors.bg)                              // color-bg 
-                             .replace(/#c8c8c8/g, this.theme.colors.fg)                              // color-fg           
-                             .replace(/rgba\(255, 255, 255, 0\.12\)/g, this.theme.colors.active_bg)  // color-active-bg         
-                             .replace(/#ffffff/g, this.theme.colors.active_fg)                       // color-active-fg     
+            content = content.replace(/#191919/g, this.theme.colors.bg)                              // color-bg
+                             .replace(/#c8c8c8/g, this.theme.colors.fg)                              // color-fg
+                             .replace(/rgba\(255, 255, 255, 0\.12\)/g, this.theme.colors.active_bg)  // color-active-bg
+                             .replace(/#ffffff/g, this.theme.colors.active_fg)                       // color-active-fg
                              .replace(/rgba\(255, 255, 255, 0\.04\)/g, this.theme.colors.hover_bg)   // color-hover-bg
-                             .replace(/#BEEEEF/g, this.theme.colors.dynamic_fg)                      // color-dynamic-fg                                  
+                             .replace(/#BEEEEF/g, this.theme.colors.dynamic_fg)                      // color-dynamic-fg
+                             .replace(/#3f51b5/g, this.theme.colors.primary)                         // color-primary
 
             //Save the new stylesheet content in a cache file inside the cache directory
             this.replaceContentOfTheme(content, themedStylesheet => {
