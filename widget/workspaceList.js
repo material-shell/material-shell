@@ -72,7 +72,9 @@ var WorkspaceList = GObject.registerClass(
                 (superWorkspace, index) => {
                     let icon;
                     if (superWorkspace.category) {
-                        icon = superWorkspace.category.icon;
+                        icon = Gio.icon_new_for_string(
+                            `${Me.path}/assets/icons/${superWorkspace.category.icon}.svg`
+                        );
                     } else {
                         if (
                             index ===

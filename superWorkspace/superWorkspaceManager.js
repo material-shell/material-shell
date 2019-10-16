@@ -1,4 +1,4 @@
-const { Shell, Meta } = imports.gi;
+const { Shell, Meta, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
@@ -16,9 +16,24 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         this.windowTracker = Shell.WindowTracker.get_default();
         this.superWorkspaces = [];
         this.appsByCategory = appsByCategory;
-        this.categoryKeyOrderedList =
-            Me.stateManager.getState('categoryKeyOrderedList') || [];
+        this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
+        this.categoryList.forEach((category, index) => {
+            log('new category workspace');
+            let superWorkspace = new SuperWorkspaceWithCategory(
+                this,
+                Main.layoutManager.primaryMonitor,
+                true,
+                category
+            );
+            this.superWorkspaces.push(superWorkspace);
+            let workspace = this.workspaceManager.append_new_workspace(
+                false,
+                global.get_current_time()
+            );
+            workspace._keepAliveId = true;
+            this.workspaceManager.reorder_workspace(workspace, index);
+        });
         /* for (let [key, category] of Object.entries(WorkspaceCategories)) {
             if (!this.appsByCategory[key].length) continue;
             if (category.primary) {
@@ -52,8 +67,13 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         } */
         for (let monitor of Main.layoutManager.monitors) {
             if (Main.layoutManager.primaryIndex === monitor.index) {
-                for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
-                    log('new super workspace');
+                for (
+                    let i = 0;
+                    i <
+                    this.workspaceManager.n_workspaces -
+                        this.superWorkspacesWithCategory.length;
+                    i++
+                ) {
                     let superWorkspace = new SuperWorkspace(
                         this,
                         Main.layoutManager.primaryMonitor,
@@ -75,10 +95,23 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
-        this.dispatchExistingWindows();
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+            this.dispatchExistingWindows();
+            return GLib.SOURCE_REMOVE;
+        });
+        log('super workspace manager created');
     }
 
     destroy() {
+        for (var i = 0; i < this.workspaceManager.n_workspaces; i++) {
+            let workspace = this.workspaceManager.get_workspace_by_index(i);
+            if (workspace._keepAliveId) {
+                this.workspaceManager.remove_workspace(
+                    workspace,
+                    global.get_current_time()
+                );
+            }
+        }
         for (let superWorkspace of this.superWorkspaces) {
             superWorkspace.destroy();
         }
@@ -95,7 +128,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     get superWorkspacesWithCategory() {
         return this.primarySuperWorkspaces.filter(superWorkspace => {
-            return superWorkspace.category;
+            return superWorkspace.category != null;
         });
     }
 
@@ -250,11 +283,12 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     getActiveSuperWorkspace() {
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
-        return this.getPrimarySuperWorkspaceByIndex(activeWorkspaceIndex);
-    }
-
-    getPrimarySuperWorkspaceByIndex(index) {
-        return this.primarySuperWorkspaces[index];
+        log(
+            'activeWorkspaceIndex',
+            activeWorkspaceIndex,
+            this.primarySuperWorkspaces[activeWorkspaceIndex].category
+        );
+        return this.primarySuperWorkspaces[activeWorkspaceIndex];
     }
 
     getSuperWorkspaceByCategoryKey(categoryKey) {
@@ -280,9 +314,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             return this.getSuperWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
         } else {
-            return this.getPrimarySuperWorkspaceByIndex(
+            return this.primarySuperWorkspaces[
                 metaWindow.get_workspace().index()
-            );
+            ];
         }
     }
 
@@ -313,10 +347,11 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 windowMonitorIndex
             )[0];
         } else {
-            superWorkspace = this.getPrimarySuperWorkspaceByIndex(
+            superWorkspace = this.primarySuperWorkspaces[
                 currentWindowWorkspace.index()
-            );
+            ];
         }
+        log('currentWindowWorkspace.index()', currentWindowWorkspace.index());
         this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
         /* if (!metaWindow.handledByMaterialShell) return;
 
@@ -341,9 +376,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             });
 
             if (!superWorkspace) {
-                superWorkspace = this.getPrimarySuperWorkspaceByIndex(
-                    currentWindowWorkspace.index()
-                );
+                superWorkspace = this.primarySuperWorkspaces[currentWindowWorkspace.index()];
             }
         }
 
@@ -373,9 +406,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        const superWorkspace = this.getPrimarySuperWorkspaceByIndex(
-            workspace.index()
-        );
+        const superWorkspace = this.primarySuperWorkspaces[workspace.index()];
 
         this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
     }
