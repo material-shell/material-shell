@@ -13,12 +13,12 @@ var AppsButtonSubModule = class AppsButtonSubModule {
             gicon: Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/menu-symbolic.svg`
             ),
-            style_class: 'workspace-main-icon'
+            style_class: 'main-button-icon'
         });
 
         this.button = new MatButton({
             child: icon,
-            style_class: 'workspace-button'
+            style_class: 'main-button'
         });
 
         this.button.connect('clicked', () => {
@@ -28,8 +28,6 @@ var AppsButtonSubModule = class AppsButtonSubModule {
                 Main.overview.hide();
             }
         });
-
-        this.button.add_style_class_name('primary-bg');
     }
 
     enable() {

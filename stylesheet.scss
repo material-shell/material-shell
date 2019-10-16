@@ -4,13 +4,48 @@ $color-fg: rgb(200, 200, 200);
 $color-active-bg: rgba(255, 255, 255, 0.12);
 $color-hover-bg: rgba(255, 255, 255, 0.04);
 $color-active-fg: rgb(255, 255, 255);
-$color-dynamic-fg: #BEEEEF;
+$color-dynamic-fg: #beeeef;
 $ripple: rgba(255, 255, 255, 0.16);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 
-.primary-bg {
+@mixin foreground($background, $opacity) {
+    @if ($background == 'light') {
+        color: rgba(0, 0, 0, $opacity);
+    }
+    @if ($background == 'dark') {
+        color: rgba(255, 255, 255, $opacity);
+    }
+    @if ($background == 'primary') {
+        .light-primary & {
+            color: rgba(0, 0, 0, $opacity);
+        }
+        .dark-primary {
+            color: rgba(255, 255, 255, $opacity);
+        }
+    }
+}
+
+@mixin foreground-high-emphasis($background) {
+    @include foreground($background, 0.87);
+}
+
+@mixin foreground-medium-emphasis($background) {
+    @include foreground($background, 0.6);
+}
+
+@mixin foreground-disabled($background) {
+    @include foreground($background, 0.38);
+}
+
+.main-button {
     background-color: $color-primary;
+    padding: 12px;
+    .main-button-icon {
+        width: 24px;
+        height: 24px;
+        color: $color-active-fg;
+    }
 }
 
 .workspace-button {
@@ -28,12 +63,6 @@ $panel-size: 48px;
     .workspace-icon {
         color: $color-fg;
     }
-}
-
-.workspace-main-icon {
-    width: 24px;
-    height: 24px;
-    color: $color-active-fg;
 }
 
 .workspace-icon {
@@ -184,7 +213,8 @@ $panel-size: 48px;
 }
 
 .lightmode {
-    .workspace-main-icon, .workspace-icon {
+    .workspace-main-icon,
+    .workspace-icon {
         color: $color-dynamic-fg;
     }
     .workspace-active-indicator {
