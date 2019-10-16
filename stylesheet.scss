@@ -234,16 +234,16 @@ $panel-size: 48px;
     }
     .mat-card {
         background-color: $color-bg;
-        color: $color-dynamic-fg;
+        color: $color-fg;
         .overview-icon {
-            color: $color-dynamic-fg;
+            color: $color-fg;
         }
         .mat-card-title {
             background-color: $color-primary;
             color: $color-dynamic-fg;
         }
         .mat-card-content {
-            color: $color-dynamic-fg;
+            color: $color-fg;
         }
     }
     .task-active-indicator {
@@ -260,5 +260,8 @@ $panel-size: 48px;
                 }
             }
         }
+    }
+    .top-icon {
+        color: $color-fg;
     }
 }
