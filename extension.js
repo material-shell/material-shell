@@ -20,6 +20,16 @@ function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
+}
+
+// eslint-disable-next-line no-unused-vars
+function enable() {
+    log('----------------');
+    log('ENABLE EXTENSION');
+    log('----------------');
+    // Performing init behaviors on enable fixes resolution change issues
+    // that occur between sleep and wake (such as plugging/unplugging a display
+    // while sleeping).
     Signals.addSignalMethods(Me);
     global.materialShell = Me;
     Me.stateManager = new StateManager();
@@ -32,13 +42,6 @@ function init() {
         new SuperWorkspaceModule(),
         new HotKeysModule()
     ];
-}
-
-// eslint-disable-next-line no-unused-vars
-function enable() {
-    log('----------------');
-    log('ENABLE EXTENSION');
-    log('----------------');
     Main.wm._blockAnimations = true;
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
