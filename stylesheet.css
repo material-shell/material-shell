@@ -59,6 +59,8 @@
       padding: 4px 0px;
       margin: 0px;
       color: rgba(255, 255, 255, 0.6); }
+    .dark-theme #panel .panel-button:active, .dark-theme #panel .panel-button:focus, .dark-theme #panel .panel-button:checked {
+      box-shadow: inset 3px 0 0px #3f51b5; }
 
 .dark-theme #topBarSpacer {
   height: 48px; }
@@ -196,6 +198,8 @@
       padding: 4px 0px;
       margin: 0px;
       color: rgba(0, 0, 0, 0.6); }
+    .light-theme #panel .panel-button:active, .light-theme #panel .panel-button:focus, .light-theme #panel .panel-button:checked {
+      box-shadow: inset 3px 0 0px #3f51b5; }
 
 .light-theme #topBarSpacer {
   height: 48px; }
@@ -363,6 +367,8 @@
         color: rgba(0, 0, 0, 0.6); }
       .dark-primary.primary-theme #panel .panel-button > * {
         color: rgba(255, 255, 255, 0.6); }
+    .primary-theme #panel .panel-button:active, .primary-theme #panel .panel-button:focus, .primary-theme #panel .panel-button:checked {
+      box-shadow: inset 3px 0 0px #3f51b5; }
 
 .primary-theme #topBarSpacer {
   height: 48px; }

@@ -194,6 +194,11 @@ $panel-size: 48px;
                 margin: 0px;
                 @include foreground-medium-emphasis($theme);
             }
+            &:active,
+            &:focus,
+            &:checked {
+                box-shadow: inset 3px 0 0px $color-primary;
+            }
         }
     }
 
