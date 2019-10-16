@@ -194,13 +194,10 @@ $panel-size: 48px;
                 margin: 0px;
                 @include foreground-medium-emphasis($theme);
             }
-<<<<<<< HEAD
             &:hover {
                 @include hover($theme);
                 box-shadow: none;
             }
-=======
->>>>>>> theme-update-papy
             &:active,
             &:focus,
             &:checked {

@@ -59,12 +59,9 @@
       padding: 4px 0px;
       margin: 0px;
       color: rgba(255, 255, 255, 0.6); }
-<<<<<<< HEAD
     .dark-theme #panel .panel-button:hover {
       background: rgba(255, 255, 255, 0.04);
       box-shadow: none; }
-=======
->>>>>>> theme-update-papy
     .dark-theme #panel .panel-button:active, .dark-theme #panel .panel-button:focus, .dark-theme #panel .panel-button:checked {
       box-shadow: inset 3px 0 0px #3f51b5; }
 
@@ -204,12 +201,9 @@
       padding: 4px 0px;
       margin: 0px;
       color: rgba(0, 0, 0, 0.6); }
-<<<<<<< HEAD
     .light-theme #panel .panel-button:hover {
       background: rgba(0, 0, 0, 0.04);
       box-shadow: none; }
-=======
->>>>>>> theme-update-papy
     .light-theme #panel .panel-button:active, .light-theme #panel .panel-button:focus, .light-theme #panel .panel-button:checked {
       box-shadow: inset 3px 0 0px #3f51b5; }
 
@@ -379,15 +373,12 @@
         color: rgba(0, 0, 0, 0.6); }
       .dark-primary.primary-theme #panel .panel-button > * {
         color: rgba(255, 255, 255, 0.6); }
-<<<<<<< HEAD
     .primary-theme #panel .panel-button:hover {
       box-shadow: none; }
       .light-primary.primary-theme #panel .panel-button:hover {
         background: rgba(0, 0, 0, 0.04); }
       .dark-primary.primary-theme #panel .panel-button:hover {
         background: rgba(255, 255, 255, 0.04); }
-=======
->>>>>>> theme-update-papy
     .primary-theme #panel .panel-button:active, .primary-theme #panel .panel-button:focus, .primary-theme #panel .panel-button:checked {
       box-shadow: inset 3px 0 0px #3f51b5; }
 
