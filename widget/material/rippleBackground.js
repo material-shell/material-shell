@@ -1,4 +1,4 @@
-const { St, Clutter, GObject } = imports.gi;
+const { St, Clutter, GObject, GLib } = imports.gi;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
@@ -20,22 +20,23 @@ let RippleWave = GObject.registerClass(
             this.y = Math.round(this.mouseY - this.height / 2);
             this.scale_x = 32 / this.fullSize;
             this.scale_y = 32 / this.fullSize;
-
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this, {
-                    scale_x: 1,
-                    scale_y: 1,
-                    time: this.fullSize / 800,
-                    transition: 'easeOutQuad'
-                });
-            } else {
-                this.ease({
-                    scale_x: 1,
-                    scale_y: 1,
-                    duration: (this.fullSize / 800) * 1000,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
-                });
-            }
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                if (ShellVersionMatch('3.32')) {
+                    Tweener.addTween(this, {
+                        scale_x: 1,
+                        scale_y: 1,
+                        time: this.fullSize / 800,
+                        transition: 'easeOutQuad'
+                    });
+                } else {
+                    this.ease({
+                        scale_x: 1,
+                        scale_y: 1,
+                        duration: (this.fullSize / 800) * 1000,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    });
+                }
+            });
         }
 
         removeIn(second) {
