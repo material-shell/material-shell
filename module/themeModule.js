@@ -9,11 +9,11 @@ const THEME_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-theme.css`;
 var ThemeModule = class ThemeModule {
     constructor() {
         this.themeSettings = getSettings('theme');
-        this.darkMode = this.themeSettings.get_boolean('dark-mode');
+        this.theme = this.themeSettings.get_string('theme');
         this.primary = this.themeSettings.get_string('primary-color');
         this.settingsSignals = [
-            this.themeSettings.connect('changed::dark-mode', schema => {
-                this.darkMode = schema.get_boolean('dark-mode');
+            this.themeSettings.connect('changed::theme', schema => {
+                this.theme = schema.get_string('theme');
                 this.regenerateStylesheet();
             }),
             this.themeSettings.connect('changed::primary-color', schema => {
@@ -67,6 +67,9 @@ var ThemeModule = class ThemeModule {
                 Main.uiGroup.add_style_class_name('dark-primary');
             } else {
                 Main.uiGroup.add_style_class_name('light-primary');
+            }
+            if (this.theme !== 'dark') {
+                Main.uiGroup.add_style_class_name(`${this.theme}-theme`);
             }
 
             content = content.replace(/#3f51b5/g, this.primary); // color-primary

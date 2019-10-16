@@ -6,12 +6,12 @@
     height: 24px; }
 
 .workspace-button .workspace-icon {
-  color: rgba(0, 0, 0, 0.6); }
+  color: rgba(255, 255, 255, 0.6); }
 
 .workspace-button.active {
-  background: rgba(0, 0, 0, 0.12); }
+  background: rgba(255, 255, 255, 0.12); }
   .workspace-button.active .mat-panel-button-icon {
-    color: rgba(0, 0, 0, 0.87); }
+    color: rgba(255, 255, 255, 0.87); }
 
 .workspace-active-indicator {
   background: #3f51b5;
@@ -20,17 +20,17 @@
 
 .ripple-wave {
   border-radius: 2000px;
-  background: rgba(0, 0, 0, 0.12); }
+  background: rgba(255, 255, 255, 0.12); }
 
 #leftPanelBox,
 #leftDashSpacer {
   width: 48px; }
 
 .mat-button .mat-button-container {
-  color: rgba(0, 0, 0, 0.87); }
+  color: rgba(255, 255, 255, 0.87); }
 
 .mat-button:hover .mat-button-container {
-  background: rgba(0, 0, 0, 0.04); }
+  background: rgba(255, 255, 255, 0.04); }
 
 .mat-button.primary {
   background: #3f51b5; }
@@ -44,13 +44,13 @@
     background: rgba(255, 255, 255, 0.04); }
 
 .mat-button .mat-panel-button {
-  color: rgba(0, 0, 0, 0.6); }
+  color: rgba(255, 255, 255, 0.6); }
   .mat-button .mat-panel-button.active {
-    background: rgba(0, 0, 0, 0.12);
-    color: #3f51b5; }
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.87); }
 
 #panel {
-  background: white;
+  background: #191919;
   width: 48px;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   #panel #panelLeft,
@@ -58,7 +58,7 @@
   #panel #panelRight {
     spacing: 0px; }
   #panel .panel-button {
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.6);
     text-align: center;
     padding: 0px;
     spacing: 0px; }
@@ -66,7 +66,7 @@
       width: 28px;
       padding: 4px 0px;
       margin: 0px;
-      color: rgba(0, 0, 0, 0.6); }
+      color: rgba(255, 255, 255, 0.6); }
     #panel .panel-button .system-status-icon {
       fill: red; }
 
@@ -74,17 +74,17 @@
   height: 48px; }
 
 #topPanel {
-  background: white;
+  background: #191919;
   height: 48px;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   #topPanel .task-active-indicator {
-    background: #3f51b5;
+    background: white;
     height: 2px; }
   #topPanel .task-bar-item {
     font-size: 14px;
     height: 48px; }
     #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
-      color: #3f51b5; }
+      color: rgba(255, 255, 255, 0.87); }
     #topPanel .task-bar-item .task-bar-item-content {
       padding: 0px 8px; }
       #topPanel .task-bar-item .task-bar-item-content .app-icon {
@@ -95,20 +95,20 @@
         margin-right: 8px;
         font-weight: 600;
         font-size: 14px;
-        color: rgba(0, 0, 0, 0.6); }
+        color: rgba(255, 255, 255, 0.6); }
       #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;
         height: 20px; }
         #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
           icon-size: 18px;
-          color: rgba(0, 0, 0, 0.6); }
+          color: rgba(255, 255, 255, 0.6); }
   #topPanel .mat-panel-button .mat-panel-button-icon {
-    color: rgba(0, 0, 0, 0.6); }
+    color: rgba(255, 255, 255, 0.6); }
   #topPanel .mat-panel-button.active {
-    background: rgba(0, 0, 0, 0.12); }
+    background: rgba(255, 255, 255, 0.12); }
     #topPanel .mat-panel-button.active .mat-panel-button-icon {
-      color: rgba(0, 0, 0, 0.87); }
+      color: rgba(255, 255, 255, 0.87); }
 
 .system-status-icon {
   height: 24px;
@@ -119,12 +119,12 @@
   padding: 4px 0px !important; }
 
 .mat-card {
-  background: white;
+  background: #191919;
   border-radius: 6px;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   .mat-card .mat-card-title {
-    background: rgba(0, 0, 0, 0.04);
-    color: #3f51b5;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.87);
     height: 72px;
     padding: 0px 24px; }
     .mat-card .mat-card-title .mat-card-title-icon {
@@ -134,50 +134,350 @@
       font-size: 24px; }
   .mat-card .mat-card-content {
     padding: 24px;
-    color: rgba(0, 0, 0, 0.87); }
+    color: rgba(255, 255, 255, 0.87); }
 
 .categorized-app-card .overview-icon {
   margin: 8px; }
 
 .categorized-app-card .overview-icon-with-label {
-  color: rgba(0, 0, 0, 0.87); }
+  color: rgba(255, 255, 255, 0.87); }
 
 .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
 
-.lightmode .workspace-main-icon,
-.lightmode .workspace-icon {
-  color: #beeeef; }
+.light-theme .mat-panel-button {
+  height: 48px;
+  width: 48px; }
+  .light-theme .mat-panel-button .mat-panel-button-icon {
+    width: 24px;
+    height: 24px; }
 
-.lightmode .workspace-active-indicator {
-  background-color: #beeeef; }
+.light-theme .workspace-button .workspace-icon {
+  color: rgba(0, 0, 0, 0.6); }
 
-.lightmode .workspace-button.active .workspace-icon {
-  color: #beeeef; }
+.light-theme .workspace-button.active {
+  background: rgba(0, 0, 0, 0.12); }
+  .light-theme .workspace-button.active .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.87); }
 
-.lightmode #panel {
-  background-color: #3f51b5;
-  color: #beeeef; }
+.light-theme .workspace-active-indicator {
+  background: #3f51b5;
+  width: 3px;
+  height: 48px; }
 
-.lightmode .panel-button {
-  color: #beeeef; }
+.light-theme .ripple-wave {
+  border-radius: 2000px;
+  background: rgba(0, 0, 0, 0.12); }
 
-.lightmode .mat-card {
-  background-color: #191919;
-  color: #beeeef; }
-  .lightmode .mat-card .overview-icon {
-    color: #beeeef; }
-  .lightmode .mat-card .mat-card-title {
-    background-color: #3f51b5;
-    color: #beeeef; }
-  .lightmode .mat-card .mat-card-content {
-    color: #beeeef; }
+.light-theme #leftPanelBox,
+.light-theme #leftDashSpacer {
+  width: 48px; }
 
-.lightmode .task-active-indicator {
+.light-theme .mat-button .mat-button-container {
+  color: rgba(0, 0, 0, 0.87); }
+
+.light-theme .mat-button:hover .mat-button-container {
+  background: rgba(0, 0, 0, 0.04); }
+
+.light-theme .mat-button.primary {
   background: #3f51b5; }
+  .light-primary .light-theme .mat-button.primary .mat-button-container {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary .light-theme .mat-button.primary .mat-button-container {
+    color: rgba(255, 255, 255, 0.87); }
+  .light-primary .light-theme .mat-button.primary:hover .mat-button-container {
+    background: rgba(0, 0, 0, 0.04); }
+  .dark-primary .light-theme .mat-button.primary:hover .mat-button-container {
+    background: rgba(255, 255, 255, 0.04); }
 
-.lightmode .task-bar-item .task-bar-item-content .task-bar-item-title {
-  color: #3f51b5; }
+.light-theme .mat-button .mat-panel-button {
+  color: rgba(0, 0, 0, 0.6); }
+  .light-theme .mat-button .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12);
+    color: #3f51b5; }
 
-.lightmode .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-  color: #3f51b5; }
+.light-theme #panel {
+  background: white;
+  width: 48px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .light-theme #panel #panelLeft,
+  .light-theme #panel #panelCenter,
+  .light-theme #panel #panelRight {
+    spacing: 0px; }
+  .light-theme #panel .panel-button {
+    color: rgba(0, 0, 0, 0.6);
+    text-align: center;
+    padding: 0px;
+    spacing: 0px; }
+    .light-theme #panel .panel-button > * {
+      width: 28px;
+      padding: 4px 0px;
+      margin: 0px;
+      color: rgba(0, 0, 0, 0.6); }
+    .light-theme #panel .panel-button .system-status-icon {
+      fill: red; }
+
+.light-theme #topBarSpacer {
+  height: 48px; }
+
+.light-theme #topPanel {
+  background: white;
+  height: 48px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .light-theme #topPanel .task-active-indicator {
+    background: #3f51b5;
+    height: 2px; }
+  .light-theme #topPanel .task-bar-item {
+    font-size: 14px;
+    height: 48px; }
+    .light-theme #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+      color: #3f51b5; }
+    .light-theme #topPanel .task-bar-item .task-bar-item-content {
+      padding: 0px 8px; }
+      .light-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
+        icon-size: 24px;
+        margin-right: 8px; }
+      .light-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        max-width: 248px;
+        margin-right: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6); }
+      .light-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
+        border-radius: 20px;
+        width: 24px;
+        height: 20px; }
+        .light-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+          icon-size: 18px;
+          color: rgba(0, 0, 0, 0.6); }
+  .light-theme #topPanel .mat-panel-button .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.6); }
+  .light-theme #topPanel .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12); }
+    .light-theme #topPanel .mat-panel-button.active .mat-panel-button-icon {
+      color: rgba(0, 0, 0, 0.87); }
+
+.light-theme .system-status-icon {
+  height: 24px;
+  width: 24px;
+  padding: 0px; }
+
+.light-theme .clock-display * {
+  padding: 4px 0px !important; }
+
+.light-theme .mat-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .light-theme .mat-card .mat-card-title {
+    background: rgba(0, 0, 0, 0.04);
+    color: #3f51b5;
+    height: 72px;
+    padding: 0px 24px; }
+    .light-theme .mat-card .mat-card-title .mat-card-title-icon {
+      icon-size: 40px;
+      margin-right: 16px; }
+    .light-theme .mat-card .mat-card-title .mat-card-title-label {
+      font-size: 24px; }
+  .light-theme .mat-card .mat-card-content {
+    padding: 24px;
+    color: rgba(0, 0, 0, 0.87); }
+
+.light-theme .categorized-app-card .overview-icon {
+  margin: 8px; }
+
+.light-theme .categorized-app-card .overview-icon-with-label {
+  color: rgba(0, 0, 0, 0.87); }
+
+.light-theme .backdrop-container {
+  background: rgba(0, 0, 0, 0.5); }
+
+.primary-theme .mat-panel-button {
+  height: 48px;
+  width: 48px; }
+  .primary-theme .mat-panel-button .mat-panel-button-icon {
+    width: 24px;
+    height: 24px; }
+
+.light-primary .primary-theme .workspace-button .workspace-icon {
+  color: rgba(0, 0, 0, 0.6); }
+
+.dark-primary .primary-theme .workspace-button .workspace-icon {
+  color: rgba(255, 255, 255, 0.6); }
+
+.light-primary .primary-theme .workspace-button.active {
+  background: rgba(0, 0, 0, 0.12); }
+
+.dark-primary .primary-theme .workspace-button.active {
+  background: rgba(255, 255, 255, 0.12); }
+
+.light-primary .primary-theme .workspace-button.active .mat-panel-button-icon {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary .primary-theme .workspace-button.active .mat-panel-button-icon {
+  color: rgba(255, 255, 255, 0.87); }
+
+.primary-theme .workspace-active-indicator {
+  background: white;
+  width: 3px;
+  height: 48px; }
+
+.primary-theme .ripple-wave {
+  border-radius: 2000px; }
+  .light-primary .primary-theme .ripple-wave {
+    background: rgba(0, 0, 0, 0.12); }
+  .dark-primary .primary-theme .ripple-wave {
+    background: rgba(255, 255, 255, 0.12); }
+
+.primary-theme #leftPanelBox,
+.primary-theme #leftDashSpacer {
+  width: 48px; }
+
+.light-primary .primary-theme .mat-button .mat-button-container {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary .primary-theme .mat-button .mat-button-container {
+  color: rgba(255, 255, 255, 0.87); }
+
+.light-primary .primary-theme .mat-button:hover .mat-button-container {
+  background: rgba(0, 0, 0, 0.04); }
+
+.dark-primary .primary-theme .mat-button:hover .mat-button-container {
+  background: rgba(255, 255, 255, 0.04); }
+
+.primary-theme .mat-button.primary {
+  background: #3f51b5; }
+  .light-primary .primary-theme .mat-button.primary .mat-button-container {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary .primary-theme .mat-button.primary .mat-button-container {
+    color: rgba(255, 255, 255, 0.87); }
+  .light-primary .primary-theme .mat-button.primary:hover .mat-button-container {
+    background: rgba(0, 0, 0, 0.04); }
+  .dark-primary .primary-theme .mat-button.primary:hover .mat-button-container {
+    background: rgba(255, 255, 255, 0.04); }
+
+.light-primary .primary-theme .mat-button .mat-panel-button {
+  color: rgba(0, 0, 0, 0.6); }
+
+.dark-primary .primary-theme .mat-button .mat-panel-button {
+  color: rgba(255, 255, 255, 0.6); }
+
+.light-primary .primary-theme .mat-button .mat-panel-button.active {
+  background: rgba(0, 0, 0, 0.12); }
+
+.dark-primary .primary-theme .mat-button .mat-panel-button.active {
+  background: rgba(255, 255, 255, 0.12); }
+
+.light-primary .primary-theme .mat-button .mat-panel-button.active {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary .primary-theme .mat-button .mat-panel-button.active {
+  color: rgba(255, 255, 255, 0.87); }
+
+.primary-theme #panel {
+  background: #3f51b5;
+  width: 48px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .primary-theme #panel #panelLeft,
+  .primary-theme #panel #panelCenter,
+  .primary-theme #panel #panelRight {
+    spacing: 0px; }
+  .primary-theme #panel .panel-button {
+    text-align: center;
+    padding: 0px;
+    spacing: 0px; }
+    .light-primary .primary-theme #panel .panel-button {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary .primary-theme #panel .panel-button {
+      color: rgba(255, 255, 255, 0.6); }
+    .primary-theme #panel .panel-button > * {
+      width: 28px;
+      padding: 4px 0px;
+      margin: 0px; }
+      .light-primary .primary-theme #panel .panel-button > * {
+        color: rgba(0, 0, 0, 0.6); }
+      .dark-primary .primary-theme #panel .panel-button > * {
+        color: rgba(255, 255, 255, 0.6); }
+    .primary-theme #panel .panel-button .system-status-icon {
+      fill: red; }
+
+.primary-theme #topBarSpacer {
+  height: 48px; }
+
+.primary-theme #topPanel {
+  background: white;
+  height: 48px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .primary-theme #topPanel .task-active-indicator {
+    background: #3f51b5;
+    height: 2px; }
+  .primary-theme #topPanel .task-bar-item {
+    font-size: 14px;
+    height: 48px; }
+    .primary-theme #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+      color: #3f51b5; }
+    .primary-theme #topPanel .task-bar-item .task-bar-item-content {
+      padding: 0px 8px; }
+      .primary-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
+        icon-size: 24px;
+        margin-right: 8px; }
+      .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        max-width: 248px;
+        margin-right: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6); }
+      .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
+        border-radius: 20px;
+        width: 24px;
+        height: 20px; }
+        .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+          icon-size: 18px;
+          color: rgba(0, 0, 0, 0.6); }
+  .primary-theme #topPanel .mat-panel-button .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.6); }
+  .primary-theme #topPanel .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12); }
+    .primary-theme #topPanel .mat-panel-button.active .mat-panel-button-icon {
+      color: rgba(0, 0, 0, 0.87); }
+
+.primary-theme .system-status-icon {
+  height: 24px;
+  width: 24px;
+  padding: 0px; }
+
+.primary-theme .clock-display * {
+  padding: 4px 0px !important; }
+
+.primary-theme .mat-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  .primary-theme .mat-card .mat-card-title {
+    background: #3f51b5;
+    height: 72px;
+    padding: 0px 24px; }
+    .light-primary .primary-theme .mat-card .mat-card-title {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary .primary-theme .mat-card .mat-card-title {
+      color: rgba(255, 255, 255, 0.87); }
+    .primary-theme .mat-card .mat-card-title .mat-card-title-icon {
+      icon-size: 40px;
+      margin-right: 16px; }
+    .primary-theme .mat-card .mat-card-title .mat-card-title-label {
+      font-size: 24px; }
+  .primary-theme .mat-card .mat-card-content {
+    padding: 24px; }
+    .light-primary .primary-theme .mat-card .mat-card-content {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary .primary-theme .mat-card .mat-card-content {
+      color: rgba(255, 255, 255, 0.87); }
+
+.primary-theme .categorized-app-card .overview-icon {
+  margin: 8px; }
+
+.primary-theme .categorized-app-card .overview-icon-with-label {
+  color: rgba(0, 0, 0, 0.87); }
+
+.primary-theme .backdrop-container {
+  background: rgba(0, 0, 0, 0.5); }

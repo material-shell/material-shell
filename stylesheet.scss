@@ -325,55 +325,10 @@ $panel-size: 48px;
     }
 }
 
-@include buildTheme('light');
-
-.lightmode {
-    .workspace-main-icon,
-    .workspace-icon {
-        color: $color-dynamic-fg;
-    }
-    .workspace-active-indicator {
-        background-color: $color-dynamic-fg;
-    }
-    .workspace-button.active {
-        .workspace-icon {
-            color: $color-dynamic-fg;
-        }
-    }
-    #panel {
-        background-color: $color-primary;
-        color: $color-dynamic-fg;
-    }
-    .panel-button {
-        color: $color-dynamic-fg;
-    }
-    .mat-card {
-        background-color: $color-bg;
-        color: $color-dynamic-fg;
-        .overview-icon {
-            color: $color-dynamic-fg;
-        }
-        .mat-card-title {
-            background-color: $color-primary;
-            color: $color-dynamic-fg;
-        }
-        .mat-card-content {
-            color: $color-dynamic-fg;
-        }
-    }
-    .task-active-indicator {
-        background: $color-primary;
-    }
-    .task-bar-item {
-        .task-bar-item-content {
-            .task-bar-item-title {
-                color: $color-primary;
-            }
-            .task-close-button {
-                .task-close-icon {
-                    color: $color-primary;
-                }
-            }
-        }
-    }
+@include buildTheme('dark');
+.light-theme {
+    @include buildTheme('light');
+}
+.primary-theme {
+    @include buildTheme('primary');
 }
