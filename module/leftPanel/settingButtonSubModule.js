@@ -5,37 +5,35 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
 
-/* exported AppsButtonSubModule */
-var AppsButtonSubModule = class AppsButtonSubModule {
+/* exported SettingButtonSubModule */
+var SettingButtonSubModule = class SettingButtonSubModule {
     constructor(panel) {
         this.panel = panel;
         let icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/menu-symbolic.svg`
+                `${Me.path}/assets/icons/settings-symbolic.svg`
             ),
             style_class: 'mat-panel-button-icon'
         });
 
         this.button = new MatButton({
             child: icon,
-            style_class: 'mat-panel-button',
-            primary: true
+            style_class: 'mat-panel-button'
         });
 
         this.button.connect('clicked', () => {
-            if (!Main.overview._shown) {
-                Main.overview.viewSelector.showApps();
-            } else {
-                Main.overview.hide();
-            }
+            imports.misc.util.spawn([
+                'gnome-shell-extension-prefs',
+                'material-shell@papyelgringo'
+            ]);
         });
     }
 
     enable() {
-        this.panel._leftBox.insert_child_at_index(this.button, 0);
+        this.panel._centerBox.add_child(this.button);
     }
 
     disable() {
-        this.panel._leftBox.remove_child(this.button);
+        this.panel._centerBox.remove_child(this.button);
     }
 };

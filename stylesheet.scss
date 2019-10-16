@@ -5,212 +5,327 @@ $color-active-bg: rgba(255, 255, 255, 0.12);
 $color-hover-bg: rgba(255, 255, 255, 0.04);
 $color-active-fg: rgb(255, 255, 255);
 $color-dynamic-fg: #beeeef;
-$ripple: rgba(255, 255, 255, 0.16);
+$ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 
-@mixin foreground($background, $opacity) {
-    @if ($background == 'light') {
+@mixin foreground($theme, $opacity) {
+    @if ($theme == 'light') {
         color: rgba(0, 0, 0, $opacity);
     }
-    @if ($background == 'dark') {
+    @if ($theme == 'dark') {
         color: rgba(255, 255, 255, $opacity);
     }
-    @if ($background == 'primary') {
+    @if ($theme == 'primary') {
         .light-primary & {
             color: rgba(0, 0, 0, $opacity);
         }
-        .dark-primary {
+        .dark-primary & {
             color: rgba(255, 255, 255, $opacity);
         }
     }
 }
 
-@mixin foreground-high-emphasis($background) {
-    @include foreground($background, 0.87);
-}
-
-@mixin foreground-medium-emphasis($background) {
-    @include foreground($background, 0.6);
-}
-
-@mixin foreground-disabled($background) {
-    @include foreground($background, 0.38);
-}
-
-.main-button {
-    background-color: $color-primary;
-    padding: 12px;
-    .main-button-icon {
-        width: 24px;
-        height: 24px;
-        color: $color-active-fg;
+@mixin background($theme) {
+    @if ($theme == 'light') {
+        background: rgba(255, 255, 255, 1);
+    }
+    @if ($theme == 'dark') {
+        background: rgba(25, 25, 25, 1);
+    }
+    @if ($theme == 'primary') {
+        background: $color-primary;
     }
 }
 
-.workspace-button {
-    padding: 12px;
-    &.active {
-        background-color: $color-active-bg;
-        .workspace-icon {
-            color: $color-active-fg;
+@mixin hover($theme) {
+    @if ($theme == 'light') {
+        background: rgba(0, 0, 0, 0.04);
+    }
+    @if ($theme == 'dark') {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    @if ($theme == 'primary') {
+        .light-primary & {
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .dark-primary & {
+            background: rgba(255, 255, 255, 0.04);
+        }
+    }
+}
+@mixin active($theme) {
+    @if ($theme == 'light') {
+        background: rgba(0, 0, 0, 0.12);
+    }
+    @if ($theme == 'dark') {
+        background: rgba(255, 255, 255, 0.12);
+    }
+    @if ($theme == 'primary') {
+        .light-primary & {
+            background: rgba(0, 0, 0, 0.12);
+        }
+        .dark-primary & {
+            background: rgba(255, 255, 255, 0.12);
         }
     }
 }
 
-.workspace-button:hover {
-    background-color: $color-hover-bg;
-    .workspace-icon {
-        color: $color-fg;
-    }
+@mixin foreground-high-emphasis($theme) {
+    @include foreground($theme, 0.87);
 }
 
-.workspace-icon {
-    width: 24px;
-    height: 24px;
-    color: $color-fg;
+@mixin foreground-medium-emphasis($theme) {
+    @include foreground($theme, 0.6);
 }
 
-.workspace-active-indicator {
-    width: 3px;
-    height: 48px;
+@mixin foreground-disabled($theme) {
+    @include foreground($theme, 0.38);
 }
 
-.ripple-wave {
-    //This is a hack because percentage is not handled yet
-    border-radius: 2000px;
-    background-color: $ripple;
-}
-
-#leftPanelBox,
-#leftDashSpacer {
-    width: $panel-size;
-}
-
-#panel {
-    width: $panel-size;
-    color: $color-fg;
-    background-color: $color-bg;
-    box-shadow: $shadow;
-    #panelLeft,
-    #panelCenter,
-    #panelRight {
-        // spacing between activities<>app menu and such
-        spacing: 0px;
-    }
-}
-
-#topBarSpacer {
-    height: $panel-size;
-}
-
-#topPanel {
-    height: $panel-size;
-    background-color: $color-bg;
-    box-shadow: $shadow;
-}
-
-.task-active-indicator {
-    background: $color-active-fg;
-    height: 2px;
-}
-
-.task-bar-item {
-    font-size: 14px;
-    height: $panel-size;
-    &:hover {
-        background-color: $color-hover-bg;
-    }
-    &.active {
-        .task-bar-item-content {
-            .task-bar-item-title {
-                color: $color-active-fg;
-            }
-        }
-    }
-    .task-bar-item-content {
-        padding: 0px 8px;
-        .app-icon {
-            icon-size: 24px;
-            margin-right: 8px;
-        }
-        .task-bar-item-title {
-            max-width: 248px;
-            margin-right: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            color: $color-fg;
-        }
-        .task-close-button {
-            border-radius: 20px;
+@mixin buildTheme($theme) {
+    .mat-panel-button {
+        height: $panel-size;
+        width: $panel-size;
+        .mat-panel-button-icon {
             width: 24px;
-            height: 20px;
+            height: 24px;
+        }
+    }
+
+    .workspace-button {
+        .workspace-icon {
+            @include foreground-medium-emphasis($theme);
+        }
+        &.active {
+            @include active($theme);
+            .mat-panel-button-icon {
+                @include foreground-high-emphasis($theme);
+            }
+        }
+    }
+
+    .workspace-active-indicator {
+        @if ($theme == 'primary') {
+            @include background('light');
+        } @else {
+            @include background('primary');
+        }
+        width: 3px;
+        height: 48px;
+    }
+
+    .ripple-wave {
+        //This is a hack because percentage is not handled yet
+        border-radius: 2000px;
+        @include active($theme);
+    }
+
+    #leftPanelBox,
+    #leftDashSpacer {
+        width: $panel-size;
+    }
+
+    .mat-button {
+        .mat-button-container {
+            @include foreground-high-emphasis($theme);
+        }
+        &:hover {
+            .mat-button-container {
+                @include hover($theme);
+            }
+        }
+        &.primary {
+            @include background('primary');
+            .mat-button-container {
+                @include foreground-high-emphasis('primary');
+            }
             &:hover {
-                background-color: $color-hover-bg;
-            }
-            .task-close-icon {
-                icon-size: 18px;
-                color: $color-fg;
+                .mat-button-container {
+                    @include hover('primary');
+                }
             }
         }
     }
-}
+    .mat-button {
+        .mat-panel-button {
+            @include foreground-medium-emphasis($theme);
 
-.panel-button {
-    color: $color-fg;
-    text-align: center;
-    padding: 0px;
-    spacing: 0px;
-    > * {
-        width: $panel-size - 20px;
-        padding: 4px 0px;
-        margin: 0px;
-    }
-}
-
-.system-status-icon {
-    height: 24px;
-    width: 24px;
-    padding: 0px;
-}
-
-.clock-display {
-    * {
-        padding: 4px 0px !important;
-    }
-}
-
-.mat-card {
-    background-color: $color-bg;
-    border-radius: 6px;
-    box-shadow: $shadow;
-    .mat-card-title {
-        background-color: $color-active-bg;
-        color: $color-active-fg;
-        height: 72px;
-        padding: 0px 24px;
-        .mat-card-title-icon {
-            icon-size: 40px;
-            margin-right: 16px;
-        }
-        .mat-card-title-label {
-            font-size: 24px;
+            &.active {
+                @include active($theme);
+                @if ($theme == 'light') {
+                    color: $color-primary;
+                } @else {
+                    @include foreground-high-emphasis($theme);
+                }
+            }
         }
     }
-    .mat-card-content {
-        padding: 24px;
+    #panel {
+        @include background($theme);
+        width: $panel-size;
+        box-shadow: $shadow;
+        #panelLeft,
+        #panelCenter,
+        #panelRight {
+            // spacing between activities<>app menu and such
+            spacing: 0px;
+        }
+
+        .panel-button {
+            @include foreground-medium-emphasis($theme);
+            text-align: center;
+            padding: 0px;
+            spacing: 0px;
+            > * {
+                width: $panel-size - 20px;
+                padding: 4px 0px;
+                margin: 0px;
+                @include foreground-medium-emphasis($theme);
+            }
+            .system-status-icon {
+                fill: red;
+            }
+        }
+    }
+
+    #topBarSpacer {
+        height: $panel-size;
+    }
+
+    #topPanel {
+        $topPanelTheme: $theme;
+        @if ($theme == 'primary') {
+            $topPanelTheme: 'light';
+        }
+        @include background($topPanelTheme);
+        height: $panel-size;
+        box-shadow: $shadow;
+        .task-active-indicator {
+            @if ($topPanelTheme == 'dark') {
+                @include background('light');
+            } @else {
+                @include background('primary');
+            }
+            height: 2px;
+        }
+        .task-bar-item {
+            font-size: 14px;
+            height: $panel-size;
+            &.active {
+                .task-bar-item-content {
+                    .task-bar-item-title {
+                        @if ($topPanelTheme == 'light') {
+                            color: $color-primary;
+                        } @else {
+                            @include foreground-high-emphasis($topPanelTheme);
+                        }
+                    }
+                }
+            }
+            .task-bar-item-content {
+                padding: 0px 8px;
+                .app-icon {
+                    icon-size: 24px;
+                    margin-right: 8px;
+                }
+                .task-bar-item-title {
+                    max-width: 248px;
+                    margin-right: 8px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    @include foreground-medium-emphasis($topPanelTheme);
+                }
+                .task-close-button {
+                    border-radius: 20px;
+                    width: 24px;
+                    height: 20px;
+                    .task-close-icon {
+                        icon-size: 18px;
+                        @include foreground-medium-emphasis($topPanelTheme);
+                    }
+                }
+            }
+        }
+        .mat-panel-button {
+            .mat-panel-button-icon {
+                @include foreground-medium-emphasis($topPanelTheme);
+            }
+            &.active {
+                @include active($topPanelTheme);
+                .mat-panel-button-icon {
+                    @include foreground-high-emphasis($topPanelTheme);
+                }
+            }
+        }
+    }
+
+    .system-status-icon {
+        height: 24px;
+        width: 24px;
+        padding: 0px;
+    }
+
+    .clock-display {
+        * {
+            padding: 4px 0px !important;
+        }
+    }
+
+    .mat-card {
+        @if ($theme == 'primary') {
+            @include background('light');
+        } @else {
+            @include background($theme);
+        }
+        border-radius: 6px;
+        box-shadow: $shadow;
+        .mat-card-title {
+            @if ($theme == 'primary') {
+                @include background($theme);
+            } @else {
+                @include hover($theme);
+            }
+            @if ($theme == 'light') {
+                color: $color-primary;
+            } @else {
+                @include foreground-high-emphasis($theme);
+            }
+            height: 72px;
+            padding: 0px 24px;
+            .mat-card-title-icon {
+                icon-size: 40px;
+                margin-right: 16px;
+            }
+            .mat-card-title-label {
+                font-size: 24px;
+            }
+        }
+        .mat-card-content {
+            padding: 24px;
+            @include foreground-high-emphasis($theme);
+        }
+    }
+
+    .categorized-app-card {
+        .overview-icon {
+            margin: 8px;
+        }
+        .overview-icon-with-label {
+            @if ($theme == 'primary') {
+                @include foreground-high-emphasis('light');
+            } @else {
+                @include foreground-high-emphasis($theme);
+            }
+        }
+    }
+
+    .backdrop-container {
+        background: rgba(0, 0, 0, 0.5);
     }
 }
 
-.categorized-app-card {
-    .overview-icon {
-        margin: 8px;
-    }
-}
-
-.backdrop-container {
-    background: rgba(0, 0, 0, 0.5);
-}
+@include buildTheme('light');
 
 .lightmode {
     .workspace-main-icon,

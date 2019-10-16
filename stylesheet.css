@@ -1,99 +1,114 @@
-.main-button {
-  background-color: #3f51b5;
-  padding: 12px; }
-  .main-button .main-button-icon {
+.mat-panel-button {
+  height: 48px;
+  width: 48px; }
+  .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px;
-    color: white; }
+    height: 24px; }
 
-.workspace-button {
-  padding: 12px; }
-  .workspace-button.active {
-    background-color: rgba(255, 255, 255, 0.12); }
-    .workspace-button.active .workspace-icon {
-      color: white; }
+.workspace-button .workspace-icon {
+  color: rgba(0, 0, 0, 0.6); }
 
-.workspace-button:hover {
-  background-color: rgba(255, 255, 255, 0.04); }
-  .workspace-button:hover .workspace-icon {
-    color: #c8c8c8; }
-
-.workspace-icon {
-  width: 24px;
-  height: 24px;
-  color: #c8c8c8; }
+.workspace-button.active {
+  background: rgba(0, 0, 0, 0.12); }
+  .workspace-button.active .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.87); }
 
 .workspace-active-indicator {
+  background: #3f51b5;
   width: 3px;
   height: 48px; }
 
 .ripple-wave {
   border-radius: 2000px;
-  background-color: rgba(255, 255, 255, 0.16); }
+  background: rgba(0, 0, 0, 0.12); }
 
 #leftPanelBox,
 #leftDashSpacer {
   width: 48px; }
 
+.mat-button .mat-button-container {
+  color: rgba(0, 0, 0, 0.87); }
+
+.mat-button:hover .mat-button-container {
+  background: rgba(0, 0, 0, 0.04); }
+
+.mat-button.primary {
+  background: #3f51b5; }
+  .light-primary .mat-button.primary .mat-button-container {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary .mat-button.primary .mat-button-container {
+    color: rgba(255, 255, 255, 0.87); }
+  .light-primary .mat-button.primary:hover .mat-button-container {
+    background: rgba(0, 0, 0, 0.04); }
+  .dark-primary .mat-button.primary:hover .mat-button-container {
+    background: rgba(255, 255, 255, 0.04); }
+
+.mat-button .mat-panel-button {
+  color: rgba(0, 0, 0, 0.6); }
+  .mat-button .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12);
+    color: #3f51b5; }
+
 #panel {
+  background: white;
   width: 48px;
-  color: #c8c8c8;
-  background-color: #191919;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   #panel #panelLeft,
   #panel #panelCenter,
   #panel #panelRight {
     spacing: 0px; }
+  #panel .panel-button {
+    color: rgba(0, 0, 0, 0.6);
+    text-align: center;
+    padding: 0px;
+    spacing: 0px; }
+    #panel .panel-button > * {
+      width: 28px;
+      padding: 4px 0px;
+      margin: 0px;
+      color: rgba(0, 0, 0, 0.6); }
+    #panel .panel-button .system-status-icon {
+      fill: red; }
 
 #topBarSpacer {
   height: 48px; }
 
 #topPanel {
-  height: 48px;
-  background-color: #191919;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
-
-.task-active-indicator {
   background: white;
-  height: 2px; }
-
-.task-bar-item {
-  font-size: 14px;
-  height: 48px; }
-  .task-bar-item:hover {
-    background-color: rgba(255, 255, 255, 0.04); }
-  .task-bar-item.active .task-bar-item-content .task-bar-item-title {
-    color: white; }
-  .task-bar-item .task-bar-item-content {
-    padding: 0px 8px; }
-    .task-bar-item .task-bar-item-content .app-icon {
-      icon-size: 24px;
-      margin-right: 8px; }
-    .task-bar-item .task-bar-item-content .task-bar-item-title {
-      max-width: 248px;
-      margin-right: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      color: #c8c8c8; }
-    .task-bar-item .task-bar-item-content .task-close-button {
-      border-radius: 20px;
-      width: 24px;
-      height: 20px; }
-      .task-bar-item .task-bar-item-content .task-close-button:hover {
-        background-color: rgba(255, 255, 255, 0.04); }
-      .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-        icon-size: 18px;
-        color: #c8c8c8; }
-
-.panel-button {
-  color: #c8c8c8;
-  text-align: center;
-  padding: 0px;
-  spacing: 0px; }
-  .panel-button > * {
-    width: 28px;
-    padding: 4px 0px;
-    margin: 0px; }
+  height: 48px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  #topPanel .task-active-indicator {
+    background: #3f51b5;
+    height: 2px; }
+  #topPanel .task-bar-item {
+    font-size: 14px;
+    height: 48px; }
+    #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+      color: #3f51b5; }
+    #topPanel .task-bar-item .task-bar-item-content {
+      padding: 0px 8px; }
+      #topPanel .task-bar-item .task-bar-item-content .app-icon {
+        icon-size: 24px;
+        margin-right: 8px; }
+      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        max-width: 248px;
+        margin-right: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.6); }
+      #topPanel .task-bar-item .task-bar-item-content .task-close-button {
+        border-radius: 20px;
+        width: 24px;
+        height: 20px; }
+        #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+          icon-size: 18px;
+          color: rgba(0, 0, 0, 0.6); }
+  #topPanel .mat-panel-button .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.6); }
+  #topPanel .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12); }
+    #topPanel .mat-panel-button.active .mat-panel-button-icon {
+      color: rgba(0, 0, 0, 0.87); }
 
 .system-status-icon {
   height: 24px;
@@ -104,12 +119,12 @@
   padding: 4px 0px !important; }
 
 .mat-card {
-  background-color: #191919;
+  background: white;
   border-radius: 6px;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
   .mat-card .mat-card-title {
-    background-color: rgba(255, 255, 255, 0.12);
-    color: white;
+    background: rgba(0, 0, 0, 0.04);
+    color: #3f51b5;
     height: 72px;
     padding: 0px 24px; }
     .mat-card .mat-card-title .mat-card-title-icon {
@@ -118,10 +133,14 @@
     .mat-card .mat-card-title .mat-card-title-label {
       font-size: 24px; }
   .mat-card .mat-card-content {
-    padding: 24px; }
+    padding: 24px;
+    color: rgba(0, 0, 0, 0.87); }
 
 .categorized-app-card .overview-icon {
   margin: 8px; }
+
+.categorized-app-card .overview-icon-with-label {
+  color: rgba(0, 0, 0, 0.87); }
 
 .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }

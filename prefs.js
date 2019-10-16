@@ -97,7 +97,7 @@ function buildPrefsWidget() {
     });
     mainVBox.pack_start(notebook, true, true, 0);
     mainVBox.show_all();
-    return mainVBox;
+    return notebook;
 }
 
 function accelTab(notebook) {
@@ -307,8 +307,7 @@ function cssHexString(css) {
         for (let loop = 0; loop < 2; loop++) {
             while (true) {
                 let x = css.slice(end, end + 1);
-                if ((x == '(') || (x == ',') || (x == ')'))
-                    break;
+                if (x == '(' || x == ',' || x == ')') break;
                 end++;
             }
             if (loop == 0) {
@@ -317,8 +316,7 @@ function cssHexString(css) {
             }
         }
         xx = parseInt(css.slice(start, end)).toString(16);
-        if (xx.length == 1)
-            xx = '0' + xx;
+        if (xx.length == 1) xx = '0' + xx;
         rrggbb += xx;
         css = css.slice(end);
     }
@@ -354,14 +352,12 @@ function themeSettingsTab(notebook) {
             'A color that stylizes the majority of the UI',
             primaryColor
         )
-    )
-    primaryColor.connect("notify::color", button=>{
+    );
+    primaryColor.connect('notify::color', button => {
         let rgba = button.get_rgba();
         let css = rgba.to_string();
         let hexString = cssHexString(css);
         settings.set_string('primary-color', hexString);
-    })
-    notebook.append_page(
-        ...makePage('Theme settings', makeItemList(itemRows))
-    );
+    });
+    notebook.append_page(...makePage('Theme settings', makeItemList(itemRows)));
 }
