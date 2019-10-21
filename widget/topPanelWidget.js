@@ -25,9 +25,9 @@ var TopPanel = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    style_class: 'workspace-icon'
+                    style_class: 'mat-panel-button-icon'
                 }),
-                style_class: 'workspace-button'
+                style_class: 'mat-panel-button'
             });
 
             this.addButton = new MatButton({
@@ -42,12 +42,12 @@ var TopPanel = GObject.registerClass(
             this.add_child(this._leftContainer);
             this.tilingIcon = new St.Icon({
                 gicon: superWorkspace.tilingLayout.icon,
-                style_class: 'workspace-icon'
+                style_class: 'mat-panel-button-icon'
             });
 
             this.tilingButton = new MatButton({
                 child: this.tilingIcon,
-                style_class: 'workspace-button',
+                style_class: 'mat-panel-button',
                 reactive: true,
                 can_focus: true,
                 track_hover: true

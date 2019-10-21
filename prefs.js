@@ -1,4 +1,4 @@
-const { GObject, Gtk, Gio } = imports.gi;
+const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
@@ -85,14 +85,13 @@ const layouts = {
 // eslint-disable-next-line no-unused-vars
 function buildPrefsWidget() {
     const notebook = new Gtk.Notebook();
+    GlobalSettingsTab(notebook);
     accelTab(notebook);
     layoutsTab(notebook);
     layoutsSettingsTab(notebook);
 
     let mainVBox = new Gtk.Box({
-        orientation: Gtk.Orientation.VERTICAL,
-        spacing: 10,
-        border_width: 10
+        orientation: Gtk.Orientation.VERTICAL
     });
     mainVBox.pack_start(notebook, true, true, 0);
     mainVBox.show_all();
@@ -294,5 +293,87 @@ function layoutsSettingsTab(notebook) {
     );
     notebook.append_page(
         ...makePage('Tiling settings', makeItemList(itemRows))
+    );
+}
+
+function cssHexString(css) {
+    let rrggbb = '#';
+    let start;
+    for (let loop = 0; loop < 3; loop++) {
+        let end = 0;
+        let xx = '';
+        for (let loop = 0; loop < 2; loop++) {
+            while (true) {
+                let x = css.slice(end, end + 1);
+                if (x == '(' || x == ',' || x == ')') break;
+                end++;
+            }
+            if (loop == 0) {
+                end++;
+                start = end;
+            }
+        }
+        xx = parseInt(css.slice(start, end)).toString(16);
+        if (xx.length == 1) xx = '0' + xx;
+        rrggbb += xx;
+        css = css.slice(end);
+    }
+    return rrggbb;
+}
+
+function GlobalSettingsTab(notebook) {
+    const settings = getSettings('theme');
+    const itemRows = [];
+
+    const darkMode = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    let model = new Gtk.ListStore();
+    model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
+
+    let cbox = new Gtk.ComboBox({ model: model });
+    let renderer = new Gtk.CellRendererText();
+    cbox.pack_start(renderer, true);
+    cbox.add_attribute(renderer, 'text', 1);
+
+    model.set(model.append(), [0, 1], ['dark', 'Dark']);
+    model.set(model.append(), [0, 1], ['light', 'Light']);
+    model.set(model.append(), [0, 1], ['primary', 'Primary']);
+    let shit = ['dark', 'light', 'primary'];
+    log('toto');
+    log(settings.get_string('theme'));
+    cbox.set_active(shit.indexOf(settings.get_string('theme'))); // set value
+
+    cbox.connect('changed', entry => {
+        let [success, iter] = cbox.get_active_iter();
+        if (!success) return;
+        let themeValue = model.get_value(iter, 0); // get value
+        settings.set_string('theme', themeValue);
+    });
+    itemRows.push(
+        makeItemRow(
+            'Theme',
+            'Determines the active theme for Material Shell',
+            cbox
+        )
+    );
+
+    const primaryColor = new Gtk.ColorButton();
+    let rgba = new Gdk.RGBA();
+    rgba.parse(settings.get_string('primary-color'));
+    primaryColor.set_rgba(rgba);
+    itemRows.push(
+        makeItemRow(
+            'Primary color',
+            'A color that stylizes the majority of the UI',
+            primaryColor
+        )
+    );
+    primaryColor.connect('notify::color', button => {
+        let rgba = button.get_rgba();
+        let css = rgba.to_string();
+        let hexString = cssHexString(css);
+        settings.set_string('primary-color', hexString);
+    });
+    notebook.append_page(
+        ...makePage('Global settings', makeItemList(itemRows))
     );
 }

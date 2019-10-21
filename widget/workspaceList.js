@@ -14,7 +14,8 @@ var WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
         _init(superWorkspaceManager) {
             super._init({
-                clip_to_allocation: true
+                clip_to_allocation: true,
+                style_class: 'workspace-list'
             });
 
             this.superWorkspaceManager = superWorkspaceManager;
@@ -258,11 +259,11 @@ var WorkspaceButton = GObject.registerClass(
         _init(superWorkspaceManager, categoryKey, category) {
             let icon = new St.Icon({
                 gicon: category.icon,
-                style_class: 'workspace-icon'
+                style_class: 'mat-panel-button-icon'
             });
             super._init({
                 child: icon,
-                style_class: 'workspace-button'
+                style_class: 'mat-panel-button'
             });
             this._delegate = this;
 
