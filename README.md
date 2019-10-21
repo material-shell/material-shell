@@ -1,7 +1,7 @@
 # Material Shell
-A **simple** yet **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
+A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
 
-Made by following the **[Material Design guidelines](https://material.io)** which helps us present an **aesthetically pleasing** and **highly accessible** interface.
+Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface.
 
 #### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
 
