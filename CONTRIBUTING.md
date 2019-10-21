@@ -5,6 +5,7 @@
   + We only need the commit that you are using. Please make sure you are on the latest version.
 + [ ] Output from `journalctl /usr/bin/gnome-shell`
   + Please include as much output as possible. If necessary, create a Gist and link to it.
++ [ ] Are you using Wayland or X.org?
 + [ ] A detailed explanation of the bug.
   + [ ] What is the expected behavior?
   + [ ] What do you see instead?
