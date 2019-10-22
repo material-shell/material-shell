@@ -21,6 +21,7 @@ var SettingButtonSubModule = class SettingButtonSubModule {
             child: icon,
             style_class: 'mat-panel-button'
         });
+        this.enabled = false;
 
         this.button.connect('clicked', () => {
             imports.misc.util.spawn([
@@ -32,44 +33,24 @@ var SettingButtonSubModule = class SettingButtonSubModule {
         this.showSettingsButton = this.themeSettings.get_boolean('show-settings-button-on-panel');
         this.settingsButtonSetting = this.themeSettings.connect('changed::show-settings-button-on-panel', schema => {
             this.showSettingsButton = schema.get_boolean('show-settings-button-on-panel');
-            this.setSettingsButtonToSettingsButtonSetting(this.showSettingsButton);
+            if (this.showSettingsButton) {
+                this.enable();
+            } else {
+                this.disable();
+            }
         });
-        this.setSettingsButtonToSettingsButtonSetting(this.showSettingsButton);
     }
 
-    setSettingsButtonToSettingsButtonSetting(settingsButtonSetting) { // did I mention settings?
-        if (settingsButtonSetting) {
-            this.enable();
-        } else {
-            this.disable();
-        }
-    }
 
     enable() {
-        if (this.showSettingsButton)
-            this.panel._centerBox.add_child(this.button);
+        if (!this.showSettingsButton || this.enabled) return;
+        this.panel._centerBox.add_child(this.button);
+        this.enabled = true;
     }
 
     disable() {
+        if(!this.enabled) return;
         this.panel._centerBox.remove_child(this.button);
+        this.enabled = false;
     }
 };
-
-/*
-this.themeSettings = getSettings('theme');
-        this.showSettingsButton = this.themeSettings.get_boolean('show-settings-button-on-panel');
-        this.settingsButtonSetting = this.themeSettings.connect('changed::show-settings-button-on-panel', schema => {
-            this.settingsButtonSetting = schema.get_boolean('show-settings-button-on-panel');
-            this.setSettingsButtonToSettingsButtonSetting(this.settingsButtonSetting);
-        });
-        this.setSettingsButtonToSettingsButtonSetting(this.settingsButtonSetting);
-    }
-
-    setSettingsButtonToSettingsButtonSetting(settingsButtonSetting) { // did I mention settings?
-        if (settingsButtonSetting) {
-            this.settingButtonSubModule.enable();
-        } else {
-            this.settingButtonSubModule.disable();
-        }
-    }
-    */
