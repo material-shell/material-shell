@@ -1,6 +1,5 @@
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.utils.settings;
 
 const {
     VerticalisePanelSubModule
@@ -29,11 +28,10 @@ var LeftPanelModule = class LeftPanelModule {
             new VerticalisePanelSubModule(this.panel),
             new PanelToLeftSubModule(this.panel),
             new AppsButtonSubModule(this.panel),
+            new SettingButtonSubModule(this.panel),
             new MaterializePanelSubModule(this.panel),
             new HideDashModule()
         ];
-
-        this.settingButtonSubModule = new SettingButtonSubModule(this.panel);
     }
 
     enable() {
@@ -55,29 +53,12 @@ var LeftPanelModule = class LeftPanelModule {
         this.subModules.forEach(subModule => {
             subModule.enable();
         });
-
-        this.themeSettings = getSettings('theme');
-        this.showSettingsButton = this.themeSettings.get_boolean('show-settings-button-on-panel');
-        this.settingsButtonSetting = this.themeSettings.connect('changed::show-settings-button-on-panel', schema => {
-            this.settingsButtonSetting = schema.get_boolean('show-settings-button-on-panel');
-            this.setSettingsButtonToSettingsButtonSetting(this.settingsButtonSetting);
-        });
-        this.setSettingsButtonToSettingsButtonSetting(this.settingsButtonSetting);
-    }
-
-    setSettingsButtonToSettingsButtonSetting(settingsButtonSetting) { // did I mention settings?
-        if (settingsButtonSetting) {
-            this.settingButtonSubModule.enable();
-        } else {
-            this.settingButtonSubModule.disable();
-        }
     }
 
     disable() {
         this.subModules.reverse().forEach(subModule => {
             subModule.disable();
         });
-        this.setSettingsButtonToSettingsButtonSetting(false);
 
         if (this.panel.statusArea.appMenu) {
             let appMenuActor = ShellVersionMatch('3.32')
