@@ -10,5 +10,15 @@
       <summary>Primary UI color</summary>
       <description>Primary color for UI elements. Is used for most elements.</description>
     </key>
+    <key name="show-settings-button-on-panel" type="b">
+      <default>true</default>
+      <summary>Show settings button</summary>
+      <description>Shows a quick shortcut to the Settings dialog in the left panel.</description>
+    </key>
+    <key name="do-dialog-backdrop" type="b">
+      <default>true</default>
+      <summary>Show dialog backdrop</summary>
+      <description>Shows a semi-transparent overlay over other windows when a dialog is open.</description>
+    </key>
   </schema>
 </schemalist>
