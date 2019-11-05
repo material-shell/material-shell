@@ -373,6 +373,37 @@ function GlobalSettingsTab(notebook) {
         let hexString = cssHexString(css);
         settings.set_string('primary-color', hexString);
     });
+
+    const doDialogBackdrop = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Show dialog backdrop',
+            'Shows a semi-transparent overlay over other windows when a dialog is open.',
+            doDialogBackdrop
+        )
+    );
+    settings.bind(
+        'do-dialog-backdrop',
+        doDialogBackdrop,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const showSettingsButtonOnLeftPanel = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Show settings button on left panel',
+            'Shows a quick shortcut to the Settings dialog in the left panel.',
+            showSettingsButtonOnLeftPanel
+        )
+    );
+    settings.bind(
+        'show-settings-button-on-panel',
+        showSettingsButtonOnLeftPanel,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
     notebook.append_page(
         ...makePage('Global settings', makeItemList(itemRows))
     );

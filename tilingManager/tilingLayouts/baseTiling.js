@@ -2,6 +2,7 @@ const { Meta, Gio, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.utils.settings;
 const { Backdrop } = Me.imports.widget.backdrop;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
@@ -29,6 +30,13 @@ var BaseTilingLayout = class BaseTilingLayout {
             'workareas-changed',
             this.onWorkAreasChanged.bind(this)
         );
+
+        this.themeSettings = getSettings('theme');
+        this.doDialogBackdrop = this.themeSettings.get_boolean('do-dialog-backdrop');
+        this.dialogSetting = this.themeSettings.connect('changed::do-dialog-backdrop', schema => {
+            this.doDialogBackdrop = schema.get_boolean('do-dialog-backdrop');
+            this.onTile();
+        });
     }
 
     onWorkAreasChanged() {
@@ -71,8 +79,14 @@ var BaseTilingLayout = class BaseTilingLayout {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
-            if (!window.backdrop) {
+            if (!window.backdrop && this.doDialogBackdrop) {
                 window.backdrop = new Backdrop(window);
+            } else if (window.backdrop) {
+                if (this.doDialogBackdrop) {
+                    window.backdrop.show();
+                } else {
+                    window.backdrop.hide();
+                }
             }
             window.backdrop.fillWorkArea();
             this.moveMetaWindow(
@@ -298,6 +312,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     onDestroy() {
         this.superWorkspace.disconnect(this.windowChangedId);
         this.superWorkspace.disconnect(this.windowFocusedChangedId);
+        this.themeSettings.disconnect(this.dialogSetting);
         global.display.disconnect(this.workAreaChangedId);
     }
 
