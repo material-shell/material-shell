@@ -64,6 +64,10 @@ const hotKeysLabels = {
         'Cycle around the tiling layout on the current workspace',
     'reverse-cycle-tiling-layout':
         'Cycle around in reverse order the tiling layout on the current workspace',
+    'customize-layout-increase':
+        'Grow windows in workspace. Depends on the current tiling layout.',
+    'customize-layout-decrease':
+        'Shrink windows in workspace. Depends on the current tiling layout.',
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen'
 };

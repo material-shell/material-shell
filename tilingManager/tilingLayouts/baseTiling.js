@@ -344,4 +344,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             (metaWindow.get_transient_for() != null && metaWindow.skip_taskbar)
         );
     }
+
+    onCustomizingHotkeyDecrease(){}
+    onCustomizingHotkeyIncrease(){}
 };

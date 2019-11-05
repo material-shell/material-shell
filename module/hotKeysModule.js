@@ -229,6 +229,40 @@ var HotKeysModule = class HotKeysModule {
                 });
             }
         );
+
+        Main.wm.addKeybinding(
+            'customize-layout-increase',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const superWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                superWorkspace.tilingLayout.onCustomizingHotkeyIncrease();
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'customize-layout-decrease',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const superWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
+                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                superWorkspace.tilingLayout.onCustomizingHotkeyDecrease();
+            }
+        );
     }
 
     disable() {}

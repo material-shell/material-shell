@@ -9,7 +9,7 @@ const { Column, Row } = Me.imports.widget.layout;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 // TODO: Make this configurable
-const WINDOW_PER_SCREEN = 2;
+let WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 250;
 /* exported SplitLayout */
 var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
@@ -263,6 +263,15 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             });
         global.window_group.remove_child(this.overContainer);
 
+        this.onTile();
+    }
+
+    onCustomizingHotkeyDecrease() {
+        WINDOW_PER_SCREEN = Math.max(2, WINDOW_PER_SCREEN - 1);
+        this.onTile();
+    }
+    onCustomizingHotkeyIncrease() {
+        WINDOW_PER_SCREEN = Math.min(5, WINDOW_PER_SCREEN + 1); // 5 is the max number of windows on screen, perhaps this could be customized?
         this.onTile();
     }
 };

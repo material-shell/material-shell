@@ -4,12 +4,14 @@ const {
     BaseGrabbableLayout
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 
+let ratio = null;
+
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         if (!windows.length) return;
-        const ratio = global.tilingManager.ratio;
+        ratio = !!ratio ? ratio : global.tilingManager.ratio; // changed to a let so it can be modified by hotkeys
 
         const workArea = this.getWorkspaceBounds();
 
@@ -44,6 +46,14 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 true
             );
         });
+    }
+    onCustomizingHotkeyDecrease() {
+        ratio = Math.max(0,ratio - 0.05);
+        this.onTile();
+    }
+    onCustomizingHotkeyIncrease() {
+        ratio = Math.min(1,ratio + 0.05);
+        this.onTile();
     }
 };
 
