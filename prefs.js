@@ -74,7 +74,7 @@ const hotKeysLabels = {
 
 const layouts = {
     maximize: 'Maximize all windows',
-    split: 'Put all windows side by side, two at a time',
+    split: 'Put all windows side by side',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',

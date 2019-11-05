@@ -8,7 +8,7 @@
     <key name="split" type="b">
       <default>true</default>
       <summary>Split layout</summary>
-      <description>Put all windows side by side, two at a time</description>
+      <description>Put all windows side by side</description>
     </key>
     <key name="half" type="b">
       <default>false</default>
