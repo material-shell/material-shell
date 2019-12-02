@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -eu
+
+command -v eslint >/dev/null 2>&1 || { echo >&2 "Must install eslint globally (npm install -g eslint)"; exit 1; }
+
+eslint module
+eslint settings
+eslint superWorkspace
+eslint tilingManager
+eslint utils
+eslint widget
