@@ -212,12 +212,12 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     onNewWindow(metaWindow) {
         if (!this._handleWindow(metaWindow)) return;
-        let windowActor = metaWindow.get_compositor_private();
+        const windowActor = metaWindow.get_compositor_private();
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
         if (Me.loaded) {
-            metaWindow.get_compositor_private().show();
+            windowActor.show();
         }
         this.addWindowToAppropriateSuperWorkspace(metaWindow);
 

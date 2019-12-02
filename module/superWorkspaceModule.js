@@ -407,7 +407,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: global.display,
             id: global.display.connect(
                 'window-entered-monitor',
-                (display, monitorIndex, window) => {
+                (_display, monitorIndex, window) => {
                     //Ignore unHandle window and window on primary screens
                     global.superWorkspaceManager.windowEnteredMonitor(
                         window,
@@ -421,7 +421,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             from: global.display,
             id: global.display.connect(
                 'window-left-monitor',
-                (display, monitorIndex, window) => {
+                (_display, _monitorIndex, _window) => {
                     /* 
                     //Ignore unHandle window and window on primary screens
                     global.superWorkspaceManager.windowLeftMonitor(
@@ -446,7 +446,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
         this.signals.push({
             from: workspace,
-            id: workspace.connect('window-removed', (workspace, window) => {
+            id: workspace.connect('window-removed', (_workspace, _window) => {
                 /* global.superWorkspaceManager.windowLeftWorkspace(
                     window,
                     workspace

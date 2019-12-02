@@ -1,8 +1,6 @@
-const ByteArray = imports.byteArray;
 const Util = imports.misc.util;
-const Meta = imports.gi.Meta;
-const GLib = imports.gi.GLib;
 
+// eslint-disable-next-line no-unused-vars
 var updateTitleBarVisibility = function(window) {
     let superWorkspaceIsInFloatLayout =
         window.superWorkspace.tilingLayout.constructor.key === 'float';

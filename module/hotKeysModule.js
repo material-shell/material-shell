@@ -23,8 +23,8 @@ var HotKeysModule = class HotKeysModule {
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? global.superWorkspaceManager.getActiveSuperWorkspace()
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                            currentMonitorIndex
+                        )[0];
                 superWorkspace.focusPrevious();
             }
         );
@@ -40,8 +40,8 @@ var HotKeysModule = class HotKeysModule {
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? global.superWorkspaceManager.getActiveSuperWorkspace()
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                            currentMonitorIndex
+                        )[0];
                 superWorkspace.focusNext();
             }
         );
@@ -99,8 +99,8 @@ var HotKeysModule = class HotKeysModule {
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? global.superWorkspaceManager.getActiveSuperWorkspace()
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                            currentMonitorIndex
+                        )[0];
                 let currentFocusIndex = superWorkspace.windows.indexOf(
                     superWorkspace.windowFocused
                 );
@@ -126,8 +126,8 @@ var HotKeysModule = class HotKeysModule {
                     currentMonitorIndex === Main.layoutManager.primaryIndex
                         ? global.superWorkspaceManager.getActiveSuperWorkspace()
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                            currentMonitorIndex
+                        )[0];
                 let currentFocusIndex = superWorkspace.windows.indexOf(
                     superWorkspace.windowFocused
                 );
@@ -220,12 +220,12 @@ var HotKeysModule = class HotKeysModule {
                     } else {
                         superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                             monitor.index
-                            )[0];
-                        }
-                        Main.layoutManager._queueUpdateRegions();
-                        superWorkspace.updateUI();
-                        superWorkspace.panel.set_height(!noUImode ? 0 : -1);
-                        superWorkspace.tilingLayout.onTile();
+                        )[0];
+                    }
+                    Main.layoutManager._queueUpdateRegions();
+                    superWorkspace.updateUI();
+                    superWorkspace.panel.set_height(!noUImode ? 0 : -1);
+                    superWorkspace.tilingLayout.onTile();
                 });
             }
         );

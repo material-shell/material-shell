@@ -1,6 +1,5 @@
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
-const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
@@ -49,7 +48,7 @@ var SettingButtonSubModule = class SettingButtonSubModule {
     }
 
     disable() {
-        if(!this.enabled) return;
+        if (!this.enabled) return;
         this.panel._centerBox.remove_child(this.button);
         this.enabled = false;
     }

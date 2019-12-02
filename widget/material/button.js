@@ -1,8 +1,7 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
-const Params = imports.misc.params;
+const { Clutter, GObject, St } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Stack } = Me.imports.widget.layout;
 const { RippleBackground } = Me.imports.widget.material.rippleBackground;
+
 /* exported MatButton */
 var MatButton = GObject.registerClass(
     {
@@ -68,6 +67,7 @@ var MatButton = GObject.registerClass(
             return this.actorContainer.vfunc_get_preferred_height(forWidth);
         }
 
+        // eslint-disable-next-line camelcase
         set_child(child) {
             this.actorContainer.set_child(child);
         }

@@ -1,5 +1,4 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
-const Params = imports.misc.params;
+const { GObject, St } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Row } = Me.imports.widget.layout;
 /* exported MatCard */

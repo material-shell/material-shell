@@ -1,4 +1,4 @@
-const { St, GObject, GLib } = imports.gi;
+const { St, GObject } = imports.gi;
 const Main = imports.ui.main;
 /* exported Backdrop */
 var Backdrop = GObject.registerClass(
@@ -33,7 +33,7 @@ var Backdrop = GObject.registerClass(
                 this.hide();
             });
 
-            window.connect('parent-set', (window, oldParent) => {
+            window.connect('parent-set', (window, _oldParent) => {
                 if (!window.meta_window) return;
                 this.window.raise_top();
                 this.followWindow();
@@ -56,7 +56,7 @@ var Backdrop = GObject.registerClass(
                 }
             });
 
-            this.connect('parent-set', (backdrop, oldParent) => {
+            this.connect('parent-set', (_backdrop, _oldParent) => {
                 if (this.destroyed) return;
                 this.fillWorkArea();
                 this.highlightWindow();

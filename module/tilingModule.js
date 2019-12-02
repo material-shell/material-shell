@@ -1,4 +1,4 @@
-const { Shell, Meta } = imports.gi;
+const { Meta } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 var { TilingManager } = Me.imports.tilingManager.tilingManager;
 /* exported TilingModule */
@@ -8,9 +8,11 @@ var TilingModule = class TilingModule {
     enable() {
         this.signals = [];
         global.tilingManager = new TilingManager();
+
+        /* 
         let tracker = Shell.WindowTracker.get_default();
 
-        /* this.signals.push({
+        this.signals.push({
             from: tracker,
             id: tracker.connect('tracked-windows-changed', () => {
                 

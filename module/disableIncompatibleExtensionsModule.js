@@ -1,5 +1,3 @@
-const { Gio } = imports.gi;
-
 const Main = imports.ui.main;
 
 const ExtensionUtils = imports.misc.extensionUtils;

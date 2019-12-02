@@ -13,7 +13,7 @@ var AppsManager = class AppsManager {
         let appSystem = Shell.AppSystem.get_default();
         let appsInstalled = appSystem.get_installed().filter(appInfo => {
             try {
-                let id = appInfo.get_id(); // catch invalid file encodings
+                appInfo.get_id(); // catch invalid file encodings
             } catch (e) {
                 return false;
             }

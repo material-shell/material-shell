@@ -16,20 +16,22 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
         });
     }
 
+    /*
     onWindowsChanged(newWindows, oldWindows) {
         super.onWindowsChanged();
         let leavingWindows = oldWindows.filter(
             window => !newWindows.includes(window)
         );
 
-        /*         leavingWindows.forEach(window => {
+        leavingWindows.forEach(window => {
             WindowUtils.setTitleBarVisibility(window, false);
         });
 
         this.superWorkspace.windows.forEach(window => {
             WindowUtils.setTitleBarVisibility(window, true);
-        }); */
+        });
     }
+    */
 
     onDestroy() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {

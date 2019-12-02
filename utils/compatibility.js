@@ -1,6 +1,6 @@
 const { PACKAGE_VERSION } = imports.misc.config;
-const Tweener = imports.ui.tweener;
 
+// eslint-disable-next-line no-unused-vars
 var ShellVersionMatch = function(version) {
     return PACKAGE_VERSION.match(new RegExp(`^${version}`)) !== null;
 };
