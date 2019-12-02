@@ -16,11 +16,12 @@ var RectangularClockSubModule = class RectangularClockSubModule {
             .get_child_at_index(0)
             .get_child_at_index(0);
         this.indicatorPad.hide();
-        this.removeDotsFromClock();
+
+        this.updateDisplay();
         this.connectSignal = this.dateMenu._clock.connect(
             'notify::clock',
             () => {
-                this.removeDotsFromClock();
+                this.updateDisplay();
             }
         );
     }
@@ -32,17 +33,18 @@ var RectangularClockSubModule = class RectangularClockSubModule {
         this.indicatorPad.show();
     }
 
-    removeDotsFromClock() {
-        // THIS IS NOT A NORMAL DOUBLE DOTS COPY PAST
-        let numbers = this.dateMenu._clock.clock.replace(/∶/g, ' ').split(' ');
-        if (!numbers[0]) numbers.shift();
-        let markup = '';
-        numbers.forEach((number, index) => {
-            markup += `<span>${number}</span>${
-                index === numbers.length - 1 ? '' : '\n'
-            }`;
-        });
+    /**
+     * Format the string representation of the time so it fits into the vertical label
+     * 
+     * - split the string into an array
+     * - create markup using spans to put each section on its own line
+     */
+    updateDisplay() {
+        const sections = this.dateMenu._clock.clock.split(' ');
+        if (!sections[0]) sections.shift();
+
+        const markup = sections.map(section => `<span>${section}</span>`).join('\n');
+
         this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
-        //this.dateMenu._clockDisplay.clutter_text.set_line_alignment(1);
     }
 };
