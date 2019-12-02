@@ -48,7 +48,7 @@ var TopPanel = GObject.registerClass(
                 child: this.tilingIcon,
                 style_class: 'mat-panel-button',
                 can_focus: true,
-                track_hover: true,
+                track_hover: true
             });
 
             this.tilingButton.connect('clicked', (actor, button) => {
