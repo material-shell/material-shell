@@ -35,6 +35,8 @@ var RectangularClockSubModule = class RectangularClockSubModule {
     /**
      * Format clock display to fit into the vertical panel
      * Place each section of the clock (HH, MM, AM/PM) onto its own line
+     * 
+     * Deliberately separates HH:MM into distinct sections
      */
     update() {
         let clockSections = this.dateMenu._clock.clock.replace(/∶/g, ' ').split(' ');
