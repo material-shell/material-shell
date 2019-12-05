@@ -16,11 +16,11 @@ var RectangularClockSubModule = class RectangularClockSubModule {
             .get_child_at_index(0)
             .get_child_at_index(0);
         this.indicatorPad.hide();
-        this.removeDotsFromClock();
+        this.update();
         this.connectSignal = this.dateMenu._clock.connect(
             'notify::clock',
             () => {
-                this.removeDotsFromClock();
+                this.update();
             }
         );
     }
@@ -32,16 +32,15 @@ var RectangularClockSubModule = class RectangularClockSubModule {
         this.indicatorPad.show();
     }
 
-    removeDotsFromClock() {
-        // THIS IS NOT A NORMAL DOUBLE DOTS COPY PAST
-        let numbers = this.dateMenu._clock.clock.replace(/∶/g, ' ').split(' ');
-        if (!numbers[0]) numbers.shift();
-        let markup = '';
-        numbers.forEach((number, index) => {
-            markup += `<span>${number}</span>${
-                index === numbers.length - 1 ? '' : '\n'
-            }`;
-        });
+    /**
+     * Format clock display to fit into the vertical panel
+     * Place each section of the clock (HH, MM, AM/PM) onto its own line
+     */
+    update() {
+        let clockSections = this.dateMenu._clock.clock.replace(/∶/g, ' ').split(' ');
+        if (!clockSections[0]) clockSections.shift();
+
+        const markup = clockSections.map(section => `<span>${section}</span>`).join('\n');
         this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
         //this.dateMenu._clockDisplay.clutter_text.set_line_alignment(1);
     }
