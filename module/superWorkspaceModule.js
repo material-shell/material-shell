@@ -204,9 +204,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             let workspaceManager = global.workspace_manager;
             let curWs = workspaceManager.get_workspace_by_index(from);
 
-            switchData.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
-                from
-            );
+            switchData.superWorkspace =
+                global.superWorkspaceManager.primarySuperWorkspaces[from];
 
             switchData.superWorkspace.uiVisible = true;
             switchData.superWorkspace.updateUI();
@@ -240,9 +239,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 let [x, y] = this._getPositionForDirection(dir);
                 info.actor.set_position(x, y);
 
-                info.superWorkspace = global.superWorkspaceManager.getPrimarySuperWorkspaceByIndex(
-                    ws.index()
-                );
+                info.superWorkspace =
+                    global.superWorkspaceManager.primarySuperWorkspaces[
+                        ws.index()
+                    ];
 
                 info.superWorkspace.backgroundContainer.reparent(info.actor);
 
