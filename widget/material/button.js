@@ -15,15 +15,21 @@ var MatButton = GObject.registerClass(
     class MatButton extends St.Widget {
         _init(params = {}) {
             this.rippleBackground = new RippleBackground();
+            const isPrimary = params.primary;
+            delete params.primary;
             this.actorContainer = new St.Bin(params);
+            this.actorContainer.add_style_class_name('mat-button-container');
             super._init({
-                reactive: true
+                reactive: true,
+                track_hover: true
             });
 
             this.add_child(this.rippleBackground);
             this.add_child(this.actorContainer);
             this.add_style_class_name('mat-button');
-
+            if (isPrimary) {
+                this.add_style_class_name('primary');
+            }
             this.connect('event', (actor, event) => {
                 let eventType = event.type();
                 if (

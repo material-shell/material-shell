@@ -20,24 +20,16 @@ var StateManager = class StateManager {
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             let file = Gio.file_new_for_path(REGISTRY_PATH);
 
-            file.query_info_async(
-                '*',
-                FileQueryInfoFlags.NONE,
-                GLib.PRIORITY_DEFAULT,
-                null,
-                (src, res) => {
-                    file.load_contents_async(null, (obj, res) => {
-                        let [success, contents] = obj.load_contents_finish(res);
-                        if (success) {
-                            this.state = JSON.parse(
-                                imports.byteArray.toString(contents)
-                            );
-                        }
-
-                        callback(this.state);
-                    });
+            file.load_contents_async(null, (obj, res) => {
+                let [success, contents] = obj.load_contents_finish(res);
+                if (success) {
+                    this.state = JSON.parse(
+                        imports.byteArray.toString(contents)
+                    );
                 }
-            );
+
+                callback(this.state);
+            });
         } else {
             callback(this.state);
         }

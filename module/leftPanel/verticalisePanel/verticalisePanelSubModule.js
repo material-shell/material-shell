@@ -123,6 +123,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
                 this.recursivelySetVertical(actor, true);
             }
         );
+        this.panel.statusArea.style_class = "status-area";
     }
 
     destroy() {

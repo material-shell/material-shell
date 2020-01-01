@@ -1,10 +1,13 @@
 # Creating Issues
+Please make sure you are on the latest version before submitting any issues.
+Before clicking submit, run `git pull` and restart GNOME Shell. If the issue persists, please follow these steps:
+
 **Please include:**
 + [ ] Output from `git show`.
   + Please wrap it in three backticks (\`\`\`)
-  + We only need the commit that you are using. Please make sure you are on the latest version.
 + [ ] Output from `journalctl /usr/bin/gnome-shell`
   + Please include as much output as possible. If necessary, create a Gist and link to it.
++ [ ] Are you using Wayland or X.org?
 + [ ] A detailed explanation of the bug.
   + [ ] What is the expected behavior?
   + [ ] What do you see instead?
@@ -16,6 +19,16 @@ This information makes it much easier to fix issues.
 # Creating PRs
 If you're making PRs, you likely know what to include already.
 
+Here are some general guidelines:
++ Follow the code style:
+  + Use indents of four spaces in code and two spaces in documentation.
+  + Use camel case and do not abbreviate variable names.
++ If you are changing the gschema, please recompile:
+```bash
+glib-recompile-schemas .
+```
++ Do not change colors in the Sass. Use the variables at the top to color elements.
+
 You also may benefit from some instructions on compiling the Sass stylesheet:
 
 ## Modifying the Stylesheet
@@ -24,7 +37,7 @@ First, make sure to install the Sass command line tool with `npm`:
 ```bash
 npm install -g sass
 ```
-If Sass is installed, then:
+Once Sass is installed, then:
 1) Make changes to the `stylesheet.scss` file as you please.
 2) Compile the file, and generate a sourcemap:
 ```bash

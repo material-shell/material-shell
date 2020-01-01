@@ -20,18 +20,16 @@ var TopPanel = GObject.registerClass(
             this.taskBar = new TaskBar(superWorkspace);
             this._leftContainer.add_child(this.taskBar);
 
-            let iconContainer = new St.Bin({
-                child: new St.Icon({
-                    gicon: Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/plus-symbolic.svg`
-                    ),
-                    style_class: 'workspace-icon'
-                }),
-                style_class: 'workspace-button'
+            let iconContainer = new St.Icon({
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/plus-symbolic.svg`
+                ),
+                style_class: 'mat-panel-button-icon'
             });
 
             this.addButton = new MatButton({
-                child: iconContainer
+                child: iconContainer,
+                style_class: 'mat-panel-button'
             });
 
             this.addButton.connect('clicked', () => {
@@ -40,15 +38,15 @@ var TopPanel = GObject.registerClass(
 
             this._leftContainer.add_child(this.addButton);
             this.add_child(this._leftContainer);
+
             this.tilingIcon = new St.Icon({
                 gicon: superWorkspace.tilingLayout.icon,
-                style_class: 'workspace-icon'
+                style_class: 'mat-panel-button-icon'
             });
 
             this.tilingButton = new MatButton({
                 child: this.tilingIcon,
-                style_class: 'workspace-button',
-                reactive: true,
+                style_class: 'mat-panel-button',
                 can_focus: true,
                 track_hover: true
             });

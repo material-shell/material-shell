@@ -1,0 +1,24 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
+    <key name="theme" type="s">
+      <default>'dark'</default>
+      <summary>theme</summary>
+      <description>Determines the active theme for Material Shell</description>
+    </key>
+    <key name="primary-color" type="s">
+      <default>'#3f51b5'</default>
+      <summary>Primary UI color</summary>
+      <description>Primary color for UI elements. Is used for most elements.</description>
+    </key>
+    <key name="show-settings-button-on-panel" type="b">
+      <default>true</default>
+      <summary>Show settings button</summary>
+      <description>Shows a quick shortcut to the Settings dialog in the left panel.</description>
+    </key>
+    <key name="do-dialog-backdrop" type="b">
+      <default>true</default>
+      <summary>Show dialog backdrop</summary>
+      <description>Shows a semi-transparent overlay over other windows when a dialog is open.</description>
+    </key>
+  </schema>
+</schemalist>

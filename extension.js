@@ -11,6 +11,8 @@ const { SuperWorkspaceModule } = Me.imports.module.superWorkspaceModule;
 const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
+const { ThemeModule } = Me.imports.module.themeModule;
+
 const { StateManager } = Me.imports.stateManager;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
@@ -44,7 +46,8 @@ function enable() {
                 new LeftPanelModule(),
                 new TilingModule(),
                 new SuperWorkspaceModule(),
-                new HotKeysModule()
+                new HotKeysModule(),
+                new ThemeModule()
             ];
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
