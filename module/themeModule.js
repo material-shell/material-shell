@@ -7,23 +7,28 @@ const THEME_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-theme.css`;
 
 /* exported ThemeModule */
 var ThemeModule = class ThemeModule {
-    constructor() {
+    constructor() {}
+
+    enable() {
+        this.themeContext = St.ThemeContext.get_for_stage(global.stage);
+        this.theme = this.themeContext.get_theme();
         this.themeSettings = getSettings('theme');
-        this.theme = this.themeSettings.get_string('theme');
+        this.themeValue = this.themeSettings.get_string('theme');
         this.primary = this.themeSettings.get_string('primary-color');
         this.settingsSignals = [
             this.themeSettings.connect('changed::theme', schema => {
-                this.theme = schema.get_string('theme');
-                this.regenerateStylesheet();
+                this.themeValue = schema.get_string('theme');
+                this.clearThemeClasses();
+                this.applyThemeClasses();
             }),
             this.themeSettings.connect('changed::primary-color', schema => {
                 this.primary = schema.get_string('primary-color');
+                this.clearThemeClasses();
+                this.applyThemeClasses();
                 this.regenerateStylesheet();
             })
         ];
-    }
-
-    enable() {
+        this.applyThemeClasses();
         this.regenerateStylesheet();
     }
 
@@ -52,50 +57,38 @@ var ThemeModule = class ThemeModule {
         return luminance < 0.179;
     }
 
+    clearThemeClasses() {
+        Main.uiGroup.remove_style_class_name('light-primary');
+        Main.uiGroup.remove_style_class_name('dark-primary');
+        Main.uiGroup.remove_style_class_name('light-theme');
+        Main.uiGroup.remove_style_class_name('primary-theme');
+    }
+
+    applyThemeClasses() {
+        if (this.isColorDark(this.primary)) {
+            Main.uiGroup.add_style_class_name('dark-primary');
+        } else {
+            Main.uiGroup.add_style_class_name('light-primary');
+        }
+        Main.uiGroup.add_style_class_name(`${this.themeValue}-theme`);
+    }
+
     regenerateStylesheet() {
-        log('Doing regenerate stylesheet');
+        this.themeContext.set_theme(new St.Theme());
+        this.theme.unload_stylesheet(Gio.file_new_for_path(THEME_PATH));
+        this.theme.unload_stylesheet(Me.stylesheet);
         // First start by grabbing the current material shell stylesheet content
         this.getStylesheetContent(content => {
             //Replace in the content the color we want to replace
             //content = content.replace(/#3f51b5/g, '#FF1483');
-            Main.uiGroup.remove_style_class_name('light-primary');
-            Main.uiGroup.remove_style_class_name('dark-primary');
-            Main.uiGroup.remove_style_class_name('light-theme');
-            Main.uiGroup.remove_style_class_name('primary-theme');
-
-            if (this.isColorDark(this.primary)) {
-                Main.uiGroup.add_style_class_name('dark-primary');
-            } else {
-                Main.uiGroup.add_style_class_name('light-primary');
-            }
-            Main.uiGroup.add_style_class_name(`${this.theme}-theme`);
 
             content = content.replace(/#3f51b5/g, this.primary); // color-primary
 
             //Save the new stylesheet content in a cache file inside the cache directory
             this.replaceContentOfTheme(content, themedStylesheet => {
                 // Once the theme saved reload the theme by replacing the original stylesheet by the new one
-                let themeContext = St.ThemeContext.get_for_stage(global.stage);
-                let previousTheme = themeContext.get_theme();
-
-                let theme = new St.Theme({
-                    application_stylesheet: Main.getThemeStylesheet(),
-                    default_stylesheet: Main._getDefaultStylesheet()
-                });
-
-                if (previousTheme) {
-                    let customStylesheets = previousTheme.get_custom_stylesheets();
-
-                    for (let i = 0; i < customStylesheets.length; i++) {
-                        //The test to replace the original stylesheet is here
-                        if (customStylesheets[i] === Me.stylesheet) {
-                            theme.load_stylesheet(themedStylesheet);
-                        } else {
-                            theme.load_stylesheet(customStylesheets[i]);
-                        }
-                    }
-                }
-                themeContext.set_theme(theme);
+                this.theme.load_stylesheet(themedStylesheet);
+                this.themeContext.set_theme(this.theme);
             });
         });
     }
@@ -141,6 +134,7 @@ var ThemeModule = class ThemeModule {
     }
 
     disable() {
+        this.clearThemeClasses();
         this.settingsSignals.forEach(signal =>
             this.themeSettings.disconnect(signal)
         );
