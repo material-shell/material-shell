@@ -27,6 +27,12 @@ var TaskBar = GObject.registerClass(
             this.add_child(this.taskButtonContainer);
             this.superWorkspace = superWorkspace;
             this.connect('destroy', this._onDestroy.bind(this));
+            this.taskActiveIndicator.translation_y =
+                this.height - this.taskActiveIndicator.height;
+            this.connect('notify::height', () => {
+                this.taskActiveIndicator.translation_y =
+                    this.height - this.taskActiveIndicator.height;
+            });
             this.superWorkspaceSignals = [
                 superWorkspace.connect(
                     'windows-changed',
@@ -147,8 +153,6 @@ var TaskBar = GObject.registerClass(
                 this.taskButtonContainer.add_child(item);
                 return item;
             });
-            this.taskActiveIndicator.translation_y =
-                this.height - this.taskActiveIndicator.height;
         }
 
         updateCurrentTaskBar() {
