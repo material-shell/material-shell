@@ -1,10 +1,12 @@
-const { Clutter, GLib, St } = imports.gi;
+const { Clutter, GLib, St, Shell } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
+const { SuperWindow } = Me.imports.superWorkspace.superWindow;
+
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.utils.index;
 const WindowUtils = Me.imports.utils.windows;
@@ -22,12 +24,12 @@ var SuperWorkspace = class SuperWorkspace {
         this.monitor = monitor;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
-        this.windows = [];
+        this.tileableList = [];
+        this.floatableList = [];
         this.uiVisible = visible;
         const Layout = global.tilingManager.getLayoutByKey('maximized');
         this.tilingLayout = new Layout(this);
         this.frontendContainer = new St.Widget();
-
         this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
 
         // Only emit window changed after EMIT_DEBOUNCE_DELAY ms without call
@@ -45,54 +47,7 @@ var SuperWorkspace = class SuperWorkspace {
             });
         }
 
-        this.backgroundContainer = new St.Widget();
-
-        this.bgManager = new Background.BackgroundManager({
-            container: this.backgroundContainer,
-            monitorIndex: this.monitor.index,
-            vignette: false
-        });
-
-        this.categorizedAppCard = new St.Widget();
-        this.backgroundStackLayout = new Stack({
-            x: monitor.x,
-            y: monitor.y,
-            width: monitor.width,
-            height: monitor.height,
-            // This St.Bin fix an Incredible Bug which the source is Unknown that make the AppCard to fill his parent when clicking on app icon SOMETIMES.
-            // Since the St.Bin take the size of the AppCard the bug is invisible...
-            children: [new St.Bin({ child: this.categorizedAppCard })]
-        });
-
-        this.backgroundContainer.add_child(this.backgroundStackLayout);
-
-        this.windowFocused = null;
-
-        this.focusEventId = global.display.connect(
-            'notify::focus-window',
-            () => {
-                let windowFocused = global.display.focus_window;
-                if (!this.windows.includes(windowFocused)) {
-                    return;
-                }
-
-                /*
-                 If the current superWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
-                 We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
-                */
-                if (
-                    this.windowFocused &&
-                    !this.windowFocused.get_compositor_private()
-                ) {
-                    return;
-                }
-
-                if (windowFocused.is_attached_dialog()) {
-                    windowFocused = windowFocused.get_transient_for();
-                }
-                this.onFocus(windowFocused);
-            }
-        );
+        this.focusedIndex = 0;
 
         this.workAreaChangedId = global.display.connect(
             'workareas-changed',
@@ -106,19 +61,28 @@ var SuperWorkspace = class SuperWorkspace {
         );
         this.frontendContainer.add_child(this.panel);
         Main.layoutManager.uiGroup.add_child(this.frontendContainer);
-        Main.layoutManager._backgroundGroup.add_child(this.backgroundContainer);
         this.updateTopBarPositionAndSize();
         this.updateUI();
     }
 
     destroy() {
         if (this.frontendContainer) this.frontendContainer.destroy();
-        if (this.backgroundContainer) this.backgroundContainer.destroy();
-        global.display.disconnect(this.focusEventId);
         global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
         this.destroyed = true;
+    }
+
+    get focusedDrawable() {
+        return this.tileableList[this.focusedIndex];
+    }
+
+    get superWindowList() {
+        return this.superWorkspaceManager.superWindowList.filter(
+            superWindow => {
+                return superWindow.superWorkspace === this;
+            }
+        );
     }
 
     isTopBarVisible() {
@@ -136,95 +100,114 @@ var SuperWorkspace = class SuperWorkspace {
         this.panel.set_width(workArea.width);
     }
 
-    addWindow(window) {
-        if (this.windows.indexOf(window) >= 0) return;
+    addSuperWindow(superWindow) {
+        if (this.superWindowList.indexOf(superWindow) >= 0) return;
 
-        window.superWorkspace = this;
-        window.connect('focus', () => {});
-        WindowUtils.updateTitleBarVisibility(window);
-        const oldWindows = [...this.windows];
-        this.windows.push(window);
+        superWindow.superWorkspace = this;
+        WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
+        if (superWindow.isDialog) {
+            const oldFloatableList = [...this.floatableList];
+            this.floatableList.push(superWindow);
+            this.emit(
+                'floatableList-changed',
+                this.floatableList,
+                oldFloatableList
+            );
+        } else {
+            const oldTileableList = [...this.tileableList];
+            this.tileableList.push(superWindow);
+            this.emit(
+                'tileableList-changed',
+                this.tileableList,
+                oldTileableList
+            );
+            this.onFocusTileable(superWindow);
+        }
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
         if (window.grabbed || !this.windowFocused) {
         } */
-
-        this.onFocus(window);
-
-        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
-    removeWindow(window) {
-        let windowIndex = this.windows.indexOf(window);
-        if (windowIndex === -1) return;
-
-        const oldWindows = [...this.windows];
-
-        this.windows.splice(windowIndex, 1);
-        // If there's no more focused window on this workspace focus the last one
-        if (window === this.windowFocused) {
+    removeSuperWindow(superWindow) {
+        if (this.superWindowList.indexOf(superWindow) === -1) return;
+        if (superWindow.isDialog) {
+            const oldFloatableList = [...this.floatableList];
+            this.floatableList.splice(
+                this.floatableList.indexOf(superWindow),
+                1
+            );
+            this.emit(
+                'floatableList-changed',
+                this.floatableList,
+                oldFloatableList
+            );
+        } else {
+            const oldTileableList = [...this.tileableList];
+            this.tileableList.splice(this.tileableList.indexOf(superWindow), 1);
+            this.emit(
+                'tileableList-changed',
+                this.tileableList,
+                oldTileableList
+            );
+        }
+        // If there's no more focused superWindow on this workspace focus the last one
+        if (superWindow === this.focusedDrawable) {
             this.focusLastWindow();
         }
-        this.emitWindowsChangedDebounced(this.windows, oldWindows);
     }
 
     swapWindows(firstWindow, secondWindow) {
-        const firstIndex = this.windows.indexOf(firstWindow);
-        const secondIndex = this.windows.indexOf(secondWindow);
-        const oldWindows = [...this.windows];
-        this.windows[firstIndex] = secondWindow;
-        this.windows[secondIndex] = firstWindow;
-        this.emitWindowsChanged(this.windows, oldWindows);
+        const firstIndex = this.superWindowList.indexOf(firstWindow);
+        const secondIndex = this.superWindowList.indexOf(secondWindow);
+        const oldWindows = [...this.superWindowList];
+        this.superWindowList[firstIndex] = secondWindow;
+        this.superWindowList[secondIndex] = firstWindow;
+        this.emitWindowsChanged(this.superWindowList, oldWindows);
     }
 
-    focusNext() {
-        let windowFocusIndex = this.windows.indexOf(this.windowFocused);
-        if (windowFocusIndex === this.windows.length - 1) {
+    focusNextTileable() {
+        if (this.focusedIndex === this.tileableList.length - 1) {
             return;
         }
-        this.windows[windowFocusIndex + 1].activate(global.get_current_time());
+        this.onFocusTileable(this.tileableList[this.focusedIndex + 1]);
     }
 
-    focusPrevious() {
-        let windowFocusIndex = this.windows.indexOf(this.windowFocused);
-        if (windowFocusIndex === 0) {
+    focusPreviousTileable() {
+        if (this.focusedIndex === 0) {
             return;
         }
-        this.windows[windowFocusIndex - 1].activate(global.get_current_time());
+        this.onFocusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    onFocus(windowFocused) {
-        if (windowFocused === this.windowFocused) {
+    onFocusTileable(superDrawable) {
+        if (superDrawable === this.focusedDrawable) {
             return;
         }
-        const oldFocusedWindow = this.windowFocused;
-        this.windowFocused = windowFocused;
-        this.indexFocused = this.windows.indexOf(this.windowFocused);
-        this.emit(
-            'window-focused-changed',
-            this.windowFocused,
-            oldFocusedWindow
-        );
+        const oldFocusedDrawable = this.focusedDrawable;
+        this.focusedIndex = this.tileableList.indexOf(superDrawable);
+        log(superDrawable);
+        this.emit('window-focused-changed', superDrawable, oldFocusedDrawable);
     }
 
     setWindowBefore(windowToMove, windowRelative) {
-        const oldWindows = [...this.windows];
-        let windowToMoveIndex = this.windows.indexOf(windowToMove);
-        this.windows.splice(windowToMoveIndex, 1);
+        const oldWindows = [...this.superWindowList];
+        let windowToMoveIndex = this.superWindowList.indexOf(windowToMove);
+        this.superWindowList.splice(windowToMoveIndex, 1);
 
-        let windowRelativeIndex = this.windows.indexOf(windowRelative);
-        this.windows.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChanged(this.windows, oldWindows);
+        let windowRelativeIndex = this.superWindowList.indexOf(windowRelative);
+        this.superWindowList.splice(windowRelativeIndex, 0, windowToMove);
+        this.emitWindowsChanged(this.superWindowList, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
-        const oldWindows = [...this.windows];
-        let windowToMoveIndex = this.windows.indexOf(windowToMove);
-        this.windows.splice(windowToMoveIndex, 1);
+        const oldWindows = [...this.superWindowList];
+        let windowToMoveIndex = this.superWindowList.indexOf(windowToMove);
+        this.superWindowList.splice(windowToMoveIndex, 1);
 
-        let windowRelativeIndex = this.windows.indexOf(windowRelative);
-        this.windows.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChanged(this.windows, oldWindows);
+        let windowRelativeIndex = this.superWindowList.indexOf(windowRelative);
+        this.superWindowList.splice(windowRelativeIndex + 1, 0, windowToMove);
+        this.emitWindowsChanged(this.superWindowList, oldWindows);
     }
 
     nextTiling(direction) {
@@ -240,61 +223,19 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     shouldPanelBeVisible() {
-        let containFullscreenWindow = this.windows.some(metaWindow => {
-            return metaWindow.is_fullscreen();
+        let containFullscreenWindow = this.superWindowList.some(superWindow => {
+            return superWindow.metaWindow.is_fullscreen();
         });
         return (
             !containFullscreenWindow &&
-            (this.superWorkspaceManager && !this.superWorkspaceManager.noUImode)
+            this.superWorkspaceManager &&
+            !this.superWorkspaceManager.noUImode
         );
     }
 
     updateUI() {
         this.frontendContainer.visible = this.uiVisible;
         this.panel.visible = this.uiVisible && this.shouldPanelBeVisible();
-        this.backgroundContainer.visible = this.uiVisible;
-    }
-
-    revealBackground() {
-        this.windows.forEach(window => {
-            window.minimize();
-        });
-        this.backgroundShown = true;
-
-        global.stage.set_key_focus(this.categorizedAppCard);
-        this.backgroundSignals = [];
-        let signalId = global.stage.connect('notify::key-focus', () => {
-            let focus = global.stage.get_key_focus();
-            if (focus !== this.categorizedAppCard) {
-                this.unRevealBackground();
-            }
-        });
-        this.backgroundSignals.push({ from: global.stage, id: signalId });
-        signalId = this.categorizedAppCard.connect(
-            'key-press-event',
-            (_, event) => {
-                if (event.get_key_symbol() == Clutter.KEY_Escape) {
-                    this.unRevealBackground();
-                }
-
-                return Clutter.EVENT_PROPAGATE;
-            }
-        );
-        this.backgroundSignals.push({
-            from: this.categorizedAppCard,
-            id: signalId
-        });
-    }
-
-    unRevealBackground() {
-        this.windows.forEach(window => {
-            window.unminimize();
-        });
-        this.backgroundSignals.forEach(signal => {
-            signal.from.disconnect(signal.id);
-        });
-        this.backgroundSignals = [];
-        this.backgroundShown = false;
     }
 
     emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
@@ -343,23 +284,26 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     focusLastWindow() {
-        if (this.windows.length) {
+        if (this.superWindowList.length) {
             let lastWindow =
-                this.windows[this.indexFocused] || this.windows.slice(-1)[0];
+                this.superWindowList[this.focusedIndex] ||
+                this.superWindowList.slice(-1)[0];
 
-            this.onFocus(lastWindow);
+            this.onFocusTileable(lastWindow);
         } else {
-            this.onFocus(null);
+            this.onFocusTileable(null);
         }
     }
 
     handleExtensionLoaded() {
-        this.windows
+        log('handleExtensionLoaded');
+        /* this.windows
             .map(metaWindow => metaWindow.get_compositor_private())
             .filter(window => window)
             .forEach(window => {
+                log('change display');
                 this.isDisplayed() ? window.show() : window.hide();
-            });
+            }); */
 
         this.focusLastWindow();
     }

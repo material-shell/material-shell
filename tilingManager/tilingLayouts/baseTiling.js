@@ -14,10 +14,16 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
         this.superWorkspace = superWorkspace;
         this.monitor = superWorkspace.monitor;
-        this.windowChangedId = this.superWorkspace.connect(
-            'windows-changed',
+        this.tileableListChangedId = this.superWorkspace.connect(
+            'tileableList-changed',
             (_, windows, oldWindows) => {
-                this.onWindowsChanged(windows, oldWindows);
+                this.onTileRegulars(windows, oldWindows);
+            }
+        );
+        this.floatableListChangedId = this.superWorkspace.connect(
+            'floatableList-changed',
+            (_, windows, oldWindows) => {
+                this.onTileDialogs(windows, oldWindows);
             }
         );
         this.windowFocusedChangedId = this.superWorkspace.connect(
@@ -32,75 +38,73 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
 
         this.themeSettings = getSettings('theme');
-        this.doDialogBackdrop = this.themeSettings.get_boolean('do-dialog-backdrop');
-        this.dialogSetting = this.themeSettings.connect('changed::do-dialog-backdrop', schema => {
-            this.doDialogBackdrop = schema.get_boolean('do-dialog-backdrop');
-            this.onTile();
-        });
+        this.doDialogBackdrop = this.themeSettings.get_boolean(
+            'do-dialog-backdrop'
+        );
+        this.dialogSetting = this.themeSettings.connect(
+            'changed::do-dialog-backdrop',
+            schema => {
+                this.doDialogBackdrop = schema.get_boolean(
+                    'do-dialog-backdrop'
+                );
+                this.onTile();
+            }
+        );
     }
 
     onWorkAreasChanged() {
-        this.onTile();
-    }
-
-    onWindowsChanged() {
-        if (Me.loaded) {
-            this.onTile();
-        }
+        this.onTileRegulars(this.superWorkspace.tileableList);
+        this.onTileDialogs(this.superWorkspace.floatableList);
     }
 
     onFocusChanged() {}
 
-    onTile() {
-        const {
-            dialogWindows,
-            regularWindows
-        } = this.getDialogAndRegularWindows();
-        this.onTileRegulars(regularWindows);
-        this.onTileDialogs(dialogWindows);
-    }
-
-    onTileRegulars(windows) {
-        windows
-            .filter(window => window.get_maximized())
-            .forEach(window => {
-                Main.wm.skipNextEffect(window.get_compositor_private());
-                window.unmaximize(Meta.MaximizeFlags.BOTH);
-            });
-
+    onTileRegulars(tileableList) {
+        if (Me.loaded) {
+            tileableList
+                .filter(superWindow => superWindow.metaWindow.get_maximized())
+                .forEach(superWindow => {
+                    Main.wm.skipNextEffect(
+                        superWindow.metaWindow.get_compositor_private()
+                    );
+                    superWindow.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                });
+        }
         // Define windows sizes and positions
     }
 
     onTileDialogs(windows) {
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
-        windows.forEach(metaWindow => {
-            if (metaWindow.grabbed) return;
-            let window = metaWindow.get_compositor_private();
-            if (!window) return;
-            if (!window.backdrop && this.doDialogBackdrop) {
-                window.backdrop = new Backdrop(window);
-            } else if (window.backdrop) {
-                if (this.doDialogBackdrop) {
-                    window.backdrop.show();
-                } else {
-                    window.backdrop.hide();
-                }
-            }
-            window.backdrop.fillWorkArea();
-            this.moveMetaWindow(
-                metaWindow,
-                workArea.x + workArea.width / 2 - window.width / 2,
-                workArea.y + workArea.height / 2 - window.height / 2
+        if (Me.loaded) {
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.monitor.index
             );
-        });
+            windows.forEach(superWindow => {
+                if (superWindow.metaWindow.grabbed) return;
+                let window = superWindow.metaWindow.get_compositor_private();
+                if (!window) return;
+                /* if (!window.backdrop && this.doDialogBackdrop) {
+                    window.backdrop = new Backdrop(window);
+                } else if (window.backdrop) {
+                    if (this.doDialogBackdrop) {
+                        window.backdrop.show();
+                    } else {
+                        window.backdrop.hide();
+                    }
+                }
+                window.backdrop.fillWorkArea(); */
+                superWindow.setPosition(
+                    workArea.x + workArea.width / 2 - window.width / 2,
+                    workArea.y + workArea.height / 2 - window.height / 2
+                );
+            });
+        }
     }
 
     moveMetaWindow(metaWindow, x, y) {
-        this.callSafely(metaWindow, () => {
+        this.metaWindow.superWindow.setPosition(x, y);
+        /* this.callSafely(metaWindow, () => {
             metaWindow.move_frame(true, x, y);
-        });
+        }); */
     }
 
     moveAndResizeMetaWindow(metaWindow, x, y, width, height, animate, noGaps) {
@@ -310,7 +314,8 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onDestroy() {
-        this.superWorkspace.disconnect(this.windowChangedId);
+        this.superWorkspace.disconnect(this.tileableListChangedId);
+        this.superWorkspace.disconnect(this.floatableListChangedId);
         this.superWorkspace.disconnect(this.windowFocusedChangedId);
         this.themeSettings.disconnect(this.dialogSetting);
         global.display.disconnect(this.workAreaChangedId);
@@ -320,11 +325,11 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogWindows = [];
         let regularWindows = [];
 
-        for (let window of this.superWorkspace.windows) {
-            if (this.isDialog(window)) {
-                dialogWindows.push(window);
+        for (let superWindow of this.superWorkspace.superWindowList) {
+            if (this.isDialog(superWindow.metaWindow)) {
+                dialogWindows.push(superWindow);
             } else {
-                regularWindows.push(window);
+                regularWindows.push(superWindow);
             }
         }
 

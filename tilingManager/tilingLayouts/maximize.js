@@ -26,9 +26,10 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        log('onFocusChanged', this.superWorkspace.monitor.index);
-        if (!this.superWorkspace.windows.includes(oldWindowFocused)) return;
-        if (!this.isDialog(windowFocused)) {
+        log('focus changed', windowFocused, oldWindowFocused);
+        if (!this.superWorkspace.superWindowList.includes(oldWindowFocused))
+            return;
+        if (!windowFocused.isDialog) {
             const { regularWindows } = this.getDialogAndRegularWindows();
             const oldIndex = this.currentWindowIndex;
             this.currentWindowIndex = regularWindows.indexOf(windowFocused);
@@ -37,8 +38,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onWindowsChanged(windows, oldWindows) {
-        log('onWindowsChanged', this.superWorkspace.monitor.index);
-
         let regularWindows = windows.filter(window => !this.isDialog(window));
         let oldRegularWindows = oldWindows.filter(
             window => !this.isDialog(window)
@@ -75,39 +74,35 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
     }
 
-    onTileRegulars(windows) {
+    onTileRegulars(tileableList) {
         if (this.animationInProgress) {
             return;
         }
-        windows.forEach((window, index) => {
-            const actor = window.get_compositor_private();
+        tileableList.forEach((drawable, index) => {
+            const actor = drawable.actor;
             // Unclip windows in maximize
             if (actor.has_clip) {
                 actor.set_z_position(0);
                 actor.remove_clip();
             }
-            if (!window.grabbed && !window.maximized_horizontally) {
-                Main.wm.skipNextEffect(actor);
-                window.maximize(Meta.MaximizeFlags.BOTH);
+            if (!drawable.grabbed && !drawable.tiledMaximized) {
+                drawable.tileMaximize();
             }
 
-            if (
-                index !== this.currentWindowIndex ||
-                !this.superWorkspace.isDisplayed()
-            ) {
-                log('hide onTileRegulars', this.superWorkspace.monitor.index);
-                actor.hide();
+            if (index !== this.currentWindowIndex) {
+                this.hideWindow(drawable);
             } else {
-                actor.show();
+                this.showWindow(drawable);
             }
         });
     }
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.windows.forEach(window => {
-            if (window !== this.windowNotDialogFocused) {
-                window.get_compositor_private().show();
+        this.superWorkspace.superWindowList.forEach(superWindow => {
+            if (superWindow !== this.windowNotDialogFocused) {
+                //window.get_compositor_private().show();
+                this.showWindow(superWindow);
             }
         });
     }
@@ -116,7 +111,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         if (newIndex === oldIndex) return;
 
         const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
-
+        this.leftWindowContainer.remove_all_children();
+        this.rightWindowContainer.remove_all_children();
         const containers = [
             this.leftWindowContainer,
             this.rightWindowContainer
@@ -134,19 +130,22 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         if (oldMetaWindow) {
             let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
             oldWindowClone.reparent(oldContainer);
-            oldMetaWindow.get_compositor_private().hide();
+            //oldMetaWindow.get_compositor_private().hide();
+            this.hideWindow(oldMetaWindow);
         }
 
         if (newMetaWindow) {
             let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
             newWindowClone.reparent(newContainer);
-            newMetaWindow.get_compositor_private().hide();
+            //newMetaWindow.get_compositor_private().hide();
+            this.hideWindow(newMetaWindow);
         }
         // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-
+        //this.overContainer.set_style('background:red;');
+        //newContainer.set_style('background:blue;');
         if (!this.animationInProgress) {
             this.rightWindowContainer.set_position(workArea.width, 0);
             this.transitionContainer.set_position(
@@ -184,6 +183,22 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 }
             });
         }
+    }
+
+    showWindow(superWindow) {
+        superWindow.actor.show();
+        //if (!window.minimized) return;
+        /*  log('showWindow', window.title);
+        Main.wm.skipNextEffect(window.get_compositor_private());
+        window.unminimize(); */
+    }
+
+    hideWindow(superWindow) {
+        //if (window.minimized) return;
+        superWindow.actor.hide();
+        /* log('hideWindow', window.title);
+        Main.wm.skipNextEffect(window.get_compositor_private());
+        window.minimize(); */
     }
 
     endTransition() {

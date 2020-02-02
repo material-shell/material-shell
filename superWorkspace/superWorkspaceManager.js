@@ -8,18 +8,23 @@ const {
     SuperWorkspaceWithCategory
 } = Me.imports.superWorkspace.superWorkspaceWithCategory;
 const { WorkspaceList } = Me.imports.widget.workspaceList;
+const { SuperWindow } = Me.imports.superWorkspace.superWindow;
 
 /* exported SuperWorkspaceManager */
 var SuperWorkspaceManager = class SuperWorkspaceManager {
     constructor(appsByCategory) {
+        log('new superWorkspaceManager');
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.superWorkspaces = [];
+        this.superWindowList = [];
         this.appsByCategory = appsByCategory;
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
+        this.metaWindowFocused = null;
+        // First build all the Categorized superWorkspaces on the primary screen
         this.categoryList.forEach((category, index) => {
-            log('new category workspace');
+            log(`new category workspace for ${category.key}`);
             let superWorkspace = new SuperWorkspaceWithCategory(
                 this,
                 Main.layoutManager.primaryMonitor,
@@ -27,46 +32,27 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 category
             );
             this.superWorkspaces.push(superWorkspace);
-            let workspace = this.workspaceManager.append_new_workspace(
+            let workspace = this.workspaceManager.get_workspace_by_index(index);
+            log(workspace.superWorkspaceKey);
+            if (workspace.superWorkspaceKey === category.key) {
+                log('Found previous workspace no need to create a new one');
+                workspace._keepAliveId = true;
+                return;
+            }
+            log('Create a new workspace for category');
+            workspace = this.workspaceManager.append_new_workspace(
                 false,
                 global.get_current_time()
             );
             workspace._keepAliveId = true;
+            workspace.superWorkspaceKey = category.key;
             this.workspaceManager.reorder_workspace(workspace, index);
         });
-        /* for (let [key, category] of Object.entries(WorkspaceCategories)) {
-            if (!this.appsByCategory[key].length) continue;
-            if (category.primary) {
-                let superWorkspace = new SuperWorkspaceWithCategory(
-                    this,
-                    Main.layoutManager.primaryMonitor,
-                    false,
-                    key,
-                    category
-                );
-                if (this.categoryKeyOrderedList.indexOf(key) === -1) {
-                    this.categoryKeyOrderedList.push(key);
-                }
-                this.superWorkspaces.push(superWorkspace);
-            } else {
-                // For Each monitor
-                for (let monitor of Main.layoutManager.monitors) {
-                    if (Main.layoutManager.primaryIndex === monitor.index) {
-                        continue;
-                    }
-                    let superWorkspace = new SuperWorkspaceWithCategory(
-                        this,
-                        monitor,
-                        true,
-                        key,
-                        category
-                    );
-                    this.superWorkspaces.push(superWorkspace);
-                }
-            }
-        } */
+
+        // then build the "normal" superWorkspaces for every monitors
         for (let monitor of Main.layoutManager.monitors) {
             if (Main.layoutManager.primaryIndex === monitor.index) {
+                // On the primary we fill the rest of the legacy workspace length with normal superWorkspaces
                 for (
                     let i = 0;
                     i <
@@ -99,18 +85,22 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             this.dispatchExistingWindows();
             return GLib.SOURCE_REMOVE;
         });
-        log('super workspace manager created');
+        log(
+            'super workspace manager created',
+            this.workspaceManager.n_workspaces
+        );
     }
 
     destroy() {
         for (var i = 0; i < this.workspaceManager.n_workspaces; i++) {
             let workspace = this.workspaceManager.get_workspace_by_index(i);
-            if (workspace._keepAliveId) {
+            /* if (workspace._keepAliveId) {
                 this.workspaceManager.remove_workspace(
                     workspace,
                     global.get_current_time()
                 );
-            }
+            } */
+            delete workspace._keepAliveId;
         }
         for (let superWorkspace of this.superWorkspaces) {
             superWorkspace.destroy();
@@ -138,41 +128,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         });
     }
 
-    prepareWorkspaces() {
-        let diff = Math.abs(
-            this.superWorkspaces.filter(
-                superWorkspace => superWorkspace.category.primary
-            ).length - this.workspaceManager.n_workspaces
-        );
-        let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
-        for (var i = 0; i < diff; i++) {
-            if (
-                this.superWorkspaces.length > this.workspaceManager.n_workspaces
-            ) {
-                this.workspaceManager.append_new_workspace(
-                    false,
-                    global.get_current_time()
-                );
-            } else {
-                let workspaceIndexToRemove =
-                    this.workspaceManager.n_workspaces - 1;
-                if (workspaceIndexToRemove === activeWorkspaceIndex) {
-                    Main.wm._blockAnimations = true;
-                    this.workspaceManager
-                        .get_workspace_by_index(0)
-                        .activate(global.get_current_time());
-                    Main.wm._blockAnimations = false;
-                }
-                this.workspaceManager.remove_workspace(
-                    this.workspaceManager.get_workspace_by_index(
-                        this.workspaceManager.n_workspaces - 1
-                    ),
-                    global.get_current_time()
-                );
-            }
-        }
-    }
-
     onWorkspacesChange() {
         const nbOfDynamicWorkspaces =
             this.workspaceManager.n_workspaces -
@@ -182,20 +137,18 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         const nbOfDiff =
             nbOfDynamicWorkspaces - this.dynamicSuperWorkspaces.length;
         if (nbOfDiff === 0) return;
-        let call;
-        if (nbOfDiff > 0) {
-            log('there is more workspace');
-            call = () => {
+
+        for (let i = 0; i < Math.abs(nbOfDiff); i++) {
+            if (nbOfDiff > 0) {
+                log('there is more workspace');
                 let superWorkspace = new SuperWorkspace(
                     this,
                     Main.layoutManager.primaryMonitor,
                     true
                 );
                 this.superWorkspaces.push(superWorkspace);
-            };
-        } else {
-            log('there is less workspace');
-            call = () => {
+            } else {
+                log('there is less workspace');
                 let superWorkspaceToDestroy = this.dynamicSuperWorkspaces[
                     this.dynamicSuperWorkspaces.length - 1
                 ];
@@ -204,11 +157,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                     superWorkspaceToDestroy
                 );
                 this.superWorkspaces.splice(indexToRemove, 1);
-            };
-        }
-        for (let i = 0; i < Math.abs(nbOfDiff); i++) {
-            log('call');
-            call();
+            }
         }
         this.emit('dynamic-super-workspaces-changed');
     }
@@ -264,8 +213,8 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 categoryKey
             );
             let workspace = this.workspaceManager.get_workspace_by_index(index);
-            for (let metaWindow of superWorkspace.windows) {
-                metaWindow.change_workspace(workspace);
+            for (let superWindow of superWorkspace.superWindowList) {
+                superWindow.metaWindow.change_workspace(workspace);
             }
         });
     }
@@ -283,11 +232,6 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     getActiveSuperWorkspace() {
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
-        log(
-            'activeWorkspaceIndex',
-            activeWorkspaceIndex,
-            this.primarySuperWorkspaces[activeWorkspaceIndex].category
-        );
         return this.primarySuperWorkspaces[activeWorkspaceIndex];
     }
 
@@ -320,26 +264,66 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         }
     }
 
-    onNewWindow(metaWindow) {
+    onNewMetaWindow(metaWindow) {
+        log('onNewMetaWindow');
         if (!this._handleWindow(metaWindow)) return;
-        let windowActor = metaWindow.get_compositor_private();
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
-        if (Me.loaded) {
-            metaWindow.get_compositor_private().show();
+        let superWindow = this.superWindowList.find(superWindow => {
+            return (
+                superWindow.windowDescription === metaWindow.get_description()
+            );
+        });
+        if (superWindow) {
+            superWindow.setWindow(metaWindow);
+        } else {
+            let app = this.windowTracker.get_window_app(metaWindow);
+            log(app.get_id(), metaWindow.get_description());
+            let superWindow = new SuperWindow(
+                app.get_id(),
+                metaWindow.get_description(),
+                metaWindow
+            );
+            log(superWindow.title);
+            this.addWindowToAppropriateSuperWorkspace(superWindow);
         }
-        this.addWindowToAppropriateSuperWorkspace(metaWindow);
 
         metaWindow.connect('unmanaged', () => {
             if (metaWindow.handledByMaterialShell && metaWindow.superWorkspace)
-                metaWindow.superWorkspace.removeWindow(metaWindow);
+                metaWindow.superWorkspace.removeSuperWindow(metaWindow);
         });
     }
 
-    addWindowToAppropriateSuperWorkspace(metaWindow) {
-        const windowMonitorIndex = metaWindow.get_monitor();
-        const currentWindowWorkspace = metaWindow.get_workspace();
+    onFocusMetaWindow(metaWindow) {
+        log('onFocusMetaWindow', metaWindow);
+        /*
+             If the current superWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
+             We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
+            */
+        if (
+            this.metaWindowFocused &&
+            !this.metaWindowFocused.get_compositor_private()
+        ) {
+            return;
+        }
+
+        if (!metaWindow) return;
+
+        if (metaWindow.is_attached_dialog()) {
+            metaWindow = metaWindow.get_transient_for();
+        }
+        this.metaWindowFocused = metaWindow;
+        if (metaWindow.superWindow && !metaWindow.superWindow.isDialog) {
+            metaWindow.superWindow.superWorkspace.onFocusTileable(
+                metaWindow.superWindow
+            );
+        }
+    }
+
+    addWindowToAppropriateSuperWorkspace(superWindow) {
+        const windowMonitorIndex = superWindow.metaWindow.get_monitor();
+        const currentWindowWorkspace = superWindow.metaWindow.get_workspace();
         let superWorkspace;
 
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
@@ -352,7 +336,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             ];
         }
         log('currentWindowWorkspace.index()', currentWindowWorkspace.index());
-        this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
+        this.setWindowToSuperWorkspace(superWindow, superWorkspace);
         /* if (!metaWindow.handledByMaterialShell) return;
 
         const windowMonitorIndex = metaWindow.get_monitor();
@@ -394,7 +378,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     dispatchExistingWindows() {
         global.get_window_actors().forEach(windowActor => {
-            this.onNewWindow(windowActor.metaWindow);
+            this.onNewMetaWindow(windowActor.metaWindow);
         });
     }
 
@@ -430,18 +414,18 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
     }
 
-    setWindowToSuperWorkspace(metaWindow, newSuperWorkspace) {
-        let oldSuperWorkspace = metaWindow.superWorkspace;
+    setWindowToSuperWorkspace(superWindow, newSuperWorkspace) {
+        let oldSuperWorkspace = superWindow.superWorkspace;
 
         if (oldSuperWorkspace) {
             if (oldSuperWorkspace === newSuperWorkspace) {
                 return;
             } else {
-                oldSuperWorkspace.removeWindow(metaWindow);
+                oldSuperWorkspace.removeSuperWindow(superWindow);
             }
         }
 
-        newSuperWorkspace.addWindow(metaWindow);
+        newSuperWorkspace.addSuperWindow(superWindow);
     }
 
     _handleWindow(metaWindow) {

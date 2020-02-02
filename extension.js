@@ -1,4 +1,4 @@
-const { GLib } = imports.gi;
+const { GLib, St } = imports.gi;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
@@ -35,7 +35,7 @@ function enable() {
     Main.wm._blockAnimations = true;
     Me.loaded = false;
     Me.stateManager = new StateManager();
-
+    St.set_slow_down_factor(2);
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         //Then disable incompatibles extensions;

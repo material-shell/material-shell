@@ -23,7 +23,7 @@ var HotKeysModule = class HotKeysModule {
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                superWorkspace.focusPrevious();
+                superWorkspace.focusPreviousTileable();
             }
         );
 
@@ -40,7 +40,7 @@ var HotKeysModule = class HotKeysModule {
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                superWorkspace.focusNext();
+                superWorkspace.focusNextTileable();
             }
         );
 
@@ -99,9 +99,9 @@ var HotKeysModule = class HotKeysModule {
                         : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                let currentFocusIndex = superWorkspace.windows.indexOf(
-                    superWorkspace.windowFocused
-                );
+                let currentFocusIndex = superWorkspace.superWindowList
+                    .map(superWindow => superWindow.metaWindow)
+                    .indexOf(superWorkspace.windowFocused);
                 if (currentFocusIndex > 0) {
                     let previousMetaWindows =
                         superWorkspace.windows[currentFocusIndex - 1];

@@ -28,10 +28,9 @@ var TaskBar = GObject.registerClass(
             this.superWorkspace = superWorkspace;
             this.connect('destroy', this._onDestroy.bind(this));
             this.superWorkspaceSignals = [
-                superWorkspace.connect(
-                    'windows-changed',
-                    this.onWindowsChanged.bind(this)
-                ),
+                superWorkspace.connect('tileableList-changed', () => {
+                    this.onTileableListChange();
+                }),
                 superWorkspace.connect(
                     'window-focused-changed',
                     this.onFocusChanged.bind(this)
@@ -43,7 +42,7 @@ var TaskBar = GObject.registerClass(
             this.items = [];
         }
 
-        onWindowsChanged() {
+        onTileableListChange() {
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -74,19 +73,12 @@ var TaskBar = GObject.registerClass(
             nextItem.actorContainer.add_style_class_name('active');
         }
 
-        getFilteredWindows() {
-            return this.superWorkspace.windows.filter(window => {
-                return !window.skip_taskbar;
-            });
-        }
-
         updateItems() {
             this.items.forEach(item => item.destroy());
-            this.items = this.getFilteredWindows().map(window => {
+            this.items = this.superWorkspace.tileableList.map(superDrawable => {
                 const item = new TaskBarItem(
-                    window,
-                    this.tracker.get_window_app(window),
-                    window === this.windowFocused
+                    superDrawable,
+                    superDrawable === this.windowFocused
                 );
                 item._draggable.connect('drag-begin', () => {
                     const initialIndex = this.getFilteredWindows().indexOf(
@@ -306,23 +298,25 @@ let TaskBarItem = GObject.registerClass(
         }
     },
     class InnerTaskBarItem extends MatButton {
-        _init(window, app, actif) {
+        _init(superDrawable, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`
             });
 
             this._delegate = this;
 
-            this.window = window;
-            this.app = app;
+            this.superDrawable = superDrawable;
+            this.app = superDrawable.app;
 
             this.connect('destroy', () => {
-                this.window.disconnect(this.connectSignal);
+                this.superDrawable.disconnect(this.connectSignal);
             });
-            // ICON
-            this.iconSize = 24;
-            this.icon = app.create_icon_texture(this.iconSize);
-            this.icon.style_class = 'app-icon';
+            if (this.app) {
+                // ICON
+                this.iconSize = 24;
+                this.icon = this.app.create_icon_texture(this.iconSize);
+                this.icon.style_class = 'app-icon';
+            }
 
             // TITLE
             this.title = new St.Label({
@@ -331,9 +325,12 @@ let TaskBarItem = GObject.registerClass(
             });
             this.updateTitle();
 
-            this.connectSignal = this.window.connect('notify::title', () => {
-                this.updateTitle();
-            });
+            this.connectSignal = this.superDrawable.connect(
+                'title-changed',
+                () => {
+                    this.updateTitle();
+                }
+            );
 
             // CLOSE BUTTON
             this.closeButton = new St.Button({
@@ -356,8 +353,9 @@ let TaskBarItem = GObject.registerClass(
                 y_align: Clutter.ActorAlign.CENTER,
                 vertical: false
             });
-
-            this.container.add_child(this.icon);
+            if (this.icon) {
+                this.container.add_child(this.icon);
+            }
             this.container.add_child(this.title);
             this.container.add_child(this.closeButton);
 
@@ -443,7 +441,7 @@ let TaskBarItem = GObject.registerClass(
 
         // Update the title and crop it if it's too long
         updateTitle() {
-            this.title.text = this.window.title;
+            this.title.text = this.superDrawable.title;
         }
 
         initDrag() {

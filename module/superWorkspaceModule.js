@@ -1,4 +1,4 @@
-const { Clutter, St, Meta, Shell } = imports.gi;
+const { Clutter, St, Meta, Shell, GLib } = imports.gi;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -11,6 +11,9 @@ const {
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const { WINDOW_ANIMATION_TIME } = imports.ui.windowManager;
+
+var WindowManager = imports.ui.windowManager;
+
 /* exported SuperWorkspaceModule */
 var SuperWorkspaceModule = class SuperWorkspaceModule {
     constructor() {
@@ -18,6 +21,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.enabled = false;
         this.signals = [];
         Main.wm.getWindowClone = function(metaWindow) {
+            log('getWindowClone', metaWindow);
             let windowActor = metaWindow.get_compositor_private();
             /* let actorContent = Shell.util_get_content_for_window_actor(
                 windowActor,
@@ -34,6 +38,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             });
 
             actorClone.add_constraint(constraint);
+            actorClone.window = metaWindow;
             return actorClone;
         };
 
@@ -108,9 +113,21 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
-                global.superWorkspaceManager.onNewWindow(metaWindow);
+                global.superWorkspaceManager.onNewMetaWindow(metaWindow);
             })
         });
+
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect('notify::focus-window', _ => {
+                global.superWorkspaceManager.onFocusMetaWindow(
+                    global.display.focus_window
+                );
+            })
+        });
+        global.superWorkspaceManager.onFocusMetaWindow(
+            global.display.focus_window
+        );
 
         this._listenToDispatchWindow();
 
@@ -162,8 +179,14 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
          *  1- Add a container around the animation container to clip around the primary monitor to prevent the animated windows to be visible in secondary screens
          *  2- Add the panels and backgrounds to the animated container so they will follow the transition animation.
          */
-        this.original_prepareWorkspaceSwitch = Main.wm._prepareWorkspaceSwitch;
-        Main.wm._prepareWorkspaceSwitch = function(from, to, direction) {
+        this.original_prepareWorkspaceSwitch =
+            WindowManager.WindowManager.prototype._prepareWorkspaceSwitch;
+        WindowManager.WindowManager.prototype._prepareWorkspaceSwitch = function(
+            from,
+            to,
+            direction
+        ) {
+            log('_prepareWorkspaceSwitch');
             if (this._switchData) return;
 
             let wgroup = Main.uiGroup;
@@ -209,9 +232,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
             switchData.superWorkspace.uiVisible = true;
             switchData.superWorkspace.updateUI();
-            switchData.superWorkspace.backgroundContainer.reparent(
-                switchData.curGroup
-            );
             switchData.superWorkspace.frontendContainer.reparent(
                 switchData.curGroup
             );
@@ -243,8 +263,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     global.superWorkspaceManager.primarySuperWorkspaces[
                         ws.index()
                     ];
-
-                info.superWorkspace.backgroundContainer.reparent(info.actor);
+                //info.superWorkspace.tilingLayout.onTile();
 
                 info.superWorkspace.uiVisible = true;
                 info.superWorkspace.updateUI();
@@ -255,15 +274,20 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
             for (let i = 0; i < windows.length; i++) {
                 let window = windows[i].get_meta_window();
-                let actor = this.getWindowClone(window);
 
                 if (!window.showing_on_its_workspace()) continue;
 
                 if (window.is_on_all_workspaces()) continue;
 
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    window.get_compositor_private().hide();
+                });
+
                 if (this._movingWindow && window == this._movingWindow) {
+                    let actor = this.getWindowClone(window);
                     actor.reparent(switchData.movingWindowBin);
                 } else if (window.get_workspace().index() == from) {
+                    let actor = this.getWindowClone(window);
                     actor.reparent(switchData.curGroup);
                 } else {
                     for (let dir of Object.values(Meta.MotionDirection)) {
@@ -273,6 +297,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                             info.index != window.get_workspace().index()
                         )
                             continue;
+                        let actor = this.getWindowClone(window);
 
                         actor.reparent(info.actor);
                         //actor.lower(info.superWorkspace.frontendContainer);
@@ -280,24 +305,23 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     }
                 }
             }
-
-            switchData.superWorkspace.frontendContainer.reparent(
-                switchData.curGroup
-            );
         };
-
+        WindowManager.WindowManager.prototype._shouldAnimateActor = function() {
+            return false;
+        };
         /*
          * Override the _finishWorkspaceSwitch to clear the changes of _prepareWorkspaceSwitch
          */
-        this.original_finishWorkspaceSwitch = Main.wm._finishWorkspaceSwitch;
+        this.original_finishWorkspaceSwitch =
+            WindowManager.WindowManager.prototype._finishWorkspaceSwitch;
 
-        Main.wm._finishWorkspaceSwitch = function(switchData) {
+        WindowManager.WindowManager.prototype._finishWorkspaceSwitch = function(
+            switchData
+        ) {
+            log('_finishWorkspaceSwitch');
             this._switchData = null;
             switchData.superWorkspace.frontendContainer.reparent(
                 Main.layoutManager.uiGroup
-            );
-            switchData.superWorkspace.backgroundContainer.reparent(
-                Main.layoutManager._backgroundGroup
             );
             switchData.superWorkspace.uiVisible = false;
             switchData.superWorkspace.updateUI();
@@ -307,9 +331,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 if (info) {
                     info.superWorkspace.frontendContainer.reparent(
                         Main.layoutManager.uiGroup
-                    );
-                    info.superWorkspace.backgroundContainer.reparent(
-                        Main.layoutManager._backgroundGroup
                     );
                 }
             }
@@ -325,51 +346,11 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             this._movingWindow = null;
         };
 
-        Main.wm.__switchWorkspace = function(shellwm, from, to, direction) {
-            if (!Main.sessionMode.hasWorkspaces || !this._shouldAnimate()) {
-                shellwm.completed_switch_workspace();
-                return;
-            }
-
-            // If we come from a gesture, switchData will already be set,
-            // and we don't want to overwrite it.
-            if (!this._switchData)
-                this._prepareWorkspaceSwitch(from, to, direction);
-
-            this._switchData.inProgress = true;
-
-            let [xDest, yDest] = this._getPositionForDirection(direction);
-
-            /* @direction is the direction that the "camera" moves, so the
-             * screen contents have to move one screen's worth in the
-             * opposite direction.
-             */
-            xDest = -xDest;
-            yDest = -yDest;
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this._switchData.container, {
-                    translate_x: xDest,
-                    translate_y: yDest,
-                    time: WINDOW_ANIMATION_TIME,
-                    transition: 'easeOutQuad',
-                    onComplete: this._switchWorkspaceDone,
-                    onCompleteScope: this,
-                    onCompleteParams: [shellwm]
-                });
-            } else {
-                this._switchData.container.ease({
-                    translate_x: xDest,
-                    translate_y: yDest,
-                    duration: WINDOW_ANIMATION_TIME,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => this._switchWorkspaceDone(shellwm)
-                });
-            }
-        };
-
-        this.original_actionMoveWorkspace = Main.wm.actionMoveWorkspace;
-        Main.wm.actionMoveWorkspace = (function() {
-            var cachedFunction = Main.wm.actionMoveWorkspace;
+        this.original_actionMoveWorkspace =
+            WindowManager.WindowManager.prototype.actionMoveWorkspace;
+        WindowManager.WindowManager.prototype.actionMoveWorkspace = (function() {
+            var cachedFunction =
+                WindowManager.WindowManager.prototype.actionMoveWorkspace;
             return function() {
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
@@ -384,9 +365,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
     }
 
     restoreWindowManagersFunctions() {
-        Main.wm._prepareWorkspaceSwitch = this.original_prepareWorkspaceSwitch;
-        Main.wm._finishWorkspaceSwitch = this.original_finishWorkspaceSwitch;
-        Main.wm.actionMoveWorkspace = this.original_actionMoveWorkspace;
+        WindowManager.WindowManager.prototype._prepareWorkspaceSwitch = this.original_prepareWorkspaceSwitch;
+        WindowManager.WindowManager.prototype._finishWorkspaceSwitch = this.original_finishWorkspaceSwitch;
+        WindowManager.WindowManager.prototype.actionMoveWorkspace = this.original_actionMoveWorkspace;
     }
 
     /*

@@ -152,9 +152,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.windows.forEach(window => {
-            if (!this.activeWindows.includes(window)) {
-                window.get_compositor_private().show();
+        this.superWorkspace.superWindowList.forEach(superWindow => {
+            if (!this.activeWindows.includes(superWindow)) {
+                superWindow.metaWindow.get_compositor_private().show();
             }
         });
     }

@@ -10,31 +10,23 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
     constructor(superWorkspace) {
         super(superWorkspace);
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.superWorkspace.windows.forEach(window => {
-                WindowUtils.updateTitleBarVisibility(window);
+            this.superWorkspace.superWindowList.forEach(superWindow => {
+                WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
             });
         });
     }
 
-    onWindowsChanged(newWindows, oldWindows) {
+    onWindowsChanged(newSuperWindows, oldSuperWindows) {
         super.onWindowsChanged();
-        let leavingWindows = oldWindows.filter(
-            window => !newWindows.includes(window)
+        let leavingSuperWindows = oldSuperWindows.filter(
+            superWindow => !newSuperWindows.includes(superWindow)
         );
-
-        /*         leavingWindows.forEach(window => {
-            WindowUtils.setTitleBarVisibility(window, false);
-        });
-
-        this.superWorkspace.windows.forEach(window => {
-            WindowUtils.setTitleBarVisibility(window, true);
-        }); */
     }
 
     onDestroy() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.superWorkspace.windows.forEach(window => {
-                WindowUtils.updateTitleBarVisibility(window);
+            this.superWorkspace.superWindowList.forEach(superWindow => {
+                WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
             });
         });
         super.onDestroy();
