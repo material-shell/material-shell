@@ -238,7 +238,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 };
                 switchData.surroundings[dir] = info;
                 switchData.container.add_actor(info.actor);
-                info.actor.raise_top();
+                info.actor
+                    .get_parent()
+                    .set_child_above_sibling(info.actor, null);
 
                 let [x, y] = this._getPositionForDirection(dir);
                 info.actor.set_position(x, y);
@@ -260,7 +262,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 info.actor.add_child(info.superWorkspace.frontendContainer);
             }
 
-            switchData.movingWindowBin.raise_top();
+            switchData.movingWindowBin
+                .get_parent()
+                .set_child_above_sibling(switchData.movingWindowBin, null);
 
             for (let i = 0; i < windows.length; i++) {
                 let window = windows[i].get_meta_window();

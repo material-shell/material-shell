@@ -35,7 +35,9 @@ var Backdrop = GObject.registerClass(
 
             window.connect('parent-set', (window, oldParent) => {
                 if (!window.meta_window) return;
-                this.window.raise_top();
+                this.window
+                    .get_parent()
+                    .set_child_above_sibling(this.window, null);
                 this.followWindow();
             });
 
@@ -75,7 +77,7 @@ var Backdrop = GObject.registerClass(
 
         highlightWindow() {
             if (this.window.get_parent() !== this.get_parent()) return;
-            this.window.raise_top();
+            this.window.get_parent().set_child_above_sibling(this.window, null);
             this.lower(this.window);
         }
 
