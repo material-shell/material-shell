@@ -17,13 +17,13 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const superWorkspace =
+                const msWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
-                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        ? global.msWorkspaceManager.getActiveMsWorkspace()
+                        : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                superWorkspace.focusPreviousTileable();
+                msWorkspace.focusPreviousTileable();
             }
         );
 
@@ -34,13 +34,13 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const superWorkspace =
+                const msWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
-                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        ? global.msWorkspaceManager.getActiveMsWorkspace()
+                        : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                superWorkspace.focusNextTileable();
+                msWorkspace.focusNextTileable();
             }
         );
 
@@ -93,20 +93,20 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const superWorkspace =
+                const msWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
-                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        ? global.msWorkspaceManager.getActiveMsWorkspace()
+                        : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                let currentFocusIndex = superWorkspace.superWindowList
-                    .map(superWindow => superWindow.metaWindow)
-                    .indexOf(superWorkspace.windowFocused);
+                let currentFocusIndex = msWorkspace.msWindowList
+                    .map(msWindow => msWindow.metaWindow)
+                    .indexOf(msWorkspace.windowFocused);
                 if (currentFocusIndex > 0) {
                     let previousMetaWindows =
-                        superWorkspace.windows[currentFocusIndex - 1];
-                    superWorkspace.swapWindows(
-                        superWorkspace.windowFocused,
+                        msWorkspace.windows[currentFocusIndex - 1];
+                    msWorkspace.swapWindows(
+                        msWorkspace.windowFocused,
                         previousMetaWindows
                     );
                 }
@@ -120,20 +120,20 @@ var HotKeysModule = class HotKeysModule {
             Shell.ActionMode.NORMAL,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
-                const superWorkspace =
+                const msWorkspace =
                     currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? global.superWorkspaceManager.getActiveSuperWorkspace()
-                        : global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        ? global.msWorkspaceManager.getActiveMsWorkspace()
+                        : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                let currentFocusIndex = superWorkspace.windows.indexOf(
-                    superWorkspace.windowFocused
+                let currentFocusIndex = msWorkspace.windows.indexOf(
+                    msWorkspace.windowFocused
                 );
-                if (currentFocusIndex < superWorkspace.windows.length - 1) {
+                if (currentFocusIndex < msWorkspace.windows.length - 1) {
                     let nextMetaWindows =
-                        superWorkspace.windows[currentFocusIndex + 1];
-                    superWorkspace.swapWindows(
-                        superWorkspace.windowFocused,
+                        msWorkspace.windows[currentFocusIndex + 1];
+                    msWorkspace.swapWindows(
+                        msWorkspace.windowFocused,
                         nextMetaWindows
                     );
                 }
@@ -178,9 +178,7 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                global.superWorkspaceManager
-                    .getActiveSuperWorkspace()
-                    .nextTiling(1);
+                global.msWorkspaceManager.getActiveMsWorkspace().nextTiling(1);
             }
         );
         Main.wm.addKeybinding(
@@ -189,9 +187,7 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                global.superWorkspaceManager
-                    .getActiveSuperWorkspace()
-                    .nextTiling(-1);
+                global.msWorkspaceManager.getActiveMsWorkspace().nextTiling(-1);
             }
         );
 
@@ -201,8 +197,8 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                const noUImode = global.superWorkspaceManager.noUImode;
-                global.superWorkspaceManager.noUImode = !noUImode;
+                const noUImode = global.msWorkspaceManager.noUImode;
+                global.msWorkspaceManager.noUImode = !noUImode;
                 Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
                 Main.panel.get_parent().set_width(!noUImode ? 0 : -1);
@@ -210,18 +206,18 @@ var HotKeysModule = class HotKeysModule {
 
                 Main.layoutManager.panelBox.set_height(!noUImode ? 0 : -1);
                 Main.layoutManager.monitors.forEach(monitor => {
-                    let superWorkspace;
+                    let msWorkspace;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
-                        superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
+                        msWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
                     } else {
-                        superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                        msWorkspace = global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             monitor.index
                         )[0];
                     }
                     Main.layoutManager._queueUpdateRegions();
-                    superWorkspace.updateUI();
-                    superWorkspace.panel.set_height(!noUImode ? 0 : -1);
-                    superWorkspace.tilingLayout.onTile();
+                    msWorkspace.updateUI();
+                    msWorkspace.panel.set_height(!noUImode ? 0 : -1);
+                    msWorkspace.tilingLayout.onTile();
                 });
             }
         );

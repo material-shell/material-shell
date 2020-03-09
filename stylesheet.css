@@ -140,6 +140,9 @@
 .dark-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
 
+.dark-theme .surface {
+  background: #191919; }
+
 .light-theme .mat-panel-button {
   height: 48px;
   width: 48px; }
@@ -281,6 +284,9 @@
 
 .light-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
+
+.light-theme .surface {
+  background: white; }
 
 .primary-theme .mat-panel-button {
   height: 48px;
@@ -462,3 +468,6 @@
 
 .primary-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
+
+.primary-theme .surface {
+  background: #3f51b5; }

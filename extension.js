@@ -7,7 +7,7 @@ const {
     DisableIncompatibleExtensionsModule
 } = Me.imports.module.disableIncompatibleExtensionsModule;
 const { LeftPanelModule } = Me.imports.module.leftPanel.leftPanelModule;
-const { SuperWorkspaceModule } = Me.imports.module.superWorkspaceModule;
+const { MsWorkspaceModule } = Me.imports.module.msWorkspaceModule;
 const { HotKeysModule } = Me.imports.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.module.tilingModule;
@@ -35,7 +35,7 @@ function enable() {
     Main.wm._blockAnimations = true;
     Me.loaded = false;
     Me.stateManager = new StateManager();
-    St.set_slow_down_factor(2);
+    St.set_slow_down_factor(1);
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         //Then disable incompatibles extensions;
@@ -45,7 +45,7 @@ function enable() {
                 new RequiredSettingsModule(),
                 new LeftPanelModule(),
                 new TilingModule(),
-                new SuperWorkspaceModule(),
+                new MsWorkspaceModule(),
                 new HotKeysModule(),
                 new ThemeModule()
             ];

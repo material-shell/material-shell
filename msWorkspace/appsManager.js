@@ -2,7 +2,7 @@ const { Shell } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
+const { WorkspaceCategories } = Me.imports.msWorkspace.workspaceCategories;
 
 /* exported AppsManager */
 var AppsManager = class AppsManager {

@@ -1,40 +1,47 @@
-const { Shell, Meta, GLib } = imports.gi;
+const { Shell, Meta, St, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
-const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
-const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
-const {
-    SuperWorkspaceWithCategory
-} = Me.imports.superWorkspace.superWorkspaceWithCategory;
-const { WorkspaceList } = Me.imports.widget.workspaceList;
-const { SuperWindow } = Me.imports.superWorkspace.superWindow;
+const { WorkspaceCategories } = Me.imports.msWorkspace.workspaceCategories;
+const { MsWorkspace } = Me.imports.msWorkspace.msWorkspace;
+const { MsWorkspaceContainer } = Me.imports.msWorkspace.msWorkspaceContainer;
 
-/* exported SuperWorkspaceManager */
-var SuperWorkspaceManager = class SuperWorkspaceManager {
+const {
+    MsWorkspaceWithCategory
+} = Me.imports.msWorkspace.msWorkspaceWithCategory;
+const { WorkspaceList } = Me.imports.widget.workspaceList;
+const { MsWindow } = Me.imports.msWorkspace.msWindow;
+
+/* exported MsWorkspaceManager */
+var MsWorkspaceManager = class MsWorkspaceManager {
     constructor(appsByCategory) {
-        log('new superWorkspaceManager');
+        log('new msWorkspaceManager');
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
-        this.superWorkspaces = [];
-        this.superWindowList = [];
+        this.msWorkspaces = [];
+        this.msWindowList = [];
         this.appsByCategory = appsByCategory;
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
         this.metaWindowFocused = null;
-        // First build all the Categorized superWorkspaces on the primary screen
+        this.msWorkspaceContainer = new MsWorkspaceContainer(this);
+        Main.uiGroup.insert_child_above(
+            this.msWorkspaceContainer,
+            global.window_group
+        );
+        // First build all the Categorized msWorkspaces on the primary screen
         this.categoryList.forEach((category, index) => {
             log(`new category workspace for ${category.key}`);
-            let superWorkspace = new SuperWorkspaceWithCategory(
+            let msWorkspace = new MsWorkspaceWithCategory(
                 this,
                 Main.layoutManager.primaryMonitor,
                 true,
                 category
             );
-            this.superWorkspaces.push(superWorkspace);
+            this.msWorkspaces.push(msWorkspace);
             let workspace = this.workspaceManager.get_workspace_by_index(index);
-            log(workspace.superWorkspaceKey);
-            if (workspace.superWorkspaceKey === category.key) {
+            log(workspace.msWorkspaceKey);
+            if (workspace.msWorkspaceKey === category.key) {
                 log('Found previous workspace no need to create a new one');
                 workspace._keepAliveId = true;
                 return;
@@ -45,39 +52,39 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
                 global.get_current_time()
             );
             workspace._keepAliveId = true;
-            workspace.superWorkspaceKey = category.key;
+            workspace.msWorkspaceKey = category.key;
             this.workspaceManager.reorder_workspace(workspace, index);
         });
 
-        // then build the "normal" superWorkspaces for every monitors
+        // then build the "normal" msWorkspaces for every monitors
         for (let monitor of Main.layoutManager.monitors) {
             if (Main.layoutManager.primaryIndex === monitor.index) {
-                // On the primary we fill the rest of the legacy workspace length with normal superWorkspaces
+                // On the primary we fill the rest of the legacy workspace length with normal msWorkspaces
                 for (
                     let i = 0;
                     i <
                     this.workspaceManager.n_workspaces -
-                        this.superWorkspacesWithCategory.length;
+                        this.msWorkspacesWithCategory.length;
                     i++
                 ) {
-                    let superWorkspace = new SuperWorkspace(
+                    let msWorkspace = new MsWorkspace(
                         this,
                         Main.layoutManager.primaryMonitor,
                         true
                     );
-                    this.superWorkspaces.push(superWorkspace);
+                    this.msWorkspaces.push(msWorkspace);
                 }
             } else {
-                let superWorkspace = new SuperWorkspace(this, monitor, true);
-                this.superWorkspaces.push(superWorkspace);
+                let msWorkspace = new MsWorkspace(this, monitor, true);
+                this.msWorkspaces.push(msWorkspace);
             }
         }
 
         //this.prepareWorkspaces();
-        let activeSuperWorkspace = this.getActiveSuperWorkspace();
+        let activeMsWorkspace = this.getActiveMsWorkspace();
 
-        activeSuperWorkspace.uiVisible = true;
-        activeSuperWorkspace.updateUI();
+        activeMsWorkspace.uiVisible = true;
+        activeMsWorkspace.updateUI();
 
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
@@ -102,61 +109,61 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             } */
             delete workspace._keepAliveId;
         }
-        for (let superWorkspace of this.superWorkspaces) {
-            superWorkspace.destroy();
+        for (let msWorkspace of this.msWorkspaces) {
+            msWorkspace.destroy();
         }
         this.workspaceList.destroy();
     }
 
-    get primarySuperWorkspaces() {
-        return this.superWorkspaces.filter(superWorkspace => {
+    get primaryMsWorkspaces() {
+        return this.msWorkspaces.filter(msWorkspace => {
             return (
-                superWorkspace.monitor.index === Main.layoutManager.primaryIndex
+                msWorkspace.monitor.index === Main.layoutManager.primaryIndex
             );
         });
     }
 
-    get superWorkspacesWithCategory() {
-        return this.primarySuperWorkspaces.filter(superWorkspace => {
-            return superWorkspace.category != null;
+    get msWorkspacesWithCategory() {
+        return this.primaryMsWorkspaces.filter(msWorkspace => {
+            return msWorkspace.category != null;
         });
     }
 
-    get dynamicSuperWorkspaces() {
-        return this.primarySuperWorkspaces.filter(superWorkspace => {
-            return !superWorkspace.category;
+    get dynamicMsWorkspaces() {
+        return this.primaryMsWorkspaces.filter(msWorkspace => {
+            return !msWorkspace.category;
         });
     }
 
     onWorkspacesChange() {
         const nbOfDynamicWorkspaces =
             this.workspaceManager.n_workspaces -
-            this.superWorkspacesWithCategory.length;
+            this.msWorkspacesWithCategory.length;
         log('workspacesChanged');
 
         const nbOfDiff =
-            nbOfDynamicWorkspaces - this.dynamicSuperWorkspaces.length;
+            nbOfDynamicWorkspaces - this.dynamicMsWorkspaces.length;
         if (nbOfDiff === 0) return;
 
         for (let i = 0; i < Math.abs(nbOfDiff); i++) {
             if (nbOfDiff > 0) {
                 log('there is more workspace');
-                let superWorkspace = new SuperWorkspace(
+                let msWorkspace = new MsWorkspace(
                     this,
                     Main.layoutManager.primaryMonitor,
                     true
                 );
-                this.superWorkspaces.push(superWorkspace);
+                this.msWorkspaces.push(msWorkspace);
             } else {
                 log('there is less workspace');
-                let superWorkspaceToDestroy = this.dynamicSuperWorkspaces[
-                    this.dynamicSuperWorkspaces.length - 1
+                let msWorkspaceToDestroy = this.dynamicMsWorkspaces[
+                    this.dynamicMsWorkspaces.length - 1
                 ];
-                superWorkspaceToDestroy.destroy();
-                let indexToRemove = this.superWorkspaces.indexOf(
-                    superWorkspaceToDestroy
+                msWorkspaceToDestroy.destroy();
+                let indexToRemove = this.msWorkspaces.indexOf(
+                    msWorkspaceToDestroy
                 );
-                this.superWorkspaces.splice(indexToRemove, 1);
+                this.msWorkspaces.splice(indexToRemove, 1);
             }
         }
         this.emit('dynamic-super-workspaces-changed');
@@ -178,7 +185,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         );
         this.saveCategoryKeyOrderedList();
         this.refreshWorkspaceWindows();
-        this.refreshVisiblePrimarySuperWorkspace();
+        this.refreshVisiblePrimaryMsWorkspace();
     }
 
     setWorkspaceAfter(categoryKeyToMove, categoryKeyRelative) {
@@ -197,7 +204,7 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         );
         this.saveCategoryKeyOrderedList();
         this.refreshWorkspaceWindows();
-        this.refreshVisiblePrimarySuperWorkspace();
+        this.refreshVisiblePrimaryMsWorkspace();
     }
 
     saveCategoryKeyOrderedList() {
@@ -209,58 +216,54 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
     refreshWorkspaceWindows() {
         this.categoryKeyOrderedList.forEach((categoryKey, index) => {
-            let superWorkspace = this.getSuperWorkspaceByCategoryKey(
-                categoryKey
-            );
+            let msWorkspace = this.getMsWorkspaceByCategoryKey(categoryKey);
             let workspace = this.workspaceManager.get_workspace_by_index(index);
-            for (let superWindow of superWorkspace.superWindowList) {
-                superWindow.metaWindow.change_workspace(workspace);
+            for (let msWindow of msWorkspace.msWindowList) {
+                msWindow.metaWindow.change_workspace(workspace);
             }
         });
     }
 
-    refreshVisiblePrimarySuperWorkspace() {
-        this.superWorkspaces.forEach(superWorkspace => {
-            if (!superWorkspace.category.primary) return;
-            superWorkspace.uiVisible = false;
-            superWorkspace.updateUI();
+    refreshVisiblePrimaryMsWorkspace() {
+        this.msWorkspaces.forEach(msWorkspace => {
+            if (!msWorkspace.category.primary) return;
+            msWorkspace.uiVisible = false;
+            msWorkspace.updateUI();
         });
-        let activeSuperWorkspace = this.getActiveSuperWorkspace();
-        activeSuperWorkspace.uiVisible = true;
-        activeSuperWorkspace.updateUI();
+        let activeMsWorkspace = this.getActiveMsWorkspace();
+        activeMsWorkspace.uiVisible = true;
+        activeMsWorkspace.updateUI();
     }
 
-    getActiveSuperWorkspace() {
+    getActiveMsWorkspace() {
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
-        return this.primarySuperWorkspaces[activeWorkspaceIndex];
+        return this.primaryMsWorkspaces[activeWorkspaceIndex];
     }
 
-    getSuperWorkspaceByCategoryKey(categoryKey) {
-        return this.superWorkspaces.find(superWorkspace => {
-            return superWorkspace.categoryKey === categoryKey;
+    getMsWorkspaceByCategoryKey(categoryKey) {
+        return this.msWorkspaces.find(msWorkspace => {
+            return msWorkspace.categoryKey === categoryKey;
         });
     }
 
-    getWorkspaceOfSuperWorkspace(superWorkspace) {
+    getWorkspaceOfMsWorkspace(msWorkspace) {
         return this.workspaceManager.get_workspace_by_index(
-            this.primarySuperWorkspaces.indexOf(superWorkspace)
+            this.primaryMsWorkspaces.indexOf(msWorkspace)
         );
     }
 
-    getSuperWorkspacesOfMonitorIndex(monitorIndex) {
-        return this.superWorkspaces.filter(superWorkspace => {
-            return superWorkspace.monitor.index === monitorIndex;
+    getMsWorkspacesOfMonitorIndex(monitorIndex) {
+        return this.msWorkspaces.filter(msWorkspace => {
+            return msWorkspace.monitor.index === monitorIndex;
         });
     }
 
-    getSuperWorkspaceOfMetaWindow(metaWindow) {
+    getMsWorkspaceOfMetaWindow(metaWindow) {
         const windowMonitorIndex = metaWindow.get_monitor();
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
-            return this.getSuperWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
+            return this.getMsWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
         } else {
-            return this.primarySuperWorkspaces[
-                metaWindow.get_workspace().index()
-            ];
+            return this.primaryMsWorkspaces[metaWindow.get_workspace().index()];
         }
     }
 
@@ -270,41 +273,48 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
-        let superWindow = this.superWindowList.find(superWindow => {
-            return (
-                superWindow.windowDescription === metaWindow.get_description()
-            );
+        let msWindow = this.msWindowList.find(msWindow => {
+            return msWindow.windowDescription === metaWindow.get_description();
         });
-        if (superWindow) {
-            superWindow.setWindow(metaWindow);
+        if (msWindow) {
+            msWindow.setWindow(metaWindow);
         } else {
             let app = this.windowTracker.get_window_app(metaWindow);
             log(app.get_id(), metaWindow.get_description());
-            let superWindow = new SuperWindow(
+            let msWindow = new MsWindow(
                 app.get_id(),
                 metaWindow.get_description(),
                 metaWindow
             );
-            log(superWindow.title);
-            this.addWindowToAppropriateSuperWorkspace(superWindow);
+            this.msWindowList.push(msWindow);
+            log(msWindow.title);
+            this.addWindowToAppropriateMsWorkspace(msWindow);
         }
 
         metaWindow.connect('unmanaged', () => {
-            if (metaWindow.handledByMaterialShell && metaWindow.superWorkspace)
-                metaWindow.superWorkspace.removeSuperWindow(metaWindow);
+            log('unmanaged', metaWindow, metaWindow.msWindow.msWorkspace);
+            if (
+                metaWindow.handledByMaterialShell &&
+                metaWindow.msWindow.msWorkspace
+            ) {
+                /* metaWindow.msWindow.msWorkspace.removeMsWindow(
+                    metaWindow.msWindow
+                ); */
+            }
         });
     }
 
     onFocusMetaWindow(metaWindow) {
         log('onFocusMetaWindow', metaWindow);
         /*
-             If the current superWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
+             If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
              We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
             */
         if (
             this.metaWindowFocused &&
             !this.metaWindowFocused.get_compositor_private()
         ) {
+            log('previous-focus');
             return;
         }
 
@@ -314,66 +324,66 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
             metaWindow = metaWindow.get_transient_for();
         }
         this.metaWindowFocused = metaWindow;
-        if (metaWindow.superWindow && !metaWindow.superWindow.isDialog) {
-            metaWindow.superWindow.superWorkspace.onFocusTileable(
-                metaWindow.superWindow
+        if (metaWindow.msWindow && !metaWindow.msWindow.isDialog) {
+            metaWindow.msWindow.msWorkspace.onFocusTileable(
+                metaWindow.msWindow
             );
         }
     }
 
-    addWindowToAppropriateSuperWorkspace(superWindow) {
-        const windowMonitorIndex = superWindow.metaWindow.get_monitor();
-        const currentWindowWorkspace = superWindow.metaWindow.get_workspace();
-        let superWorkspace;
+    addWindowToAppropriateMsWorkspace(msWindow) {
+        const windowMonitorIndex = msWindow.metaWindow.get_monitor();
+        const currentWindowWorkspace = msWindow.metaWindow.get_workspace();
+        let msWorkspace;
 
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
-            superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+            msWorkspace = this.getMsWorkspacesOfMonitorIndex(
                 windowMonitorIndex
             )[0];
         } else {
-            superWorkspace = this.primarySuperWorkspaces[
+            msWorkspace = this.primaryMsWorkspaces[
                 currentWindowWorkspace.index()
             ];
         }
         log('currentWindowWorkspace.index()', currentWindowWorkspace.index());
-        this.setWindowToSuperWorkspace(superWindow, superWorkspace);
+        this.setWindowToMsWorkspace(msWindow, msWorkspace);
         /* if (!metaWindow.handledByMaterialShell) return;
 
         const windowMonitorIndex = metaWindow.get_monitor();
         const currentWindowWorkspace = metaWindow.get_workspace();
 
-        let superWorkspace;
+        let msWorkspace;
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
-            superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
+            msWorkspace = this.getMsWorkspacesOfMonitorIndex(
                 windowMonitorIndex
             )[0];
         } else {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
 
-            superWorkspace = this.superWorkspaces.find(superWorkspace => {
+            msWorkspace = this.msWorkspaces.find(msWorkspace => {
                 return (
-                    superWorkspace.category.primary &&
-                    superWorkspace.apps.findIndex(app => {
+                    msWorkspace.category.primary &&
+                    msWorkspace.apps.findIndex(app => {
                         return app.get_id() === appToFind.get_id();
                     }) > -1
                 );
             });
 
-            if (!superWorkspace) {
-                superWorkspace = this.primarySuperWorkspaces[currentWindowWorkspace.index()];
+            if (!msWorkspace) {
+                msWorkspace = this.primaryMsWorkspaces[currentWindowWorkspace.index()];
             }
         }
 
-        let workspaceOfSuperWorkspace = this.getWorkspaceOfSuperWorkspace(
-            superWorkspace
+        let workspaceOfMsWorkspace = this.getWorkspaceOfMsWorkspace(
+            msWorkspace
         );
         if (
-            workspaceOfSuperWorkspace &&
-            workspaceOfSuperWorkspace !== currentWindowWorkspace
+            workspaceOfMsWorkspace &&
+            workspaceOfMsWorkspace !== currentWindowWorkspace
         ) {
-            metaWindow.change_workspace(workspaceOfSuperWorkspace); 
+            metaWindow.change_workspace(workspaceOfMsWorkspace); 
         }
-        this.setWindowToSuperWorkspace(metaWindow, superWorkspace); */
+        this.setWindowToMsWorkspace(metaWindow, msWorkspace); */
     }
 
     dispatchExistingWindows() {
@@ -390,9 +400,9 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        const superWorkspace = this.primarySuperWorkspaces[workspace.index()];
+        const msWorkspace = this.primaryMsWorkspaces[workspace.index()];
 
-        this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
+        this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
     windowEnteredMonitor(metaWindow, monitorIndex) {
@@ -403,29 +413,27 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         ) {
             return;
         }
-        const superWorkspace = this.getSuperWorkspacesOfMonitorIndex(
-            monitorIndex
-        )[0];
+        const msWorkspace = this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
 
-        if (!superWorkspace) {
+        if (!msWorkspace) {
             return;
         }
 
-        this.setWindowToSuperWorkspace(metaWindow, superWorkspace);
+        this.setWindowToMsWorkspace(metaWindow, msWorkspace);
     }
 
-    setWindowToSuperWorkspace(superWindow, newSuperWorkspace) {
-        let oldSuperWorkspace = superWindow.superWorkspace;
+    setWindowToMsWorkspace(msWindow, newMsWorkspace) {
+        let oldMsWorkspace = msWindow.msWorkspace;
 
-        if (oldSuperWorkspace) {
-            if (oldSuperWorkspace === newSuperWorkspace) {
+        if (oldMsWorkspace) {
+            if (oldMsWorkspace === newMsWorkspace) {
                 return;
             } else {
-                oldSuperWorkspace.removeSuperWindow(superWindow);
+                oldMsWorkspace.removeMsWindow(msWindow);
             }
         }
 
-        newSuperWorkspace.addSuperWindow(superWindow);
+        newMsWorkspace.addMsWindow(msWindow);
     }
 
     _handleWindow(metaWindow) {
@@ -434,4 +442,4 @@ var SuperWorkspaceManager = class SuperWorkspaceManager {
         return types.includes(metaWindow.window_type);
     }
 };
-Signals.addSignalMethods(SuperWorkspaceManager.prototype);
+Signals.addSignalMethods(MsWorkspaceManager.prototype);

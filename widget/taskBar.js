@@ -8,13 +8,14 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const { MatButton } = Me.imports.widget.material.button;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
+const { MsWindow } = Me.imports.msWorkspace.msWindow;
 
 let dragData = null;
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(superWorkspace) {
+        _init(msWorkspace) {
             super._init({
                 name: 'taskBar'
             });
@@ -25,15 +26,17 @@ var TaskBar = GObject.registerClass(
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.BoxLayout({});
             this.add_child(this.taskButtonContainer);
-            this.superWorkspace = superWorkspace;
+            this.msWorkspace = msWorkspace;
             this.connect('destroy', this._onDestroy.bind(this));
-            this.superWorkspaceSignals = [
-                superWorkspace.connect('tileableList-changed', () => {
+            this.msWorkspaceSignals = [
+                msWorkspace.connect('tileableList-changed', () => {
                     this.onTileableListChange();
                 }),
-                superWorkspace.connect(
-                    'window-focused-changed',
-                    this.onFocusChanged.bind(this)
+                msWorkspace.connect(
+                    'drawable-focused-changed',
+                    (msWorkspace, windowFocused) => {
+                        this.onFocusChanged(msWorkspace, windowFocused);
+                    }
                 )
             ];
 
@@ -47,14 +50,16 @@ var TaskBar = GObject.registerClass(
             this._animateActiveIndicator();
         }
 
-        onFocusChanged(superWorkspace, windowFocused) {
+        onFocusChanged(msWorkspace, windowFocused) {
             if (windowFocused === this.windowFocused) {
                 return;
             }
 
-            let previousItem = this.getTaskBarItemOfWindow(this.windowFocused);
+            let previousItem = this.getTaskBarItemOfMsDrawable(
+                this.windowFocused
+            );
             this.windowFocused = windowFocused;
-            let nextItem = this.getTaskBarItemOfWindow(this.windowFocused);
+            let nextItem = this.getTaskBarItemOfMsDrawable(this.windowFocused);
 
             if (previousItem) {
                 if (
@@ -75,10 +80,10 @@ var TaskBar = GObject.registerClass(
 
         updateItems() {
             this.items.forEach(item => item.destroy());
-            this.items = this.superWorkspace.tileableList.map(superDrawable => {
+            this.items = this.msWorkspace.tileableList.map(msDrawable => {
                 const item = new TaskBarItem(
-                    superDrawable,
-                    superDrawable === this.windowFocused
+                    msDrawable,
+                    msDrawable === this.windowFocused
                 );
                 item._draggable.connect('drag-begin', () => {
                     const initialIndex = this.getFilteredWindows().indexOf(
@@ -174,24 +179,24 @@ var TaskBar = GObject.registerClass(
 
             if (originalTaskBar !== currentTaskBar) {
                 item.window.move_to_monitor(
-                    currentTaskBar.superWorkspace.monitor.index
+                    currentTaskBar.msWorkspace.monitor.index
                 );
             }
             if (draggedOver) {
                 if (draggedBefore) {
-                    currentTaskBar.superWorkspace.setWindowBefore(
+                    currentTaskBar.msWorkspace.setWindowBefore(
                         item.window,
                         draggedOver.window
                     );
                 } else {
-                    currentTaskBar.superWorkspace.setWindowAfter(
+                    currentTaskBar.msWorkspace.setWindowAfter(
                         item.window,
                         draggedOver.window
                     );
                 }
             }
 
-            currentTaskBar.superWorkspace.onFocus(item.window);
+            currentTaskBar.msWorkspace.onFocus(item.window);
             this.taskActiveIndicator.show();
             dragData = null;
         }
@@ -226,7 +231,7 @@ var TaskBar = GObject.registerClass(
 
         _animateActiveIndicator() {
             if (this.windowFocused) {
-                let taskBarItem = this.getTaskBarItemOfWindow(
+                let taskBarItem = this.getTaskBarItemOfMsDrawable(
                     this.windowFocused
                 );
                 if (taskBarItem) {
@@ -274,15 +279,15 @@ var TaskBar = GObject.registerClass(
             }
         }
 
-        getTaskBarItemOfWindow(window) {
+        getTaskBarItemOfMsDrawable(msDrawable) {
             return this.items.find(item => {
-                return item.window === window;
+                return item.msDrawable === msDrawable;
             });
         }
 
         _onDestroy() {
-            this.superWorkspaceSignals.forEach(signal =>
-                this.superWorkspace.disconnect(signal)
+            this.msWorkspaceSignals.forEach(signal =>
+                this.msWorkspace.disconnect(signal)
             );
         }
     }
@@ -298,18 +303,18 @@ let TaskBarItem = GObject.registerClass(
         }
     },
     class InnerTaskBarItem extends MatButton {
-        _init(superDrawable, actif) {
+        _init(msDrawable, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`
             });
 
             this._delegate = this;
 
-            this.superDrawable = superDrawable;
-            this.app = superDrawable.app;
+            this.msDrawable = msDrawable;
+            this.app = msDrawable.app;
 
             this.connect('destroy', () => {
-                this.superDrawable.disconnect(this.connectSignal);
+                this.msDrawable.disconnect(this.connectSignal);
             });
             if (this.app) {
                 // ICON
@@ -325,8 +330,8 @@ let TaskBarItem = GObject.registerClass(
             });
             this.updateTitle();
 
-            this.connectSignal = this.superDrawable.connect(
-                'title-changed',
+            this.connectSignal = this.msDrawable.metaWindow.connect(
+                'notify::title',
                 () => {
                     this.updateTitle();
                 }
@@ -344,7 +349,11 @@ let TaskBarItem = GObject.registerClass(
             });
 
             this.closeButton.connect('clicked', () => {
-                this.window.delete(global.get_current_time());
+                if (this.msDrawable instanceof MsWindow) {
+                    this.msDrawable.metaWindow.delete(
+                        global.get_current_time()
+                    );
+                }
             });
 
             // LAYOUT CONTAINER
@@ -416,11 +425,19 @@ let TaskBarItem = GObject.registerClass(
                     this.mouseData.dragged = false;
                     switch (event.get_button()) {
                         case 1:
-                            this.window.activate(global.get_current_time());
+                            if (this.msDrawable instanceof MsWindow) {
+                                this.msDrawable.metaWindow.activate(
+                                    global.get_current_time()
+                                );
+                            }
                             break;
 
                         case 2:
-                            this.window.delete(global.get_current_time());
+                            if (this.msDrawable instanceof MsWindow) {
+                                this.msDrawable.metaWindow.delete(
+                                    global.get_current_time()
+                                );
+                            }
                             break;
                     }
                 } else if (eventType === Clutter.EventType.LEAVE) {
@@ -441,7 +458,7 @@ let TaskBarItem = GObject.registerClass(
 
         // Update the title and crop it if it's too long
         updateTitle() {
-            this.title.text = this.superDrawable.title;
+            this.title.text = this.msDrawable.title;
         }
 
         initDrag() {

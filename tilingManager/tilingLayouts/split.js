@@ -13,8 +13,8 @@ const WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 250;
 /* exported SplitLayout */
 var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
+    constructor(msWorkspace) {
+        super(msWorkspace);
 
         this.overContainer = new St.Widget();
 
@@ -27,7 +27,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         this.baseIndex = Math.max(
             0,
             Math.min(
-                regularWindows.indexOf(this.superWorkspace.windowFocused),
+                regularWindows.indexOf(this.msWorkspace.windowFocused),
                 regularWindows.length - WINDOW_PER_SCREEN
             )
         );
@@ -42,9 +42,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         super.onWorkAreasChanged();
     }
 
-    onWindowsChanged(superWorkspace, newWindows, oldWindows) {
+    onWindowsChanged(msWorkspace, newWindows, oldWindows) {
         this.updateActiveWindowsFromFocused();
-        super.onWindowsChanged(superWorkspace, newWindows, oldWindows); // Calls onTile
+        super.onWindowsChanged(msWorkspace, newWindows, oldWindows); // Calls onTile
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
@@ -131,7 +131,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         windows.forEach(window => {
             if (
                 !this.activeWindows.includes(window) ||
-                !this.superWorkspace.isDisplayed()
+                !this.msWorkspace.isDisplayed()
             ) {
                 window.get_compositor_private().hide();
             } else {
@@ -152,9 +152,9 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.superWindowList.forEach(superWindow => {
-            if (!this.activeWindows.includes(superWindow)) {
-                superWindow.metaWindow.get_compositor_private().show();
+        this.msWorkspace.msWindowList.forEach(msWindow => {
+            if (!this.activeWindows.includes(msWindow)) {
+                msWindow.metaWindow.get_compositor_private().show();
             }
         });
     }

@@ -5,48 +5,58 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
+const { TranslationAnimator } = Me.imports.widget.translationAnimator;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
-        this.overContainer = new St.Widget();
-        this.transitionContainer = new St.Widget();
-        this.leftWindowContainer = new St.Widget();
-        this.rightWindowContainer = new St.Widget();
-        this.transitionContainer.add_actor(this.leftWindowContainer);
-        this.transitionContainer.add_actor(this.rightWindowContainer);
-        this.overContainer.add_actor(this.transitionContainer);
-        const { regularWindows } = this.getDialogAndRegularWindows();
-        this.currentWindowIndex = Math.max(
-            regularWindows.indexOf(this.superWorkspace.windowFocused),
-            0
-        );
+    constructor(msWorkspace) {
+        super(msWorkspace);
+        this.translationAnimator = new TranslationAnimator();
+        this.translationAnimator.connect('transition-completed', () => {
+            this.endTransition();
+        });
+        log('here', msWorkspace.focusedIndex);
+        this.currentWindowIndex = msWorkspace.focusedIndex;
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
         log('focus changed', windowFocused, oldWindowFocused);
-        if (!this.superWorkspace.superWindowList.includes(oldWindowFocused))
-            return;
+        if (!this.msWorkspace.msWindowList.includes(oldWindowFocused)) return;
         if (!windowFocused.isDialog) {
-            const { regularWindows } = this.getDialogAndRegularWindows();
             const oldIndex = this.currentWindowIndex;
-            this.currentWindowIndex = regularWindows.indexOf(windowFocused);
-            this.animateTransition(this.currentWindowIndex, oldIndex);
+            this.currentWindowIndex = this.msWorkspace.focusedIndex;
+            if (this.currentWindowIndex === oldIndex) return;
+            const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
+            let oldActor = this.msWorkspace.tileableList[oldIndex];
+            let newActor = this.msWorkspace.tileableList[
+                this.currentWindowIndex
+            ];
+
+            this.translationAnimator.set_size(
+                this.monitor.width,
+                this.monitor.height
+            );
+            if (!this.translationAnimator.get_parent()) {
+                this.msWorkspace.actor.insert_child_above(
+                    this.translationAnimator,
+                    this.msWorkspace.tileableContainer
+                );
+            }
+
+            this.translationAnimator.setTranslation(
+                oldActor,
+                newActor,
+                direction
+            );
         }
     }
 
-    onWindowsChanged(windows, oldWindows) {
-        let regularWindows = windows.filter(window => !this.isDialog(window));
-        let oldRegularWindows = oldWindows.filter(
-            window => !this.isDialog(window)
-        );
+    onTileableListChanged(tileableList, oldTileableList) {
         // If the order of the windows changed try to follow the current visible window
-        if (oldRegularWindows.length === regularWindows.length) {
-            let currentVisibleWindow =
-                oldRegularWindows[this.currentWindowIndex];
-            let indexOfCurrentVisibleWindowInNewWindows = regularWindows.indexOf(
+        if (oldTileableList.length === tileableList.length) {
+            let currentVisibleWindow = oldTileableList[this.currentWindowIndex];
+            let indexOfCurrentVisibleWindowInNewWindows = tileableList.indexOf(
                 currentVisibleWindow
             );
             if (indexOfCurrentVisibleWindowInNewWindows !== -1) {
@@ -54,65 +64,77 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             }
         }
 
-        super.onWindowsChanged();
+        super.onTileableListChanged(tileableList, oldTileableList);
 
         // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
-        if (oldRegularWindows.length - regularWindows.length === 1) {
-            let windowRemovedIndex = oldRegularWindows.findIndex(
-                window => !regularWindows.includes(window)
+        if (oldTileableList.length - tileableList.length === 1) {
+            let windowRemovedIndex = oldTileableList.findIndex(
+                window => !tileableList.includes(window)
             );
             const oldIndex =
-                windowRemovedIndex === oldRegularWindows.length - 1
+                windowRemovedIndex === oldTileableList.length - 1
                     ? windowRemovedIndex
                     : -1;
 
-            this.currentWindowIndex = Math.max(
-                regularWindows.indexOf(this.superWorkspace.windowFocused),
-                0
-            );
+            this.currentWindowIndex = this.msWorkspace.focusedIndex;
+
             this.animateTransition(this.currentWindowIndex, oldIndex);
         }
     }
 
     onTileRegulars(tileableList) {
+        log('onTileRegular in maximize');
         if (this.animationInProgress) {
             return;
         }
-        tileableList.forEach((drawable, index) => {
-            const actor = drawable.actor;
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+        tileableList.forEach((actor, index) => {
             // Unclip windows in maximize
             if (actor.has_clip) {
                 actor.set_z_position(0);
                 actor.remove_clip();
             }
-            if (!drawable.grabbed && !drawable.tiledMaximized) {
-                drawable.tileMaximize();
-            }
+            if (!actor.grabbed) {
+                actor.set_position(workArea.x, workArea.y);
+                actor.set_size(workArea.width, workArea.height);
+                //actor.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
 
+                //drawable.tileMaximize();
+                /* drawable.setPositionAndSize(
+                    workArea.x * index,
+                    workArea.y,
+                    workArea.width,
+                    workArea.height
+                ); */
+            }
+            log(index, this.currentWindowIndex, this.msWorkspace.focusedIndex);
             if (index !== this.currentWindowIndex) {
-                this.hideWindow(drawable);
+                log('hide in tiling');
+                actor.visible = false;
             } else {
-                this.showWindow(drawable);
+                actor.visible = true;
             }
         });
     }
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.superWindowList.forEach(superWindow => {
-            if (superWindow !== this.windowNotDialogFocused) {
+        this.msWorkspace.msWindowList.forEach(msWindow => {
+            if (msWindow !== this.windowNotDialogFocused) {
                 //window.get_compositor_private().show();
-                this.showWindow(superWindow);
+                this.showWindow(msWindow);
             }
         });
     }
 
-    animateTransition(newIndex, oldIndex) {
+    animateTransitionOld(newIndex, oldIndex) {
         if (newIndex === oldIndex) return;
 
         const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
-        this.leftWindowContainer.remove_all_children();
-        this.rightWindowContainer.remove_all_children();
+        /* this.leftWindowContainer.remove_all_children();
+        this.rightWindowContainer.remove_all_children(); */
         const containers = [
             this.leftWindowContainer,
             this.rightWindowContainer
@@ -122,23 +144,20 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
         const [oldContainer, newContainer] = containers;
 
-        const { regularWindows } = this.getDialogAndRegularWindows();
+        let oldActor = this.msWorkspace.tileableList[oldIndex];
+        let newActor = this.msWorkspace.tileableList[newIndex];
 
-        let oldMetaWindow = regularWindows[oldIndex];
-        let newMetaWindow = regularWindows[newIndex];
-
-        if (oldMetaWindow) {
-            let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
-            oldWindowClone.reparent(oldContainer);
+        if (oldActor) {
+            oldActor.reparent(oldContainer);
             //oldMetaWindow.get_compositor_private().hide();
-            this.hideWindow(oldMetaWindow);
+            //this.hideWindow(oldMsDrawable);
         }
 
-        if (newMetaWindow) {
-            let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
-            newWindowClone.reparent(newContainer);
+        if (newActor) {
+            newActor.reparent(newContainer);
+            newActor.show();
             //newMetaWindow.get_compositor_private().hide();
-            this.hideWindow(newMetaWindow);
+            //this.hideWindow(newMsDrawable);
         }
         // Get the full workArea here and not workspaceBounds which have gaps
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
@@ -158,7 +177,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 this.monitor.width,
                 this.monitor.height
             );
-            global.window_group.add_actor(this.overContainer);
+
             this.animationInProgress = true;
         }
 
@@ -185,26 +204,94 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
     }
 
-    showWindow(superWindow) {
-        superWindow.actor.show();
+    animateTransition(newIndex, oldIndex) {
+        if (newIndex === oldIndex) return;
+        log('animate transition');
+        const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
+        log(oldIndex);
+        if (oldIndex != undefined) {
+            const targetX = direction * -workArea.width;
+
+            oldActor.ease({
+                translation_x: targetX,
+                duration:
+                    (250 * Math.abs(targetX - oldActor.translation_x)) /
+                    workArea.width,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    oldActor.hide();
+                }
+            });
+        }
+
+        let newActor = this.msWorkspace.tileableList[newIndex];
+        const originX = direction * workArea.width;
+        if (!newActor.visible) {
+            newActor.translation_x = originX;
+            newActor.show();
+        }
+        const targetX = 0;
+        newActor.ease({
+            translation_x: targetX,
+            duration:
+                (250 * Math.abs(targetX - newActor.translation_x)) /
+                Math.abs(targetX - originX),
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.animationInProgress = false;
+                this.endTransition();
+            }
+        });
+        /* this.msWorkspace.tileableContainer.ease({
+            x: workArea.x + newIndex * -workArea.width,
+            duration: 250,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.animationInProgress = false;
+                this.endTransition();
+            }
+        }); */
+    }
+
+    showWindow(msWindow) {
+        msWindow.show();
         //if (!window.minimized) return;
         /*  log('showWindow', window.title);
         Main.wm.skipNextEffect(window.get_compositor_private());
         window.unminimize(); */
     }
 
-    hideWindow(superWindow) {
+    hideWindow(msWindow) {
+        log('hideWindow');
         //if (window.minimized) return;
-        superWindow.actor.hide();
+        msWindow.hide();
         /* log('hideWindow', window.title);
         Main.wm.skipNextEffect(window.get_compositor_private());
         window.minimize(); */
     }
 
     endTransition() {
-        this.leftWindowContainer.remove_all_children();
-        this.rightWindowContainer.remove_all_children();
-        global.window_group.remove_child(this.overContainer);
+        /* if (this.leftWindowContainer.get_first_child()) {
+            this.leftWindowContainer
+                .get_first_child()
+                .reparent(this.msWorkspace.tileableContainer);
+        } */
+        /* if (this.rightWindowContainer.get_first_child()) {
+            this.rightWindowContainer
+                .get_first_child()
+                .reparent(this.msWorkspace.tileableContainer);
+        } */
+        /* [
+            ...this.leftWindowContainer.get_children(),
+            ...this.rightWindowContainer.get_children()
+        ].forEach(actor => {
+            actor.reparent(this.msWorkspace.tileableContainer);
+        }); */
+
+        this.msWorkspace.actor.remove_child(this.translationAnimator);
 
         this.onTile();
     }

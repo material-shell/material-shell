@@ -11,8 +11,8 @@ const { Column, Row } = Me.imports.widget.layout;
 /* exported CategorizedAppCard */
 var CategorizedAppCard = GObject.registerClass(
     class CategorizedAppCard extends MatCard {
-        _init(superWorkspaceCategory, apps) {
-            this.workspaceCategory = superWorkspaceCategory;
+        _init(msWorkspaceCategory, apps) {
+            this.workspaceCategory = msWorkspaceCategory;
             this._grid = new SimpleIconGrid(6);
             super._init({
                 style_class: 'categorized-app-card',

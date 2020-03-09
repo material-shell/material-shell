@@ -7,26 +7,26 @@ const WindowUtils = Me.imports.utils.windows;
 
 /* exported FloatLayout */
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
+    constructor(msWorkspace) {
+        super(msWorkspace);
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.superWorkspace.superWindowList.forEach(superWindow => {
-                WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
+            this.msWorkspace.msWindowList.forEach(msWindow => {
+                WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
             });
         });
     }
 
-    onWindowsChanged(newSuperWindows, oldSuperWindows) {
+    onWindowsChanged(newMsWindows, oldMsWindows) {
         super.onWindowsChanged();
-        let leavingSuperWindows = oldSuperWindows.filter(
-            superWindow => !newSuperWindows.includes(superWindow)
+        let leavingMsWindows = oldMsWindows.filter(
+            msWindow => !newMsWindows.includes(msWindow)
         );
     }
 
     onDestroy() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.superWorkspace.superWindowList.forEach(superWindow => {
-                WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
+            this.msWorkspace.msWindowList.forEach(msWindow => {
+                WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
             });
         });
         super.onDestroy();

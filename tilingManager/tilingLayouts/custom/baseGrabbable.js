@@ -7,8 +7,8 @@ const { BaseTilingLayout } = Me.imports.tilingManager.tilingLayouts.baseTiling;
 
 /* exported BaseGrabbableLayout */
 var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
-    constructor(superWorkspace) {
-        super(superWorkspace);
+    constructor(msWorkspace) {
+        super(msWorkspace);
         this.grabStartSignal = global.display.connect(
             'grab-op-begin',
             (display1, display2, metaWindow, op) => {
@@ -19,14 +19,11 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                     let windowRect = metaWindow.get_frame_rect();
                     let x = windowRect.x + windowRect.width / 2;
                     let y = windowRect.y + windowRect.height / 2;
-                    const windowHovered = this.superWorkspace.superWindowList.find(
-                        superWindowToCheck => {
-                            if (
-                                superWindowToCheck.metaWindow ===
-                                this.grabWindow
-                            )
+                    const windowHovered = this.msWorkspace.msWindowList.find(
+                        msWindowToCheck => {
+                            if (msWindowToCheck.metaWindow === this.grabWindow)
                                 return false;
-                            let rect = superWindowToCheck.metaWindow.get_frame_rect();
+                            let rect = msWindowToCheck.metaWindow.get_frame_rect();
                             return (
                                 x >= rect.x &&
                                 x <= rect.x + rect.width &&
@@ -37,18 +34,17 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                     );
                     if (
                         windowHovered &&
-                        this.superWorkspace.superWindowList.indexOf(
-                            windowHovered
-                        ) > -1 &&
-                        this.superWorkspace.superWindowList.indexOf(
-                            this.grabWindow.superWindow
+                        this.msWorkspace.msWindowList.indexOf(windowHovered) >
+                            -1 &&
+                        this.msWorkspace.msWindowList.indexOf(
+                            this.grabWindow.msWindow
                         ) > -1 &&
                         !Tweener.getTweenCount(
                             windowHovered.metaWindow.get_compositor_private()
                         )
                     ) {
-                        this.superWorkspace.swapWindows(
-                            this.grabWindow.superWindow,
+                        this.msWorkspace.swapWindows(
+                            this.grabWindow.msWindow,
                             windowHovered
                         );
                     }

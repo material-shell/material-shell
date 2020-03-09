@@ -5,20 +5,20 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
-const { WorkspaceCategories } = Me.imports.superWorkspace.workspaceCategories;
+const { WorkspaceCategories } = Me.imports.msWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
-        _init(superWorkspaceManager) {
+        _init(msWorkspaceManager) {
             super._init({
                 clip_to_allocation: true,
                 style_class: 'workspace-list'
             });
 
-            this.superWorkspaceManager = superWorkspaceManager;
+            this.msWorkspaceManager = msWorkspaceManager;
 
             this.buttonList = new St.BoxLayout({
                 vertical: true
@@ -43,7 +43,7 @@ var WorkspaceList = GObject.registerClass(
             this.add_child(this.workspaceActiveIndicator);
 
             this.buildButtons();
-            this.superWorkspaceManager.connect(
+            this.msWorkspaceManager.connect(
                 'dynamic-super-workspaces-changed',
                 () => {
                     this.buildButtons();
@@ -66,20 +66,20 @@ var WorkspaceList = GObject.registerClass(
         buildButtons() {
             log(
                 'buildButtons',
-                this.superWorkspaceManager.primarySuperWorkspaces.length
+                this.msWorkspaceManager.primaryMsWorkspaces.length
             );
             this.buttonList.remove_all_children();
-            this.superWorkspaceManager.primarySuperWorkspaces.forEach(
-                (superWorkspace, index) => {
+            this.msWorkspaceManager.primaryMsWorkspaces.forEach(
+                (msWorkspace, index) => {
                     let icon;
-                    if (superWorkspace.category) {
+                    if (msWorkspace.category) {
                         icon = Gio.icon_new_for_string(
-                            `${Me.path}/assets/icons/${superWorkspace.category.icon}.svg`
+                            `${Me.path}/assets/icons/${msWorkspace.category.icon}.svg`
                         );
                     } else {
                         if (
                             index ===
-                            this.superWorkspaceManager.primarySuperWorkspaces
+                            this.msWorkspaceManager.primaryMsWorkspaces
                                 .length -
                                 1
                         ) {
@@ -93,12 +93,12 @@ var WorkspaceList = GObject.registerClass(
                         }
                     }
                     let workspaceButton = new WorkspaceButton(
-                        this.superWorkspaceManager,
-                        superWorkspace,
+                        this.msWorkspaceManager,
+                        msWorkspace,
                         icon
                     );
                     workspaceButton._draggable.connect('drag-begin', () => {
-                        let workspaceButtonIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                        let workspaceButtonIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
                             workspaceButton.categoryKey
                         );
                         this.tempDragData = {
@@ -162,7 +162,7 @@ var WorkspaceList = GObject.registerClass(
         _onDragEnd() {
             this.buttonList.remove_child(this.dropPlaceholder);
             if (this.tempDragData.draggedOver) {
-                let toIndex = this.superWorkspaceManager.categoryKeyOrderedList.indexOf(
+                let toIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
                     this.tempDragData.draggedOver.categoryKey
                 );
                 if (this.tempDragData.draggedBefore) {
@@ -172,7 +172,7 @@ var WorkspaceList = GObject.registerClass(
                             (this.tempDragData.initialIndex < toIndex ? 1 : 0)
                     );
 
-                    this.superWorkspaceManager.setWorkspaceBefore(
+                    this.msWorkspaceManager.setWorkspaceBefore(
                         this.tempDragData.workspaceButton.categoryKey,
                         this.tempDragData.draggedOver.categoryKey
                     );
@@ -182,7 +182,7 @@ var WorkspaceList = GObject.registerClass(
                         toIndex +
                             (this.tempDragData.initialIndex < toIndex ? 0 : 1)
                     );
-                    this.superWorkspaceManager.setWorkspaceAfter(
+                    this.msWorkspaceManager.setWorkspaceAfter(
                         this.tempDragData.workspaceButton.categoryKey,
                         this.tempDragData.draggedOver.categoryKey
                     );
@@ -279,9 +279,9 @@ var WorkspaceButton = GObject.registerClass(
         }
     },
     class InnerWorkspaceButton extends MatButton {
-        _init(superWorkspaceManager, superWorkspace, gicon) {
-            this.superWorkspaceManager = superWorkspaceManager;
-            this.superWorkspace = superWorkspace;
+        _init(msWorkspaceManager, msWorkspace, gicon) {
+            this.msWorkspaceManager = msWorkspaceManager;
+            this.msWorkspace = msWorkspace;
             let icon = new St.Icon({
                 gicon: gicon,
                 style_class: 'mat-panel-button-icon'
@@ -293,8 +293,8 @@ var WorkspaceButton = GObject.registerClass(
             this._delegate = this;
 
             this.connect('clicked', () => {
-                this.superWorkspaceManager
-                    .getWorkspaceOfSuperWorkspace(this.superWorkspace)
+                this.msWorkspaceManager
+                    .getWorkspaceOfMsWorkspace(this.msWorkspace)
                     .activate(global.get_current_time());
             });
 

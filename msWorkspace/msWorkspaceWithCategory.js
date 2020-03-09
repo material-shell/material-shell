@@ -8,7 +8,7 @@ const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.utils.index;
 const WindowUtils = Me.imports.utils.windows;
-const { SuperWorkspace } = Me.imports.superWorkspace.superWorkspace;
+const { MsWorkspace } = Me.imports.msWorkspace.msWorkspace;
 const CategorizedAppCard =
     Me.imports.widget.categorizedAppCard.CategorizedAppCard;
 
@@ -16,9 +16,9 @@ const { Stack } = Me.imports.widget.layout;
 
 const EMIT_DEBOUNCE_DELAY = 100;
 
-var SuperWorkspaceWithCategory = class SuperWorkspaceWithCategory extends SuperWorkspace {
-    constructor(superWorkspaceManager, monitor, visible, category) {
-        super(superWorkspaceManager, monitor, visible);
+var MsWorkspaceWithCategory = class MsWorkspaceWithCategory extends MsWorkspace {
+    constructor(msWorkspaceManager, monitor, visible, category) {
+        super(msWorkspaceManager, monitor, visible);
         this.category = category;
         let previousLayout = category.tilingLayout;
         const Layout = global.tilingManager.getLayoutByKey(
@@ -30,11 +30,11 @@ var SuperWorkspaceWithCategory = class SuperWorkspaceWithCategory extends SuperW
     nextTiling(direction) {
         super.nextTiling(direction);
         this.category.tilingLayout = this.tilingLayout.constructor.key;
-        this.superWorkspaceManager.saveCategoryState();
+        this.msWorkspaceManager.saveCategoryState();
         /* Me.stateManager.setState(
             `${this.categoryKey}_${this.monitor.index}`,
             this.tilingLayout.constructor.key
         ); */
     }
 };
-Signals.addSignalMethods(SuperWorkspaceWithCategory.prototype);
+Signals.addSignalMethods(MsWorkspaceWithCategory.prototype);

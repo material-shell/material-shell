@@ -1,8 +1,9 @@
 const Main = imports.ui.main;
 const Signals = imports.signals;
+const { Clutter } = imports.gi;
 
-/* exported SuperDrawable */
-var SuperDrawable = class SuperDrawable {
+/* exported MsDrawable */
+var MsDrawable = class MsDrawable {
     constructor(title, actor) {
         this._title = title;
         this._actor = actor;
@@ -31,6 +32,31 @@ var SuperDrawable = class SuperDrawable {
         });
     }
 
+    get tiledMaximized() {
+        return this._tiledMaximized;
+    }
+
+    getClone() {
+        log('getClone');
+        let actorClone = new Clutter.Clone({
+            source: this.actor
+        });
+        let constraint = new Clutter.BindConstraint({
+            source: this.actor,
+            coordinate: Clutter.BindCoordinate.ALL
+        });
+        actorClone.add_constraint(constraint);
+        return actorClone;
+    }
+
+    show() {
+        this.actor.visible = true;
+    }
+
+    hide() {
+        this.actor.visible = false;
+    }
+
     setPosition(x, y) {
         this.position = {
             x,
@@ -53,7 +79,7 @@ var SuperDrawable = class SuperDrawable {
     }
 
     tileMaximize() {
-        this.tiledMaximized = true;
+        this._tiledMaximized = true;
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
@@ -65,4 +91,4 @@ var SuperDrawable = class SuperDrawable {
         );
     }
 };
-Signals.addSignalMethods(SuperDrawable.prototype);
+Signals.addSignalMethods(MsDrawable.prototype);

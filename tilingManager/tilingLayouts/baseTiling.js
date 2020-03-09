@@ -8,26 +8,26 @@ const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
-    constructor(superWorkspace) {
+    constructor(msWorkspace) {
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
         );
-        this.superWorkspace = superWorkspace;
-        this.monitor = superWorkspace.monitor;
-        this.tileableListChangedId = this.superWorkspace.connect(
+        this.msWorkspace = msWorkspace;
+        this.monitor = msWorkspace.monitor;
+        this.tileableListChangedId = this.msWorkspace.connect(
             'tileableList-changed',
-            (_, windows, oldWindows) => {
-                this.onTileRegulars(windows, oldWindows);
+            (_, tileableList, oldTileableList) => {
+                this.onTileableListChanged(tileableList, oldTileableList);
             }
         );
-        this.floatableListChangedId = this.superWorkspace.connect(
+        this.floatableListChangedId = this.msWorkspace.connect(
             'floatableList-changed',
             (_, windows, oldWindows) => {
                 this.onTileDialogs(windows, oldWindows);
             }
         );
-        this.windowFocusedChangedId = this.superWorkspace.connect(
-            'window-focused-changed',
+        this.windowFocusedChangedId = this.msWorkspace.connect(
+            'drawable-focused-changed',
             (_, window, oldWindow) => {
                 this.onFocusChanged(window, oldWindow);
             }
@@ -52,22 +52,33 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
     }
 
+    onTileableListChanged(tileableList, oldTileableList) {
+        if (Me.loaded) {
+            this.onTileRegulars(tileableList);
+        }
+    }
+
     onWorkAreasChanged() {
-        this.onTileRegulars(this.superWorkspace.tileableList);
-        this.onTileDialogs(this.superWorkspace.floatableList);
+        this.onTileRegulars(this.msWorkspace.tileableList);
+        this.onTileDialogs(this.msWorkspace.floatableList);
     }
 
     onFocusChanged() {}
 
+    onTile() {
+        this.onTileRegulars(this.msWorkspace.tileableList);
+        this.onTileDialogs(this.msWorkspace.floatableList);
+    }
+
     onTileRegulars(tileableList) {
         if (Me.loaded) {
             tileableList
-                .filter(superWindow => superWindow.metaWindow.get_maximized())
-                .forEach(superWindow => {
+                .filter(msWindow => msWindow.metaWindow.get_maximized())
+                .forEach(msWindow => {
                     Main.wm.skipNextEffect(
-                        superWindow.metaWindow.get_compositor_private()
+                        msWindow.metaWindow.get_compositor_private()
                     );
-                    superWindow.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                    msWindow.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                 });
         }
         // Define windows sizes and positions
@@ -78,9 +89,9 @@ var BaseTilingLayout = class BaseTilingLayout {
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.monitor.index
             );
-            windows.forEach(superWindow => {
-                if (superWindow.metaWindow.grabbed) return;
-                let window = superWindow.metaWindow.get_compositor_private();
+            windows.forEach(msWindow => {
+                if (msWindow.metaWindow.grabbed) return;
+                let window = msWindow.metaWindow.get_compositor_private();
                 if (!window) return;
                 /* if (!window.backdrop && this.doDialogBackdrop) {
                     window.backdrop = new Backdrop(window);
@@ -92,7 +103,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                     }
                 }
                 window.backdrop.fillWorkArea(); */
-                superWindow.setPosition(
+                msWindow.set_position(
                     workArea.x + workArea.width / 2 - window.width / 2,
                     workArea.y + workArea.height / 2 - window.height / 2
                 );
@@ -101,7 +112,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     moveMetaWindow(metaWindow, x, y) {
-        this.metaWindow.superWindow.setPosition(x, y);
+        this.metaWindow.msWindow.set_position(x, y);
         /* this.callSafely(metaWindow, () => {
             metaWindow.move_frame(true, x, y);
         }); */
@@ -113,7 +124,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             ({ x, y, width, height } = this.applyGaps({ x, y, width, height }));
         }
 
-        if (!animate || !this.superWorkspace.isDisplayed()) {
+        if (!animate || !this.msWorkspace.isDisplayed()) {
             this.callSafely(metaWindow, () => {
                 metaWindow.move_resize_frame(true, x, y, width, height);
             });
@@ -314,9 +325,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onDestroy() {
-        this.superWorkspace.disconnect(this.tileableListChangedId);
-        this.superWorkspace.disconnect(this.floatableListChangedId);
-        this.superWorkspace.disconnect(this.windowFocusedChangedId);
+        this.msWorkspace.disconnect(this.tileableListChangedId);
+        this.msWorkspace.disconnect(this.floatableListChangedId);
+        this.msWorkspace.disconnect(this.windowFocusedChangedId);
         this.themeSettings.disconnect(this.dialogSetting);
         global.display.disconnect(this.workAreaChangedId);
     }
@@ -325,11 +336,11 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogWindows = [];
         let regularWindows = [];
 
-        for (let superWindow of this.superWorkspace.superWindowList) {
-            if (this.isDialog(superWindow.metaWindow)) {
-                dialogWindows.push(superWindow);
+        for (let msWindow of this.msWorkspace.msWindowList) {
+            if (this.isDialog(msWindow.metaWindow)) {
+                dialogWindows.push(msWindow);
             } else {
-                regularWindows.push(superWindow);
+                regularWindows.push(msWindow);
             }
         }
 

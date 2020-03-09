@@ -57,13 +57,12 @@ var TilingManager = class TilingManager {
                             // change tiling of all workspaces using that layout.
 
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                global.superWorkspaceManager.superWorkspaces.forEach(
-                                    superWorkspace => {
+                                global.msWorkspaceManager.msWorkspaces.forEach(
+                                    msWorkspace => {
                                         if (
-                                            key ==
-                                            superWorkspace.tilingLayout.key
+                                            key == msWorkspace.tilingLayout.key
                                         ) {
-                                            superWorkspace.nextTiling(1);
+                                            msWorkspace.nextTiling(1);
                                         }
                                     }
                                 );
@@ -125,20 +124,20 @@ var TilingManager = class TilingManager {
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             for (let monitor of Main.layoutManager.monitors) {
-                let superWorkspace;
+                let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
-                    superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
+                    msWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
                 } else {
-                    superWorkspace = global.superWorkspaceManager.getSuperWorkspacesOfMonitorIndex(
+                    msWorkspace = global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                         monitor.index
                     )[0];
                 }
-                let layout = superWorkspace.tilingLayout;
+                let layout = msWorkspace.tilingLayout;
 
                 /* let [
                     dialogWindows,
                     regularWindows
-                ] = this.getDialogAndRegularWindows(superWorkspace.windows); */
+                ] = this.getDialogAndRegularWindows(msWorkspace.windows); */
 
                 layout.onTile();
                 //this.dialogLayout.onTile(dialogWindows, monitor);

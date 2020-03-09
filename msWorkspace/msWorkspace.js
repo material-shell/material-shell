@@ -5,7 +5,7 @@ const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MaximizeLayout } = Me.imports.tilingManager.tilingLayouts.maximize;
-const { SuperWindow } = Me.imports.superWorkspace.superWindow;
+const { MsWindow } = Me.imports.msWorkspace.msWindow;
 
 const TopPanel = Me.imports.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.utils.index;
@@ -18,27 +18,23 @@ const { Stack } = Me.imports.widget.layout;
 
 const EMIT_DEBOUNCE_DELAY = 100;
 
-var SuperWorkspace = class SuperWorkspace {
-    constructor(superWorkspaceManager, monitor, visible) {
-        this.superWorkspaceManager = superWorkspaceManager;
+var MsWorkspace = class MsWorkspace {
+    constructor(msWorkspaceManager, monitor, visible) {
+        this.msWorkspaceManager = msWorkspaceManager;
         this.monitor = monitor;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
         this.floatableList = [];
         this.uiVisible = visible;
+        this.focusedIndex = 0;
+
         const Layout = global.tilingManager.getLayoutByKey('maximized');
         this.tilingLayout = new Layout(this);
-        this.frontendContainer = new St.Widget();
-        this.frontendContainer.set_position(this.monitor.x, this.monitor.y);
-
-        // Only emit window changed after EMIT_DEBOUNCE_DELAY ms without call
-        // This prevents multiple tiling on window add for instance
-        this.emitWindowsChangedDebounced = debounce(
-            this.emitWindowsChanged,
-            EMIT_DEBOUNCE_DELAY
-        );
-
+        this.actor = new St.Widget({ style_class: 'msWorkspace' });
+        this.actor.set_position(this.monitor.x, this.monitor.y);
+        this.tileableContainer = new St.Widget();
+        this.floatableContainer = new St.Widget();
         this.panel = new TopPanel(this);
 
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
@@ -47,26 +43,32 @@ var SuperWorkspace = class SuperWorkspace {
             });
         }
 
-        this.focusedIndex = 0;
-
         this.workAreaChangedId = global.display.connect(
             'workareas-changed',
             () => {
-                this.updateTopBarPositionAndSize();
+                this.updateLayout();
             }
         );
         this.loadedSignalId = Me.connect(
             'extension-loaded',
             this.handleExtensionLoaded.bind(this)
         );
-        this.frontendContainer.add_child(this.panel);
-        Main.layoutManager.uiGroup.add_child(this.frontendContainer);
-        this.updateTopBarPositionAndSize();
+
+        this.actor.add_child(this.tileableContainer);
+        this.actor.add_child(this.floatableContainer);
+        this.actor.add_child(this.panel);
+        //global.window_group.add_actor(this.actorContainer);
+        /* Main.layoutManager.uiGroup.add_actor(this.actorContainer);
+        Main.layoutManager.uiGroup.set_child_above_sibling(
+            this.actorContainer,
+            global.window_group
+        ); */
+        this.updateLayout();
         this.updateUI();
     }
 
     destroy() {
-        if (this.frontendContainer) this.frontendContainer.destroy();
+        if (this.actor) this.actor.destroy();
         global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
@@ -77,12 +79,10 @@ var SuperWorkspace = class SuperWorkspace {
         return this.tileableList[this.focusedIndex];
     }
 
-    get superWindowList() {
-        return this.superWorkspaceManager.superWindowList.filter(
-            superWindow => {
-                return superWindow.superWorkspace === this;
-            }
-        );
+    get msWindowList() {
+        return this.msWorkspaceManager.msWindowList.filter(msWindow => {
+            return msWindow.msWorkspace === this;
+        });
     }
 
     isTopBarVisible() {
@@ -91,23 +91,35 @@ var SuperWorkspace = class SuperWorkspace {
             !Main.overview.visible
         );
     }
+    updateUI() {
+        this.actor.visible = this.uiVisible;
+        this.panel.visible = this.uiVisible && this.shouldPanelBeVisible();
+    }
 
-    updateTopBarPositionAndSize() {
+    updateLayout() {
         let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
+        //this.actorContainer.set_position(this.monitor.x, this.monitor.y);
+        this.actor.set_size(this.monitor.width, this.monitor.height);
+        //this.tileableContainer.set_size(workArea.width, workArea.height);
+        //this.tileableContainer.set_position(workArea.x, workArea.y);
+        //this.floatableContainer.set_size(workArea.width, workArea.height);
+        //this.floatableContainer.set_position(workArea.x, workArea.y);
         this.panel.set_position(workArea.x - this.monitor.x, 0);
         this.panel.set_width(workArea.width);
     }
 
-    addSuperWindow(superWindow) {
-        if (this.superWindowList.indexOf(superWindow) >= 0) return;
+    addMsWindow(msWindow) {
+        if (this.msWindowList.indexOf(msWindow) >= 0) return;
 
-        superWindow.superWorkspace = this;
-        WindowUtils.updateTitleBarVisibility(superWindow.metaWindow);
-        if (superWindow.isDialog) {
+        msWindow.msWorkspace = this;
+        log(msWindow, msWindow.title);
+        WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
+        if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
-            this.floatableList.push(superWindow);
+            this.floatableList.push(msWindow);
+            msWindow.reparent(this.floatableContainer);
             this.emit(
                 'floatableList-changed',
                 this.floatableList,
@@ -115,13 +127,14 @@ var SuperWorkspace = class SuperWorkspace {
             );
         } else {
             const oldTileableList = [...this.tileableList];
-            this.tileableList.push(superWindow);
+            this.tileableList.push(msWindow);
+            msWindow.reparent(this.tileableContainer);
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
-            this.onFocusTileable(superWindow);
+            this.onFocusTileable(msWindow);
         }
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
@@ -129,14 +142,12 @@ var SuperWorkspace = class SuperWorkspace {
         } */
     }
 
-    removeSuperWindow(superWindow) {
-        if (this.superWindowList.indexOf(superWindow) === -1) return;
-        if (superWindow.isDialog) {
+    removeMsWindow(msWindow) {
+        if (this.msWindowList.indexOf(msWindow) === -1) return;
+        log('removeMsWindow');
+        if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
-            this.floatableList.splice(
-                this.floatableList.indexOf(superWindow),
-                1
-            );
+            this.floatableList.splice(this.floatableList.indexOf(msWindow), 1);
             this.emit(
                 'floatableList-changed',
                 this.floatableList,
@@ -144,29 +155,30 @@ var SuperWorkspace = class SuperWorkspace {
             );
         } else {
             const oldTileableList = [...this.tileableList];
-            this.tileableList.splice(this.tileableList.indexOf(superWindow), 1);
+            this.tileableList.splice(this.tileableList.indexOf(msWindow), 1);
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
         }
-        // If there's no more focused superWindow on this workspace focus the last one
-        if (superWindow === this.focusedDrawable) {
+        // If there's no more focused msWindow on this workspace focus the last one
+        if (msWindow === this.focusedDrawable) {
             this.focusLastWindow();
         }
     }
 
     swapWindows(firstWindow, secondWindow) {
-        const firstIndex = this.superWindowList.indexOf(firstWindow);
-        const secondIndex = this.superWindowList.indexOf(secondWindow);
-        const oldWindows = [...this.superWindowList];
-        this.superWindowList[firstIndex] = secondWindow;
-        this.superWindowList[secondIndex] = firstWindow;
-        this.emitWindowsChanged(this.superWindowList, oldWindows);
+        const firstIndex = this.msWindowList.indexOf(firstWindow);
+        const secondIndex = this.msWindowList.indexOf(secondWindow);
+        const oldWindows = [...this.msWindowList];
+        this.msWindowList[firstIndex] = secondWindow;
+        this.msWindowList[secondIndex] = firstWindow;
+        this.emitWindowsChanged(this.msWindowList, oldWindows);
     }
 
     focusNextTileable() {
+        log('focus next tileable');
         if (this.focusedIndex === this.tileableList.length - 1) {
             return;
         }
@@ -174,40 +186,48 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     focusPreviousTileable() {
+        log('focus previous tileable');
         if (this.focusedIndex === 0) {
             return;
         }
         this.onFocusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    onFocusTileable(superDrawable) {
-        if (superDrawable === this.focusedDrawable) {
+    onFocusTileable(msDrawable) {
+        log('onFocusTileable', msDrawable);
+        if (msDrawable === this.focusedDrawable) {
             return;
         }
         const oldFocusedDrawable = this.focusedDrawable;
-        this.focusedIndex = this.tileableList.indexOf(superDrawable);
-        log(superDrawable);
-        this.emit('window-focused-changed', superDrawable, oldFocusedDrawable);
+        this.focusedIndex = Math.max(this.tileableList.indexOf(msDrawable), 0);
+        log('here2', this.focusedIndex);
+        if (
+            this.msWorkspaceManager.getActiveMsWorkspace() === this &&
+            msDrawable.metaWindow
+        ) {
+            msDrawable.metaWindow.activate(global.get_current_time());
+        }
+        this.emit('drawable-focused-changed', msDrawable, oldFocusedDrawable);
     }
 
     setWindowBefore(windowToMove, windowRelative) {
-        const oldWindows = [...this.superWindowList];
-        let windowToMoveIndex = this.superWindowList.indexOf(windowToMove);
-        this.superWindowList.splice(windowToMoveIndex, 1);
+        const oldWindows = [...this.msWindowList];
+        let windowToMoveIndex = this.msWindowList.indexOf(windowToMove);
+        this.msWindowList.splice(windowToMoveIndex, 1);
 
-        let windowRelativeIndex = this.superWindowList.indexOf(windowRelative);
-        this.superWindowList.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChanged(this.superWindowList, oldWindows);
+        let windowRelativeIndex = this.msWindowList.indexOf(windowRelative);
+        this.msWindowList.splice(windowRelativeIndex, 0, windowToMove);
+        this.emitWindowsChanged(this.msWindowList, oldWindows);
     }
 
     setWindowAfter(windowToMove, windowRelative) {
-        const oldWindows = [...this.superWindowList];
-        let windowToMoveIndex = this.superWindowList.indexOf(windowToMove);
-        this.superWindowList.splice(windowToMoveIndex, 1);
+        const oldWindows = [...this.msWindowList];
+        let windowToMoveIndex = this.msWindowList.indexOf(windowToMove);
+        this.msWindowList.splice(windowToMoveIndex, 1);
 
-        let windowRelativeIndex = this.superWindowList.indexOf(windowRelative);
-        this.superWindowList.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChanged(this.superWindowList, oldWindows);
+        let windowRelativeIndex = this.msWindowList.indexOf(windowRelative);
+        this.msWindowList.splice(windowRelativeIndex + 1, 0, windowToMove);
+        this.emitWindowsChanged(this.msWindowList, oldWindows);
     }
 
     nextTiling(direction) {
@@ -223,19 +243,14 @@ var SuperWorkspace = class SuperWorkspace {
     }
 
     shouldPanelBeVisible() {
-        let containFullscreenWindow = this.superWindowList.some(superWindow => {
-            return superWindow.metaWindow.is_fullscreen();
+        let containFullscreenWindow = this.msWindowList.some(msWindow => {
+            return msWindow.metaWindow.is_fullscreen();
         });
         return (
             !containFullscreenWindow &&
-            this.superWorkspaceManager &&
-            !this.superWorkspaceManager.noUImode
+            this.msWorkspaceManager &&
+            !this.msWorkspaceManager.noUImode
         );
-    }
-
-    updateUI() {
-        this.frontendContainer.visible = this.uiVisible;
-        this.panel.visible = this.uiVisible && this.shouldPanelBeVisible();
     }
 
     emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
@@ -277,17 +292,15 @@ var SuperWorkspace = class SuperWorkspace {
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
             return true;
         } else {
-            return (
-                this === this.superWorkspaceManager.getActiveSuperWorkspace()
-            );
+            return this === this.msWorkspaceManager.getActiveMsWorkspace();
         }
     }
 
     focusLastWindow() {
-        if (this.superWindowList.length) {
+        if (this.msWindowList.length) {
             let lastWindow =
-                this.superWindowList[this.focusedIndex] ||
-                this.superWindowList.slice(-1)[0];
+                this.msWindowList[this.focusedIndex] ||
+                this.msWindowList.slice(-1)[0];
 
             this.onFocusTileable(lastWindow);
         } else {
@@ -308,4 +321,4 @@ var SuperWorkspace = class SuperWorkspace {
         this.focusLastWindow();
     }
 };
-Signals.addSignalMethods(SuperWorkspace.prototype);
+Signals.addSignalMethods(MsWorkspace.prototype);

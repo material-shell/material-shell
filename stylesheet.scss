@@ -4,16 +4,19 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 
 @mixin foreground($theme, $opacity) {
-    @if ($theme == 'light') {
+    @if ($theme=='light') {
         color: rgba(0, 0, 0, $opacity);
     }
-    @if ($theme == 'dark') {
+
+    @if ($theme=='dark') {
         color: rgba(255, 255, 255, $opacity);
     }
-    @if ($theme == 'primary') {
+
+    @if ($theme=='primary') {
         @at-root .light-primary#{&} {
             color: rgba(0, 0, 0, $opacity);
         }
+
         @at-root .dark-primary#{&} {
             color: rgba(255, 255, 255, $opacity);
         }
@@ -21,28 +24,33 @@ $panel-size: 48px;
 }
 
 @mixin background($theme) {
-    @if ($theme == 'light') {
+    @if ($theme=='light') {
         background: rgba(255, 255, 255, 1);
     }
-    @if ($theme == 'dark') {
+
+    @if ($theme=='dark') {
         background: rgba(25, 25, 25, 1);
     }
-    @if ($theme == 'primary') {
+
+    @if ($theme=='primary') {
         background: $color-primary;
     }
 }
 
 @mixin foreground-as-background($theme, $opacity) {
-    @if ($theme == 'light') {
+    @if ($theme=='light') {
         background: rgba(0, 0, 0, $opacity);
     }
-    @if ($theme == 'dark') {
+
+    @if ($theme=='dark') {
         background: rgba(255, 255, 255, $opacity);
     }
-    @if ($theme == 'primary') {
+
+    @if ($theme=='primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, $opacity);
         }
+
         @at-root .dark-primary#{&} {
             background: rgba(255, 255, 255, $opacity);
         }
@@ -50,32 +58,39 @@ $panel-size: 48px;
 }
 
 @mixin hover($theme) {
-    @if ($theme == 'light') {
+    @if ($theme=='light') {
         background: rgba(0, 0, 0, 0.04);
     }
-    @if ($theme == 'dark') {
+
+    @if ($theme=='dark') {
         background: rgba(255, 255, 255, 0.04);
     }
-    @if ($theme == 'primary') {
+
+    @if ($theme=='primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.04);
         }
+
         @at-root .dark-primary#{&} {
             background: rgba(255, 255, 255, 0.04);
         }
     }
 }
+
 @mixin active($theme) {
-    @if ($theme == 'light') {
+    @if ($theme=='light') {
         background: rgba(0, 0, 0, 0.12);
     }
-    @if ($theme == 'dark') {
+
+    @if ($theme=='dark') {
         background: rgba(255, 255, 255, 0.12);
     }
-    @if ($theme == 'primary') {
+
+    @if ($theme=='primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.12);
         }
+
         @at-root .dark-primary#{&} {
             background: rgba(255, 255, 255, 0.12);
         }
@@ -110,6 +125,7 @@ $panel-size: 48px;
     .mat-panel-button {
         height: $panel-size;
         width: $panel-size;
+
         .mat-panel-button-icon {
             width: 24px;
             height: 24px;
@@ -117,11 +133,14 @@ $panel-size: 48px;
     }
 
     .workspace-active-indicator {
-        @if ($theme == 'primary') {
+        @if ($theme=='primary') {
             @include foreground-as-background-high-emphasis('primary');
-        } @else {
+        }
+
+        @else {
             @include background('primary');
         }
+
         width: 3px;
         height: 48px;
     }
@@ -141,16 +160,20 @@ $panel-size: 48px;
         .mat-button-container {
             @include foreground-high-emphasis($theme);
         }
+
         &:hover {
             .mat-button-container {
                 @include hover($theme);
             }
         }
+
         &.primary {
             @include background('primary');
+
             .mat-button-container {
                 @include foreground-high-emphasis('primary');
             }
+
             &:hover {
                 .mat-button-container {
                     @include hover('primary');
@@ -158,24 +181,30 @@ $panel-size: 48px;
             }
         }
     }
+
     .mat-button {
         .mat-panel-button {
             @include foreground-medium-emphasis($theme);
 
             &.active {
                 @include active($theme);
-                @if ($theme == 'light') {
+
+                @if ($theme=='light') {
                     color: $color-primary;
-                } @else {
+                }
+
+                @else {
                     @include foreground-high-emphasis($theme);
                 }
             }
         }
     }
+
     #panel {
         @include background($theme);
         width: $panel-size;
         box-shadow: $shadow;
+
         #panelLeft,
         #panelCenter,
         #panelRight {
@@ -188,16 +217,19 @@ $panel-size: 48px;
             text-align: center;
             padding: 0px;
             spacing: 0px;
-            > * {
+
+            >* {
                 width: $panel-size - 20px;
                 padding: 4px 0px;
                 margin: 0px;
                 @include foreground-medium-emphasis($theme);
             }
+
             &:hover {
                 @include hover($theme);
                 box-shadow: none;
             }
+
             &:active,
             &:focus,
             &:checked {
@@ -212,40 +244,53 @@ $panel-size: 48px;
 
     #topPanel {
         $topPanelTheme: $theme;
-        @if ($theme == 'primary') {
+
+        @if ($theme=='primary') {
             $topPanelTheme: 'light';
         }
+
         @include background($topPanelTheme);
         height: $panel-size;
         box-shadow: $shadow;
+
         .task-active-indicator {
-            @if ($topPanelTheme == 'dark') {
+            @if ($topPanelTheme=='dark') {
                 @include background('light');
-            } @else {
+            }
+
+            @else {
                 @include background('primary');
             }
+
             height: 2px;
         }
+
         .task-bar-item {
             font-size: 14px;
             height: $panel-size;
+
             &.active {
                 .task-bar-item-content {
                     .task-bar-item-title {
-                        @if ($topPanelTheme == 'light') {
+                        @if ($topPanelTheme=='light') {
                             color: $color-primary;
-                        } @else {
+                        }
+
+                        @else {
                             @include foreground-high-emphasis($topPanelTheme);
                         }
                     }
                 }
             }
+
             .task-bar-item-content {
                 padding: 0px 8px;
+
                 .app-icon {
                     icon-size: 24px;
                     margin-right: 8px;
                 }
+
                 .task-bar-item-title {
                     max-width: 248px;
                     margin-right: 8px;
@@ -253,10 +298,12 @@ $panel-size: 48px;
                     font-size: 14px;
                     @include foreground-medium-emphasis($topPanelTheme);
                 }
+
                 .task-close-button {
                     border-radius: 20px;
                     width: 24px;
                     height: 20px;
+
                     .task-close-icon {
                         icon-size: 18px;
                         @include foreground-medium-emphasis($topPanelTheme);
@@ -264,12 +311,15 @@ $panel-size: 48px;
                 }
             }
         }
+
         .mat-panel-button {
             .mat-panel-button-icon {
                 @include foreground-medium-emphasis($topPanelTheme);
             }
+
             &.active {
                 @include active($topPanelTheme);
+
                 .mat-panel-button-icon {
                     @include foreground-high-emphasis($topPanelTheme);
                 }
@@ -290,34 +340,47 @@ $panel-size: 48px;
     }
 
     .mat-card {
-        @if ($theme == 'primary') {
+        @if ($theme=='primary') {
             @include background('light');
-        } @else {
+        }
+
+        @else {
             @include background($theme);
         }
+
         border-radius: 6px;
         box-shadow: $shadow;
+
         .mat-card-title {
-            @if ($theme == 'primary') {
+            @if ($theme=='primary') {
                 @include background($theme);
-            } @else {
+            }
+
+            @else {
                 @include hover($theme);
             }
-            @if ($theme == 'light') {
+
+            @if ($theme=='light') {
                 color: $color-primary;
-            } @else {
+            }
+
+            @else {
                 @include foreground-high-emphasis($theme);
             }
+
             height: 72px;
             padding: 0px 24px;
+
             .mat-card-title-icon {
                 icon-size: 40px;
                 margin-right: 16px;
             }
+
             .mat-card-title-label {
                 font-size: 24px;
             }
         }
+
         .mat-card-content {
             padding: 24px;
             @include foreground-high-emphasis($theme);
@@ -328,10 +391,13 @@ $panel-size: 48px;
         .overview-icon {
             margin: 8px;
         }
+
         .overview-icon-with-label {
-            @if ($theme == 'primary') {
+            @if ($theme=='primary') {
                 @include foreground-high-emphasis('light');
-            } @else {
+            }
+
+            @else {
                 @include foreground-high-emphasis($theme);
             }
         }
@@ -340,14 +406,20 @@ $panel-size: 48px;
     .backdrop-container {
         background: rgba(0, 0, 0, 0.5);
     }
+
+    .surface {
+        @include background($theme);
+    }
 }
 
 .dark-theme {
     @include buildTheme('dark');
 }
+
 .light-theme {
     @include buildTheme('light');
 }
+
 .primary-theme {
     @include buildTheme('primary');
 }

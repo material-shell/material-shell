@@ -9,15 +9,15 @@ const { TaskBar } = Me.imports.widget.taskBar;
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
     class TopPanel extends St.Widget {
-        _init(superWorkspace) {
+        _init(msWorkspace) {
             super._init({
                 name: 'topPanel'
             });
             this._delegate = this;
-            this.superWorkspace = superWorkspace;
+            this.msWorkspace = msWorkspace;
             this._leftContainer = new St.BoxLayout();
 
-            this.taskBar = new TaskBar(superWorkspace);
+            this.taskBar = new TaskBar(msWorkspace);
             this._leftContainer.add_child(this.taskBar);
 
             let iconContainer = new St.Icon({
@@ -33,14 +33,14 @@ var TopPanel = GObject.registerClass(
             });
 
             this.addButton.connect('clicked', () => {
-                superWorkspace.revealBackground();
+                msWorkspace.revealBackground();
             });
 
             this._leftContainer.add_child(this.addButton);
             this.add_child(this._leftContainer);
 
             this.tilingIcon = new St.Icon({
-                gicon: superWorkspace.tilingLayout.icon,
+                gicon: msWorkspace.tilingLayout.icon,
                 style_class: 'mat-panel-button-icon'
             });
 
@@ -53,7 +53,7 @@ var TopPanel = GObject.registerClass(
 
             this.tilingButton.connect('clicked', (actor, button) => {
                 // Go in reverse direction on right click (button: 3)
-                superWorkspace.nextTiling(button === 3 ? -1 : 1);
+                msWorkspace.nextTiling(button === 3 ? -1 : 1);
             });
 
             this.add_child(this.tilingButton);

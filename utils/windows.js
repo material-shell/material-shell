@@ -3,19 +3,19 @@ const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
 const GLib = imports.gi.GLib;
 
-var updateTitleBarVisibility = function(window) {
-    let superWorkspaceIsInFloatLayout =
-        window.superWindow.superWorkspace.tilingLayout.constructor.key ===
+var updateTitleBarVisibility = function(metaWindow) {
+    let msWorkspaceIsInFloatLayout =
+        metaWindow.msWindow.msWorkspace.tilingLayout.constructor.key ===
         'float';
-    let shouldTitleBarBeVisible = superWorkspaceIsInFloatLayout;
-    if (window.titleBarVisible !== shouldTitleBarBeVisible) {
-        setTitleBarVisibility(window, shouldTitleBarBeVisible);
+    let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
+    if (metaWindow.titleBarVisible !== shouldTitleBarBeVisible) {
+        setTitleBarVisibility(metaWindow, shouldTitleBarBeVisible);
     }
 };
 
-var setTitleBarVisibility = function(window, visible) {
-    let windowXID = getWindowXID(window);
-    if (!windowXID || window.is_client_decorated()) return;
+var setTitleBarVisibility = function(metaWindow, visible) {
+    let windowXID = getWindowXID(metaWindow);
+    if (!windowXID || metaWindow.is_client_decorated()) return;
 
     Util.spawn([
         'xprop',
@@ -29,7 +29,7 @@ var setTitleBarVisibility = function(window, visible) {
         `2, 0, ${visible ? '1' : '2'} 0, 0`
     ]);
 
-    window.titleBarVisible = visible;
+    metaWindow.titleBarVisible = visible;
 };
 
 var getWindowXID = function(win) {
