@@ -7,6 +7,7 @@ const {
     MatCardContent
 } = Me.imports.widget.material.card;
 const { Column, Row } = Me.imports.widget.layout;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported CategorizedAppCard */
 var CategorizedAppCard = GObject.registerClass(
@@ -87,7 +88,14 @@ var SimpleIconGrid = GObject.registerClass(
             for (let i = 0; i < this.nbRows; i++) {
                 let row = new Row({
                     children: icons.splice(0, this.nbColumns).map(icon => {
-                        return icon.actor;
+                        if (
+                            ShellVersionMatch('3.32') ||
+                            ShellVersionMatch('3.34')
+                        ) {
+                            return icon.actor;
+                        } else {
+                            return icon;
+                        }
                     })
                 });
                 this.add_child(row);
