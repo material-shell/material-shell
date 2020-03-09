@@ -3,6 +3,7 @@ const Gi = imports._gi;
 const GLib = imports.gi.GLib;
 const { Clutter, Meta, St } = imports.gi;
 const WindowManager = imports.ui.windowManager;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const RectangularClockSubModule =
@@ -103,9 +104,14 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
 
         //3- Fix workspace switch animation by overriding the window manager function that used the panel height to define window position
         Main.wm._getPositionForDirection = this.wmGetPositionForDirection;
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.panel._leftCorner.actor.hide();
+            this.panel._rightCorner.actor.hide();
+        } else {
+            this.panel._leftCorner.hide();
+            this.panel._rightCorner.hide();
+        }
 
-        this.panel._leftCorner.actor.hide();
-        this.panel._rightCorner.actor.hide();
         this.rectangularClockSubModule.enable();
 
         this.leftBoxActorAddedSignal = this.panel._leftBox.connect(
@@ -126,7 +132,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
                 this.recursivelySetVertical(actor, true);
             }
         );
-        this.panel.statusArea.style_class = "status-area";
+        this.panel.statusArea.style_class = 'status-area';
     }
 
     disable() {
@@ -138,8 +144,13 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         //3- Revert function
         Main.wm._getPositionForDirection =
             WindowManager._getPositionForDirection;
-        this.panel._leftCorner.actor.show();
-        this.panel._rightCorner.actor.show();
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.panel._leftCorner.actor.show();
+            this.panel._rightCorner.actor.show();
+        } else {
+            this.panel._leftCorner.show();
+            this.panel._rightCorner.show();
+        }
         this.rectangularClockSubModule.disable();
         this.panel._leftBox.disconnect(this.leftBoxActorAddedSignal);
         this.panel._centerBox.disconnect(this.centerBoxActorAddedSignal);

@@ -1,4 +1,5 @@
 const Main = imports.ui.main;
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported HideDashModule */
 var HideDashModule = class HideDashModule {
@@ -8,12 +9,20 @@ var HideDashModule = class HideDashModule {
     }
 
     enable() {
-        this.controls.dash.actor.hide();
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.controls.dash.actor.hide();
+        } else {
+            this.controls.dash.hide();
+        }
         this.controls._group.remove_child(this.controls._dashSpacer);
     }
 
     disable() {
-        this.controls.dash.actor.show();
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.controls.dash.actor.show();
+        } else {
+            this.controls.dash.show();
+        }
         this.controls._group.insert_child_at_index(
             this.controls._dashSpacer,
             0
