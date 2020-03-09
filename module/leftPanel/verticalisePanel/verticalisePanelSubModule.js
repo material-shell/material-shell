@@ -3,9 +3,9 @@ const Gi = imports._gi;
 const GLib = imports.gi.GLib;
 const { Clutter, Meta, St } = imports.gi;
 const WindowManager = imports.ui.windowManager;
-const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.utils.compatibility;
 const RectangularClockSubModule =
     Me.imports.module.leftPanel.verticalisePanel.rectangularClockSubModule
         .RectangularClockSubModule;

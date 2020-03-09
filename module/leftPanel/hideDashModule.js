@@ -1,4 +1,5 @@
 const Main = imports.ui.main;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
 /* exported HideDashModule */
