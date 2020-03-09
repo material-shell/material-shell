@@ -2,19 +2,20 @@ const Main = imports.ui.main;
 
 /* exported HideDashModule */
 var HideDashModule = class HideDashModule {
-    constructor() {}
+    constructor() {
+        this.controls =
+            Main.overview._controls || Main.overview._overview._controls;
+    }
 
     enable() {
-        Main.overview._controls.dash.actor.hide();
-        Main.overview._controls._group.remove_child(
-            Main.overview._controls._dashSpacer
-        );
+        this.controls.dash.actor.hide();
+        this.controls._group.remove_child(this.controls._dashSpacer);
     }
 
     disable() {
-        Main.overview._controls.dash.actor.show();
-        Main.overview._controls._group.insert_child_at_index(
-            Main.overview._controls._dashSpacer,
+        this.controls.dash.actor.show();
+        this.controls._group.insert_child_at_index(
+            this.controls._dashSpacer,
             0
         );
     }
