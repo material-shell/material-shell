@@ -64,7 +64,9 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             })
         });
 
-        this.legacyPanelGhost = Main.overview._panelGhost;
+        this.legacyPanelGhost =
+            Main.overview._panelGhost ||
+            Main.overview._overview.get_child_at_index(0);
         this.legacyPanelGhostIndex = Main.overview._overview
             .get_children()
             .indexOf(this.legacyPanelGhost);
