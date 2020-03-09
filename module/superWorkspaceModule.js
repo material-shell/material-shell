@@ -272,10 +272,8 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
                 if (this._movingWindow && window == this._movingWindow) {
                     actor.get_parent().remove_child(actor);
-                    actor.get_parent().remove_child(actor);
                     switchData.movingWindowBin.add_child(actor);
                 } else if (window.get_workspace().index() == from) {
-                    actor.get_parent().remove_child(actor);
                     switchData.curGroup.add_child(actor);
                 } else {
                     for (let dir of Object.values(Meta.MotionDirection)) {
@@ -285,8 +283,6 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                             info.index != window.get_workspace().index()
                         )
                             continue;
-
-                        actor.get_parent().remove_child(actor);
                         info.actor.add_child(actor);
                         //actor.lower(info.superWorkspace.frontendContainer);
                         break;

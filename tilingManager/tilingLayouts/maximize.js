@@ -133,14 +133,12 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
         if (oldMetaWindow) {
             let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
-            oldWindowClone.get_parent().remove_child(oldWindowClone);
             oldContainer.add_child(oldWindowClone);
             oldMetaWindow.get_compositor_private().hide();
         }
 
         if (newMetaWindow) {
             let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
-            newWindowClone.get_parent().remove_child(newWindowClone);
             newContainer.add_child(newWindowClone);
             newMetaWindow.get_compositor_private().hide();
         }
