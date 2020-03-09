@@ -133,13 +133,15 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
         if (oldMetaWindow) {
             let oldWindowClone = Main.wm.getWindowClone(oldMetaWindow);
-            oldWindowClone.reparent(oldContainer);
+            oldWindowClone.get_parent().remove_child(oldWindowClone);
+            oldContainer.add_child(oldWindowClone);
             oldMetaWindow.get_compositor_private().hide();
         }
 
         if (newMetaWindow) {
             let newWindowClone = Main.wm.getWindowClone(newMetaWindow);
-            newWindowClone.reparent(newContainer);
+            newWindowClone.get_parent().remove_child(newWindowClone);
+            newContainer.add_child(newWindowClone);
             newMetaWindow.get_compositor_private().hide();
         }
         // Get the full workArea here and not workspaceBounds which have gaps

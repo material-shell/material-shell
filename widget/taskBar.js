@@ -159,7 +159,8 @@ var TaskBar = GObject.registerClass(
             const { dropPlaceholder } = dragData;
 
             if (dragData.currentTaskBar !== this) {
-                dropPlaceholder.reparent(this.taskButtonContainer);
+                dropPlaceholder.get_parent().remove_child(dropPlaceholder);
+                this.taskButtonContainer.add_child(dropPlaceholder);
                 dragData.currentTaskBar = this;
             }
 
@@ -168,7 +169,8 @@ var TaskBar = GObject.registerClass(
 
         reparentDragItem() {
             const { item, currentTaskBar } = dragData;
-            item.reparent(currentTaskBar.taskButtonContainer);
+            item.get_parent().remove_child(item);
+            currentTaskBar.taskButtonContainer.add_child(item);
         }
 
         _onDragEnd() {

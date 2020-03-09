@@ -29,7 +29,10 @@ var WorkspaceList = GObject.registerClass(
             this.add_child(this.buttonList);
             this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
             this.dropPlaceholder.connect('drag-dropped', () => {
-                this.tempDragData.workspaceButton.reparent(this.buttonList);
+                this.tempDragData.workspaceButton
+                    .get_parent()
+                    .remove_child(this.tempDragData.workspaceButton);
+                this.buttonList.add_child(this.tempDragData.workspaceButton);
             });
             this.dropPlaceholder.connect('drag-over', () => {
                 this.tempDragData.draggedOverByChild = true;
@@ -88,7 +91,12 @@ var WorkspaceList = GObject.registerClass(
                 });
 
                 workspaceButton.connect('drag-dropped', () => {
-                    this.tempDragData.workspaceButton.reparent(this.buttonList);
+                    this.tempDragData.workspaceButton
+                        .get_parent()
+                        .remove_child(this.tempDragData.workspaceButton);
+                    this.buttonList.add_child(
+                        this.tempDragData.workspaceButton
+                    );
                 });
                 this.buttonList.add_child(workspaceButton);
             }

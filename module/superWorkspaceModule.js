@@ -207,11 +207,17 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
             switchData.superWorkspace.uiVisible = true;
             switchData.superWorkspace.updateUI();
-            switchData.superWorkspace.backgroundContainer.reparent(
-                switchData.curGroup
+            switchData.superWorkspace.backgroundContainer
+                .get_parent()
+                .remove_child(switchData.superWorkspace.backgroundContainer);
+            switchData.curGroup.add_child(
+                switchData.superWorkspace.backgroundContainer
             );
-            switchData.superWorkspace.frontendContainer.reparent(
-                switchData.curGroup
+            switchData.superWorkspace.frontendContainer
+                .get_parent()
+                .remove_child(switchData.superWorkspace.frontendContainer);
+            switchData.curGroup.add_child(
+                switchData.superWorkspace.frontendContainer
             );
 
             for (let dir of Object.values(Meta.MotionDirection)) {
@@ -241,11 +247,17 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     ws.index()
                 );
 
-                info.superWorkspace.backgroundContainer.reparent(info.actor);
+                info.superWorkspace.backgroundContainer
+                    .get_parent()
+                    .remove_child(info.superWorkspace.backgroundContainer);
+                info.actor.add_child(info.superWorkspace.backgroundContainer);
 
                 info.superWorkspace.uiVisible = true;
                 info.superWorkspace.updateUI();
-                info.superWorkspace.frontendContainer.reparent(info.actor);
+                info.superWorkspace.frontendContainer
+                    .get_parent()
+                    .remove_child(info.superWorkspace.frontendContainer);
+                info.actor.add_child(info.superWorkspace.frontendContainer);
             }
 
             switchData.movingWindowBin.raise_top();
@@ -259,9 +271,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 if (window.is_on_all_workspaces()) continue;
 
                 if (this._movingWindow && window == this._movingWindow) {
-                    actor.reparent(switchData.movingWindowBin);
+                    actor.get_parent().remove_child(actor);
+                    actor.get_parent().remove_child(actor);
+                    switchData.movingWindowBin.add_child(actor);
                 } else if (window.get_workspace().index() == from) {
-                    actor.reparent(switchData.curGroup);
+                    actor.get_parent().remove_child(actor);
+                    switchData.curGroup.add_child(actor);
                 } else {
                     for (let dir of Object.values(Meta.MotionDirection)) {
                         let info = switchData.surroundings[dir];
@@ -271,15 +286,19 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                         )
                             continue;
 
-                        actor.reparent(info.actor);
+                        actor.get_parent().remove_child(actor);
+                        info.actor.add_child(actor);
                         //actor.lower(info.superWorkspace.frontendContainer);
                         break;
                     }
                 }
             }
 
-            switchData.superWorkspace.frontendContainer.reparent(
-                switchData.curGroup
+            switchData.superWorkspace.frontendContainer
+                .get_parent()
+                .remove_child(switchData.superWorkspace.frontendContainer);
+            switchData.curGroup.add_child(
+                switchData.superWorkspace.frontendContainer
             );
         };
 
@@ -290,11 +309,17 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
         Main.wm._finishWorkspaceSwitch = function(switchData) {
             this._switchData = null;
-            switchData.superWorkspace.frontendContainer.reparent(
-                Main.layoutManager.uiGroup
+            switchData.superWorkspace.frontendContainer
+                .get_parent()
+                .remove_child(switchData.superWorkspace.frontendContainer);
+            Main.layoutManager.uiGroup.add_child(
+                switchData.superWorkspace.frontendContainer
             );
-            switchData.superWorkspace.backgroundContainer.reparent(
-                Main.layoutManager._backgroundGroup
+            switchData.superWorkspace.backgroundContainer
+                .get_parent()
+                .remove_child(switchData.superWorkspace.backgroundContainer);
+            Main.layoutManager._backgroundGroup.add_child(
+                switchData.superWorkspace.backgroundContainer
             );
             switchData.superWorkspace.uiVisible = false;
             switchData.superWorkspace.updateUI();
@@ -302,11 +327,17 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             for (let dir of Object.values(Meta.MotionDirection)) {
                 let info = switchData.surroundings[dir];
                 if (info) {
-                    info.superWorkspace.frontendContainer.reparent(
-                        Main.layoutManager.uiGroup
+                    info.superWorkspace.frontendContainer
+                        .get_parent()
+                        .remove_child(info.superWorkspace.frontendContainer);
+                    Main.layoutManager.uiGroup.add_child(
+                        info.superWorkspace.frontendContainer
                     );
-                    info.superWorkspace.backgroundContainer.reparent(
-                        Main.layoutManager._backgroundGroup
+                    info.superWorkspace.backgroundContainer
+                        .get_parent()
+                        .remove_child(info.superWorkspace.backgroundContainer);
+                    Main.layoutManager._backgroundGroup.add_child(
+                        info.superWorkspace.backgroundContainer
                     );
                 }
             }

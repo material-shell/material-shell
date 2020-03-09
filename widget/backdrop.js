@@ -68,7 +68,8 @@ var Backdrop = GObject.registerClass(
         followWindow() {
             let newParent = this.window.get_parent();
             if (newParent) {
-                this.reparent(newParent);
+                this.get_parent().remove_child(this);
+                newParent.add_child(this);
             }
         }
 
