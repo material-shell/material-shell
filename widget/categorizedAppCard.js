@@ -47,6 +47,8 @@ var CategorizedAppCard = GObject.registerClass(
                 let appIcon = new AppIcon(app, {
                     isDraggable: false
                 });
+                appIcon._iconContainer.x_expand = false;
+                appIcon._iconContainer.y_expand = false;
                 icons.push(appIcon);
             }
             this._grid.loadIcons(icons);
@@ -94,7 +96,7 @@ var SimpleIconGrid = GObject.registerClass(
                         ) {
                             return icon.actor;
                         } else {
-                            return new St.Bin({ child: icon });
+                            return icon;
                         }
                     })
                 });
