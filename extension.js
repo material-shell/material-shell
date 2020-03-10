@@ -5,15 +5,15 @@ const Signals = imports.signals;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     DisableIncompatibleExtensionsModule
-} = Me.imports.module.disableIncompatibleExtensionsModule;
-const { LeftPanelModule } = Me.imports.module.leftPanel.leftPanelModule;
-const { MsWorkspaceModule } = Me.imports.module.msWorkspaceModule;
-const { HotKeysModule } = Me.imports.module.hotKeysModule;
-const { RequiredSettingsModule } = Me.imports.module.requiredSettingsModule;
-const { TilingModule } = Me.imports.module.tilingModule;
-const { ThemeModule } = Me.imports.module.themeModule;
+} = Me.imports.src.module.disableIncompatibleExtensionsModule;
+const { LeftPanelModule } = Me.imports.src.module.leftPanel.leftPanelModule;
+const { MsWorkspaceModule } = Me.imports.src.module.msWorkspaceModule;
+const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
+const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
+const { TilingModule } = Me.imports.src.module.tilingModule;
+const { ThemeModule } = Me.imports.src.module.themeModule;
 
-const { StateManager } = Me.imports.stateManager;
+const { StateManager } = Me.imports.src.stateManager;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 

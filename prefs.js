@@ -1,7 +1,7 @@
 const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.utils.settings;
+const { getSettings } = Me.imports.src.utils.settings;
 
 // eslint-disable-next-line no-unused-vars
 function init() {}
@@ -389,7 +389,9 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
-    const showSettingsButtonOnLeftPanel = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    const showSettingsButtonOnLeftPanel = new Gtk.Switch({
+        valign: Gtk.Align.CENTER
+    });
     itemRows.push(
         makeItemRow(
             'Show settings button on left panel',
