@@ -264,7 +264,8 @@ var SuperWorkspace = class SuperWorkspace {
         });
         return (
             !containFullscreenWindow &&
-            (this.superWorkspaceManager && !this.superWorkspaceManager.noUImode)
+            this.superWorkspaceManager &&
+            !this.superWorkspaceManager.noUImode
         );
     }
 
