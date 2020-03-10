@@ -9,7 +9,7 @@ schemas: schemas/gschemas.compiled
 	glib-compile-schemas schemas/
 
 sass:
-	npx node-sass src/stylesheet.scss stylesheet.css
+	npx node-sass src/styles/stylesheet.scss stylesheet.css
 
 disable:
 	$(extension_tool) -d $(extension)

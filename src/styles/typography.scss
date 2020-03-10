@@ -1,0 +1,75 @@
+$font: Roboto;
+
+.headline-1 {
+  font-family: $font;
+  font-size: 96px;
+  font-weight: lighter;
+  letter-spacing: -1.5px;
+}
+
+.headline-2 {
+  font-family: $font;
+  font-size: 60px;
+  font-weight: lighter;
+  letter-spacing: -0.5px;
+}
+
+.headline-3 {
+  font-family: $font;
+  font-size: 48px;
+}
+
+.headline-4 {
+  font-family: $font;
+  font-size: 34px;
+  letter-spacing: 0.25px;
+}
+
+.headline-5 {
+  font-family: $font;
+  font-size: 24px;
+}
+
+.headline-6 {
+  font-family: $font;
+  font-size: 20px;
+  font-weight: medium;
+  letter-spacing: 0.15px;
+}
+
+subtitle-1 {
+  font-family: $font;
+  font-size: 16px;
+  letter-spacing: 0.15px;
+}
+
+.subtitle-2 {
+  font-family: $font;
+  font-size: 14px;
+  font-weight: medium;
+  letter-spacing: 0.1px;
+}
+
+.body-1 {
+  font-family: $font;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.body-2 {
+  font-family: $font;
+  font-size: 14px;
+  letter-spacing: 0.25px;
+}
+
+.caption {
+  font-family: $font;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+
+.overline {
+  font-family: $font;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}

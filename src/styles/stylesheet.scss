@@ -1,3 +1,4 @@
+@import 'typography';
 $color-primary: #3f51b5;
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
@@ -122,6 +123,11 @@ $panel-size: 48px;
 }
 
 @mixin buildTheme($theme) {
+
+    .text-medium-emphasis {
+        @include foreground-medium-emphasis($theme);
+    }
+
     .mat-panel-button {
         height: $panel-size;
         width: $panel-size;
