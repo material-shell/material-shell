@@ -54,7 +54,10 @@ var Backdrop = GObject.registerClass(
                             .indexOf(this) + 1
                     ) !== this.window
                 ) {
-                    this.lower(this.window);
+                    this.get_parent().set_child_below_sibling(
+                        this,
+                        this.window
+                    );
                 }
             });
 
@@ -77,7 +80,7 @@ var Backdrop = GObject.registerClass(
         highlightWindow() {
             if (this.window.get_parent() !== this.get_parent()) return;
             this.window.get_parent().set_child_above_sibling(this.window, null);
-            this.lower(this.window);
+            this.get_parent().set_child_below_sibling(this, this.window);
         }
 
         fillWorkArea() {
