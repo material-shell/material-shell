@@ -47,6 +47,11 @@ var CategorizedAppCard = GObject.registerClass(
                 let appIcon = new AppIcon(app, {
                     isDraggable: false
                 });
+                if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+                    appIcon.actor.set_size(148, 148);
+                } else {
+                    appIcon.set_size(148, 148);
+                }
                 icons.push(appIcon);
             }
             this._grid.loadIcons(icons);
