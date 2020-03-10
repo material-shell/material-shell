@@ -3,7 +3,8 @@
   width: 48px; }
   .dark-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .dark-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -145,7 +146,8 @@
   width: 48px; }
   .light-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .light-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -287,7 +289,8 @@
   width: 48px; }
   .primary-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .primary-theme .workspace-active-indicator {
   width: 3px;
