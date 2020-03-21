@@ -14,6 +14,8 @@ var AppPlaceholder = GObject.registerClass(
             });
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
+            //        this._spinner = new Animation.Spinner(DEFAULT_BUTTON_WELL_ICON_SIZE);
+
             this.appTitle = new St.Label({
                 text: app.get_name(),
                 x_align: Clutter.ActorAlign.CENTER,

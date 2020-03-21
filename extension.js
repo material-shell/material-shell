@@ -1,4 +1,4 @@
-const { GLib, St } = imports.gi;
+const { GLib, St, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
@@ -14,8 +14,12 @@ const { TilingModule } = Me.imports.src.module.tilingModule;
 const { ThemeModule } = Me.imports.src.module.themeModule;
 
 const { StateManager } = Me.imports.src.stateManager;
+const { MsWindowManager } = Me.imports.src.msWorkspace.msWindowManager;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
+
+//detect the keyboard key press event
+const Keymap = imports.gi.Gdk.Keymap.get_default();
 
 // eslint-disable-next-line no-unused-vars
 function init() {
@@ -35,12 +39,20 @@ function enable() {
     Main.wm._blockAnimations = true;
     Me.loaded = false;
     Me.stateManager = new StateManager();
-    St.set_slow_down_factor(1);
+    let superPressed = false;
+    Keymap.connect('state_changed', _ => {
+        let isSuperPressed = Keymap.get_modifier_state() === 64;
+        if (superPressed != isSuperPressed) {
+            superPressed = isSuperPressed;
+            Me.emit('super-pressed-change', superPressed);
+        }
+    });
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         Me.stateManager.loadRegistry(() => {
+            Me.msWindowManager = new MsWindowManager();
             modules = [
                 new RequiredSettingsModule(),
                 new LeftPanelModule(),
@@ -82,5 +94,7 @@ function disable() {
     modules.reverse().forEach(module => {
         module.destroy();
     });
+    Me.msWindowManager.destroy();
+
     Me.loaded = false;
 }

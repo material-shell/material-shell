@@ -1,4 +1,4 @@
-const { Shell, Meta, St, GLib, GObject } = imports.gi;
+const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
@@ -22,14 +22,30 @@ var MsWorkspaceContainer = GObject.registerClass(
             log('new MsWorkspaceContainer');
             this.msWorkspaceManager = msWorkspaceManager;
             this.translationAnimator = new TranslationAnimator(true);
+            this.aboveContainer = new Clutter.Actor();
+            this.add_child(this.aboveContainer);
             this.set_style('background:rgba(255,255,0,0.5)');
             this.registerToSignals();
+            this.updateMsWorkspaceViewPosition();
         }
 
         updateMsWorkspaceViewPosition() {
-            this.msWorkspaceManager.msWorkspaces.forEach(msWorkspace => {
-                msWorkspace.actor.reparent(this);
+            this.msWorkspaceManager.msWorkspaceList.forEach(msWorkspace => {
+                const currentParent = msWorkspace.actor.get_parent();
+                if (currentParent) {
+                    currentParent.remove_child(msWorkspace.actor);
+                }
+                this.add_child(msWorkspace.actor);
             });
+            this.set_child_above_sibling(this.aboveContainer, null);
+        }
+
+        setActorAbove(actor) {
+            log('setActorAbove', actor);
+            if (actor.get_parent()) {
+                actor.get_parent().remove_child(actor);
+            }
+            this.aboveContainer.add_child(actor);
         }
 
         registerToSignals() {
@@ -50,7 +66,6 @@ var MsWorkspaceContainer = GObject.registerClass(
                     'switch-workspace',
                     (window_manager, from, to) => {
                         const direction = to > from ? 1 : -1;
-                        log('switch', from, to, direction);
                         let oldActor = this.msWorkspaceManager
                             .primaryMsWorkspaces[from].actor;
                         let newActor = this.msWorkspaceManager
@@ -64,7 +79,10 @@ var MsWorkspaceContainer = GObject.registerClass(
                             Main.layoutManager.primaryMonitor.height
                         );
                         if (!this.translationAnimator.get_parent()) {
-                            this.add_child(this.translationAnimator);
+                            this.insert_child_below(
+                                this.translationAnimator,
+                                this.aboveContainer
+                            );
                         }
                         this.translationAnimator.setTranslation(
                             oldActor,
@@ -82,7 +100,7 @@ var MsWorkspaceContainer = GObject.registerClass(
                     () => {
                         this.remove_child(this.translationAnimator);
                         const activeMsWorkspace = this.msWorkspaceManager.getActiveMsWorkspace();
-                        this.msWorkspaceManager.msWorkspaces.forEach(
+                        this.msWorkspaceManager.msWorkspaceList.forEach(
                             msWorkspace => {
                                 msWorkspace.actor.visible =
                                     msWorkspace === activeMsWorkspace;

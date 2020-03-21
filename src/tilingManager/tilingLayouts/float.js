@@ -11,26 +11,42 @@ const WindowUtils = Me.imports.src.utils.windows;
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        /* GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.msWorkspace.msWindowList.forEach(msWindow => {
                 WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
             });
         });
+        msWorkspace.tileableContainer.hide();
+        msWorkspace.floatableContainer.hide(); */
     }
 
-    onWindowsChanged(newMsWindows, oldMsWindows) {
-        super.onWindowsChanged();
-        let leavingMsWindows = oldMsWindows.filter(
-            msWindow => !newMsWindows.includes(msWindow)
-        );
+    alterTileable(tileable) {
+        if (tileable.metaWindow) {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+            });
+            tileable.followMetaWindow = true;
+        }
+    }
+
+    restoreTileable(tileable) {
+        if (tileable.metaWindow) {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+            });
+            tileable.followMetaWindow = false;
+        }
+    }
+
+    alterFloatable(floatable) {
+        this.alterTileable(floatable);
+    }
+
+    restoreFloatable(floatable) {
+        this.restoreTileable(floatable);
     }
 
     onDestroy() {
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.msWorkspace.msWindowList.forEach(msWindow => {
-                WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
-            });
-        });
         super.onDestroy();
     }
     onTile() {}

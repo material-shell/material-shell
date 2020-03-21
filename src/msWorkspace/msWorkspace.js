@@ -68,19 +68,19 @@ var MsWorkspace = class MsWorkspace {
     }
 
     destroy() {
-        if (this.actor) this.actor.destroy();
         global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
+        if (this.actor) this.actor.destroy();
         this.destroyed = true;
     }
 
-    get focusedDrawable() {
+    get tileableFocused() {
         return this.tileableList[this.focusedIndex];
     }
 
     get msWindowList() {
-        return this.msWorkspaceManager.msWindowList.filter(msWindow => {
+        return Me.msWindowManager.msWindowList.filter(msWindow => {
             return msWindow.msWorkspace === this;
         });
     }
@@ -93,7 +93,7 @@ var MsWorkspace = class MsWorkspace {
     }
     updateUI() {
         this.actor.visible = this.uiVisible;
-        this.panel.visible = this.uiVisible && this.shouldPanelBeVisible();
+        this.panel.visible = this.shouldPanelBeVisible();
     }
 
     updateLayout() {
@@ -116,10 +116,18 @@ var MsWorkspace = class MsWorkspace {
         msWindow.msWorkspace = this;
         log(msWindow, msWindow.title);
         WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
+        if (!msWindow.dragged) {
+            if (msWindow.get_parent()) {
+                msWindow.get_parent().remove_child(msWindow);
+            }
+            (msWindow.isDialog
+                ? this.floatableContainer
+                : this.tileableContainer
+            ).add_child(msWindow);
+        }
         if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
             this.floatableList.push(msWindow);
-            msWindow.reparent(this.floatableContainer);
             this.emit(
                 'floatableList-changed',
                 this.floatableList,
@@ -128,14 +136,16 @@ var MsWorkspace = class MsWorkspace {
         } else {
             const oldTileableList = [...this.tileableList];
             this.tileableList.push(msWindow);
-            msWindow.reparent(this.tileableContainer);
+
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
+            log('AddMsWindow');
             this.onFocusTileable(msWindow);
         }
+
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
         if (window.grabbed || !this.windowFocused) {
@@ -154,27 +164,29 @@ var MsWorkspace = class MsWorkspace {
                 oldFloatableList
             );
         } else {
+            const tileableIndex = this.tileableList.indexOf(msWindow);
             const oldTileableList = [...this.tileableList];
-            this.tileableList.splice(this.tileableList.indexOf(msWindow), 1);
+            this.tileableList.splice(tileableIndex, 1);
+            if (this.focusedIndex === tileableIndex) {
+                this.focusLastTileable();
+            }
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
-        }
-        // If there's no more focused msWindow on this workspace focus the last one
-        if (msWindow === this.focusedDrawable) {
-            this.focusLastWindow();
+            // If there's no more focused msWindow on this workspace focus the last one
         }
     }
 
-    swapWindows(firstWindow, secondWindow) {
-        const firstIndex = this.msWindowList.indexOf(firstWindow);
-        const secondIndex = this.msWindowList.indexOf(secondWindow);
-        const oldWindows = [...this.msWindowList];
-        this.msWindowList[firstIndex] = secondWindow;
-        this.msWindowList[secondIndex] = firstWindow;
-        this.emitWindowsChanged(this.msWindowList, oldWindows);
+    swapTileable(firstTileable, secondTileable) {
+        const firstIndex = this.tileableList.indexOf(firstTileable);
+        const secondIndex = this.tileableList.indexOf(secondTileable);
+        const oldTileableList = [...this.tileableList];
+        this.tileableList[firstIndex] = secondTileable;
+        this.tileableList[secondIndex] = firstTileable;
+
+        this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
     focusNextTileable() {
@@ -193,41 +205,41 @@ var MsWorkspace = class MsWorkspace {
         this.onFocusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    onFocusTileable(msDrawable) {
-        log('onFocusTileable', msDrawable);
-        if (msDrawable === this.focusedDrawable) {
+    onFocusTileable(tileable) {
+        log('onFocusTileable', tileable.title);
+        if (tileable === this.tileableFocused) {
             return;
         }
-        const oldFocusedDrawable = this.focusedDrawable;
-        this.focusedIndex = Math.max(this.tileableList.indexOf(msDrawable), 0);
-        log('here2', this.focusedIndex);
+        const oldTileableFocused = this.tileableFocused;
+        this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
         if (
             this.msWorkspaceManager.getActiveMsWorkspace() === this &&
-            msDrawable.metaWindow
+            tileable.metaWindow
         ) {
-            msDrawable.metaWindow.activate(global.get_current_time());
+            log('here2', this.focusedIndex);
+            tileable.metaWindow.activate(global.get_current_time());
         }
-        this.emit('drawable-focused-changed', msDrawable, oldFocusedDrawable);
+        this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
 
-    setWindowBefore(windowToMove, windowRelative) {
-        const oldWindows = [...this.msWindowList];
-        let windowToMoveIndex = this.msWindowList.indexOf(windowToMove);
-        this.msWindowList.splice(windowToMoveIndex, 1);
+    setTileableBefore(tileableToMove, tileableRelative) {
+        const oldTileableList = [...this.tileableList];
+        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        this.tileableList.splice(tileableToMoveIndex, 1);
 
-        let windowRelativeIndex = this.msWindowList.indexOf(windowRelative);
-        this.msWindowList.splice(windowRelativeIndex, 0, windowToMove);
-        this.emitWindowsChanged(this.msWindowList, oldWindows);
+        let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
+        this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
+        this.emitWindowsChanged(this.tileableList, oldTileableList);
     }
 
-    setWindowAfter(windowToMove, windowRelative) {
-        const oldWindows = [...this.msWindowList];
-        let windowToMoveIndex = this.msWindowList.indexOf(windowToMove);
-        this.msWindowList.splice(windowToMoveIndex, 1);
+    setTileableAfter(tileableToMove, tileableRelative) {
+        const oldTileableList = [...this.tileableList];
+        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        this.tileableList.splice(tileableToMoveIndex, 1);
 
-        let windowRelativeIndex = this.msWindowList.indexOf(windowRelative);
-        this.msWindowList.splice(windowRelativeIndex + 1, 0, windowToMove);
-        this.emitWindowsChanged(this.msWindowList, oldWindows);
+        let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
+        this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
+        this.emitWindowsChanged(this.tileableList, oldTileableList);
     }
 
     nextTiling(direction) {
@@ -296,15 +308,16 @@ var MsWorkspace = class MsWorkspace {
         }
     }
 
-    focusLastWindow() {
-        if (this.msWindowList.length) {
-            let lastWindow =
-                this.msWindowList[this.focusedIndex] ||
-                this.msWindowList.slice(-1)[0];
+    focusLastTileable() {
+        log('focusLastTileable');
+        if (this.tileableList.length) {
+            let lastTileable =
+                this.tileableList[this.focusedIndex] ||
+                this.tileableList.slice(-1)[0];
 
-            this.onFocusTileable(lastWindow);
+            this.onFocusTileable(lastTileable);
         } else {
-            this.onFocusTileable(null);
+            //this.onFocusTileable(null);
         }
     }
 
@@ -318,7 +331,7 @@ var MsWorkspace = class MsWorkspace {
                 this.isDisplayed() ? window.show() : window.hide();
             }); */
 
-        this.focusLastWindow();
+        this.focusLastTileable();
     }
 };
 Signals.addSignalMethods(MsWorkspace.prototype);

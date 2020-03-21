@@ -1,4 +1,4 @@
-const { Shell, Meta, GLib, Clutter, GObject } = imports.gi;
+const { Shell, Meta, GLib, Clutter, GObject, Gio } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
@@ -9,39 +9,34 @@ const Tweener = imports.ui.tweener;
 
 var MsWindow = GObject.registerClass(
     {
-        GTypeName: 'MsWindow'
+        GTypeName: 'MsWindow',
+        Signals: {
+            title_changed: {
+                param_types: [GObject.TYPE_STRING]
+            },
+            dragged_changed: {
+                param_types: [GObject.TYPE_BOOLEAN]
+            }
+        }
     },
     class MsWindow extends Clutter.Actor {
         _init(appId, metaWindowDescription, metaWindow) {
-            super._init();
+            log('New MsWindow', appId, metaWindowDescription, metaWindow);
+            super._init({ reactive: true });
             let appSys = Shell.AppSystem.get_default();
-            let app = appSys.lookup_app(appId);
-            let appPlaceholder = new AppPlaceholder(app);
-            this.windowClone = new Clutter.Clone();
-            this.placeholder = appPlaceholder;
-            this.add_child(this.windowClone);
-            //this.add_child(this.placeholder);
-            this.showPlaceholder = false;
-            this.app = app;
+            this.app = appSys.lookup_app(appId);
             this.metaWindowDescription = metaWindowDescription;
+            this.windowClone = new Clutter.Clone();
+            this.placeholder = new AppPlaceholder(this.app);
+            this.metaWindowSignals = [];
+            this.followMetaWindow = false;
+            this.dragged = false;
+            this.add_child(this.windowClone);
             if (metaWindow) {
                 this.setWindow(metaWindow);
-            } else {
-                let windowFound = global
-                    .get_window_actors()
-                    .map(windowActor => {
-                        return windowActor.metaWindow;
-                    })
-                    .find(metaWindow => {
-                        return (
-                            metaWindow.get_description() ===
-                            this.metaWindowDescription
-                        );
-                    });
-                if (windowFound) {
-                    this.setWindow(windowFound);
-                }
             }
+
+            this.registerToEvents();
         }
 
         get title() {
@@ -74,6 +69,103 @@ var MsWindow = GObject.registerClass(
                 (this.metaWindow.get_transient_for() != null &&
                     this.metaWindow.skip_taskbar)
             );
+        }
+
+        registerToEvents() {
+            let cursorTracker = Meta.CursorTracker.get_for_display(
+                global.display
+            );
+            let buttonPressed = false;
+            let originPointerCoords = null;
+            let originMsWindowPosition = null;
+            let stageMotionEventId = null;
+            this.wmPreferenceSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.wm.preferences'
+            });
+            this.connect('event', (_, event) => {
+                const focusOnHover =
+                    this.wmPreferenceSettings.get_enum('focus-mode') > 0;
+                switch (event.type()) {
+                    case Clutter.EventType.BUTTON_PRESS:
+                        buttonPressed = true;
+                        originPointerCoords = event.get_coords();
+                        if (!focusOnHover) {
+                            this.takeFocus();
+                        }
+                        break;
+
+                    case Clutter.EventType.BUTTON_RELEASE:
+                        buttonPressed = false;
+                        break;
+
+                    case Clutter.EventType.ENTER:
+                        if (focusOnHover) {
+                            this.takeFocus();
+                        }
+                        break;
+
+                    case Clutter.EventType.MOTION:
+                        if (this.dragged) return;
+                        if (buttonPressed) {
+                            const [originX, originY] = originPointerCoords;
+                            const [currentX, currentY] = event.get_coords();
+                            const distance = Math.max(
+                                Math.abs(originX - currentX),
+                                Math.abs(originY - currentY)
+                            );
+                            if (distance > 48) {
+                                log('GRAB', this.title);
+                                this.dragged = true;
+                                originMsWindowPosition = this.get_position();
+                                stageMotionEventId = global.stage.connect(
+                                    'captured-event',
+                                    (_, event) => {
+                                        const [
+                                            currentX,
+                                            currentY
+                                        ] = event.get_coords();
+                                        const diffX = originX - currentX;
+                                        const diffY = originY - currentY;
+                                        const [
+                                            originMsWindowX,
+                                            originMsWindowY
+                                        ] = originMsWindowPosition;
+                                        this.set_position(
+                                            Math.round(originMsWindowX - diffX),
+                                            Math.round(originMsWindowY - diffY)
+                                        );
+
+                                        if (
+                                            event.type() ===
+                                            Clutter.EventType.BUTTON_RELEASE
+                                        ) {
+                                            if (this.dragged) {
+                                                this.dragged = false;
+                                                this.emit(
+                                                    'dragged-changed',
+                                                    this.dragged
+                                                );
+                                            }
+                                            global.stage.disconnect(
+                                                stageMotionEventId
+                                            );
+                                            stageMotionEventId = null;
+                                        }
+
+                                        return Clutter.EVENT_PROPAGATE;
+                                    }
+                                );
+                                this.emit('dragged-changed', this.dragged);
+                            }
+                        }
+                        break;
+                }
+
+                //log('EVENT', this.title, event.type());
+            });
+            Me.connect('super-pressed-change', (_, pressed) => {
+                this.reactive = pressed;
+            });
         }
 
         delayGetMetaWindowActor(delayedCount, resolve, reject) {
@@ -139,69 +231,6 @@ var MsWindow = GObject.registerClass(
             });
         }
 
-        switchActorToPlaceholder() {
-            /* if (this.showPlaceholder) return;
-        const parent = this.actor.get_parent();
-        const allocationBox = this.getAllocation();
-        const previousActor = this.actor;
-        this.showPlaceholder = true;
-
-        parent.insert_child_above(this.actor, previousActor);
-        this.setPositionAndSize(
-            allocationBox.x,
-            allocationBox.y,
-            allocationBox.width,
-            allocationBox.height
-        );
-        this.hideMetaWindow();
-        this.placeholder.show(); */
-        }
-
-        switchActorToMetaWindowActor(animated) {
-            /* if (!this.showPlaceholder) return;
-        const parent = this.actor.get_parent();
-        const allocationBox = this.getAllocation();
-        const previousActor = this.actor;
-        this.showPlaceholder = false;
-        parent.insert_child_below(this.actor, previousActor);
-        this.setPositionAndSize(
-            allocationBox.x,
-            allocationBox.y,
-            allocationBox.width,
-            allocationBox.height
-        );
-        if (!animated) {
-            this.showMetaWindow();
-            this.placeholder.get_parent().remove_child(this.placeholder);
-        } else {
-            this.showMetaWindow();
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.placeholder, {
-                    opacity: 0,
-                    time: 0.25,
-                    transition: 'easeOutQuad',
-                    onComplete: () => {
-                        this.placeholder.set_opacity(255);
-                        this.placeholder
-                            .get_parent()
-                            .remove_child(this.placeholder);
-                    }
-                });
-            } else {
-                this.placeholder.ease({
-                    opacity: 0,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.placeholder.set_opacity(255);
-                        this.placeholder
-                            .get_parent()
-                            .remove_child(this.placeholder);
-                    }
-                });
-            }
-        } */
-        }
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
             if (this.metaWindow) {
@@ -230,14 +259,18 @@ var MsWindow = GObject.registerClass(
             }
         }
 
-        set_position(x, y) {
-            super.set_position(x, y);
-            this.updateMetaWindowPositionAndSize();
+        set_position(x, y, propagate = true) {
+            super.set_position(Math.round(x), Math.round(y));
+            if (propagate) {
+                this.updateMetaWindowPositionAndSize();
+            }
         }
 
-        set_size(width, height) {
-            super.set_size(width, height);
-            this.updateMetaWindowPositionAndSize();
+        set_size(width, height, propagate = true) {
+            super.set_size(Math.round(width), Math.round(height));
+            if (propagate) {
+                this.updateMetaWindowPositionAndSize();
+            }
         }
 
         /*
@@ -285,42 +318,27 @@ var MsWindow = GObject.registerClass(
             });
         }
 
-        togglePlaceholder() {
-            /* 
-        const parent = this.actor.get_parent();
-        const allocationBox = this.getAllocation();
-        const previousActor = this.actor;
-        this.showPlaceholder = !this.showPlaceholder;
-        if (previousActor === this.placeholder) {
-            parent.insert_child_below(this.actor, previousActor);
-        } else {
-            parent.insert_child_above(this.actor, previousActor);
-        }
-        this.setPositionAndSize(
-            allocationBox.x,
-            allocationBox.y,
-            allocationBox.width,
-            allocationBox.height
-        );
-        if (previousActor === this.placeholder) {
-            this.showMetaWindow();
-            this.placeholder.hide();
-        } else {
-            this.hideMetaWindow();
-            this.placeholder.show();
-        } */
+        mimicMetaWindowPositionAndSize() {
+            const currentFrameRect = this.metaWindow.get_frame_rect();
+            this.set_position(currentFrameRect.x, currentFrameRect.y, false);
+            this.set_size(
+                currentFrameRect.width,
+                currentFrameRect.height,
+                false
+            );
         }
 
         setWindow(metaWindow) {
             this.metaWindowDescription = metaWindow.get_description();
             this.metaWindow = metaWindow;
             metaWindow.msWindow = this;
-            this.windowClone.set_source(
-                metaWindow.get_compositor_private().first_child
-            );
-            metaWindow.connect('unmanaged', _ => {
-                log('unmanaged', this.title);
-                this.unsetWindow();
+            this.reactive = false;
+            this.registerOnMetaWindowSignals();
+            this.onMetaWindowActorExist().then(metaWindowActor => {
+                this.windowClone.set_source(
+                    metaWindow.get_compositor_private()
+                );
+                this.mimicMetaWindowPositionAndSize();
             });
             if (this.showPlaceholder) {
                 this.hideMetaWindow();
@@ -331,71 +349,53 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        registerOnMetaWindowSignals() {
+            if (!this.metaWindow) return;
+            this.metaWindowSignals.push(
+                this.metaWindow.connect('unmanaged', _ => {
+                    log('unmanaged', this.title);
+                    this.unsetWindow();
+                }),
+                this.metaWindow.connect('notify::title', _ => {
+                    this.emit('title-changed', this.title);
+                }),
+                this.metaWindow.connect('position-changed', () => {
+                    if (!this.followMetaWindow) return;
+                    this.mimicMetaWindowPositionAndSize();
+                }),
+                this.metaWindow.connect('focus', () => {
+                    log(this.title, 'focus');
+                })
+            );
+        }
+
+        unregisterOnMetaWindowSignals() {
+            if (!this.metaWindow) return;
+            this.metaWindowSignals.forEach(signalId => {
+                this.metaWindow.disconnect(signalId);
+            });
+            this.metaWindowSignals = [];
+        }
+
         unsetWindow() {
+            this.unregisterOnMetaWindowSignals();
+            this.reactive = true;
             delete this.metaWindow;
             this.add_child(this.placeholder);
+            this.emit('title-changed', this.title);
         }
 
-        /* hideMetaWindow() {
-            log('hideMeta');
-            Main.wm.skipNextEffect(this.metaWindow.get_compositor_private());
-            this.metaWindow.minimize();
-        }
-
-        showMetaWindow() {
-            log('showMeta');
-            Main.wm.skipNextEffect(this.metaWindow.get_compositor_private());
-            this.metaWindow.unminimize();
-        }
-
-        getAllocation() {
-            if (this.actor === this.placeholder) {
-                return this.placeholder.get_allocation_box();
+        takeFocus() {
+            log('TAKE_FOCUS', this.title);
+            if (this.metaWindow) {
+                //this.metaWindow.focus(global.get_current_time());
             } else {
-                return this.metaWindow.get_frame_rect();
-            }
-        } */
-
-        /* setPosition(x, y) {
-            this.position = {
-                x,
-                y
-            };
-            if (this.actor === this.placeholder) {
-                super.setPosition(x, y);
-            } else {
-                this.metaWindow.move_frame(true, x, y);
+                this.grab_key_focus();
             }
         }
 
-        setPositionAndSize(x, y, width, height) {
-            this.position = {
-                x,
-                y
-            };
-            this.size = {
-                width,
-                height
-            };
-            if (this.actor === this.placeholder) {
-                super.setPositionAndSize(x, y, width, height);
-            } else {
-                this.metaWindow.move_resize_frame(true, x, y, width, height);
-            }
+        _onDestroy() {
+            log('MsWindow destroy', this.metaWindow, this.title);
         }
-
-        tileMaximize() {
-            if (this.actor === this.placeholder) {
-                this._tiledMaximized = true;
-                super.tileMaximize();
-            } else {
-                Main.wm.skipNextEffect(this.actor);
-                this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-            }
-        }
-
-        tileLeft() {}
-
-        tileRight() {} */
     }
 );

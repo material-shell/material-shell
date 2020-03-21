@@ -33,9 +33,9 @@ var TaskBar = GObject.registerClass(
                     this.onTileableListChange();
                 }),
                 msWorkspace.connect(
-                    'drawable-focused-changed',
-                    (msWorkspace, windowFocused) => {
-                        this.onFocusChanged(msWorkspace, windowFocused);
+                    'tileable-focus-changed',
+                    (_, tileable, oldTileable) => {
+                        this.onFocusChanged(tileable, oldTileable);
                     }
                 )
             ];
@@ -50,16 +50,15 @@ var TaskBar = GObject.registerClass(
             this._animateActiveIndicator();
         }
 
-        onFocusChanged(msWorkspace, windowFocused) {
-            if (windowFocused === this.windowFocused) {
+        onFocusChanged(tileableFocused, oldTileableFocused) {
+            if (tileableFocused === oldTileableFocused) {
                 return;
             }
 
-            let previousItem = this.getTaskBarItemOfMsDrawable(
-                this.windowFocused
+            let previousItem = this.getTaskBarItemOfTileable(
+                oldTileableFocused
             );
-            this.windowFocused = windowFocused;
-            let nextItem = this.getTaskBarItemOfMsDrawable(this.windowFocused);
+            let nextItem = this.getTaskBarItemOfTileable(tileableFocused);
 
             if (previousItem) {
                 if (
@@ -80,70 +79,77 @@ var TaskBar = GObject.registerClass(
 
         updateItems() {
             this.items.forEach(item => item.destroy());
-            this.items = this.msWorkspace.tileableList.map(msDrawable => {
-                const item = new TaskBarItem(
-                    msDrawable,
-                    msDrawable === this.windowFocused
-                );
-                item._draggable.connect('drag-begin', () => {
-                    const initialIndex = this.getFilteredWindows().indexOf(
-                        item.window
+            this.items = this.msWorkspace.tileableList.map(
+                (tileable, index) => {
+                    const item = new TaskBarItem(
+                        tileable,
+                        index === this.msWorkspace.focusedIndex
                     );
-                    const dropPlaceholder = new DropPlaceholder(TaskBarItem);
-                    dragData = {
-                        item,
-                        initialIndex,
-                        dropPlaceholder,
-                        originalTaskBar: this,
-                        currentTaskBar: this
-                    };
-                    dropPlaceholder.connect(
-                        'drag-dropped',
-                        this.reparentDragItem
-                    );
-                    dropPlaceholder.connect('drag-over', () => {
-                        dragData.draggedOverByChild = true;
+                    item._draggable.connect('drag-begin', () => {
+                        const initialIndex = this.msWorkspace.tileableList.indexOf(
+                            item.tileable
+                        );
+                        const dropPlaceholder = new DropPlaceholder(
+                            TaskBarItem
+                        );
+                        dragData = {
+                            item,
+                            initialIndex,
+                            dropPlaceholder,
+                            originalTaskBar: this,
+                            currentTaskBar: this
+                        };
+                        dropPlaceholder.connect(
+                            'drag-dropped',
+                            this.reparentDragItem
+                        );
+                        dropPlaceholder.connect('drag-over', () => {
+                            dragData.draggedOverByChild = true;
+                        });
+
+                        dropPlaceholder.resize(item);
+                        this.taskButtonContainer.add_child(dropPlaceholder);
+                        this.taskButtonContainer.set_child_at_index(
+                            dropPlaceholder,
+                            initialIndex
+                        );
+                        this.taskActiveIndicator.hide();
                     });
 
-                    dropPlaceholder.resize(item);
-                    this.taskButtonContainer.add_child(dropPlaceholder);
-                    this.taskButtonContainer.set_child_at_index(
-                        dropPlaceholder,
-                        initialIndex
+                    item._draggable.connect('drag-cancelled', () => {
+                        delete dragData.draggedOver;
+                        delete dragData.draggedBefore;
+                        // We need to reparent on the original taskBar
+                        // if it's a different one
+                        dragData.originalTaskBar.updateCurrentTaskBar();
+
+                        const {
+                            currentTaskBar,
+                            dropPlaceholder,
+                            initialIndex
+                        } = dragData;
+
+                        currentTaskBar.taskButtonContainer.set_child_at_index(
+                            dropPlaceholder,
+                            initialIndex
+                        );
+                    });
+
+                    item._draggable.connect(
+                        'drag-end',
+                        this._onDragEnd.bind(this)
                     );
-                    this.taskActiveIndicator.hide();
-                });
 
-                item._draggable.connect('drag-cancelled', () => {
-                    delete dragData.draggedOver;
-                    delete dragData.draggedBefore;
-                    // We need to reparent on the original taskBar
-                    // if it's a different one
-                    dragData.originalTaskBar.updateCurrentTaskBar();
+                    item.connect('drag-over', (_, before) => {
+                        dragData.draggedOverByChild = true;
+                        this._onDragOver(item, before);
+                    });
 
-                    const {
-                        currentTaskBar,
-                        dropPlaceholder,
-                        initialIndex
-                    } = dragData;
-
-                    currentTaskBar.taskButtonContainer.set_child_at_index(
-                        dropPlaceholder,
-                        initialIndex
-                    );
-                });
-
-                item._draggable.connect('drag-end', this._onDragEnd.bind(this));
-
-                item.connect('drag-over', (_, before) => {
-                    dragData.draggedOverByChild = true;
-                    this._onDragOver(item, before);
-                });
-
-                item.connect('drag-dropped', this.reparentDragItem);
-                this.taskButtonContainer.add_child(item);
-                return item;
-            });
+                    item.connect('drag-dropped', this.reparentDragItem);
+                    this.taskButtonContainer.add_child(item);
+                    return item;
+                }
+            );
             this.taskActiveIndicator.translation_y =
                 this.height - this.taskActiveIndicator.height;
         }
@@ -178,25 +184,25 @@ var TaskBar = GObject.registerClass(
             dropPlaceholder.destroy();
 
             if (originalTaskBar !== currentTaskBar) {
-                item.window.move_to_monitor(
+                item.tileable.metaWindow.move_to_monitor(
                     currentTaskBar.msWorkspace.monitor.index
                 );
             }
             if (draggedOver) {
                 if (draggedBefore) {
-                    currentTaskBar.msWorkspace.setWindowBefore(
-                        item.window,
-                        draggedOver.window
+                    currentTaskBar.msWorkspace.setTileableBefore(
+                        item.tileable,
+                        draggedOver.tileable
                     );
                 } else {
-                    currentTaskBar.msWorkspace.setWindowAfter(
-                        item.window,
-                        draggedOver.window
+                    currentTaskBar.msWorkspace.setTileableAfter(
+                        item.tileable,
+                        draggedOver.tileable
                     );
                 }
             }
 
-            currentTaskBar.msWorkspace.onFocus(item.window);
+            currentTaskBar.msWorkspace.onFocusTileable(item.tileable);
             this.taskActiveIndicator.show();
             dragData = null;
         }
@@ -230,38 +236,37 @@ var TaskBar = GObject.registerClass(
         }
 
         _animateActiveIndicator() {
-            if (this.windowFocused) {
-                let taskBarItem = this.getTaskBarItemOfMsDrawable(
-                    this.windowFocused
-                );
-                if (taskBarItem) {
-                    if (!taskBarItem.widthSignalId) {
-                        taskBarItem.widthSignalId = taskBarItem.connect(
-                            'notify::width',
-                            () => {
-                                if (!dragData) this._animateActiveIndicator();
-                            }
-                        );
-                    }
-                    if (ShellVersionMatch('3.32')) {
-                        Tweener.addTween(this.taskActiveIndicator, {
-                            x: taskBarItem.x,
-                            width: taskBarItem.width,
-                            time: 0.25,
-                            transition: 'easeOutQuad'
-                        });
-                    } else {
-                        this.taskActiveIndicator.ease({
-                            x: taskBarItem.x,
-                            width: taskBarItem.width,
-                            duration: 250,
-                            mode: Clutter.AnimationMode.EASE_OUT_QUAD
-                        });
-                    }
-
-                    return;
+            let taskBarItem = this.getTaskBarItemOfTileable(
+                this.msWorkspace.tileableFocused
+            );
+            if (taskBarItem) {
+                if (!taskBarItem.widthSignalId) {
+                    taskBarItem.widthSignalId = taskBarItem.connect(
+                        'notify::width',
+                        () => {
+                            if (!dragData) this._animateActiveIndicator();
+                        }
+                    );
                 }
+                if (ShellVersionMatch('3.32')) {
+                    Tweener.addTween(this.taskActiveIndicator, {
+                        x: taskBarItem.x,
+                        width: taskBarItem.width,
+                        time: 0.25,
+                        transition: 'easeOutQuad'
+                    });
+                } else {
+                    this.taskActiveIndicator.ease({
+                        x: taskBarItem.x,
+                        width: taskBarItem.width,
+                        duration: 250,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    });
+                }
+
+                return;
             }
+
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.taskActiveIndicator, {
                     x: 0,
@@ -279,9 +284,9 @@ var TaskBar = GObject.registerClass(
             }
         }
 
-        getTaskBarItemOfMsDrawable(msDrawable) {
+        getTaskBarItemOfTileable(tileable) {
             return this.items.find(item => {
-                return item.msDrawable === msDrawable;
+                return item.tileable === tileable;
             });
         }
 
@@ -303,19 +308,19 @@ let TaskBarItem = GObject.registerClass(
         }
     },
     class InnerTaskBarItem extends MatButton {
-        _init(msDrawable, actif) {
+        _init(tileable, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`
             });
 
             this._delegate = this;
 
-            this.msDrawable = msDrawable;
-            this.app = msDrawable.app;
+            this.tileable = tileable;
+            this.app = tileable.app;
 
-            this.connect('destroy', () => {
-                this.msDrawable.disconnect(this.connectSignal);
-            });
+            /*             this.tileable.connect('destroy', () => {
+                this.destroy();
+            }); */
             if (this.app) {
                 // ICON
                 this.iconSize = 24;
@@ -330,12 +335,9 @@ let TaskBarItem = GObject.registerClass(
             });
             this.updateTitle();
 
-            this.connectSignal = this.msDrawable.metaWindow.connect(
-                'notify::title',
-                () => {
-                    this.updateTitle();
-                }
-            );
+            this.connectSignal = this.tileable.connect('title-changed', () => {
+                this.updateTitle();
+            });
 
             // CLOSE BUTTON
             this.closeButton = new St.Button({
@@ -349,10 +351,8 @@ let TaskBarItem = GObject.registerClass(
             });
 
             this.closeButton.connect('clicked', () => {
-                if (this.msDrawable instanceof MsWindow) {
-                    this.msDrawable.metaWindow.delete(
-                        global.get_current_time()
-                    );
+                if (this.tileable instanceof MsWindow) {
+                    this.tileable.metaWindow.delete(global.get_current_time());
                 }
             });
 
@@ -425,16 +425,16 @@ let TaskBarItem = GObject.registerClass(
                     this.mouseData.dragged = false;
                     switch (event.get_button()) {
                         case 1:
-                            if (this.msDrawable instanceof MsWindow) {
-                                this.msDrawable.metaWindow.activate(
+                            if (this.tileable instanceof MsWindow) {
+                                this.tileable.metaWindow.activate(
                                     global.get_current_time()
                                 );
                             }
                             break;
 
                         case 2:
-                            if (this.msDrawable instanceof MsWindow) {
-                                this.msDrawable.metaWindow.delete(
+                            if (this.tileable instanceof MsWindow) {
+                                this.tileable.metaWindow.delete(
                                     global.get_current_time()
                                 );
                             }
@@ -458,7 +458,8 @@ let TaskBarItem = GObject.registerClass(
 
         // Update the title and crop it if it's too long
         updateTitle() {
-            this.title.text = this.msDrawable.title;
+            log('updateTitle', this.tileable.title);
+            this.title.text = this.tileable.title;
         }
 
         initDrag() {
@@ -487,6 +488,12 @@ let TaskBarItem = GObject.registerClass(
             }
             this.emit('drag-dropped');
             return true;
+        }
+
+        _onDestroy() {
+            if (this.tileable) {
+                this.tileable.disconnect(this.connectSignal);
+            }
         }
     }
 );

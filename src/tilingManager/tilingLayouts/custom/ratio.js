@@ -35,7 +35,7 @@ var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
                 }
             }
 
-            this.moveAndResizeMetaWindow(
+            this.moveAndResizeActor(
                 window,
                 windowArea.x,
                 windowArea.y,

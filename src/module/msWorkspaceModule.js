@@ -78,52 +78,7 @@ var MsWorkspaceModule = class MsWorkspaceModule {
             })
         });
 
-        this.signals.push({
-            from: this.workspaceManager,
-            id: this.workspaceManager.connect(
-                'active-workspace-changed',
-                () => {
-                    log('active-workspace-changed');
-                    /* let newMsWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
-                    this.currentMsWorkspace.uiVisible = false;
-                    this.currentMsWorkspace.updateUI();
-                    this.currentMsWorkspace = newMsWorkspace;
-                    this.currentMsWorkspace.uiVisible = true;
-                    this.currentMsWorkspace.updateUI(); */
-                }
-            )
-        });
-
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect('window-created', (_, metaWindow) => {
-                global.msWorkspaceManager.onNewMetaWindow(metaWindow);
-            })
-        });
-
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect('notify::focus-window', _ => {
-                global.msWorkspaceManager.onFocusMetaWindow(
-                    global.display.focus_window
-                );
-            })
-        });
-        global.msWorkspaceManager.onFocusMetaWindow(
-            global.display.focus_window
-        );
-
         this._listenToDispatchWindow();
-
-        this.signals.push({
-            from: Shell.AppSystem.get_default(),
-            id: Shell.AppSystem.get_default().connect(
-                'installed-changed',
-                () => {
-                    this.dispatchApps();
-                }
-            )
-        });
 
         this.signalMonitorId = Main.layoutManager.connect(
             'monitors-changed',
@@ -205,41 +160,16 @@ var MsWorkspaceModule = class MsWorkspaceModule {
                 }
             )
         });
-
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect(
-                'window-left-monitor',
-                (display, monitorIndex, window) => {
-                    /* 
-                    //Ignore unHandle window and window on primary screens
-                    global.msWorkspaceManager.windowLeftMonitor(
-                        window,
-                        monitorIndex
-                    ); */
-                }
-            )
-        });
     }
 
     listenWorkspaceEventToDispatch(workspace) {
         this.signals.push({
             from: workspace,
             id: workspace.connect('window-added', (workspace, window) => {
-                global.msWorkspaceManager.windowEnteredWorkspace(
+                global.msWorkspaceManager.metaWindowEnteredWorkspace(
                     window,
                     workspace
                 );
-            })
-        });
-
-        this.signals.push({
-            from: workspace,
-            id: workspace.connect('window-removed', (workspace, window) => {
-                /* global.msWorkspaceManager.windowLeftWorkspace(
-                    window,
-                    workspace
-                ); */
             })
         });
     }

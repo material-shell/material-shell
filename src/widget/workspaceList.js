@@ -31,9 +31,11 @@ var WorkspaceList = GObject.registerClass(
             this.dropPlaceholder.connect('drag-dropped', () => {
                 this.tempDragData.workspaceButton.reparent(this.buttonList);
             });
+
             this.dropPlaceholder.connect('drag-over', () => {
                 this.tempDragData.draggedOverByChild = true;
             });
+
             this.workspaceActiveIndicator = new St.Widget({
                 style_class: 'workspace-active-indicator'
             });

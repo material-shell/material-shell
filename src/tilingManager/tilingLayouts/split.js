@@ -18,20 +18,19 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
         this.overContainer = new St.Widget();
 
-        this.updateActiveWindowsFromFocused();
+        this.updateActiveTileableListFromFocused();
         this.addTransitionContainer();
     }
 
-    updateActiveWindowsFromFocused() {
-        const { regularWindows } = this.getDialogAndRegularWindows();
+    updateActiveTileableListFromFocused() {
         this.baseIndex = Math.max(
             0,
             Math.min(
-                regularWindows.indexOf(this.msWorkspace.windowFocused),
-                regularWindows.length - WINDOW_PER_SCREEN
+                this.msWorkspace.focusedIndex,
+                this.msWorkspace.tileableList.length - WINDOW_PER_SCREEN
             )
         );
-        this.activeWindows = regularWindows.slice(
+        this.activeTileableList = this.msWorkspace.tileableList.slice(
             this.baseIndex,
             this.baseIndex + WINDOW_PER_SCREEN
         );
@@ -42,54 +41,56 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         super.onWorkAreasChanged();
     }
 
-    onWindowsChanged(msWorkspace, newWindows, oldWindows) {
-        this.updateActiveWindowsFromFocused();
-        super.onWindowsChanged(msWorkspace, newWindows, oldWindows); // Calls onTile
+    onTileableListChanged(msWorkspace, newWindows, oldWindows) {
+        this.updateActiveTileableListFromFocused();
+        super.onTileableListChanged(msWorkspace, newWindows, oldWindows); // Calls onTile
     }
 
-    onFocusChanged(windowFocused, oldWindowFocused) {
-        if (this.isDialog(windowFocused) || this.isDialog(oldWindowFocused))
-            return;
+    onFocusChanged(tileableFocused, oldTileableFocused) {
+        if (tileableFocused.isDialog || oldTileableFocused.isDialog) return;
 
-        super.onFocusChanged(windowFocused, oldWindowFocused);
-        if (this.activeWindows.includes(windowFocused)) {
+        super.onFocusChanged(tileableFocused, oldTileableFocused);
+        if (this.activeTileableList.includes(tileableFocused)) {
             return;
         }
 
-        const { regularWindows } = this.getDialogAndRegularWindows();
-        const newIndex = regularWindows.indexOf(windowFocused);
-        const oldIndex = regularWindows.indexOf(oldWindowFocused);
-        const oldWindows = this.activeWindows;
+        const newIndex = this.msWorkspace.tileableList.indexOf(tileableFocused);
+        const oldIndex = this.msWorkspace.tileableList.indexOf(
+            oldTileableFocused
+        );
+        const oldTileableList = this.activeTileableList;
         if (oldIndex < newIndex) {
-            this.activeWindows = regularWindows.slice(
+            this.activeTileableList = this.msWorkspace.tileableList.slice(
                 newIndex - WINDOW_PER_SCREEN + 1,
                 newIndex + 1
             );
         } else {
-            this.activeWindows = regularWindows.slice(
+            this.activeTileableList = this.msWorkspace.tileableList.slice(
                 newIndex,
                 newIndex + WINDOW_PER_SCREEN
             );
         }
-        this.baseIndex = regularWindows.indexOf(this.activeWindows[0]);
-        if (Me.loaded && regularWindows.length > WINDOW_PER_SCREEN) {
-            this.transition(this.activeWindows, oldWindows);
+        this.baseIndex = this.msWorkspace.tileableList.indexOf(
+            this.activeTileableList[0]
+        );
+        if (
+            Me.loaded &&
+            this.msWorkspace.tileableList.length > WINDOW_PER_SCREEN
+        ) {
+            this.transition(this.activeTileableList, oldTileableList);
         }
     }
 
     onTileRegulars(windows) {
-        super.onTileRegulars(windows);
         const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
         windows
             .filter(window => {
-                !this.activeWindows.includes(window);
+                !this.activeTileableList.includes(window);
             })
             .forEach(window => {
-                this.moveAndResizeMetaWindow(
-                    window,
-                    workArea.x,
-                    workArea.y,
+                window.set_position(workArea.x, workArea.y);
+                window.set_size(
                     workArea.width /
                         (workArea.width > workArea.height
                             ? WINDOW_PER_SCREEN
@@ -97,13 +98,11 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                     workArea.height /
                         (workArea.width <= workArea.height
                             ? WINDOW_PER_SCREEN
-                            : 1),
-                    false,
-                    true
+                            : 1)
                 );
             });
         // Positionning active windows
-        this.activeWindows.forEach((window, i) => {
+        this.activeTileableList.forEach((window, i) => {
             const windowBounds = {
                 x: workArea.x,
                 y: workArea.y,
@@ -117,25 +116,23 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 windowBounds.height /= WINDOW_PER_SCREEN;
                 windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
             }
-
-            this.moveAndResizeMetaWindow(
-                window,
-                windowBounds.x,
-                windowBounds.y,
-                windowBounds.width,
-                windowBounds.height,
-                windows.length < WINDOW_PER_SCREEN,
-                true
-            );
+            if (windows.length < WINDOW_PER_SCREEN) {
+                this.animateSetPosition(window, windowBounds.x, windowBounds.y);
+                this.animateSetSize(
+                    window,
+                    windowBounds.width,
+                    windowBounds.height
+                );
+            } else {
+                window.set_position(windowBounds.x, windowBounds.y);
+                window.set_size(windowBounds.width, windowBounds.height);
+            }
         });
         windows.forEach(window => {
-            if (
-                !this.activeWindows.includes(window) ||
-                !this.msWorkspace.isDisplayed()
-            ) {
-                window.get_compositor_private().hide();
+            if (!this.activeTileableList.includes(window)) {
+                window.hide();
             } else {
-                window.get_compositor_private().show();
+                window.show();
             }
         });
     }
@@ -146,51 +143,51 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         this.transitionContainer = new (workArea.width > workArea.height
             ? Row
             : Column)();
-
+        this.transitionContainer.set_style('background: rgba(200,200,0,0.8)');
         this.overContainer.add_actor(this.transitionContainer);
     }
 
     onDestroy() {
         super.onDestroy();
         this.msWorkspace.msWindowList.forEach(msWindow => {
-            if (!this.activeWindows.includes(msWindow)) {
-                msWindow.metaWindow.get_compositor_private().show();
+            if (!this.activeTileableList.includes(msWindow)) {
+                msWindow.show();
             }
         });
     }
 
-    transition(newMetaWindows, oldMetaWindows) {
-        const { regularWindows } = this.getDialogAndRegularWindows();
-        newMetaWindows = newMetaWindows.filter(
-            window => !oldMetaWindows.includes(window)
+    transition(newTileableList, oldTileableList) {
+        newTileableList = newTileableList.filter(
+            tileable => !oldTileableList.includes(tileable)
         );
-        this.transitionContainer.remove_all_children();
+        //this.transitionContainer.remove_all_children();
         const direction =
-            regularWindows.indexOf(newMetaWindows[0]) -
-            regularWindows.indexOf(oldMetaWindows[0]);
+            this.msWorkspace.tileableList.indexOf(newTileableList[0]) -
+            this.msWorkspace.tileableList.indexOf(oldTileableList[0]);
 
-        const allMetaWindows =
+        const allTileableList =
             direction > 0
-                ? oldMetaWindows.concat(newMetaWindows)
-                : newMetaWindows.concat(oldMetaWindows);
+                ? oldTileableList.concat(newTileableList)
+                : newTileableList.concat(oldTileableList);
 
-        allMetaWindows
-            .filter(
-                window => window.get_compositor_private() && !window.grabbed
-            )
-            .map(metaWindow => metaWindow.get_compositor_private())
-            .forEach(window => {
-                let rect = window.meta_window.get_frame_rect();
-                let actorContent = Shell.util_get_content_for_window_actor(
-                    window,
-                    rect
-                );
-                let actorClone = new St.Widget({
-                    content: actorContent
-                });
-                actorClone.set_size(rect.width, rect.height);
-                this.transitionContainer.add_child(actorClone);
-                window.hide();
+        allTileableList
+            .filter(tileable => !tileable.grabbed)
+            .forEach(tileable => {
+                if (tileable && !tileable.origin) {
+                    if (!tileable.get_parent()) {
+                        log('no parent for ', tileable.title);
+                    }
+                    tileable.origin = {
+                        parent: tileable.get_parent(),
+                        index: tileable
+                            .get_parent()
+                            .get_children()
+                            .indexOf(tileable)
+                    };
+                }
+                tileable.get_parent().remove_child(tileable);
+                this.transitionContainer.add_child(tileable);
+                tileable.show();
             });
 
         const workArea = this.getWorkspaceBounds();
@@ -200,7 +197,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         let yTo = workArea.y;
         if (workArea.width > workArea.height) {
             const shift =
-                (workArea.width * newMetaWindows.length) / WINDOW_PER_SCREEN;
+                (workArea.width * newTileableList.length) / WINDOW_PER_SCREEN;
             if (direction > 0) {
                 xTo -= shift;
             } else {
@@ -208,7 +205,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
             }
         } else {
             const shift =
-                (workArea.height * newMetaWindows.length) / WINDOW_PER_SCREEN;
+                (workArea.height * newTileableList.length) / WINDOW_PER_SCREEN;
             if (direction > 0) {
                 yTo -= shift;
             } else {
@@ -219,13 +216,16 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         if (!this.animationInProgress) {
             this.transitionContainer.set_position(xFrom, yFrom);
 
-            this.overContainer.set_clip(
+            /* this.overContainer.set_clip(
                 this.monitor.x,
                 this.monitor.y,
                 this.monitor.width,
                 this.monitor.height
+            ); */
+            this.msWorkspace.actor.insert_child_above(
+                this.overContainer,
+                this.msWorkspace.tileableContainer
             );
-            global.window_group.add_actor(this.overContainer);
             this.animationInProgress = true;
         }
 
@@ -255,14 +255,18 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     }
 
     endTransition() {
-        this.activeWindows
-            .map(metaWindow => metaWindow.get_compositor_private())
-            .filter(window => window)
-            .forEach(window => {
-                window.show();
-            });
-        global.window_group.remove_child(this.overContainer);
-
+        this.activeTileableList.forEach(tileable => {
+            tileable.show();
+        });
+        this.msWorkspace.actor.remove_child(this.overContainer);
+        this.transitionContainer.get_children().forEach(actor => {
+            actor.get_parent().remove_child(actor);
+            actor.origin.parent.insert_child_at_index(
+                actor,
+                actor.origin.index
+            );
+            delete actor.origin;
+        });
         this.onTile();
     }
 };

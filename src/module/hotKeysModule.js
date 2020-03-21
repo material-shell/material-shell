@@ -99,16 +99,15 @@ var HotKeysModule = class HotKeysModule {
                         : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                let currentFocusIndex = msWorkspace.msWindowList
-                    .map(msWindow => msWindow.metaWindow)
-                    .indexOf(msWorkspace.windowFocused);
-                if (currentFocusIndex > 0) {
-                    let previousMetaWindows =
-                        msWorkspace.windows[currentFocusIndex - 1];
-                    msWorkspace.swapWindows(
-                        msWorkspace.windowFocused,
-                        previousMetaWindows
+
+                if (msWorkspace.focusedIndex > 0) {
+                    let previousTileable =
+                        msWorkspace.tileableList[msWorkspace.focusedIndex - 1];
+                    msWorkspace.swapTileable(
+                        msWorkspace.tileableFocused,
+                        previousTileable
                     );
+                    msWorkspace.focusPreviousTileable();
                 }
             }
         );
@@ -126,16 +125,18 @@ var HotKeysModule = class HotKeysModule {
                         : global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                let currentFocusIndex = msWorkspace.windows.indexOf(
-                    msWorkspace.windowFocused
-                );
-                if (currentFocusIndex < msWorkspace.windows.length - 1) {
-                    let nextMetaWindows =
-                        msWorkspace.windows[currentFocusIndex + 1];
-                    msWorkspace.swapWindows(
-                        msWorkspace.windowFocused,
-                        nextMetaWindows
+
+                if (
+                    msWorkspace.focusedIndex <
+                    msWorkspace.tileableList.length - 1
+                ) {
+                    let nextTileable =
+                        msWorkspace.tileableList[msWorkspace.focusedIndex + 1];
+                    msWorkspace.swapTileable(
+                        msWorkspace.tileableFocused,
+                        nextTileable
                     );
+                    msWorkspace.focusNextTileable();
                 }
             }
         );
@@ -162,6 +163,17 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
+                const activeMsWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
+                if (
+                    activeMsWorkspace ===
+                        global.msWorkspaceManager.primaryMsWorkspaces[
+                            global.msWorkspaceManager.primaryMsWorkspaces
+                                .length - 2
+                        ] &&
+                    activeMsWorkspace.msWindowList.length === 1
+                ) {
+                    return;
+                }
                 let newWorkspace = global.workspace_manager.get_workspace_by_index(
                     global.display.focus_window.get_workspace().index() + 1
                 );
@@ -199,7 +211,9 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const noUImode = global.msWorkspaceManager.noUImode;
                 global.msWorkspaceManager.noUImode = !noUImode;
-                Main.panel.get_parent().visible = noUImode;
+                global.msWorkspaceManager.msWorkspaceContainer.visible = noUImode;
+
+                /* Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
                 Main.panel.get_parent().set_width(!noUImode ? 0 : -1);
                 Main.layoutManager.panelBox.visible = noUImode;
@@ -218,7 +232,7 @@ var HotKeysModule = class HotKeysModule {
                     msWorkspace.updateUI();
                     msWorkspace.panel.set_height(!noUImode ? 0 : -1);
                     msWorkspace.tilingLayout.onTile();
-                });
+                }); */
             }
         );
     }

@@ -22,7 +22,7 @@ var GridLayout = class GridLayout extends BaseGrabbableLayout {
                 const window = windows[index];
                 if (!window) return;
 
-                this.moveAndResizeMetaWindow(
+                this.moveAndResizeActor(
                     window,
                     workArea.x + i * width,
                     workArea.y + j * height,

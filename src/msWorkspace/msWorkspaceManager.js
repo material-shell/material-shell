@@ -13,6 +13,7 @@ const {
 } = Me.imports.src.msWorkspace.msWorkspaceWithCategory;
 const { WorkspaceList } = Me.imports.src.widget.workspaceList;
 const { MsWindow } = Me.imports.src.msWorkspace.msWindow;
+const { MsDndManager } = Me.imports.src.msWorkspace.msDndManager;
 
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager {
@@ -20,27 +21,25 @@ var MsWorkspaceManager = class MsWorkspaceManager {
         log('new msWorkspaceManager');
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
-        this.msWorkspaces = [];
-        this.msWindowList = [];
+        this.msWorkspaceList = [];
         this.appsByCategory = appsByCategory;
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
         this.metaWindowFocused = null;
-        this.msWorkspaceContainer = new MsWorkspaceContainer(this);
-        Main.uiGroup.insert_child_above(
-            this.msWorkspaceContainer,
-            global.window_group
-        );
+        let previousState = Me.stateManager.getState('workspaces-state');
+        if (previousState) {
+            log('PREVIOUS-STATE', previousState);
+        }
         // First build all the Categorized msWorkspaces on the primary screen
-        this.categoryList.forEach((category, index) => {
+        /* this.categoryList.forEach((category, index) => {
             log(`new category workspace for ${category.key}`);
             let msWorkspace = new MsWorkspaceWithCategory(
                 this,
                 Main.layoutManager.primaryMonitor,
-                true,
+                false,
                 category
             );
-            this.msWorkspaces.push(msWorkspace);
+            this.msWorkspaceList.push(msWorkspace);
             let workspace = this.workspaceManager.get_workspace_by_index(index);
             log(workspace.msWorkspaceKey);
             if (workspace.msWorkspaceKey === category.key) {
@@ -56,7 +55,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
             workspace._keepAliveId = true;
             workspace.msWorkspaceKey = category.key;
             this.workspaceManager.reorder_workspace(workspace, index);
-        });
+        }); */
 
         // then build the "normal" msWorkspaces for every monitors
         for (let monitor of Main.layoutManager.monitors) {
@@ -72,32 +71,60 @@ var MsWorkspaceManager = class MsWorkspaceManager {
                     let msWorkspace = new MsWorkspace(
                         this,
                         Main.layoutManager.primaryMonitor,
-                        true
+                        false
                     );
-                    this.msWorkspaces.push(msWorkspace);
+                    this.msWorkspaceList.push(msWorkspace);
                 }
             } else {
                 let msWorkspace = new MsWorkspace(this, monitor, true);
-                this.msWorkspaces.push(msWorkspace);
+                this.msWorkspaceList.push(msWorkspace);
             }
         }
 
-        //this.prepareWorkspaces();
-        let activeMsWorkspace = this.getActiveMsWorkspace();
-
-        activeMsWorkspace.uiVisible = true;
-        activeMsWorkspace.updateUI();
-
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
             this.dispatchExistingWindows();
+            this.refreshVisiblePrimaryMsWorkspace();
             return GLib.SOURCE_REMOVE;
         });
+        this.msWorkspaceContainer = new MsWorkspaceContainer(this);
+        Main.uiGroup.insert_child_above(
+            this.msWorkspaceContainer,
+            global.window_group
+        );
         log(
             'super workspace manager created',
             this.workspaceManager.n_workspaces
         );
+
+        this.signals = [];
+        this.signals.push({
+            from: Me.msWindowManager,
+            id: Me.msWindowManager.connect(
+                'ms-window-focused',
+                (_, msWindow) => {
+                    if (
+                        msWindow &&
+                        !msWindow.isDialog &&
+                        msWindow.msWorkspace
+                    ) {
+                        msWindow.msWorkspace.onFocusTileable(msWindow);
+                    }
+                }
+            )
+        });
+
+        this.signals.push({
+            from: Me.msWindowManager,
+            id: Me.msWindowManager.connect(
+                'ms-window-created',
+                (_, msWindow) => {
+                    this.addWindowToAppropriateMsWorkspace(msWindow);
+                    this.stateChanged();
+                }
+            )
+        });
     }
 
     destroy() {
@@ -111,14 +138,15 @@ var MsWorkspaceManager = class MsWorkspaceManager {
             } */
             delete workspace._keepAliveId;
         }
-        for (let msWorkspace of this.msWorkspaces) {
+        for (let msWorkspace of this.msWorkspaceList) {
             msWorkspace.destroy();
         }
         this.workspaceList.destroy();
+        this.msWorkspaceContainer.destroy();
     }
 
     get primaryMsWorkspaces() {
-        return this.msWorkspaces.filter(msWorkspace => {
+        return this.msWorkspaceList.filter(msWorkspace => {
             return (
                 msWorkspace.monitor.index === Main.layoutManager.primaryIndex
             );
@@ -153,22 +181,48 @@ var MsWorkspaceManager = class MsWorkspaceManager {
                 let msWorkspace = new MsWorkspace(
                     this,
                     Main.layoutManager.primaryMonitor,
-                    true
+                    false
                 );
-                this.msWorkspaces.push(msWorkspace);
+                this.msWorkspaceList.push(msWorkspace);
             } else {
                 log('there is less workspace');
-                let msWorkspaceToDestroy = this.dynamicMsWorkspaces[
-                    this.dynamicMsWorkspaces.length - 1
-                ];
+                const emptyMsWorkspaceList = this.msWorkspaceList.filter(
+                    msWorkspace => {
+                        return msWorkspace.msWindowList.length === 0;
+                    }
+                );
+                let msWorkspaceToDestroy =
+                    emptyMsWorkspaceList[emptyMsWorkspaceList.length - 1];
+                log('ToDestroy', msWorkspaceToDestroy);
                 msWorkspaceToDestroy.destroy();
-                let indexToRemove = this.msWorkspaces.indexOf(
+                let indexToRemove = this.msWorkspaceList.indexOf(
                     msWorkspaceToDestroy
                 );
-                this.msWorkspaces.splice(indexToRemove, 1);
+                this.msWorkspaceList.splice(indexToRemove, 1);
             }
         }
+        this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
+    }
+
+    stateChanged() {
+        this.refreshWorkspaceWindows();
+        this.refreshVisiblePrimaryMsWorkspace();
+        this.checkWorkspaceKeepAlive();
+        this.saveCurrentState();
+    }
+
+    checkWorkspaceKeepAlive() {
+        log('checkWorkspaceKeepAlive');
+        this.primaryMsWorkspaces.forEach(msWorkspace => {
+            const workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
+            if (workspace) {
+                workspace._keepAliveId = msWorkspace.msWindowList.length > 0;
+            }
+        });
+        if (this.workspaceManager.get_active_workspace()._keepAliveId) {
+            Main.wm._workspaceTracker._checkWorkspaces();
+        }
     }
 
     setWorkspaceBefore(categoryKeyToMove, categoryKeyRelative) {
@@ -185,9 +239,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
             0,
             categoryKeyToMove
         );
-        this.saveCategoryKeyOrderedList();
-        this.refreshWorkspaceWindows();
-        this.refreshVisiblePrimaryMsWorkspace();
+        this.stateChanged();
     }
 
     setWorkspaceAfter(categoryKeyToMove, categoryKeyRelative) {
@@ -204,37 +256,59 @@ var MsWorkspaceManager = class MsWorkspaceManager {
             0,
             categoryKeyToMove
         );
-        this.saveCategoryKeyOrderedList();
-        this.refreshWorkspaceWindows();
-        this.refreshVisiblePrimaryMsWorkspace();
+        this.stateChanged();
     }
 
-    saveCategoryKeyOrderedList() {
+    saveCurrentState() {
         Me.stateManager.setState(
-            'categoryKeyOrderedList',
-            this.categoryKeyOrderedList
+            'workspaces-state',
+            this.msWorkspaceList
+                .filter(msWorkspace => {
+                    return msWorkspace.tileableList.length;
+                })
+                .map(msWorkspace => {
+                    return {
+                        msWindowList: msWorkspace.tileableList
+                            .filter(tileable => {
+                                return tileable instanceof MsWindow;
+                            })
+                            .map(msWindow => {
+                                return {
+                                    appId: msWindow.app.get_id(),
+                                    metaWindowDescription:
+                                        msWindow.metaWindowDescription
+                                };
+                            })
+                    };
+                })
         );
     }
 
     refreshWorkspaceWindows() {
-        this.categoryKeyOrderedList.forEach((categoryKey, index) => {
-            let msWorkspace = this.getMsWorkspaceByCategoryKey(categoryKey);
-            let workspace = this.workspaceManager.get_workspace_by_index(index);
+        this.primaryMsWorkspaces.forEach(msWorkspace => {
+            let workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
             for (let msWindow of msWorkspace.msWindowList) {
-                msWindow.metaWindow.change_workspace(workspace);
+                if (msWindow.metaWindow) {
+                    msWindow.metaWindow.change_workspace(workspace);
+                }
             }
         });
     }
 
     refreshVisiblePrimaryMsWorkspace() {
-        this.msWorkspaces.forEach(msWorkspace => {
-            if (!msWorkspace.category.primary) return;
-            msWorkspace.uiVisible = false;
-            msWorkspace.updateUI();
-        });
         let activeMsWorkspace = this.getActiveMsWorkspace();
-        activeMsWorkspace.uiVisible = true;
-        activeMsWorkspace.updateUI();
+        this.msWorkspaceList.forEach(msWorkspace => {
+            if (
+                msWorkspace.monitor !== Main.layoutManager.primaryMonitor ||
+                msWorkspace === activeMsWorkspace
+            ) {
+                activeMsWorkspace.uiVisible = true;
+                activeMsWorkspace.updateUI();
+            } else {
+                msWorkspace.uiVisible = false;
+                msWorkspace.updateUI();
+            }
+        });
     }
 
     getActiveMsWorkspace() {
@@ -243,7 +317,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
     }
 
     getMsWorkspaceByCategoryKey(categoryKey) {
-        return this.msWorkspaces.find(msWorkspace => {
+        return this.msWorkspaceList.find(msWorkspace => {
             return msWorkspace.categoryKey === categoryKey;
         });
     }
@@ -255,7 +329,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
     }
 
     getMsWorkspacesOfMonitorIndex(monitorIndex) {
-        return this.msWorkspaces.filter(msWorkspace => {
+        return this.msWorkspaceList.filter(msWorkspace => {
             return msWorkspace.monitor.index === monitorIndex;
         });
     }
@@ -266,70 +340,6 @@ var MsWorkspaceManager = class MsWorkspaceManager {
             return this.getMsWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
         } else {
             return this.primaryMsWorkspaces[metaWindow.get_workspace().index()];
-        }
-    }
-
-    onNewMetaWindow(metaWindow) {
-        log('onNewMetaWindow');
-        if (!this._handleWindow(metaWindow)) return;
-
-        // This flags if we handle this window or not for the session
-        metaWindow.handledByMaterialShell = true;
-        let msWindow = this.msWindowList.find(msWindow => {
-            return msWindow.windowDescription === metaWindow.get_description();
-        });
-        if (msWindow) {
-            msWindow.setWindow(metaWindow);
-        } else {
-            let app = this.windowTracker.get_window_app(metaWindow);
-            log(app.get_id(), metaWindow.get_description());
-            let msWindow = new MsWindow(
-                app.get_id(),
-                metaWindow.get_description(),
-                metaWindow
-            );
-            this.msWindowList.push(msWindow);
-            log(msWindow.title);
-            this.addWindowToAppropriateMsWorkspace(msWindow);
-        }
-
-        metaWindow.connect('unmanaged', () => {
-            log('unmanaged', metaWindow, metaWindow.msWindow.msWorkspace);
-            if (
-                metaWindow.handledByMaterialShell &&
-                metaWindow.msWindow.msWorkspace
-            ) {
-                /* metaWindow.msWindow.msWorkspace.removeMsWindow(
-                    metaWindow.msWindow
-                ); */
-            }
-        });
-    }
-
-    onFocusMetaWindow(metaWindow) {
-        log('onFocusMetaWindow', metaWindow);
-        /*
-             If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
-             We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
-            */
-        if (
-            this.metaWindowFocused &&
-            !this.metaWindowFocused.get_compositor_private()
-        ) {
-            log('previous-focus');
-            return;
-        }
-
-        if (!metaWindow) return;
-
-        if (metaWindow.is_attached_dialog()) {
-            metaWindow = metaWindow.get_transient_for();
-        }
-        this.metaWindowFocused = metaWindow;
-        if (metaWindow.msWindow && !metaWindow.msWindow.isDialog) {
-            metaWindow.msWindow.msWorkspace.onFocusTileable(
-                metaWindow.msWindow
-            );
         }
     }
 
@@ -362,7 +372,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
         } else {
             const appToFind = this.windowTracker.get_window_app(metaWindow);
 
-            msWorkspace = this.msWorkspaces.find(msWorkspace => {
+            msWorkspace = this.msWorkspaceList.find(msWorkspace => {
                 return (
                     msWorkspace.category.primary &&
                     msWorkspace.apps.findIndex(app => {
@@ -389,12 +399,13 @@ var MsWorkspaceManager = class MsWorkspaceManager {
     }
 
     dispatchExistingWindows() {
-        global.get_window_actors().forEach(windowActor => {
-            this.onNewMetaWindow(windowActor.metaWindow);
+        Me.msWindowManager.msWindowList.forEach(msWindow => {
+            this.addWindowToAppropriateMsWorkspace(msWindow);
+            this.stateChanged();
         });
     }
 
-    windowEnteredWorkspace(metaWindow, workspace) {
+    metaWindowEnteredWorkspace(metaWindow, workspace) {
         if (
             !metaWindow.handledByMaterialShell ||
             metaWindow.on_all_workspaces ||
@@ -402,6 +413,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
         ) {
             return;
         }
+        log('metaWindowEnteredWorkspace', metaWindow.get_title());
         const msWorkspace = this.primaryMsWorkspaces[workspace.index()];
 
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
@@ -425,6 +437,22 @@ var MsWorkspaceManager = class MsWorkspaceManager {
     }
 
     setWindowToMsWorkspace(msWindow, newMsWorkspace) {
+        log('setWindowToMsWorkspace', msWindow.title);
+        if (msWindow.metaWindow) {
+            if (
+                newMsWorkspace.monitor.index !=
+                msWindow.metaWindow.get_monitor()
+            ) {
+                return msWindow.metaWindow.move_to_monitor(
+                    newMsWorkspace.monitor
+                );
+            }
+            const newWorkspace = this.getWorkspaceOfMsWorkspace(newMsWorkspace);
+            if (msWindow.metaWindow.get_workspace() != newWorkspace) {
+                log('CHANGE METAWINDOW WORKSPACE');
+                return msWindow.metaWindow.change_workspace(newWorkspace);
+            }
+        }
         let oldMsWorkspace = msWindow.msWorkspace;
 
         if (oldMsWorkspace) {
@@ -436,6 +464,7 @@ var MsWorkspaceManager = class MsWorkspaceManager {
         }
 
         newMsWorkspace.addMsWindow(msWindow);
+        this.stateChanged();
     }
 
     _handleWindow(metaWindow) {

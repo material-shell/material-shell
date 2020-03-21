@@ -59,7 +59,7 @@ var TilingManager = class TilingManager {
                             // change tiling of all workspaces using that layout.
 
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                global.msWorkspaceManager.msWorkspaces.forEach(
+                                global.msWorkspaceManager.msWorkspaceList.forEach(
                                     msWorkspace => {
                                         if (
                                             key == msWorkspace.tilingLayout.key
@@ -135,11 +135,6 @@ var TilingManager = class TilingManager {
                     )[0];
                 }
                 let layout = msWorkspace.tilingLayout;
-
-                /* let [
-                    dialogWindows,
-                    regularWindows
-                ] = this.getDialogAndRegularWindows(msWorkspace.windows); */
 
                 layout.onTile();
                 //this.dialogLayout.onTile(dialogWindows, monitor);

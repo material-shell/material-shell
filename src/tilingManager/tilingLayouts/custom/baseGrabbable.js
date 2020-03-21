@@ -45,7 +45,7 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                             windowHovered.metaWindow.get_compositor_private()
                         )
                     ) {
-                        this.msWorkspace.swapWindows(
+                        this.msWorkspace.swapTileable(
                             this.grabWindow.msWindow,
                             windowHovered
                         );

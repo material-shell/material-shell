@@ -26,7 +26,7 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            this.moveAndResizeMetaWindow(
+            this.moveAndResizeActor(
                 window,
                 workArea.x + (index * workArea.width) / windows.length,
                 workArea.y,
@@ -43,7 +43,7 @@ var SimpleLayout = class SimpleLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
 
         windows.forEach((window, index) => {
-            this.moveAndResizeMetaWindow(
+            this.moveAndResizeActor(
                 window,
                 workArea.x,
                 workArea.y + (index * workArea.height) / windows.length,
