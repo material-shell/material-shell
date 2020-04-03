@@ -3,8 +3,8 @@ const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
-    BaseGrabbableLayout
-} = Me.imports.src.tilingManager.tilingLayouts.custom.baseGrabbable;
+    BaseTilingLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const { Column, Row } = Me.imports.src.widget.layout;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
@@ -12,7 +12,7 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 250;
 /* exported SplitLayout */
-var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
+var SplitLayout = class SplitLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
 

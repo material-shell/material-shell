@@ -1,62 +1,68 @@
 .headline-1 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 96px;
-  font-weight: lighter;
+  font-weight: 300;
   letter-spacing: -1.5px; }
 
 .headline-2 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 60px;
-  font-weight: lighter;
+  font-weight: 300;
   letter-spacing: -0.5px; }
 
 .headline-3 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 48px; }
 
 .headline-4 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 34px;
   letter-spacing: 0.25px; }
 
 .headline-5 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 24px; }
 
 .headline-6 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 20px;
-  font-weight: medium;
+  font-weight: 500;
   letter-spacing: 0.15px; }
 
 subtitle-1 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 16px;
   letter-spacing: 0.15px; }
 
 .subtitle-2 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 14px;
-  font-weight: medium;
+  font-weight: 500;
+  letter-spacing: 0.1px; }
+
+.subtitle-2-bis {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   letter-spacing: 0.1px; }
 
 .body-1 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 16px;
   letter-spacing: 0.5px; }
 
 .body-2 {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 14px;
   letter-spacing: 0.25px; }
 
 .caption {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 12px;
   letter-spacing: 0.4px; }
 
 .overline {
-  font-family: Roboto;
+  font-family: "Roboto", sans-serif;
   font-size: 10px;
   letter-spacing: 1.5px; }
 
@@ -76,7 +82,7 @@ subtitle-1 {
   height: 48px; }
 
 .dark-theme .ripple-wave {
-  border-radius: 2000px;
+  border-radius: 10000px;
   background: rgba(255, 255, 255, 0.12); }
 
 .dark-theme #leftPanelBox,
@@ -86,7 +92,7 @@ subtitle-1 {
 .dark-theme .mat-button .mat-button-container {
   color: rgba(255, 255, 255, 0.87); }
 
-.dark-theme .mat-button:hover .mat-button-container {
+.dark-theme .mat-button:hover .mat-button-container, .dark-theme .mat-button.highlighted .mat-button-container {
   background: rgba(255, 255, 255, 0.04); }
 
 .dark-theme .mat-button.primary {
@@ -95,9 +101,9 @@ subtitle-1 {
     color: rgba(0, 0, 0, 0.87); }
   .dark-primary.dark-theme .mat-button.primary .mat-button-container {
     color: rgba(255, 255, 255, 0.87); }
-  .light-primary.dark-theme .mat-button.primary:hover .mat-button-container {
+  .light-primary.dark-theme .mat-button.primary:hover .mat-button-container, .dark-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.dark-theme .mat-button.primary:hover .mat-button-container {
+  .dark-primary.dark-theme .mat-button.primary:hover .mat-button-container, .dark-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(255, 255, 255, 0.04); }
 
 .dark-theme .mat-button .mat-panel-button {
@@ -143,19 +149,19 @@ subtitle-1 {
   .dark-theme #topPanel .task-bar-item {
     font-size: 14px;
     height: 48px; }
-    .dark-theme #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+    .dark-theme #topPanel .task-bar-item.active .task-bar-item-content {
       color: rgba(255, 255, 255, 0.87); }
     .dark-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 8px; }
+      padding: 0px 12px;
+      color: rgba(255, 255, 255, 0.6); }
       .dark-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px;
-        margin-right: 8px; }
+        icon-size: 24px; }
       .dark-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
         max-width: 248px;
+        margin-left: 8px;
         margin-right: 8px;
         font-weight: 600;
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.6); }
+        font-size: 14px; }
       .dark-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;
@@ -202,11 +208,21 @@ subtitle-1 {
 .dark-theme .categorized-app-card .overview-icon-with-label {
   color: rgba(255, 255, 255, 0.87); }
 
+.dark-theme .search-entry {
+  background: #191919;
+  border-radius: 48px; }
+
 .dark-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
 
 .dark-theme .surface {
   background: #191919; }
+
+.dark-theme .surface-lighter {
+  background: #1e1e1e; }
+
+.dark-theme .surface-darker {
+  background: #141414; }
 
 .light-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -224,7 +240,7 @@ subtitle-1 {
   height: 48px; }
 
 .light-theme .ripple-wave {
-  border-radius: 2000px;
+  border-radius: 10000px;
   background: rgba(0, 0, 0, 0.12); }
 
 .light-theme #leftPanelBox,
@@ -234,7 +250,7 @@ subtitle-1 {
 .light-theme .mat-button .mat-button-container {
   color: rgba(0, 0, 0, 0.87); }
 
-.light-theme .mat-button:hover .mat-button-container {
+.light-theme .mat-button:hover .mat-button-container, .light-theme .mat-button.highlighted .mat-button-container {
   background: rgba(0, 0, 0, 0.04); }
 
 .light-theme .mat-button.primary {
@@ -243,9 +259,9 @@ subtitle-1 {
     color: rgba(0, 0, 0, 0.87); }
   .dark-primary.light-theme .mat-button.primary .mat-button-container {
     color: rgba(255, 255, 255, 0.87); }
-  .light-primary.light-theme .mat-button.primary:hover .mat-button-container {
+  .light-primary.light-theme .mat-button.primary:hover .mat-button-container, .light-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.light-theme .mat-button.primary:hover .mat-button-container {
+  .dark-primary.light-theme .mat-button.primary:hover .mat-button-container, .light-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(255, 255, 255, 0.04); }
 
 .light-theme .mat-button .mat-panel-button {
@@ -291,19 +307,19 @@ subtitle-1 {
   .light-theme #topPanel .task-bar-item {
     font-size: 14px;
     height: 48px; }
-    .light-theme #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+    .light-theme #topPanel .task-bar-item.active .task-bar-item-content {
       color: #3f51b5; }
     .light-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 8px; }
+      padding: 0px 12px;
+      color: rgba(0, 0, 0, 0.6); }
       .light-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px;
-        margin-right: 8px; }
+        icon-size: 24px; }
       .light-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
         max-width: 248px;
+        margin-left: 8px;
         margin-right: 8px;
         font-weight: 600;
-        font-size: 14px;
-        color: rgba(0, 0, 0, 0.6); }
+        font-size: 14px; }
       .light-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;
@@ -350,11 +366,21 @@ subtitle-1 {
 .light-theme .categorized-app-card .overview-icon-with-label {
   color: rgba(0, 0, 0, 0.87); }
 
+.light-theme .search-entry {
+  background: white;
+  border-radius: 48px; }
+
 .light-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
 
 .light-theme .surface {
   background: white; }
+
+.light-theme .surface-lighter {
+  background: white; }
+
+.light-theme .surface-darker {
+  background: #cccccc; }
 
 .light-primary.primary-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -378,7 +404,7 @@ subtitle-1 {
     background: rgba(255, 255, 255, 0.87); }
 
 .primary-theme .ripple-wave {
-  border-radius: 2000px; }
+  border-radius: 10000px; }
   .light-primary.primary-theme .ripple-wave {
     background: rgba(0, 0, 0, 0.12); }
   .dark-primary.primary-theme .ripple-wave {
@@ -394,10 +420,10 @@ subtitle-1 {
 .dark-primary.primary-theme .mat-button .mat-button-container {
   color: rgba(255, 255, 255, 0.87); }
 
-.light-primary.primary-theme .mat-button:hover .mat-button-container {
+.light-primary.primary-theme .mat-button:hover .mat-button-container, .primary-theme .mat-button.highlighted .mat-button-container {
   background: rgba(0, 0, 0, 0.04); }
 
-.dark-primary.primary-theme .mat-button:hover .mat-button-container {
+.dark-primary.primary-theme .mat-button:hover .mat-button-container, .primary-theme .mat-button.highlighted .mat-button-container {
   background: rgba(255, 255, 255, 0.04); }
 
 .primary-theme .mat-button.primary {
@@ -406,9 +432,9 @@ subtitle-1 {
     color: rgba(0, 0, 0, 0.87); }
   .dark-primary.primary-theme .mat-button.primary .mat-button-container {
     color: rgba(255, 255, 255, 0.87); }
-  .light-primary.primary-theme .mat-button.primary:hover .mat-button-container {
+  .light-primary.primary-theme .mat-button.primary:hover .mat-button-container, .primary-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.primary-theme .mat-button.primary:hover .mat-button-container {
+  .dark-primary.primary-theme .mat-button.primary:hover .mat-button-container, .primary-theme .mat-button.primary.highlighted .mat-button-container {
     background: rgba(255, 255, 255, 0.04); }
 
 .light-primary.primary-theme .mat-button .mat-panel-button {
@@ -475,19 +501,19 @@ subtitle-1 {
   .primary-theme #topPanel .task-bar-item {
     font-size: 14px;
     height: 48px; }
-    .primary-theme #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-title {
+    .primary-theme #topPanel .task-bar-item.active .task-bar-item-content {
       color: #3f51b5; }
     .primary-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 8px; }
+      padding: 0px 12px;
+      color: rgba(0, 0, 0, 0.6); }
       .primary-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px;
-        margin-right: 8px; }
+        icon-size: 24px; }
       .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
         max-width: 248px;
+        margin-left: 8px;
         margin-right: 8px;
         font-weight: 600;
-        font-size: 14px;
-        color: rgba(0, 0, 0, 0.6); }
+        font-size: 14px; }
       .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;
@@ -540,8 +566,18 @@ subtitle-1 {
 .primary-theme .categorized-app-card .overview-icon-with-label {
   color: rgba(0, 0, 0, 0.87); }
 
+.primary-theme .search-entry {
+  background: #3f51b5;
+  border-radius: 48px; }
+
 .primary-theme .backdrop-container {
   background: rgba(0, 0, 0, 0.5); }
 
 .primary-theme .surface {
   background: #3f51b5; }
+
+.primary-theme .surface-lighter {
+  background: #5e6ec7; }
+
+.primary-theme .surface-darker {
+  background: #324191; }

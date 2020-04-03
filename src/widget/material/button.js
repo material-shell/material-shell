@@ -21,7 +21,8 @@ var MatButton = GObject.registerClass(
             this.actorContainer.add_style_class_name('mat-button-container');
             super._init({
                 reactive: true,
-                track_hover: true
+                track_hover: true,
+                clip_to_allocation: true
             });
 
             this.add_child(this.rippleBackground);
@@ -70,6 +71,14 @@ var MatButton = GObject.registerClass(
 
         set_child(child) {
             this.actorContainer.set_child(child);
+        }
+
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            const contentBox = themeNode.get_content_box(box);
+            this.actorContainer.allocate(contentBox, flags);
+            this.rippleBackground.allocate(contentBox, flags);
         }
     }
 );

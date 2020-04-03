@@ -13,8 +13,9 @@ const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
 const { TilingModule } = Me.imports.src.module.tilingModule;
 const { ThemeModule } = Me.imports.src.module.themeModule;
 
-const { StateManager } = Me.imports.src.stateManager;
-const { MsWindowManager } = Me.imports.src.msWorkspace.msWindowManager;
+const { StateManager } = Me.imports.src.manager.stateManager;
+const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
+const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 
@@ -35,7 +36,7 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-
+    St.Settings.slow_down_factor = 2;
     Main.wm._blockAnimations = true;
     Me.loaded = false;
     Me.stateManager = new StateManager();
@@ -52,11 +53,17 @@ function enable() {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         Me.stateManager.loadRegistry(() => {
-            Me.msWindowManager = new MsWindowManager();
             modules = [
                 new RequiredSettingsModule(),
                 new LeftPanelModule(),
-                new TilingModule(),
+                new TilingModule()
+            ];
+
+            Me.msWindowManager = new MsWindowManager();
+            Me.msWorkspaceManager = new MsWorkspaceManager();
+
+            modules = [
+                ...modules,
                 new MsWorkspaceModule(),
                 new HotKeysModule(),
                 new ThemeModule()
@@ -81,6 +88,8 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
+    Me.msWindowManager.init();
+    Me.msWorkspaceManager.init();
     Me.loaded = true;
     Main.wm._blockAnimations = false;
     Me.emit('extension-loaded');
@@ -92,8 +101,12 @@ function disable() {
     log('DISABLE EXTENSION');
     log('----------------');
     modules.reverse().forEach(module => {
+        log('Destroy', module);
         module.destroy();
     });
+    log('destroy msWorkspaceManager');
+    Me.msWorkspaceManager.destroy();
+    log('destroy msWindowManager');
     Me.msWindowManager.destroy();
 
     Me.loaded = false;

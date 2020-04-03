@@ -3,7 +3,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const {
     SimpleLayout
-} = Me.imports.src.tilingManager.tilingLayouts.custom.simple;
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.custom.simple;
 
 /* exported SimpleVerticalLayout */
 var SimpleVerticalLayout = class SimpleVerticalLayout extends SimpleLayout {

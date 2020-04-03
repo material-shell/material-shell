@@ -1,11 +1,11 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
-    BaseGrabbableLayout
-} = Me.imports.src.tilingManager.tilingLayouts.custom.baseGrabbable;
+    BaseTilingLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported RatioLayout */
-var RatioLayout = class RatioLayout extends BaseGrabbableLayout {
+var RatioLayout = class RatioLayout extends BaseTilingLayout {
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         if (!windows.length) return;

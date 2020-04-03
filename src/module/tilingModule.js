@@ -1,6 +1,6 @@
 const { Shell, Meta } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-var { TilingManager } = Me.imports.src.tilingManager.tilingManager;
+var { TilingManager } = Me.imports.src.manager.tilingManager;
 /* exported TilingModule */
 var TilingModule = class TilingModule {
     constructor() {

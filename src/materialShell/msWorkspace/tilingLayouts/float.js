@@ -4,7 +4,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout
-} = Me.imports.src.tilingManager.tilingLayouts.baseTiling;
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
 
 /* exported FloatLayout */
@@ -25,7 +25,6 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
             });
-            tileable.followMetaWindow = true;
         }
     }
 
@@ -34,7 +33,6 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
             });
-            tileable.followMetaWindow = false;
         }
     }
 

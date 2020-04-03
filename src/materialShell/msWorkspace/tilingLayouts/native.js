@@ -1,11 +1,11 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
-    BaseGrabbableLayout
-} = Me.imports.src.tilingManager.tilingLayouts.custom.baseGrabbable;
+    BaseTilingLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported NativeLayout */
-var NativeLayout = class NativeLayout extends BaseGrabbableLayout {
+var NativeLayout = class NativeLayout extends BaseTilingLayout {
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         // Sadly these functions are not js bound (yet)

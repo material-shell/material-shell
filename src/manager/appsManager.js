@@ -2,7 +2,9 @@ const { Shell } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { WorkspaceCategories } = Me.imports.src.msWorkspace.workspaceCategories;
+const {
+    WorkspaceCategories
+} = Me.imports.src.materialShell.msWorkspace.workspaceCategories;
 
 /* exported AppsManager */
 var AppsManager = class AppsManager {
@@ -20,9 +22,13 @@ var AppsManager = class AppsManager {
             return appInfo.should_show();
         });
 
-        return appsInstalled.sort((a, b) => {
-            return usage.compare(a.get_id(), b.get_id());
-        });
+        return appsInstalled
+            .sort((a, b) => {
+                return usage.compare(a.get_id(), b.get_id());
+            })
+            .map(appInfo => {
+                return appSystem.lookup_app(appInfo.get_id());
+            });
     }
 
     static groupAppsByCategory(apps) {

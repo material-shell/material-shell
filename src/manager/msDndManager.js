@@ -1,4 +1,6 @@
 const { GLib } = imports.gi;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 
 /* exported MsDndManager */
 var MsDndManager = class MsDndManager {
@@ -6,7 +8,6 @@ var MsDndManager = class MsDndManager {
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.msWindowManager.connect('ms-window-created', () => {
-            log('ms-window-created');
             this.listenForMsWindowsDragSignal();
         });
         this.listenForMsWindowsDragSignal();
@@ -14,14 +15,8 @@ var MsDndManager = class MsDndManager {
             'active-workspace-changed',
             () => {
                 if (this.dragInProgress) {
-                    const newMsWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
-                    log(
-                        'SET WINDOW TO WORKSPACE',
-                        global.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                            newMsWorkspace
-                        )
-                    );
-                    global.msWorkspaceManager.setWindowToMsWorkspace(
+                    const newMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
                         this.msWindowDragged,
                         newMsWorkspace
                     );
@@ -39,7 +34,6 @@ var MsDndManager = class MsDndManager {
         this.msWindowManager.msWindowList.forEach(msWindow => {
             if (!this.signalMap.has(msWindow)) {
                 const id = msWindow.connect('dragged-changed', (_, dragged) => {
-                    log('Dragged-changed');
                     if (dragged) {
                         this.startDrag(msWindow);
                     } else {
@@ -55,12 +49,11 @@ var MsDndManager = class MsDndManager {
         this.dragInProgress = true;
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
-        global.msWorkspaceManager.msWorkspaceContainer.setActorAbove(msWindow);
+        Me.msWorkspaceManager.msWorkspaceContainer.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
     }
 
     endDrag() {
-        log('end drag');
         this.msWindowDragged.get_parent().remove_child(this.msWindowDragged);
         this.originalParent.add_child(this.msWindowDragged);
         this.dragInProgress = false;
@@ -77,6 +70,7 @@ var MsDndManager = class MsDndManager {
         msWorkspace.tileableList
             .filter(
                 tileable =>
+                    tileable instanceof MsWindow &&
                     tileable.visible &&
                     tileable.get_parent() === msWorkspace.tileableContainer
             )

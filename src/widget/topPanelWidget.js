@@ -8,17 +8,18 @@ const { TaskBar } = Me.imports.src.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
-    class TopPanel extends St.Widget {
+    class TopPanel extends St.BoxLayout {
         _init(msWorkspace) {
             super._init({
                 name: 'topPanel'
             });
             this._delegate = this;
             this.msWorkspace = msWorkspace;
-            this._leftContainer = new St.BoxLayout();
+            this._leftContainer = new St.BoxLayout({
+                x_expand: true
+            });
 
             this.taskBar = new TaskBar(msWorkspace);
-            this._leftContainer.add_child(this.taskBar);
 
             let iconContainer = new St.Icon({
                 gicon: Gio.icon_new_for_string(
@@ -32,12 +33,7 @@ var TopPanel = GObject.registerClass(
                 style_class: 'mat-panel-button'
             });
 
-            this.addButton.connect('clicked', () => {
-                msWorkspace.revealBackground();
-            });
-
-            this._leftContainer.add_child(this.addButton);
-            this.add_child(this._leftContainer);
+            this._leftContainer.add_child(this.taskBar);
 
             this.tilingIcon = new St.Icon({
                 gicon: msWorkspace.tilingLayout.icon,
@@ -56,6 +52,7 @@ var TopPanel = GObject.registerClass(
                 msWorkspace.nextTiling(button === 3 ? -1 : 1);
             });
 
+            this.add_child(this._leftContainer);
             this.add_child(this.tilingButton);
         }
 
@@ -66,24 +63,6 @@ var TopPanel = GObject.registerClass(
         acceptDrop() {
             this.taskBar.reparentDragItem();
             return true;
-        }
-
-        vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
-
-            let themeNode = this.get_theme_node();
-            box = themeNode.get_content_box(box);
-            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
-                .scale_factor;
-            box.x2 = box.x2 - 48 * scaleFactor;
-            this._leftContainer.allocate(box, flags);
-
-            let tilingButtonBox = new Clutter.ActorBox();
-            tilingButtonBox.x1 = box.x2;
-            tilingButtonBox.x2 = box.x2 + 48 * scaleFactor;
-            tilingButtonBox.y1 = box.y1;
-            tilingButtonBox.y2 = box.y2;
-            this.tilingButton.allocate(tilingButtonBox, flags);
         }
     }
 );

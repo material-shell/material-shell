@@ -338,8 +338,6 @@ function GlobalSettingsTab(notebook) {
     model.set(model.append(), [0, 1], ['light', 'Light']);
     model.set(model.append(), [0, 1], ['primary', 'Primary']);
     let shit = ['dark', 'light', 'primary'];
-    log('toto');
-    log(settings.get_string('theme'));
     cbox.set_active(shit.indexOf(settings.get_string('theme'))); // set value
 
     cbox.connect('changed', entry => {

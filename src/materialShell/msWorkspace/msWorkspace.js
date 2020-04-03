@@ -4,37 +4,43 @@ const Main = imports.ui.main;
 const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MaximizeLayout } = Me.imports.src.tilingManager.tilingLayouts.maximize;
-const { MsWindow } = Me.imports.src.msWorkspace.msWindow;
+const {
+    MaximizeLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
+const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.src.utils.index;
 const WindowUtils = Me.imports.src.utils.windows;
 
-const CategorizedAppCard =
-    Me.imports.src.widget.categorizedAppCard.CategorizedAppCard;
+const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 
 const { Stack } = Me.imports.src.widget.layout;
 
 const EMIT_DEBOUNCE_DELAY = 100;
 
 var MsWorkspace = class MsWorkspace {
-    constructor(msWorkspaceManager, monitor, visible) {
+    constructor(msWorkspaceManager, monitor, initialState) {
         this.msWorkspaceManager = msWorkspaceManager;
         this.monitor = monitor;
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
         this.floatableList = [];
-        this.uiVisible = visible;
+        this.uiVisible = false;
         this.focusedIndex = 0;
 
-        const Layout = global.tilingManager.getLayoutByKey('maximized');
+        const Layout = global.tilingManager.getLayoutByKey(
+            initialState ? initialState.tilingLayout : 'maximized'
+        );
         this.tilingLayout = new Layout(this);
         this.actor = new St.Widget({ style_class: 'msWorkspace' });
         this.actor.set_position(this.monitor.x, this.monitor.y);
         this.tileableContainer = new St.Widget();
         this.floatableContainer = new St.Widget();
+        this.appLauncher = new MsApplicationLauncher(this);
+        this.tileableList.push(this.appLauncher);
+        this.tileableContainer.add_child(this.appLauncher);
         this.panel = new TopPanel(this);
 
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
@@ -57,21 +63,36 @@ var MsWorkspace = class MsWorkspace {
         this.actor.add_child(this.tileableContainer);
         this.actor.add_child(this.floatableContainer);
         this.actor.add_child(this.panel);
-        //global.window_group.add_actor(this.actorContainer);
-        /* Main.layoutManager.uiGroup.add_actor(this.actorContainer);
-        Main.layoutManager.uiGroup.set_child_above_sibling(
-            this.actorContainer,
-            global.window_group
-        ); */
         this.updateLayout();
         this.updateUI();
+        this.msWorkspaceManager.msWorkspaceContainer.add_child(this.actor);
+
+        if (initialState) {
+            log(
+                'IN MSWORKSPACE CREATION',
+                initialState,
+                initialState.msWindowList.length
+            );
+            initialState.msWindowList.forEach(msWindowData => {
+                this.addMsWindow(
+                    Me.msWindowManager.createNewMsWindow(
+                        msWindowData.appId,
+                        msWindowData.metaWindowIdentifier
+                    )
+                );
+            });
+        }
     }
 
     destroy() {
+        log('destroy msWorkspace');
         global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
-        if (this.actor) this.actor.destroy();
+        if (this.actor) {
+            this.actor.destroy();
+            delete this.actor;
+        }
         this.destroyed = true;
     }
 
@@ -81,7 +102,7 @@ var MsWorkspace = class MsWorkspace {
 
     get msWindowList() {
         return Me.msWindowManager.msWindowList.filter(msWindow => {
-            return msWindow.msWorkspace === this;
+            return msWindow.msWorkspace && msWindow.msWorkspace === this;
         });
     }
 
@@ -92,8 +113,12 @@ var MsWorkspace = class MsWorkspace {
         );
     }
     updateUI() {
-        this.actor.visible = this.uiVisible;
-        this.panel.visible = this.shouldPanelBeVisible();
+        if (this.actor) {
+            this.actor.visible = this.uiVisible;
+        }
+        if (this.panel) {
+            this.panel.visible = this.shouldPanelBeVisible();
+        }
     }
 
     updateLayout() {
@@ -114,8 +139,9 @@ var MsWorkspace = class MsWorkspace {
         if (this.msWindowList.indexOf(msWindow) >= 0) return;
 
         msWindow.msWorkspace = this;
-        log(msWindow, msWindow.title);
-        WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
+        if (msWindow.metaWindow) {
+            WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
+        }
         if (!msWindow.dragged) {
             if (msWindow.get_parent()) {
                 msWindow.get_parent().remove_child(msWindow);
@@ -135,15 +161,14 @@ var MsWorkspace = class MsWorkspace {
             );
         } else {
             const oldTileableList = [...this.tileableList];
-            this.tileableList.push(msWindow);
+            this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
 
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
-            log('AddMsWindow');
-            this.onFocusTileable(msWindow);
+            this.focusTileable(msWindow);
         }
 
         /*  // Focusing window if the window comes from a drag and drop
@@ -154,7 +179,6 @@ var MsWorkspace = class MsWorkspace {
 
     removeMsWindow(msWindow) {
         if (this.msWindowList.indexOf(msWindow) === -1) return;
-        log('removeMsWindow');
         if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
             this.floatableList.splice(this.floatableList.indexOf(msWindow), 1);
@@ -190,34 +214,31 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusNextTileable() {
-        log('focus next tileable');
         if (this.focusedIndex === this.tileableList.length - 1) {
             return;
         }
-        this.onFocusTileable(this.tileableList[this.focusedIndex + 1]);
+        this.focusTileable(this.tileableList[this.focusedIndex + 1]);
     }
 
     focusPreviousTileable() {
-        log('focus previous tileable');
         if (this.focusedIndex === 0) {
             return;
         }
-        this.onFocusTileable(this.tileableList[this.focusedIndex - 1]);
+        this.focusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    onFocusTileable(tileable) {
-        log('onFocusTileable', tileable.title);
+    focusTileable(tileable) {
         if (tileable === this.tileableFocused) {
             return;
         }
         const oldTileableFocused = this.tileableFocused;
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
-        if (
-            this.msWorkspaceManager.getActiveMsWorkspace() === this &&
-            tileable.metaWindow
-        ) {
-            log('here2', this.focusedIndex);
-            tileable.metaWindow.activate(global.get_current_time());
+        if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
+            if (tileable instanceof MsWindow) {
+                tileable.takeFocus();
+            } else {
+                tileable.grab_key_focus();
+            }
         }
         this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
@@ -251,12 +272,15 @@ var MsWorkspace = class MsWorkspace {
         this.tilingLayout = new Layout(this);
 
         this.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.emit('tiling-layout-changed');
         this.tilingLayout.onTile();
     }
 
     shouldPanelBeVisible() {
         let containFullscreenWindow = this.msWindowList.some(msWindow => {
-            return msWindow.metaWindow.is_fullscreen();
+            return msWindow.metaWindow
+                ? msWindow.metaWindow.is_fullscreen()
+                : false;
         });
         return (
             !containFullscreenWindow &&
@@ -309,29 +333,35 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusLastTileable() {
-        log('focusLastTileable');
         if (this.tileableList.length) {
             let lastTileable =
                 this.tileableList[this.focusedIndex] ||
                 this.tileableList.slice(-1)[0];
 
-            this.onFocusTileable(lastTileable);
+            this.focusTileable(lastTileable);
         } else {
-            //this.onFocusTileable(null);
+            //this.focusTileable(null);
         }
     }
 
     handleExtensionLoaded() {
-        log('handleExtensionLoaded');
-        /* this.windows
-            .map(metaWindow => metaWindow.get_compositor_private())
-            .filter(window => window)
-            .forEach(window => {
-                log('change display');
-                this.isDisplayed() ? window.show() : window.hide();
-            }); */
-
         this.focusLastTileable();
+    }
+
+    getState() {
+        return {
+            tilingLayout: this.tilingLayout.constructor.key,
+            msWindowList: this.tileableList
+                .filter(tileable => {
+                    return tileable instanceof MsWindow;
+                })
+                .map(msWindow => {
+                    return {
+                        appId: msWindow.app.get_id(),
+                        metaWindowIdentifier: msWindow.metaWindowIdentifier
+                    };
+                })
+        };
     }
 };
 Signals.addSignalMethods(MsWorkspace.prototype);

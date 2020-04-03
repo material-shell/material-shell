@@ -5,9 +5,12 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
-const { WorkspaceCategories } = Me.imports.src.msWorkspace.workspaceCategories;
+const {
+    WorkspaceCategories
+} = Me.imports.src.materialShell.msWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
@@ -17,14 +20,13 @@ var WorkspaceList = GObject.registerClass(
                 clip_to_allocation: true,
                 style_class: 'workspace-list'
             });
-
+            this.connect('destroy', this._onDestroy.bind(this));
+            this.msWorkspaceButtonMap = new Map();
             this.msWorkspaceManager = msWorkspaceManager;
 
             this.buttonList = new St.BoxLayout({
                 vertical: true
             });
-
-            this.connect('destroy', this._onDestroy.bind(this));
 
             this.add_child(this.buttonList);
             this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
@@ -66,83 +68,80 @@ var WorkspaceList = GObject.registerClass(
         }
 
         buildButtons() {
-            log(
-                'buildButtons',
-                this.msWorkspaceManager.primaryMsWorkspaces.length
-            );
-            this.buttonList.remove_all_children();
             this.msWorkspaceManager.primaryMsWorkspaces.forEach(
                 (msWorkspace, index) => {
-                    let icon;
-                    if (msWorkspace.category) {
-                        icon = Gio.icon_new_for_string(
-                            `${Me.path}/assets/icons/${msWorkspace.category.icon}.svg`
+                    if (!this.msWorkspaceButtonMap.has(msWorkspace)) {
+                        let workspaceButton = new WorkspaceButton(
+                            this.msWorkspaceManager,
+                            msWorkspace
                         );
-                    } else {
-                        if (
-                            index ===
-                            this.msWorkspaceManager.primaryMsWorkspaces.length -
-                                1
-                        ) {
-                            icon = Gio.icon_new_for_string(
-                                `${Me.path}/assets/icons/plus-symbolic.svg`
+                        workspaceButton._draggable.connect('drag-begin', () => {
+                            let workspaceButtonIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
+                                workspaceButton.categoryKey
                             );
-                        } else {
-                            icon = Gio.icon_new_for_string(
-                                `${Me.path}/assets/icons/circle-symbolic.svg`
+                            this.tempDragData = {
+                                workspaceButton: workspaceButton,
+                                initialIndex: workspaceButtonIndex
+                            };
+                            this.dropPlaceholder.resize(workspaceButton);
+                            this.buttonList.add_child(this.dropPlaceholder);
+                            this.buttonList.set_child_at_index(
+                                this.dropPlaceholder,
+                                workspaceButtonIndex
                             );
-                        }
+                            this.workspaceActiveIndicator.hide();
+                        });
+
+                        workspaceButton._draggable.connect(
+                            'drag-cancelled',
+                            () => {
+                                delete this.tempDragData.draggedOver;
+                                delete this.tempDragData.draggedBefore;
+                                this.buttonList.set_child_at_index(
+                                    this.dropPlaceholder,
+                                    this.tempDragData.initialIndex
+                                );
+                            }
+                        );
+
+                        workspaceButton._draggable.connect(
+                            'drag-end',
+                            this._onDragEnd.bind(this)
+                        );
+
+                        workspaceButton.connect('drag-over', (_, before) => {
+                            this.tempDragData.draggedOverByChild = true;
+                            this._onDragOver(workspaceButton, before);
+                            //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
+                        });
+
+                        workspaceButton.connect('drag-dropped', () => {
+                            this.tempDragData.workspaceButton.reparent(
+                                this.buttonList
+                            );
+                        });
+                        this.buttonList.insert_child_at_index(
+                            workspaceButton,
+                            index
+                        );
+                        this.msWorkspaceButtonMap.set(
+                            msWorkspace,
+                            workspaceButton
+                        );
                     }
-                    let workspaceButton = new WorkspaceButton(
-                        this.msWorkspaceManager,
-                        msWorkspace,
-                        icon
-                    );
-                    workspaceButton._draggable.connect('drag-begin', () => {
-                        let workspaceButtonIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
-                            workspaceButton.categoryKey
-                        );
-                        this.tempDragData = {
-                            workspaceButton: workspaceButton,
-                            initialIndex: workspaceButtonIndex
-                        };
-                        this.dropPlaceholder.resize(workspaceButton);
-                        this.buttonList.add_child(this.dropPlaceholder);
-                        this.buttonList.set_child_at_index(
-                            this.dropPlaceholder,
-                            workspaceButtonIndex
-                        );
-                        this.workspaceActiveIndicator.hide();
-                    });
-
-                    workspaceButton._draggable.connect('drag-cancelled', () => {
-                        delete this.tempDragData.draggedOver;
-                        delete this.tempDragData.draggedBefore;
-                        this.buttonList.set_child_at_index(
-                            this.dropPlaceholder,
-                            this.tempDragData.initialIndex
-                        );
-                    });
-
-                    workspaceButton._draggable.connect(
-                        'drag-end',
-                        this._onDragEnd.bind(this)
-                    );
-
-                    workspaceButton.connect('drag-over', (_, before) => {
-                        this.tempDragData.draggedOverByChild = true;
-                        this._onDragOver(workspaceButton, before);
-                        //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
-                    });
-
-                    workspaceButton.connect('drag-dropped', () => {
-                        this.tempDragData.workspaceButton.reparent(
-                            this.buttonList
-                        );
-                    });
-                    this.buttonList.add_child(workspaceButton);
                 }
             );
+            //Check if some msWorkspace has been destroyed
+            this.msWorkspaceButtonMap.forEach((button, msWorkspace) => {
+                if (
+                    !this.msWorkspaceManager.primaryMsWorkspaces.includes(
+                        msWorkspace
+                    )
+                ) {
+                    button.destroy();
+                    this.msWorkspaceButtonMap.delete(msWorkspace);
+                }
+            });
         }
 
         handleDragOver() {
@@ -237,9 +236,10 @@ var WorkspaceList = GObject.registerClass(
                         'active'
                     );
                 }
+                this.buttonActive = this.buttonList.get_child_at_index(index);
+                this.buttonActive.actorContainer.add_style_class_name('active');
             }
-            this.buttonActive = this.buttonList.get_child_at_index(index);
-            this.buttonActive.actorContainer.add_style_class_name('active');
+
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
                 .scale_factor;
 
@@ -280,15 +280,21 @@ var WorkspaceButton = GObject.registerClass(
         }
     },
     class InnerWorkspaceButton extends MatButton {
-        _init(msWorkspaceManager, msWorkspace, gicon) {
+        _init(msWorkspaceManager, msWorkspace) {
             this.msWorkspaceManager = msWorkspaceManager;
             this.msWorkspace = msWorkspace;
             let icon = new St.Icon({
-                gicon: gicon,
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/plus-symbolic.svg`
+                ),
                 style_class: 'mat-panel-button-icon'
             });
+            this.workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
+
             super._init({
-                child: icon,
+                x_fill: true,
+                y_fill: true,
+                child: this.workspaceButtonIcon,
                 style_class: 'mat-panel-button'
             });
             this._delegate = this;
@@ -393,6 +399,125 @@ var WorkspaceButton = GObject.registerClass(
             }
             this.emit('drag-dropped');
             return true;
+        }
+    }
+);
+
+var WorkspaceButtonIcon = GObject.registerClass(
+    {
+        Signals: {}
+    },
+    class WorkspaceButtonIcon extends St.Widget {
+        _init(msWorkspace) {
+            this.msWorkspace = msWorkspace;
+            super._init({
+                x_expand: true,
+                y_expand: true
+            });
+            this.add_effect(new Clutter.DesaturateEffect());
+            this.buildIcons();
+            this.msWorkspace.connect('tileableList-changed', _ => {
+                this.buildIcons();
+            });
+        }
+
+        buildIcons() {
+            if (this.appIconList) {
+                this.appIconList.forEach(icon => {
+                    icon.destroy();
+                });
+            }
+            const appList = this.msWorkspace.tileableList
+                .filter(tileable => {
+                    return tileable instanceof MsWindow;
+                })
+                .map(msWindow => {
+                    return msWindow.app;
+                });
+            this.appIconList = [];
+
+            if (appList.length) {
+                const numberOfEachAppMap = new Map();
+                appList.forEach(app => {
+                    if (numberOfEachAppMap.has(app)) {
+                        numberOfEachAppMap.set(
+                            app,
+                            numberOfEachAppMap.get(app) + 1
+                        );
+                    } else {
+                        numberOfEachAppMap.set(app, 1);
+                    }
+                });
+                const sortedByInstanceAppList = [
+                    ...numberOfEachAppMap.entries()
+                ]
+                    .sort((a, b) => {
+                        return b[1] - a[1];
+                    })
+                    .map(entry => {
+                        return entry[0];
+                    });
+
+                sortedByInstanceAppList.forEach(app => {
+                    const icon = app.create_icon_texture(24);
+                    this.appIconList.push(icon);
+                    this.add_child(icon);
+                });
+            } else {
+                let icon = new St.Icon({
+                    gicon: Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/plus-symbolic.svg`
+                    ),
+                    style_class: 'mat-panel-button-icon'
+                });
+                this.appIconList.push(icon);
+                this.add_child(icon);
+            }
+        }
+
+        vfunc_allocate(allocationBox, flags) {
+            this.set_allocation(allocationBox, flags);
+
+            let themeNode = this.get_theme_node();
+            allocationBox = themeNode.get_content_box(allocationBox);
+            const portion = (allocationBox.x2 - allocationBox.x1) / 8;
+            if (this.appIconList.length === 1) {
+                let centerBox = new Clutter.ActorBox();
+                centerBox.x1 = allocationBox.x1 + 2 * portion;
+                centerBox.x2 = allocationBox.x2 - 2 * portion;
+                centerBox.y1 = allocationBox.y1 + 2 * portion;
+                centerBox.y2 = allocationBox.y2 - 2 * portion;
+                this.appIconList[0].allocate(centerBox, flags);
+            } else {
+                this.appIconList.forEach((icon, index) => {
+                    switch (index) {
+                        case 0:
+                            let leftCenterBox = new Clutter.ActorBox();
+                            leftCenterBox.x1 = allocationBox.x1 + portion;
+                            leftCenterBox.x2 = allocationBox.x2 - 3 * portion;
+                            leftCenterBox.y1 = allocationBox.y1 + 2 * portion;
+                            leftCenterBox.y2 = allocationBox.y2 - 2 * portion;
+                            this.appIconList[0].allocate(leftCenterBox, flags);
+                            break;
+                        case 1:
+                            let bottomRightBox = new Clutter.ActorBox();
+                            bottomRightBox.x1 = allocationBox.x1 + 3 * portion;
+                            bottomRightBox.x2 = allocationBox.x2 - portion;
+                            bottomRightBox.y1 = allocationBox.y1 + 3 * portion;
+                            bottomRightBox.y2 = allocationBox.y2 - portion;
+                            icon.allocate(bottomRightBox, flags);
+                            break;
+                        case 2:
+                            let topRightBox = new Clutter.ActorBox();
+                            topRightBox.x1 = allocationBox.x1 + 4 * portion;
+                            topRightBox.x2 = allocationBox.x2 - portion;
+                            topRightBox.y1 = allocationBox.y1 + portion;
+                            topRightBox.y2 = allocationBox.y2 - 4 * portion;
+                            icon.allocate(topRightBox, flags);
+                            break;
+                    }
+                });
+            }
         }
     }
 );

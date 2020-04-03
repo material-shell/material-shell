@@ -4,7 +4,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const {
     BaseTilingLayout
-} = Me.imports.src.tilingManager.tilingLayouts.baseTiling;
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 
 /* exported MaximizeLayout */
@@ -19,7 +19,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
-        log('focus changed', windowFocused, oldWindowFocused);
         //if (!this.msWorkspace.msWindowList.includes(oldWindowFocused)) return;
         if (!windowFocused.isDialog) {
             const oldIndex = this.currentWindowIndex;
@@ -33,7 +32,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onTileableListChanged(tileableList, oldTileableList) {
-        log('onTileableListChanged');
         // If the order of the windows changed try to follow the current visible window
         /* if (oldTileableList.length === tileableList.length) {
             let currentVisibleWindow = oldTileableList[this.currentWindowIndex];
@@ -64,17 +62,10 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             let newActor = this.msWorkspace.tileableList[
                 this.currentWindowIndex
             ];
-            log(oldActor, newActor, direction);
-            /* this.translationAnimator.setTranslation(
-                oldActor,
-                newActor,
-                direction
-            ); */
         }
     }
 
     onTileRegulars(tileableList) {
-        log('onTileRegulars(onMaximize)', this.currentWindowIndex);
         if (this.animationInProgress) {
             return;
         }
@@ -92,9 +83,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 actor.set_size(workArea.width, workArea.height);
             }
             if (index !== this.currentWindowIndex && !actor.dragged) {
-                actor.visible = false;
+                actor.hide();
             } else {
-                actor.visible = true;
+                actor.show();
             }
         });
     }
@@ -112,6 +103,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
         let oldActor = this.msWorkspace.tileableList[oldIndex];
         let newActor = this.msWorkspace.tileableList[this.currentWindowIndex];
+        oldActor.show();
+        newActor.show();
         this.translationAnimator.set_size(
             this.monitor.width,
             this.monitor.height

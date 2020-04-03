@@ -2,11 +2,11 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    BaseGrabbableLayout
-} = Me.imports.src.tilingManager.tilingLayouts.custom.baseGrabbable;
+    BaseTilingLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported HalfLayout */
-var HalfLayout = class HalfLayout extends BaseGrabbableLayout {
+var HalfLayout = class HalfLayout extends BaseTilingLayout {
     onTileRegulars(windows, skip) {
         super.onTileRegulars(windows);
         if (!windows.length || skip) return;

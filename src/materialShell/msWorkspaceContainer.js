@@ -2,13 +2,6 @@ const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
-const { WorkspaceCategories } = Me.imports.src.msWorkspace.workspaceCategories;
-const { MsWorkspace } = Me.imports.src.msWorkspace.msWorkspace;
-const {
-    MsWorkspaceWithCategory
-} = Me.imports.src.msWorkspace.msWorkspaceWithCategory;
-const { WorkspaceList } = Me.imports.src.widget.workspaceList;
-const { MsWindow } = Me.imports.src.msWorkspace.msWindow;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 
 /* exported MsWorkspaceContainer */
@@ -19,7 +12,7 @@ var MsWorkspaceContainer = GObject.registerClass(
     class MsWorkspaceContainer extends St.Widget {
         _init(msWorkspaceManager) {
             super._init();
-            log('new MsWorkspaceContainer');
+            this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceManager = msWorkspaceManager;
             this.translationAnimator = new TranslationAnimator(true);
             this.aboveContainer = new Clutter.Actor();
@@ -37,28 +30,22 @@ var MsWorkspaceContainer = GObject.registerClass(
                 }
                 this.add_child(msWorkspace.actor);
             });
-            this.set_child_above_sibling(this.aboveContainer, null);
         }
 
         setActorAbove(actor) {
-            log('setActorAbove', actor);
             if (actor.get_parent()) {
                 actor.get_parent().remove_child(actor);
             }
             this.aboveContainer.add_child(actor);
         }
 
+        add_child(actor) {
+            super.add_child(actor);
+            this.set_child_above_sibling(this.aboveContainer, null);
+        }
+
         registerToSignals() {
             this.signals = [];
-            this.signals.push({
-                from: this.msWorkspaceManager,
-                id: this.msWorkspaceManager.connect(
-                    'dynamic-super-workspaces-changed',
-                    () => {
-                        this.updateMsWorkspaceViewPosition();
-                    }
-                )
-            });
 
             this.signals.push({
                 from: global.window_manager,
@@ -70,6 +57,8 @@ var MsWorkspaceContainer = GObject.registerClass(
                             .primaryMsWorkspaces[from].actor;
                         let newActor = this.msWorkspaceManager
                             .primaryMsWorkspaces[to].actor;
+                        oldActor.show();
+                        newActor.show();
                         this.translationAnimator.set_position(
                             Main.layoutManager.primaryMonitor.x,
                             Main.layoutManager.primaryMonitor.y
@@ -112,6 +101,10 @@ var MsWorkspaceContainer = GObject.registerClass(
         }
 
         _onDestroy() {
+            this.aboveContainer.get_children().forEach(actor => {
+                this.aboveContainer.remove_child(actor);
+                global.window_group.add_child(actor);
+            });
             this.signals.forEach(signal => signal.from.disconnect(signal.id));
         }
     }

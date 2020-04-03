@@ -4,11 +4,13 @@ const Main = imports.ui.main;
 const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MaximizeLayout } = Me.imports.src.tilingManager.tilingLayouts.maximize;
+const {
+    MaximizeLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.src.utils.index;
 const WindowUtils = Me.imports.src.utils.windows;
-const { MsWorkspace } = Me.imports.src.msWorkspace.msWorkspace;
+const { MsWorkspace } = Me.imports.src.materialShell.msWorkspace.msWorkspace;
 const CategorizedAppCard =
     Me.imports.src.widget.categorizedAppCard.CategorizedAppCard;
 

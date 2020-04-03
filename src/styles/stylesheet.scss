@@ -5,15 +5,15 @@ $shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 $panel-size: 48px;
 
 @mixin foreground($theme, $opacity) {
-    @if ($theme=='light') {
+    @if ($theme== 'light') {
         color: rgba(0, 0, 0, $opacity);
     }
 
-    @if ($theme=='dark') {
+    @if ($theme== 'dark') {
         color: rgba(255, 255, 255, $opacity);
     }
 
-    @if ($theme=='primary') {
+    @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
             color: rgba(0, 0, 0, $opacity);
         }
@@ -24,30 +24,44 @@ $panel-size: 48px;
     }
 }
 
-@mixin background($theme) {
-    @if ($theme=='light') {
-        background: rgba(255, 255, 255, 1);
+@function getBackgroundColor($theme) {
+    @if ($theme== 'light') {
+        @return rgba(255, 255, 255, 1);
     }
 
-    @if ($theme=='dark') {
-        background: rgba(25, 25, 25, 1);
+    @if ($theme== 'dark') {
+        @return rgba(25, 25, 25, 1);
     }
 
-    @if ($theme=='primary') {
-        background: $color-primary;
+    @if ($theme== 'primary') {
+        @return $color-primary;
     }
 }
 
+@mixin background($theme) {
+    background: getBackgroundColor($theme);
+}
+
+@mixin background-darker($theme) {
+    $color: getBackgroundColor($theme);
+    background: hsl(hue($color), saturation($color), lightness($color) * 0.8);
+}
+
+@mixin background-lighter($theme) {
+    $color: getBackgroundColor($theme);
+    background: hsl(hue($color), saturation($color), lightness($color) * 1.2);
+}
+
 @mixin foreground-as-background($theme, $opacity) {
-    @if ($theme=='light') {
+    @if ($theme== 'light') {
         background: rgba(0, 0, 0, $opacity);
     }
 
-    @if ($theme=='dark') {
+    @if ($theme== 'dark') {
         background: rgba(255, 255, 255, $opacity);
     }
 
-    @if ($theme=='primary') {
+    @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, $opacity);
         }
@@ -59,15 +73,15 @@ $panel-size: 48px;
 }
 
 @mixin hover($theme) {
-    @if ($theme=='light') {
+    @if ($theme== 'light') {
         background: rgba(0, 0, 0, 0.04);
     }
 
-    @if ($theme=='dark') {
+    @if ($theme== 'dark') {
         background: rgba(255, 255, 255, 0.04);
     }
 
-    @if ($theme=='primary') {
+    @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.04);
         }
@@ -79,15 +93,15 @@ $panel-size: 48px;
 }
 
 @mixin active($theme) {
-    @if ($theme=='light') {
+    @if ($theme== 'light') {
         background: rgba(0, 0, 0, 0.12);
     }
 
-    @if ($theme=='dark') {
+    @if ($theme== 'dark') {
         background: rgba(255, 255, 255, 0.12);
     }
 
-    @if ($theme=='primary') {
+    @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.12);
         }
@@ -123,7 +137,6 @@ $panel-size: 48px;
 }
 
 @mixin buildTheme($theme) {
-
     .text-medium-emphasis {
         @include foreground-medium-emphasis($theme);
     }
@@ -139,11 +152,9 @@ $panel-size: 48px;
     }
 
     .workspace-active-indicator {
-        @if ($theme=='primary') {
+        @if ($theme== 'primary') {
             @include foreground-as-background-high-emphasis('primary');
-        }
-
-        @else {
+        } @else {
             @include background('primary');
         }
 
@@ -153,7 +164,7 @@ $panel-size: 48px;
 
     .ripple-wave {
         //This is a hack because percentage is not handled yet
-        border-radius: 2000px;
+        border-radius: 10000px;
         @include active($theme);
     }
 
@@ -167,7 +178,8 @@ $panel-size: 48px;
             @include foreground-high-emphasis($theme);
         }
 
-        &:hover {
+        &:hover,
+        &.highlighted {
             .mat-button-container {
                 @include hover($theme);
             }
@@ -180,7 +192,8 @@ $panel-size: 48px;
                 @include foreground-high-emphasis('primary');
             }
 
-            &:hover {
+            &:hover,
+            &.highlighted {
                 .mat-button-container {
                     @include hover('primary');
                 }
@@ -195,11 +208,9 @@ $panel-size: 48px;
             &.active {
                 @include active($theme);
 
-                @if ($theme=='light') {
+                @if ($theme== 'light') {
                     color: $color-primary;
-                }
-
-                @else {
+                } @else {
                     @include foreground-high-emphasis($theme);
                 }
             }
@@ -224,7 +235,7 @@ $panel-size: 48px;
             padding: 0px;
             spacing: 0px;
 
-            >* {
+            > * {
                 width: $panel-size - 20px;
                 padding: 4px 0px;
                 margin: 0px;
@@ -251,7 +262,7 @@ $panel-size: 48px;
     #topPanel {
         $topPanelTheme: $theme;
 
-        @if ($theme=='primary') {
+        @if ($theme== 'primary') {
             $topPanelTheme: 'light';
         }
 
@@ -260,11 +271,9 @@ $panel-size: 48px;
         box-shadow: $shadow;
 
         .task-active-indicator {
-            @if ($topPanelTheme=='dark') {
+            @if ($topPanelTheme== 'dark') {
                 @include background('light');
-            }
-
-            @else {
+            } @else {
                 @include background('primary');
             }
 
@@ -277,32 +286,27 @@ $panel-size: 48px;
 
             &.active {
                 .task-bar-item-content {
-                    .task-bar-item-title {
-                        @if ($topPanelTheme=='light') {
-                            color: $color-primary;
-                        }
-
-                        @else {
-                            @include foreground-high-emphasis($topPanelTheme);
-                        }
+                    @if ($topPanelTheme== 'light') {
+                        color: $color-primary;
+                    } @else {
+                        @include foreground-high-emphasis($topPanelTheme);
                     }
                 }
             }
 
             .task-bar-item-content {
-                padding: 0px 8px;
-
+                padding: 0px 12px;
+                @include foreground-medium-emphasis($topPanelTheme);
                 .app-icon {
                     icon-size: 24px;
-                    margin-right: 8px;
                 }
 
                 .task-bar-item-title {
                     max-width: 248px;
+                    margin-left: 8px;
                     margin-right: 8px;
                     font-weight: 600;
                     font-size: 14px;
-                    @include foreground-medium-emphasis($topPanelTheme);
                 }
 
                 .task-close-button {
@@ -346,11 +350,9 @@ $panel-size: 48px;
     }
 
     .mat-card {
-        @if ($theme=='primary') {
+        @if ($theme== 'primary') {
             @include background('light');
-        }
-
-        @else {
+        } @else {
             @include background($theme);
         }
 
@@ -358,19 +360,15 @@ $panel-size: 48px;
         box-shadow: $shadow;
 
         .mat-card-title {
-            @if ($theme=='primary') {
+            @if ($theme== 'primary') {
                 @include background($theme);
-            }
-
-            @else {
+            } @else {
                 @include hover($theme);
             }
 
-            @if ($theme=='light') {
+            @if ($theme== 'light') {
                 color: $color-primary;
-            }
-
-            @else {
+            } @else {
                 @include foreground-high-emphasis($theme);
             }
 
@@ -399,14 +397,16 @@ $panel-size: 48px;
         }
 
         .overview-icon-with-label {
-            @if ($theme=='primary') {
+            @if ($theme== 'primary') {
                 @include foreground-high-emphasis('light');
-            }
-
-            @else {
+            } @else {
                 @include foreground-high-emphasis($theme);
             }
         }
+    }
+    .search-entry {
+        @include background($theme);
+        border-radius: 48px;
     }
 
     .backdrop-container {
@@ -415,6 +415,12 @@ $panel-size: 48px;
 
     .surface {
         @include background($theme);
+    }
+    .surface-lighter {
+        @include background-lighter($theme);
+    }
+    .surface-darker {
+        @include background-darker($theme);
     }
 }
 

@@ -1,9 +1,15 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { MaximizeLayout } = Me.imports.src.tilingManager.tilingLayouts.maximize;
-const { SplitLayout } = Me.imports.src.tilingManager.tilingLayouts.split;
-const { FloatLayout } = Me.imports.src.tilingManager.tilingLayouts.float;
-const custom = Me.imports.src.tilingManager.tilingLayouts.custom;
+const {
+    MaximizeLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
+const {
+    SplitLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.split;
+const {
+    FloatLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.float;
+const custom = Me.imports.src.materialShell.msWorkspace.tilingLayouts.custom;
 const { HalfLayout } = custom.half;
 const { HalfHorizontalLayout } = custom.halfHorizontal;
 const { HalfVerticalLayout } = custom.halfVertical;

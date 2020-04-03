@@ -125,7 +125,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         });
 
         if (Me.loaded) {
-            this.onTileRegulars(tileableList);
+            this.onTile();
         }
     }
 
@@ -150,14 +150,27 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onWorkAreasChanged() {
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
+        );
         this.onTileRegulars(this.msWorkspace.tileableList);
         this.onTileDialogs(this.msWorkspace.floatableList);
     }
 
-    onFocusChanged() {}
+    onFocusChanged() {
+        this.onTile();
+    }
 
     onTile() {
-        this.onTileRegulars(this.msWorkspace.tileableList);
+        if (this.msWorkspace.tileableFocused === this.msWorkspace.appLauncher) {
+            this.onTileRegulars(this.msWorkspace.tileableList);
+        } else {
+            this.onTileRegulars(
+                this.msWorkspace.tileableList.filter(tileable => {
+                    return tileable != this.msWorkspace.appLauncher;
+                })
+            );
+        }
         this.onTileDialogs(this.msWorkspace.floatableList);
     }
 
@@ -178,11 +191,6 @@ var BaseTilingLayout = class BaseTilingLayout {
                 ) {
                     return;
                 }
-                log(
-                    'set_position',
-                    workArea.x + workArea.width / 2 - floatable.width / 2,
-                    workArea.y + workArea.height / 2 - floatable.height / 2
-                );
                 floatable.set_position(
                     workArea.x + workArea.width / 2 - floatable.width / 2,
                     workArea.y + workArea.height / 2 - floatable.height / 2
@@ -277,7 +285,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     applyGaps(x, y, width, height) {
-        log('applyGaps', x, y, width, height);
         // Reduces box size according to gap setting
         const gap = global.tilingManager.gap;
         const screenGap = global.tilingManager.screenGap;
@@ -323,6 +330,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onDestroy() {
+        log('destroy tilingLayout');
         this.signals.forEach(signal => {
             signal.from.disconnect(signal.id);
         });

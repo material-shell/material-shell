@@ -26,7 +26,7 @@ var setTitleBarVisibility = function(metaWindow, visible) {
         '32c',
         '-set',
         '_MOTIF_WM_HINTS',
-        `2, 0, ${visible ? '1' : '2'} 0, 0`
+        `2, 0, ${visible ? '1' : '0'} 0, 0`
     ]);
 
     metaWindow.titleBarVisible = visible;

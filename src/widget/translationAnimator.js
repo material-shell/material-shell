@@ -1,4 +1,4 @@
-const { St, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
@@ -57,7 +57,6 @@ var TranslationAnimator = GObject.registerClass(
             if (nextActor) {
                 nextActor.beforeTransitionParent = nextActor.get_parent();
                 nextActor.reparent(newContainer);
-                nextActor.show();
             }
             const actorUsedToDetermineSize = previousActor || nextActor;
             const sizeToTranslate = this.vertical
@@ -66,17 +65,17 @@ var TranslationAnimator = GObject.registerClass(
 
             if (!this.animationInProgress) {
                 if (this.vertical) {
-                    this.secondContainer.set_position(0, sizeToTranslate);
-                    this.transitionContainer.set_position(
-                        0,
-                        direction > 0 ? 0 : -sizeToTranslate
-                    );
+                    this.secondContainer.translation_x = 0;
+                    this.secondContainer.translation_y = sizeToTranslate;
+                    this.transitionContainer.translation_x = 0;
+                    this.transitionContainer.translation_y =
+                        direction > 0 ? 0 : -sizeToTranslate;
                 } else {
-                    this.secondContainer.set_position(sizeToTranslate, 0);
-                    this.transitionContainer.set_position(
-                        direction > 0 ? 0 : -sizeToTranslate,
-                        0
-                    );
+                    this.secondContainer.translation_x = sizeToTranslate;
+                    this.secondContainer.translation_y = 0;
+                    this.transitionContainer.translation_x =
+                        direction > 0 ? 0 : -sizeToTranslate;
+                    this.transitionContainer.translation_y = 0;
                 }
 
                 this.animationInProgress = true;
@@ -84,8 +83,12 @@ var TranslationAnimator = GObject.registerClass(
 
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.transitionContainer, {
-                    x: this.vertical ? 0 : direction > 0 ? -sizeToTranslate : 0,
-                    y: this.vertical
+                    translation_x: this.vertical
+                        ? 0
+                        : direction > 0
+                        ? -sizeToTranslate
+                        : 0,
+                    translation_y: this.vertical
                         ? direction > 0
                             ? -sizeToTranslate
                             : 0
@@ -93,14 +96,17 @@ var TranslationAnimator = GObject.registerClass(
                     time: 0.25,
                     transition: 'easeOutQuad',
                     onComplete: () => {
-                        this.animationInProgress = false;
                         this.endTransition();
                     }
                 });
             } else {
                 this.transitionContainer.ease({
-                    x: this.vertical ? 0 : direction > 0 ? -sizeToTranslate : 0,
-                    y: this.vertical
+                    translation_x: this.vertical
+                        ? 0
+                        : direction > 0
+                        ? -sizeToTranslate
+                        : 0,
+                    translation_y: this.vertical
                         ? direction > 0
                             ? -sizeToTranslate
                             : 0
@@ -108,7 +114,6 @@ var TranslationAnimator = GObject.registerClass(
                     duration: 250,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => {
-                        this.animationInProgress = false;
                         this.endTransition();
                     }
                 });
@@ -126,9 +131,8 @@ var TranslationAnimator = GObject.registerClass(
                 );
                 delete actor.origin;
             });
+            this.animationInProgress = false;
             this.emit('transition-completed');
         }
-
-        _onDestroy() {}
     }
 );

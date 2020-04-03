@@ -2,11 +2,13 @@ const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { MaximizeLayout } = Me.imports.src.tilingManager.tilingLayouts.maximize;
+const {
+    MaximizeLayout
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
 
 const {
     TilingLayoutByKey
-} = Me.imports.src.tilingManager.tilingLayouts.layouts;
+} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.layouts;
 
 /* exported TilingManager */
 var TilingManager = class TilingManager {
@@ -59,7 +61,7 @@ var TilingManager = class TilingManager {
                             // change tiling of all workspaces using that layout.
 
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                global.msWorkspaceManager.msWorkspaceList.forEach(
+                                Me.msWorkspaceManager.msWorkspaceList.forEach(
                                     msWorkspace => {
                                         if (
                                             key == msWorkspace.tilingLayout.key
@@ -128,9 +130,9 @@ var TilingManager = class TilingManager {
             for (let monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
-                    msWorkspace = global.msWorkspaceManager.getActiveMsWorkspace();
+                    msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 } else {
-                    msWorkspace = global.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                    msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                         monitor.index
                     )[0];
                 }

@@ -4,6 +4,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Tweener = imports.ui.tweener;
+const WindowUtils = Me.imports.src.utils.windows;
 
 /* exported MsWindow */
 
@@ -16,22 +17,25 @@ var MsWindow = GObject.registerClass(
             },
             dragged_changed: {
                 param_types: [GObject.TYPE_BOOLEAN]
-            }
+            },
+            request_new_meta_window: {}
         }
     },
     class MsWindow extends Clutter.Actor {
-        _init(appId, metaWindowDescription, metaWindow) {
-            log('New MsWindow', appId, metaWindowDescription, metaWindow);
-            super._init({ reactive: true });
-            let appSys = Shell.AppSystem.get_default();
-            this.app = appSys.lookup_app(appId);
-            this.metaWindowDescription = metaWindowDescription;
+        _init(app, metaWindowIdentifier, metaWindow) {
+            super._init({ reactive: true, clip_to_allocation: true });
+            this.connect('destroy', this._onDestroy.bind(this));
+            this.app = app;
+            this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
             this.placeholder = new AppPlaceholder(this.app);
+            this.placeholder.connect('clicked', _ => {
+                this.emit('request-new-meta-window');
+            });
             this.metaWindowSignals = [];
-            this.followMetaWindow = false;
             this.dragged = false;
             this.add_child(this.windowClone);
+            this.add_child(this.placeholder);
             if (metaWindow) {
                 this.setWindow(metaWindow);
             }
@@ -114,7 +118,6 @@ var MsWindow = GObject.registerClass(
                                 Math.abs(originY - currentY)
                             );
                             if (distance > 48) {
-                                log('GRAB', this.title);
                                 this.dragged = true;
                                 originMsWindowPosition = this.get_position();
                                 stageMotionEventId = global.stage.connect(
@@ -163,9 +166,12 @@ var MsWindow = GObject.registerClass(
 
                 //log('EVENT', this.title, event.type());
             });
-            Me.connect('super-pressed-change', (_, pressed) => {
-                this.reactive = pressed;
-            });
+            this.superConnectId = Me.connect(
+                'super-pressed-change',
+                (_, pressed) => {
+                    this.reactive = !this.metaWindow || pressed;
+                }
+            );
         }
 
         delayGetMetaWindowActor(delayedCount, resolve, reject) {
@@ -191,6 +197,13 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        get followMetaWindow() {
+            return (
+                this.isDialog ||
+                this.msWorkspace.tilingLayout.constructor.key === 'float'
+            );
+        }
+
         get metaWindowActorIsAvailable() {
             let actor = this.metaWindow.get_compositor_private();
             if (actor && actor.get_texture()) {
@@ -202,6 +215,9 @@ var MsWindow = GObject.registerClass(
 
         async onMetaWindowActorExist() {
             return new Promise((resolve, reject) => {
+                if (!this.metaWindow) {
+                    return resolve();
+                }
                 let actor = this.metaWindow.get_compositor_private();
                 if (actor && actor.get_texture()) {
                     resolve(actor);
@@ -216,7 +232,7 @@ var MsWindow = GObject.registerClass(
                 if (metaWindowActor.mapped) {
                     return metaWindowActor;
                 } else {
-                    log('wait for it to be mapped');
+                    log('wait for it to be mapped', this.title);
                     // Wait for it to be mapped
                     return new Promise((resolve, reject) => {
                         let waitToBeMappedId = metaWindowActor.connect(
@@ -277,12 +293,14 @@ var MsWindow = GObject.registerClass(
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
         updateMetaWindowPositionAndSize() {
+            if (!this.metaWindow) return;
             //If an update is already in progress discard all incoming call
             if (this.metaWindowUpdateInProgress) return;
             this.metaWindowUpdateInProgress = true;
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 //Wait for the WindowActor to be available
-                this.onMetaWindowActorMapped().then(() => {
+                this.onMetaWindowActorExist().then(() => {
+                    if (!this.metaWindow) return;
                     delete this.metaWindowUpdateInProgress;
                     const workArea = Main.layoutManager.getWorkAreaForMonitor(
                         this.metaWindow.get_monitor()
@@ -305,7 +323,6 @@ var MsWindow = GObject.registerClass(
                     if (this.metaWindow.maximized_horizontally) {
                         this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                     }
-
                     //Set the size accordingly
                     this.metaWindow.move_resize_frame(
                         true,
@@ -329,31 +346,43 @@ var MsWindow = GObject.registerClass(
         }
 
         setWindow(metaWindow) {
-            this.metaWindowDescription = metaWindow.get_description();
+            this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
+                metaWindow
+            );
             this.metaWindow = metaWindow;
             metaWindow.msWindow = this;
             this.reactive = false;
             this.registerOnMetaWindowSignals();
-            this.onMetaWindowActorExist().then(metaWindowActor => {
+            if (this.msWorkspace) {
+                let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
+                    this.msWorkspace
+                );
+                if (workspace && metaWindow.get_workspace() != workspace) {
+                    metaWindow.change_workspace(workspace);
+                }
+                WindowUtils.updateTitleBarVisibility(this.metaWindow);
+            }
+
+            this.onMetaWindowActorExist().then(_ => {
                 this.windowClone.set_source(
                     metaWindow.get_compositor_private()
                 );
-                this.mimicMetaWindowPositionAndSize();
+                if (this.followMetaWindow) {
+                    this.mimicMetaWindowPositionAndSize();
+                } else {
+                    this.updateMetaWindowPositionAndSize();
+                }
             });
-            if (this.showPlaceholder) {
-                this.hideMetaWindow();
-                this.onMetaWindowActorMapped().then(metaWindowActor => {
-                    log('WINDOW READY');
-                    this.switchActorToMetaWindowActor(true);
-                });
+            if (this.placeholder.get_parent()) {
+                this.fadeOutPlaceholder();
             }
+            this.emit('title-changed', this.title);
         }
 
         registerOnMetaWindowSignals() {
             if (!this.metaWindow) return;
             this.metaWindowSignals.push(
                 this.metaWindow.connect('unmanaged', _ => {
-                    log('unmanaged', this.title);
                     this.unsetWindow();
                 }),
                 this.metaWindow.connect('notify::title', _ => {
@@ -362,9 +391,6 @@ var MsWindow = GObject.registerClass(
                 this.metaWindow.connect('position-changed', () => {
                     if (!this.followMetaWindow) return;
                     this.mimicMetaWindowPositionAndSize();
-                }),
-                this.metaWindow.connect('focus', () => {
-                    log(this.title, 'focus');
                 })
             );
         }
@@ -381,21 +407,67 @@ var MsWindow = GObject.registerClass(
             this.unregisterOnMetaWindowSignals();
             this.reactive = true;
             delete this.metaWindow;
+            delete this.metaWindowUpdateInProgress;
             this.add_child(this.placeholder);
             this.emit('title-changed', this.title);
         }
 
         takeFocus() {
-            log('TAKE_FOCUS', this.title);
             if (this.metaWindow) {
-                //this.metaWindow.focus(global.get_current_time());
+                this.metaWindow.activate(global.get_current_time());
             } else {
                 this.grab_key_focus();
             }
         }
 
+        show() {
+            super.show();
+            if (this.metaWindow && this.metaWindow.minimized) {
+                this.metaWindow.unminimize();
+            }
+        }
+
+        hide() {
+            super.hide();
+            if (this.metaWindow && !this.metaWindow.minimized) {
+                this.metaWindow.minimize();
+            }
+        }
+
+        kill() {
+            if (this.metaWindow) {
+                this.metaWindow.delete(global.get_current_time());
+            }
+            this.msWorkspace.removeMsWindow(this);
+            this.destroy();
+        }
+
+        fadeOutPlaceholder() {
+            const onComplete = () => {
+                this.placeholder.set_opacity(255);
+                this.remove_child(this.placeholder);
+                this.placeholder.reset();
+            };
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(this.placeholder, {
+                    opacity: 0,
+                    time: 0.25,
+                    transition: 'easeOutQuad',
+                    onComplete
+                });
+            } else {
+                this.placeholder.ease({
+                    opacity: 0,
+                    duration: 250,
+                    mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+                    onComplete
+                });
+            }
+        }
+
         _onDestroy() {
-            log('MsWindow destroy', this.metaWindow, this.title);
+            this.unregisterOnMetaWindowSignals();
+            Me.disconnect(this.superConnectId);
         }
     }
 );
