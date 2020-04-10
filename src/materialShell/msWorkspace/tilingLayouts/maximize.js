@@ -97,6 +97,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onDestroy() {
         super.onDestroy();
+        this.msWorkspace.tileableContainer.translation_x = 0;
         this.msWorkspace.msWindowList.forEach((msWindow) => {
             if (msWindow !== this.windowNotDialogFocused) {
                 msWindow.show();
