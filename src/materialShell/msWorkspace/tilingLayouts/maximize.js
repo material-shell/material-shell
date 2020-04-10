@@ -1,7 +1,9 @@
+const { Clutter } = imports.gi;
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+const Tweener = imports.ui.tweener;
 const {
     BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
@@ -81,12 +83,15 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             if (!actor.dragged) {
                 actor.set_position(workArea.x, workArea.y);
                 actor.set_size(workArea.width, workArea.height);
+                actor.translation_x = index * workArea.width;
             }
-            if (index !== this.currentWindowIndex && !actor.dragged) {
+            /* if (index !== this.currentWindowIndex && !actor.dragged) {
                 actor.hide();
             } else {
                 actor.show();
-            }
+            } */
+            this.msWorkspace.tileableContainer.translation_x =
+                -this.msWorkspace.focusedIndex * workArea.width;
         });
     }
 
@@ -103,30 +108,31 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
         let oldActor = this.msWorkspace.tileableList[oldIndex];
         let newActor = this.msWorkspace.tileableList[this.currentWindowIndex];
-        oldActor.show();
-        newActor.show();
-        this.translationAnimator.set_size(
-            this.monitor.width,
-            this.monitor.height
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            this.monitor.index
         );
-        if (!this.translationAnimator.get_parent()) {
-            this.msWorkspace.msWorkspaceActor.insert_child_above(
-                this.translationAnimator,
-                this.msWorkspace.tileableContainer
-            );
+        if (ShellVersionMatch('3.32')) {
+            Tweener.addTween(this.msWorkspace.tileableContainer, {
+                translation_x: -newIndex * workArea.width,
+                time: Math.min(0.25 * Math.abs(oldIndex - newIndex), 0.4),
+                transition: 'easeOutQuad',
+                onComplete: () => {
+                    this.endTransition();
+                },
+            });
+        } else {
+            this.msWorkspace.tileableContainer.ease({
+                translation_x: -newIndex * workArea.width,
+                duration: Math.min(250 * Math.abs(oldIndex - newIndex), 400),
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.endTransition();
+                },
+            });
         }
-
-        this.translationAnimator.setTranslation(
-            oldActor && oldActor.dragged ? undefined : oldActor,
-            newActor && newActor.dragged ? undefined : newActor,
-            direction
-        );
     }
 
     endTransition() {
-        this.msWorkspace.msWorkspaceActor.remove_child(
-            this.translationAnimator
-        );
         this.onTile();
     }
 };
