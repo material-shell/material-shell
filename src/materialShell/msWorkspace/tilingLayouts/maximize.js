@@ -33,6 +33,14 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
     }
 
+    alterTileable(tileable) {
+        tileable.show();
+    }
+
+    restoreTileable(tileable) {
+        tileable.translation_x = 0;
+    }
+
     onTileableListChanged(tileableList, oldTileableList) {
         // If the order of the windows changed try to follow the current visible window
         /* if (oldTileableList.length === tileableList.length) {
