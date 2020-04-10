@@ -44,12 +44,12 @@ $panel-size: 48px;
 
 @mixin background-darker($theme) {
     $color: getBackgroundColor($theme);
-    background: hsl(hue($color), saturation($color), lightness($color) * 0.8);
+    background: hsl(hue($color), saturation($color), lightness($color) * 0.7);
 }
 
 @mixin background-lighter($theme) {
     $color: getBackgroundColor($theme);
-    background: hsl(hue($color), saturation($color), lightness($color) * 1.2);
+    background: hsl(hue($color), saturation($color), lightness($color) * 1.3);
 }
 
 @mixin foreground-as-background($theme, $opacity) {
@@ -148,6 +148,7 @@ $panel-size: 48px;
         .mat-panel-button-icon {
             width: 24px;
             height: 24px;
+            icon-size: 24px;
         }
     }
 
@@ -421,6 +422,11 @@ $panel-size: 48px;
     }
     .surface-darker {
         @include background-darker($theme);
+    }
+
+    MsWindow {
+        border: 4px solid black;
+        background-color: red;
     }
 }
 

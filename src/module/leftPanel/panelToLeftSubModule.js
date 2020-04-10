@@ -7,25 +7,23 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         this.panel = panel;
         this.panelBox = new St.BoxLayout({
             name: 'leftPanelBox',
-            vertical: true
+            vertical: true,
         });
         this.dashSpacer = new St.Widget({
-            name: 'leftDashSpacer'
+            name: 'leftDashSpacer',
         });
         this.primaryMonitor = Main.layoutManager.primaryMonitor;
-
-        Main.overview._controls._group.insert_child_at_index(
-            this.dashSpacer,
-            0
-        ); // insert on first
+        this.controls =
+            Main.overview._controls || Main.overview._overview._controls;
+        this.controls._group.insert_child_at_index(this.dashSpacer, 0); // insert on first
         Main.layoutManager.panelBox.remove_child(this.panel);
         this.panelBox.add_child(this.panel);
         Main.layoutManager.addChrome(this.panelBox, {
             affectsStruts: true,
-            trackFullscreen: true
+            trackFullscreen: true,
         });
         this.panelBox.set_height(this.primaryMonitor.height);
-        this.dashSpacer.set_height(Main.overview._controls._group.height);
+        this.dashSpacer.set_height(this.controls._group.height);
         this.panel.set_height(this.primaryMonitor.height);
         this.panelBox.set_position(
             this.primaryMonitor.x,
@@ -37,9 +35,7 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
             () => {
                 this.primaryMonitor = Main.layoutManager.primaryMonitor;
                 this.panelBox.set_height(this.primaryMonitor.height);
-                this.dashSpacer.set_height(
-                    Main.overview._controls._group.height
-                );
+                this.dashSpacer.set_height(this.controls._group.height);
                 this.panel.set_height(this.primaryMonitor.height);
                 this.panelBox.set_position(
                     this.primaryMonitor.x,
@@ -54,11 +50,11 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
         );
 
         // 4- For each menu override the opening side to match the vertical panel
-        this.panel.menuManager._menus.forEach(menuData => {
+        this.panel.menuManager._menus.forEach((menuData) => {
             if (menuData.menu._boxPointer) {
                 menuData.menu._boxPointer.oldArrowSideFunction =
                     menuData.menu._boxPointer._calculateArrowSide;
-                menuData.menu._boxPointer._calculateArrowSide = function() {
+                menuData.menu._boxPointer._calculateArrowSide = function () {
                     return St.Side.LEFT;
                 };
             }
@@ -67,12 +63,12 @@ var PanelToLeftSubModule = class PanelToLeftSubModule {
 
     destroy() {
         Main.layoutManager.disconnect(this.signalMonitorId);
-        Main.overview._controls._group.remove_child(this.dashSpacer); // insert on first
+        this.controls._group.remove_child(this.dashSpacer); // insert on first
         this.panelBox.remove_child(this.panel);
         this.panel.set_height(-1);
         Main.layoutManager.panelBox.add_child(this.panel);
         Main.layoutManager.removeChrome(this.panelBox);
-        this.panel.menuManager._menus.forEach(menuData => {
+        this.panel.menuManager._menus.forEach((menuData) => {
             if (menuData.menu._boxPointer) {
                 menuData.menu._boxPointer._calculateArrowSide =
                     menuData.menu._boxPointer.oldArrowSideFunction;

@@ -3,11 +3,11 @@ const GLib = imports.gi.GLib;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const {
-    MaximizeLayout
+    MaximizeLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
 
 const {
-    TilingLayoutByKey
+    TilingLayoutByKey,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.layouts;
 
 /* exported TilingManager */
@@ -19,25 +19,28 @@ var TilingManager = class TilingManager {
         this.windows = [];
         this.layoutsSettings = getSettings('layouts');
         this.settingsSignals = [
-            this.layoutsSettings.connect('changed::gap', schema => {
+            this.layoutsSettings.connect('changed::gap', (schema) => {
                 this.gap = schema.get_int('gap');
                 this.tileWindows();
             }),
-            this.layoutsSettings.connect('changed::use-screen-gap', schema => {
-                this.useScreenGap = schema.get_boolean('use-screen-gap');
-                this.tileWindows();
-            }),
-            this.layoutsSettings.connect('changed::screen-gap', schema => {
+            this.layoutsSettings.connect(
+                'changed::use-screen-gap',
+                (schema) => {
+                    this.useScreenGap = schema.get_boolean('use-screen-gap');
+                    this.tileWindows();
+                }
+            ),
+            this.layoutsSettings.connect('changed::screen-gap', (schema) => {
                 this.screenGap = schema.get_int('screen-gap');
                 this.tileWindows();
             }),
-            this.layoutsSettings.connect('changed::tween-time', schema => {
+            this.layoutsSettings.connect('changed::tween-time', (schema) => {
                 this.tweenTime = schema.get_double('tween-time');
             }),
-            this.layoutsSettings.connect('changed::ratio-value', schema => {
+            this.layoutsSettings.connect('changed::ratio-value', (schema) => {
                 this.ratio = schema.get_double('ratio-value');
                 this.tileWindows();
-            })
+            }),
         ];
 
         this.ratio = this.layoutsSettings.get_double('ratio-value');
@@ -48,7 +51,7 @@ var TilingManager = class TilingManager {
 
         this.allLayouts = Object.keys(TilingLayoutByKey);
         // On layout settings change
-        this.allLayouts.forEach(key => {
+        this.allLayouts.forEach((key) => {
             this.settingsSignals.push(
                 this.layoutsSettings.connect(
                     `changed::${key}`,
@@ -61,8 +64,9 @@ var TilingManager = class TilingManager {
                             // change tiling of all workspaces using that layout.
 
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                log('IDLE_ADD');
                                 Me.msWorkspaceManager.msWorkspaceList.forEach(
-                                    msWorkspace => {
+                                    (msWorkspace) => {
                                         if (
                                             key == msWorkspace.tilingLayout.key
                                         ) {
@@ -83,7 +87,7 @@ var TilingManager = class TilingManager {
     }
 
     refreshAvailableLayouts() {
-        this.availableLayouts = this.allLayouts.filter(key =>
+        this.availableLayouts = this.allLayouts.filter((key) =>
             this.layoutsSettings.get_boolean(key)
         );
         if (!this.availableLayouts.length) {
@@ -117,7 +121,7 @@ var TilingManager = class TilingManager {
     }
 
     getFilteredWindows(windows) {
-        return windows.filter(window => {
+        return windows.filter((window) => {
             return !window.is_attached_dialog();
         });
     }
@@ -127,6 +131,7 @@ var TilingManager = class TilingManager {
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
             for (let monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
@@ -148,7 +153,7 @@ var TilingManager = class TilingManager {
     }
 
     onDestroy() {
-        this.settingsSignals.forEach(signal =>
+        this.settingsSignals.forEach((signal) =>
             this.settings.disconnect(signal)
         );
     }

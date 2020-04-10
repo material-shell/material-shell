@@ -3,10 +3,11 @@ const Tweener = imports.ui.tweener;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const { Column, Row } = Me.imports.src.widget.layout;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+const { reparentActor } = Me.imports.src.utils.index;
 
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
@@ -85,10 +86,10 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
         windows
-            .filter(window => {
+            .filter((window) => {
                 !this.activeTileableList.includes(window);
             })
-            .forEach(window => {
+            .forEach((window) => {
                 window.set_position(workArea.x, workArea.y);
                 window.set_size(
                     workArea.width /
@@ -107,7 +108,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 x: workArea.x,
                 y: workArea.y,
                 width: workArea.width,
-                height: workArea.height
+                height: workArea.height,
             };
             if (workArea.width > workArea.height) {
                 windowBounds.width /= WINDOW_PER_SCREEN;
@@ -128,7 +129,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 window.set_size(windowBounds.width, windowBounds.height);
             }
         });
-        windows.forEach(window => {
+        windows.forEach((window) => {
             if (!this.activeTileableList.includes(window)) {
                 window.hide();
             } else {
@@ -149,7 +150,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.msWorkspace.msWindowList.forEach(msWindow => {
+        this.msWorkspace.msWindowList.forEach((msWindow) => {
             if (!this.activeTileableList.includes(msWindow)) {
                 msWindow.show();
             }
@@ -158,7 +159,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
 
     transition(newTileableList, oldTileableList) {
         newTileableList = newTileableList.filter(
-            tileable => !oldTileableList.includes(tileable)
+            (tileable) => !oldTileableList.includes(tileable)
         );
         //this.transitionContainer.remove_all_children();
         const direction =
@@ -171,8 +172,8 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 : newTileableList.concat(oldTileableList);
 
         allTileableList
-            .filter(tileable => !tileable.grabbed)
-            .forEach(tileable => {
+            .filter((tileable) => !tileable.grabbed)
+            .forEach((tileable) => {
                 if (tileable && !tileable.origin) {
                     if (!tileable.get_parent()) {
                         log('no parent for ', tileable.title);
@@ -182,11 +183,10 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                         index: tileable
                             .get_parent()
                             .get_children()
-                            .indexOf(tileable)
+                            .indexOf(tileable),
                     };
                 }
-                tileable.get_parent().remove_child(tileable);
-                this.transitionContainer.add_child(tileable);
+                reparentActor(tileable, this.transitionContainer);
                 tileable.show();
             });
 
@@ -222,7 +222,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 this.monitor.width,
                 this.monitor.height
             ); */
-            this.msWorkspace.actor.insert_child_above(
+            this.msWorkspace.msWorkspaceActor.insert_child_above(
                 this.overContainer,
                 this.msWorkspace.tileableContainer
             );
@@ -238,7 +238,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         } else {
             this.transitionContainer.ease({
@@ -249,22 +249,19 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         }
     }
 
     endTransition() {
-        this.activeTileableList.forEach(tileable => {
+        this.activeTileableList.forEach((tileable) => {
             tileable.show();
         });
-        this.msWorkspace.actor.remove_child(this.overContainer);
-        this.transitionContainer.get_children().forEach(actor => {
-            actor.get_parent().remove_child(actor);
-            actor.origin.parent.insert_child_at_index(
-                actor,
-                actor.origin.index
-            );
+        this.msWorkspace.msWorkspaceActor.remove_child(this.overContainer);
+        this.transitionContainer.get_children().forEach((actor) => {
+            reparentActor(actor, actor.origin.parent);
+            actor.origin.parent.set_child_at_index(actor, actor.origin.index);
             delete actor.origin;
         });
         this.onTile();

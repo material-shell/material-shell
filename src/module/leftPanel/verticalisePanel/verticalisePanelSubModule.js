@@ -5,6 +5,8 @@ const { Clutter, Meta, St } = imports.gi;
 const WindowManager = imports.ui.windowManager;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+
 const RectangularClockSubModule =
     Me.imports.src.module.leftPanel.verticalisePanel.rectangularClockSubModule
         .RectangularClockSubModule;
@@ -16,7 +18,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         this.rectangularClockSubModule = new RectangularClockSubModule(
             this.panel.statusArea.dateMenu
         );
-        this.panelAllocate = function(box, flags) {
+        this.panelAllocate = function (box, flags) {
             this.set_allocation(box, flags);
             let allocWidth = box.x2 - box.x1;
             let allocHeight = box.y2 - box.y1;
@@ -54,7 +56,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
             this._rightBox.allocate(rightChildBox, flags);
         };
 
-        this.wmGetPositionForDirection = function(direction) {
+        this.wmGetPositionForDirection = function (direction) {
             let xDest = 0,
                 yDest = 0;
 
@@ -89,6 +91,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
 
         // 1- Set all List container to vertical
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
             this.recursivelySetVertical(this.panel, true);
             return GLib.SOURCE_REMOVE;
         });
@@ -102,8 +105,13 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         //3- Fix workspace switch animation by overriding the window manager function that used the panel height to define window position
         Main.wm._getPositionForDirection = this.wmGetPositionForDirection;
 
-        this.panel._leftCorner.actor.hide();
-        this.panel._rightCorner.actor.hide();
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.panel._leftCorner.actor.hide();
+            this.panel._rightCorner.actor.hide();
+        } else {
+            this.panel._leftCorner.hide();
+            this.panel._rightCorner.hide();
+        }
 
         this.leftBoxActorAddedSignal = this.panel._leftBox.connect(
             'actor-added',
@@ -135,8 +143,13 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         //3- Revert function
         Main.wm._getPositionForDirection =
             WindowManager._getPositionForDirection;
-        this.panel._leftCorner.actor.show();
-        this.panel._rightCorner.actor.show();
+        if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            this.panel._leftCorner.actor.show();
+            this.panel._rightCorner.actor.show();
+        } else {
+            this.panel._leftCorner.show();
+            this.panel._rightCorner.show();
+        }
         this.rectangularClockSubModule.destroy();
         this.panel._leftBox.disconnect(this.leftBoxActorAddedSignal);
         this.panel._centerBox.disconnect(this.centerBoxActorAddedSignal);
@@ -147,7 +160,7 @@ var VerticalisePanelSubModule = class VerticalisePanelSubModule {
         if (actor instanceof St.BoxLayout) {
             actor.vertical = value;
         }
-        actor.get_children().forEach(child => {
+        actor.get_children().forEach((child) => {
             this.recursivelySetVertical(child, value);
         });
     }

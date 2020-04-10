@@ -1,7 +1,8 @@
 const { GLib } = imports.gi;
+const Main = imports.ui.main;
 
 /* exported range */
-var range = to =>
+var range = (to) =>
     // Returns a list containing all integers from 0 to `to`
     Array(to)
         .fill()
@@ -12,7 +13,7 @@ var debounce = (fun, delay) => {
     // Only calls once fun after no calls for more than delay
     let timeout = null;
     let debouncedArgs = [];
-    return function(...args) {
+    return function (...args) {
         debouncedArgs.push(args);
         const context = this;
         if (timeout) {
@@ -27,22 +28,18 @@ var debounce = (fun, delay) => {
     };
 };
 
-let doLogTick = false;
-/* exported startLogTick */
-var startLogTick = function() {
-    doLogTick = true;
-    logTick();
-};
-
-function logTick() {
-    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-        log('tick');
-        if (doLogTick) {
-            logTick();
-        }
-    });
-}
-/* exported stopLogTick */
-var stopLogTick = function() {
-    doLogTick = false;
+var reparentActor = (actor, parent) => {
+    if (!actor || !parent) return;
+    const isFocused = actor.has_key_focus();
+    const currentParent = actor.get_parent();
+    if (isFocused) {
+        Main.layoutManager.uiGroup.grab_key_focus();
+    }
+    if (currentParent) {
+        currentParent.remove_child(actor);
+    }
+    parent.add_child(actor);
+    if (isFocused) {
+        actor.grab_key_focus();
+    }
 };

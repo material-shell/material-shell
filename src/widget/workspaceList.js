@@ -6,7 +6,7 @@ const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const {
-    WorkspaceCategories
+    WorkspaceCategories,
 } = Me.imports.src.materialShell.msWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
@@ -18,20 +18,23 @@ var WorkspaceList = GObject.registerClass(
         _init(msWorkspaceManager) {
             super._init({
                 clip_to_allocation: true,
-                style_class: 'workspace-list'
+                style_class: 'workspace-list',
             });
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceButtonMap = new Map();
             this.msWorkspaceManager = msWorkspaceManager;
 
             this.buttonList = new St.BoxLayout({
-                vertical: true
+                vertical: true,
             });
 
             this.add_child(this.buttonList);
             this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
             this.dropPlaceholder.connect('drag-dropped', () => {
-                this.tempDragData.workspaceButton.reparent(this.buttonList);
+                this.tempDragData.workspaceButton
+                    .get_parent()
+                    .remove_child(this.tempDragData.workspaceButton);
+                this.buttonList.add_child(this.tempDragData.workspaceButton);
             });
 
             this.dropPlaceholder.connect('drag-over', () => {
@@ -39,7 +42,7 @@ var WorkspaceList = GObject.registerClass(
             });
 
             this.workspaceActiveIndicator = new St.Widget({
-                style_class: 'workspace-active-indicator'
+                style_class: 'workspace-active-indicator',
             });
 
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
@@ -81,7 +84,7 @@ var WorkspaceList = GObject.registerClass(
                             );
                             this.tempDragData = {
                                 workspaceButton: workspaceButton,
-                                initialIndex: workspaceButtonIndex
+                                initialIndex: workspaceButtonIndex,
                             };
                             this.dropPlaceholder.resize(workspaceButton);
                             this.buttonList.add_child(this.dropPlaceholder);
@@ -116,8 +119,13 @@ var WorkspaceList = GObject.registerClass(
                         });
 
                         workspaceButton.connect('drag-dropped', () => {
-                            this.tempDragData.workspaceButton.reparent(
-                                this.buttonList
+                            this.tempDragData.workspaceButton
+                                .get_parent()
+                                .remove_child(
+                                    this.tempDragData.workspaceButton
+                                );
+                            this.buttonList.add_child(
+                                this.tempDragData.workspaceButton
                             );
                         });
                         this.buttonList.insert_child_at_index(
@@ -247,24 +255,25 @@ var WorkspaceList = GObject.registerClass(
                 Tweener.addTween(this.workspaceActiveIndicator, {
                     translation_y: 48 * scaleFactor * index,
                     time: 0.25,
-                    transition: 'easeOutQuad'
+                    transition: 'easeOutQuad',
                 });
             } else {
                 this.workspaceActiveIndicator.ease({
                     translation_y: 48 * scaleFactor * index,
                     duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             }
         }
 
         getButtonFromCategoryKey(categoryKey) {
-            return this.buttonList.get_children().find(workspaceButton => {
+            return this.buttonList.get_children().find((workspaceButton) => {
                 return workspaceButton.categoryKey === categoryKey;
             });
         }
 
         _onDestroy() {
+            log('workspaceList to its own destroy');
             global.workspace_manager.disconnect(this.workspaceSignal);
         }
     }
@@ -275,9 +284,9 @@ var WorkspaceButton = GObject.registerClass(
         Signals: {
             'drag-dropped': {},
             'drag-over': {
-                param_types: [GObject.TYPE_BOOLEAN]
-            }
-        }
+                param_types: [GObject.TYPE_BOOLEAN],
+            },
+        },
     },
     class InnerWorkspaceButton extends MatButton {
         _init(msWorkspaceManager, msWorkspace) {
@@ -287,7 +296,7 @@ var WorkspaceButton = GObject.registerClass(
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/plus-symbolic.svg`
                 ),
-                style_class: 'mat-panel-button-icon'
+                style_class: 'mat-panel-button-icon',
             });
             this.workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
 
@@ -295,7 +304,7 @@ var WorkspaceButton = GObject.registerClass(
                 x_fill: true,
                 y_fill: true,
                 child: this.workspaceButtonIcon,
-                style_class: 'mat-panel-button'
+                style_class: 'mat-panel-button',
             });
             this._delegate = this;
 
@@ -309,7 +318,7 @@ var WorkspaceButton = GObject.registerClass(
                 pressed: false,
                 dragged: false,
                 originalCoords: null,
-                originalSequence: null
+                originalSequence: null,
             };
 
             this.connect('event', (actor, event) => {
@@ -317,7 +326,7 @@ var WorkspaceButton = GObject.registerClass(
                 if (
                     [
                         Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN
+                        Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = true;
@@ -326,7 +335,7 @@ var WorkspaceButton = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.MOTION,
-                        Clutter.EventType.TOUCH_UPDATE
+                        Clutter.EventType.TOUCH_UPDATE,
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.mouseData.pressed && !this.mouseData.dragged) {
@@ -353,7 +362,7 @@ var WorkspaceButton = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END
+                        Clutter.EventType.TOUCH_END,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = false;
@@ -376,7 +385,7 @@ var WorkspaceButton = GObject.registerClass(
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
-                manualMode: true
+                manualMode: true,
             });
 
             this._draggable.connect('drag-end', () => {
@@ -405,40 +414,40 @@ var WorkspaceButton = GObject.registerClass(
 
 var WorkspaceButtonIcon = GObject.registerClass(
     {
-        Signals: {}
+        Signals: {},
     },
     class WorkspaceButtonIcon extends St.Widget {
         _init(msWorkspace) {
             this.msWorkspace = msWorkspace;
             super._init({
                 x_expand: true,
-                y_expand: true
+                y_expand: true,
             });
             this.add_effect(new Clutter.DesaturateEffect());
             this.buildIcons();
-            this.msWorkspace.connect('tileableList-changed', _ => {
+            this.msWorkspace.connect('tileableList-changed', (_) => {
                 this.buildIcons();
             });
         }
 
         buildIcons() {
             if (this.appIconList) {
-                this.appIconList.forEach(icon => {
+                this.appIconList.forEach((icon) => {
                     icon.destroy();
                 });
             }
             const appList = this.msWorkspace.tileableList
-                .filter(tileable => {
+                .filter((tileable) => {
                     return tileable instanceof MsWindow;
                 })
-                .map(msWindow => {
+                .map((msWindow) => {
                     return msWindow.app;
                 });
             this.appIconList = [];
 
             if (appList.length) {
                 const numberOfEachAppMap = new Map();
-                appList.forEach(app => {
+                appList.forEach((app) => {
                     if (numberOfEachAppMap.has(app)) {
                         numberOfEachAppMap.set(
                             app,
@@ -449,16 +458,16 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     }
                 });
                 const sortedByInstanceAppList = [
-                    ...numberOfEachAppMap.entries()
+                    ...numberOfEachAppMap.entries(),
                 ]
                     .sort((a, b) => {
                         return b[1] - a[1];
                     })
-                    .map(entry => {
+                    .map((entry) => {
                         return entry[0];
                     });
 
-                sortedByInstanceAppList.forEach(app => {
+                sortedByInstanceAppList.forEach((app) => {
                     const icon = app.create_icon_texture(24);
                     this.appIconList.push(icon);
                     this.add_child(icon);
@@ -468,7 +477,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    style_class: 'mat-panel-button-icon'
+                    style_class: 'mat-panel-button-icon',
                 });
                 this.appIconList.push(icon);
                 this.add_child(icon);

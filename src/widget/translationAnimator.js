@@ -1,22 +1,23 @@
 const { St, GObject, Clutter, GLib } = imports.gi;
-const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Tweener = imports.ui.tweener;
-
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { reparentActor } = Me.imports.src.utils.index;
 /* exported TranslationAnimator */
 var TranslationAnimator = GObject.registerClass(
     {
         GTypeName: 'TranslationAnimator',
         Signals: {
-            'transition-completed': {}
-        }
+            'transition-completed': {},
+        },
     },
     class TranslationAnimator extends St.Widget {
         _init(vertical = false) {
             super._init({
-                clip_to_allocation: true
+                clip_to_allocation: true,
             });
+            AddLogToFunctions(this);
             this.vertical = vertical;
             this.transitionContainer = new St.Widget();
             this.firstContainer = new St.Widget();
@@ -34,35 +35,31 @@ var TranslationAnimator = GObject.registerClass(
             const [oldContainer, newContainer] = containers;
 
             //Save actor origin
-            [previousActor, nextActor].forEach(actor => {
+            [previousActor, nextActor].forEach((actor) => {
                 if (actor && !actor.origin) {
                     if (!actor.get_parent()) {
                         log('no parent for ', actor.title);
                     }
                     actor.origin = {
                         parent: actor.get_parent(),
-                        index: actor
-                            .get_parent()
-                            .get_children()
-                            .indexOf(actor)
+                        index: actor.get_parent().get_children().indexOf(actor),
                     };
                 }
             });
 
             if (previousActor) {
-                previousActor.beforeTransitionParent = previousActor.get_parent();
-                previousActor.reparent(oldContainer);
+                reparentActor(previousActor, oldContainer);
             }
-
             if (nextActor) {
-                nextActor.beforeTransitionParent = nextActor.get_parent();
-                nextActor.reparent(newContainer);
+                log(nextActor, nextActor.mapped, nextActor.has_key_focus());
+                log('middle');
+                reparentActor(nextActor, newContainer);
+                log('after');
             }
             const actorUsedToDetermineSize = previousActor || nextActor;
             const sizeToTranslate = this.vertical
                 ? actorUsedToDetermineSize.height
                 : actorUsedToDetermineSize.width;
-
             if (!this.animationInProgress) {
                 if (this.vertical) {
                     this.secondContainer.translation_x = 0;
@@ -97,7 +94,7 @@ var TranslationAnimator = GObject.registerClass(
                     transition: 'easeOutQuad',
                     onComplete: () => {
                         this.endTransition();
-                    }
+                    },
                 });
             } else {
                 this.transitionContainer.ease({
@@ -115,17 +112,17 @@ var TranslationAnimator = GObject.registerClass(
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => {
                         this.endTransition();
-                    }
+                    },
                 });
             }
         }
         endTransition() {
             [
                 ...this.firstContainer.get_children(),
-                ...this.secondContainer.get_children()
-            ].forEach(actor => {
-                actor.get_parent().remove_child(actor);
-                actor.origin.parent.insert_child_at_index(
+                ...this.secondContainer.get_children(),
+            ].forEach((actor) => {
+                reparentActor(actor, actor.origin.parent);
+                actor.origin.parent.set_child_at_index(
                     actor,
                     actor.origin.index
                 );

@@ -10,14 +10,14 @@ var MsApplicationLauncher = GObject.registerClass(
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
             super._init({
-                style: 'padding:64px'
+                style: 'padding:64px',
             });
             this.msWorkspace = msWorkspace;
             this.add_style_class_name('surface-darker');
 
             this.appListContainer = new MsApplicationButtonContainer();
             this.add_child(this.appListContainer);
-            AppsManager.getApps().forEach(app => {
+            AppsManager.getApps().forEach((app) => {
                 const button = new MsApplicationButton(app);
                 button.connect('clicked', () => {
                     const msWindow = Me.msWindowManager.createNewMsWindow(
@@ -66,6 +66,42 @@ var MsApplicationLauncher = GObject.registerClass(
             containerBox.y2 = contentBox.y2 - 0.1 * minSize;
             this.appListContainer.allocate(containerBox, flags);
         }
+
+        animateOut() {
+            this.ease({
+                scale_x: 0.8,
+                scale_y: 0.8,
+                translation_x: this.width * 0.1,
+                translation_y: this.height * 0.1,
+                opacity: 0,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.set_scale(1, 1);
+                    this.translation_x = 0;
+                    this.translation_y = 0;
+                    this.opacity = 255;
+                    this.visible = false;
+                },
+            });
+        }
+
+        animateIn() {
+            this.visible = true;
+            this.set_scale(0.8, 0.8);
+            this.translation_x = this.width * 0.1;
+            this.translation_y = this.height * 0.1;
+            this.opacity = 0;
+            this.ease({
+                scale_x: 1,
+                scale_y: 1,
+                translation_x: 0,
+                translation_y: 0,
+                opacity: 255,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+        }
     }
 );
 
@@ -78,7 +114,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.inputLayout = new St.BoxLayout({});
             this.searchIcon = new St.Icon({
                 style_class: 'search-entry-icon',
-                icon_name: 'edit-find-symbolic'
+                icon_name: 'edit-find-symbolic',
             });
             this.inputContainer = new St.Entry({
                 style_class: 'search-entry',
@@ -88,7 +124,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                    characters. */
                 hint_text: _('Type to search…'),
                 track_hover: true,
-                can_focus: true
+                can_focus: true,
             });
             this.inputContainer.set_primary_icon(this.searchIcon);
             this._text = this.inputContainer.clutter_text;
@@ -121,10 +157,12 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.container.set_style('border-radius:16px;');
             this.add_child(this.container);
             this.expandButton = new MatButton({
+                x_align: Clutter.ActorAlign.CENTER,
+                y_align: Clutter.ActorAlign.CENTER,
                 child: new St.Label({
                     text: 'VIEW ALL APPLICATIONS',
-                    style_class: 'body-2'
-                })
+                    style_class: 'body-2',
+                }),
             });
             this.expandButton.add_style_class_name('surface-lighter');
             this.expandButton.set_style('border-radius: 0,0 ,16px, 16px;');
@@ -136,8 +174,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         updateFilteredAppButtonList() {
-            this.filteredAppButtonList = this.appButtonList.filter(button => {
-                let stringToSearch = `${button.app.get_name()}${button.app.get_id()}`;
+            this.filteredAppButtonList = this.appButtonList.filter((button) => {
+                let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
                 let regex = new RegExp(this.inputContainer.get_text(), 'i');
                 if (regex.test(stringToSearch)) {
                     button.visible = true;
@@ -283,10 +321,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             //hide other buttons
             this.appButtonList
-                .filter(button => {
+                .filter((button) => {
                     return !this.filteredAppButtonList.includes(button);
                 })
-                .forEach(button => {
+                .forEach((button) => {
                     const hiddenBox = new Clutter.ActorBox();
                     hiddenBox.x1 = contentBox.x1;
                     hiddenBox.x2 = contentBox.x1;
@@ -309,13 +347,13 @@ var MsApplicationButton = GObject.registerClass(
                 text: this.app.get_name(),
                 x_align: Clutter.ActorAlign.CENTER,
                 style_class: 'subtitle-2',
-                style: 'margin-top:12px'
+                style: 'margin-top:12px',
             });
             this.layout = new St.BoxLayout({
                 vertical: true,
                 width: BUTTON_SIZE,
                 height: BUTTON_SIZE,
-                clip_to_allocation: true
+                clip_to_allocation: true,
             });
             this.layout.set_style('padding:12px;');
             this.layout.add_child(this.icon);

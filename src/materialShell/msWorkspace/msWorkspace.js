@@ -5,7 +5,7 @@ const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    MaximizeLayout
+    MaximizeLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
 const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 
@@ -18,9 +18,12 @@ const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { Stack } = Me.imports.src.widget.layout;
 
 const EMIT_DEBOUNCE_DELAY = 100;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { reparentActor } = Me.imports.src.utils.index;
 
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
+        AddLogToFunctions(this);
         this.msWorkspaceManager = msWorkspaceManager;
         this.monitor = monitor;
         this.monitorIsPrimary =
@@ -34,8 +37,8 @@ var MsWorkspace = class MsWorkspace {
             initialState ? initialState.tilingLayout : 'maximized'
         );
         this.tilingLayout = new Layout(this);
-        this.actor = new St.Widget({ style_class: 'msWorkspace' });
-        this.actor.set_position(this.monitor.x, this.monitor.y);
+        this.msWorkspaceActor = new St.Widget({ style_class: 'msWorkspace' });
+        this.msWorkspaceActor.set_position(this.monitor.x, this.monitor.y);
         this.tileableContainer = new St.Widget();
         this.floatableContainer = new St.Widget();
         this.appLauncher = new MsApplicationLauncher(this);
@@ -45,7 +48,7 @@ var MsWorkspace = class MsWorkspace {
 
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
             Main.layoutManager._trackActor(this.panel, {
-                affectsStruts: true
+                affectsStruts: true,
             });
         }
 
@@ -60,12 +63,14 @@ var MsWorkspace = class MsWorkspace {
             this.handleExtensionLoaded.bind(this)
         );
 
-        this.actor.add_child(this.tileableContainer);
-        this.actor.add_child(this.floatableContainer);
-        this.actor.add_child(this.panel);
+        this.msWorkspaceActor.add_child(this.tileableContainer);
+        this.msWorkspaceActor.add_child(this.floatableContainer);
+        this.msWorkspaceActor.add_child(this.panel);
         this.updateLayout();
         this.updateUI();
-        this.msWorkspaceManager.msWorkspaceContainer.add_child(this.actor);
+        this.msWorkspaceManager.msWorkspaceContainer.add_child(
+            this.msWorkspaceActor
+        );
 
         if (initialState) {
             log(
@@ -73,7 +78,7 @@ var MsWorkspace = class MsWorkspace {
                 initialState,
                 initialState.msWindowList.length
             );
-            initialState.msWindowList.forEach(msWindowData => {
+            initialState.msWindowList.forEach((msWindowData) => {
                 this.addMsWindow(
                     Me.msWindowManager.createNewMsWindow(
                         msWindowData.appId,
@@ -89,19 +94,20 @@ var MsWorkspace = class MsWorkspace {
         global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
-        if (this.actor) {
-            this.actor.destroy();
-            delete this.actor;
+        if (this.msWorkspaceActor) {
+            this.msWorkspaceActor.destroy();
+            delete this.msWorkspaceActor;
         }
         this.destroyed = true;
     }
 
     get tileableFocused() {
+        if (!this.tileableList) return null;
         return this.tileableList[this.focusedIndex];
     }
 
     get msWindowList() {
-        return Me.msWindowManager.msWindowList.filter(msWindow => {
+        return Me.msWindowManager.msWindowList.filter((msWindow) => {
             return msWindow.msWorkspace && msWindow.msWorkspace === this;
         });
     }
@@ -113,8 +119,8 @@ var MsWorkspace = class MsWorkspace {
         );
     }
     updateUI() {
-        if (this.actor) {
-            this.actor.visible = this.uiVisible;
+        if (this.msWorkspaceActor) {
+            this.msWorkspaceActor.visible = this.uiVisible;
         }
         if (this.panel) {
             this.panel.visible = this.shouldPanelBeVisible();
@@ -126,7 +132,7 @@ var MsWorkspace = class MsWorkspace {
             this.monitor.index
         );
         //this.actorContainer.set_position(this.monitor.x, this.monitor.y);
-        this.actor.set_size(this.monitor.width, this.monitor.height);
+        this.msWorkspaceActor.set_size(this.monitor.width, this.monitor.height);
         //this.tileableContainer.set_size(workArea.width, workArea.height);
         //this.tileableContainer.set_position(workArea.x, workArea.y);
         //this.floatableContainer.set_size(workArea.width, workArea.height);
@@ -142,14 +148,14 @@ var MsWorkspace = class MsWorkspace {
         if (msWindow.metaWindow) {
             WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
         }
+
         if (!msWindow.dragged) {
-            if (msWindow.get_parent()) {
-                msWindow.get_parent().remove_child(msWindow);
-            }
-            (msWindow.isDialog
-                ? this.floatableContainer
-                : this.tileableContainer
-            ).add_child(msWindow);
+            reparentActor(
+                msWindow,
+                msWindow.isDialog
+                    ? this.floatableContainer
+                    : this.tileableContainer
+            );
         }
         if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
@@ -277,7 +283,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     shouldPanelBeVisible() {
-        let containFullscreenWindow = this.msWindowList.some(msWindow => {
+        let containFullscreenWindow = this.msWindowList.some((msWindow) => {
             return msWindow.metaWindow
                 ? msWindow.metaWindow.is_fullscreen()
                 : false;
@@ -311,6 +317,7 @@ var MsWorkspace = class MsWorkspace {
             // Make it async to prevent concurrent debounce calls
             if (debouncedArgs) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    log('IDLE_ADD');
                     this.emit('windows-changed', newWindows, oldWindows);
                 });
             } else {
@@ -352,15 +359,15 @@ var MsWorkspace = class MsWorkspace {
         return {
             tilingLayout: this.tilingLayout.constructor.key,
             msWindowList: this.tileableList
-                .filter(tileable => {
+                .filter((tileable) => {
                     return tileable instanceof MsWindow;
                 })
-                .map(msWindow => {
+                .map((msWindow) => {
                     return {
                         appId: msWindow.app.get_id(),
-                        metaWindowIdentifier: msWindow.metaWindowIdentifier
+                        metaWindowIdentifier: msWindow.metaWindowIdentifier,
                     };
-                })
+                }),
         };
     }
 };

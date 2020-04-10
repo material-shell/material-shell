@@ -4,7 +4,7 @@ const Signals = imports.signals;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    DisableIncompatibleExtensionsModule
+    DisableIncompatibleExtensionsModule,
 } = Me.imports.src.module.disableIncompatibleExtensionsModule;
 const { LeftPanelModule } = Me.imports.src.module.leftPanel.leftPanelModule;
 const { MsWorkspaceModule } = Me.imports.src.module.msWorkspaceModule;
@@ -36,12 +36,14 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-    St.Settings.slow_down_factor = 2;
+    //St.Settings.slow_down_factor(10);
+    //St.set_slow_down_factor(1);
+
     Main.wm._blockAnimations = true;
     Me.loaded = false;
     Me.stateManager = new StateManager();
     let superPressed = false;
-    Keymap.connect('state_changed', _ => {
+    Keymap.connect('state_changed', (_) => {
         let isSuperPressed = Keymap.get_modifier_state() === 64;
         if (superPressed != isSuperPressed) {
             superPressed = isSuperPressed;
@@ -50,13 +52,13 @@ function enable() {
     });
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-        //Then disable incompatibles extensions;
+        log('IDLE_ADD'); //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         Me.stateManager.loadRegistry(() => {
             modules = [
                 new RequiredSettingsModule(),
                 new LeftPanelModule(),
-                new TilingModule()
+                new TilingModule(),
             ];
 
             Me.msWindowManager = new MsWindowManager();
@@ -66,7 +68,7 @@ function enable() {
                 ...modules,
                 new MsWorkspaceModule(),
                 new HotKeysModule(),
-                new ThemeModule()
+                new ThemeModule(),
             ];
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
@@ -100,7 +102,7 @@ function disable() {
     log('----------------');
     log('DISABLE EXTENSION');
     log('----------------');
-    modules.reverse().forEach(module => {
+    modules.reverse().forEach((module) => {
         log('Destroy', module);
         module.destroy();
     });

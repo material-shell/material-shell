@@ -1,6 +1,8 @@
 const { GLib } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { reparentActor } = Me.imports.src.utils.index;
 
 /* exported MsDndManager */
 var MsDndManager = class MsDndManager {
@@ -28,10 +30,11 @@ var MsDndManager = class MsDndManager {
                 }
             }
         );
+        AddLogToFunctions(this);
     }
 
     listenForMsWindowsDragSignal() {
-        this.msWindowManager.msWindowList.forEach(msWindow => {
+        this.msWindowManager.msWindowList.forEach((msWindow) => {
             if (!this.signalMap.has(msWindow)) {
                 const id = msWindow.connect('dragged-changed', (_, dragged) => {
                     if (dragged) {
@@ -54,8 +57,7 @@ var MsDndManager = class MsDndManager {
     }
 
     endDrag() {
-        this.msWindowDragged.get_parent().remove_child(this.msWindowDragged);
-        this.originalParent.add_child(this.msWindowDragged);
+        reparentActor(this.msWindowDragged, this.originalParent);
         this.dragInProgress = false;
         delete this.originalParent;
         this.msWindowDragged.msWorkspace.tilingLayout.onTile();
@@ -69,12 +71,12 @@ var MsDndManager = class MsDndManager {
         const msWorkspace = this.msWindowDragged.msWorkspace;
         msWorkspace.tileableList
             .filter(
-                tileable =>
+                (tileable) =>
                     tileable instanceof MsWindow &&
                     tileable.visible &&
                     tileable.get_parent() === msWorkspace.tileableContainer
             )
-            .forEach(tileable => {
+            .forEach((tileable) => {
                 if (
                     x >= tileable.x &&
                     x <= tileable.x + tileable.width &&

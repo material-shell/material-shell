@@ -1,5 +1,7 @@
 const { St, GObject, Clutter } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
 const { Column } = Me.imports.src.widget.layout;
 const Animation = imports.ui.animation;
@@ -10,9 +12,9 @@ var AppPlaceholder = GObject.registerClass(
         GTypeName: 'AppPlaceholder',
         Signals: {
             clicked: {
-                param_types: [GObject.TYPE_INT]
-            }
-        }
+                param_types: [GObject.TYPE_INT],
+            },
+        },
     },
     class AppPlaceholder extends St.Widget {
         _init(app) {
@@ -20,29 +22,35 @@ var AppPlaceholder = GObject.registerClass(
                 x_align: Clutter.ActorAlign.CENTER,
                 y_align: Clutter.ActorAlign.CENTER,
                 layout_manager: new Clutter.BinLayout(),
-                reactive: true
+                reactive: true,
             });
 
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
             this._spinner = new Animation.Spinner(16);
             this._spinner.play();
+            let spinnerActor;
+            if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+                spinnerActor = this._spinner.actor;
+            } else {
+                spinnerActor = this._spinner;
+            }
             this.spinnerContainer = new St.Bin({
-                child: this._spinner.actor || this._spinner
+                child: spinnerActor,
             });
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),
                 x_align: Clutter.ActorAlign.CENTER,
                 style_class: 'headline-4',
-                style: 'margin-top:48px'
+                style: 'margin-top:48px',
             });
 
             this.callToAction = new St.Label({
                 text: 'Click anywhere to launch',
                 x_align: Clutter.ActorAlign.CENTER,
                 style_class: 'headline-5 text-medium-emphasis',
-                style: 'margin-top:32px;margin-bottom:16px;'
+                style: 'margin-top:32px;margin-bottom:16px;',
             });
 
             this.identityContainer = new Column({
@@ -54,8 +62,8 @@ var AppPlaceholder = GObject.registerClass(
                     this.icon,
                     this.appTitle,
                     this.callToAction,
-                    this.spinnerContainer
-                ]
+                    this.spinnerContainer,
+                ],
             });
 
             this.add_style_class_name('surface-darker');
@@ -70,14 +78,14 @@ var AppPlaceholder = GObject.registerClass(
                 if (
                     [
                         Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN
+                        Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
                     this.pressed = true;
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END
+                        Clutter.EventType.TOUCH_END,
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.pressed && !this.waitForReset) {

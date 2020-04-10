@@ -74,7 +74,8 @@ subtitle-1 {
   width: 48px; }
   .dark-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .dark-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -219,10 +220,14 @@ subtitle-1 {
   background: #191919; }
 
 .dark-theme .surface-lighter {
-  background: #1e1e1e; }
+  background: #212121; }
 
 .dark-theme .surface-darker {
-  background: #141414; }
+  background: #121212; }
+
+.dark-theme MsWindow {
+  border: 4px solid black;
+  background-color: red; }
 
 .light-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -232,7 +237,8 @@ subtitle-1 {
   width: 48px; }
   .light-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .light-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -380,7 +386,11 @@ subtitle-1 {
   background: white; }
 
 .light-theme .surface-darker {
-  background: #cccccc; }
+  background: #b3b3b3; }
+
+.light-theme MsWindow {
+  border: 4px solid black;
+  background-color: red; }
 
 .light-primary.primary-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -393,7 +403,8 @@ subtitle-1 {
   width: 48px; }
   .primary-theme .mat-panel-button .mat-panel-button-icon {
     width: 24px;
-    height: 24px; }
+    height: 24px;
+    icon-size: 24px; }
 
 .primary-theme .workspace-active-indicator {
   width: 3px;
@@ -577,7 +588,11 @@ subtitle-1 {
   background: #3f51b5; }
 
 .primary-theme .surface-lighter {
-  background: #5e6ec7; }
+  background: #707ecd; }
 
 .primary-theme .surface-darker {
-  background: #324191; }
+  background: #2c397f; }
+
+.primary-theme MsWindow {
+  border: 4px solid black;
+  background-color: red; }

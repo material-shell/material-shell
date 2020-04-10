@@ -3,7 +3,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 
@@ -48,7 +48,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
         if (oldTileableList.length - tileableList.length === 1) {
             let windowRemovedIndex = oldTileableList.findIndex(
-                tileable => !tileableList.includes(tileable)
+                (tileable) => !tileableList.includes(tileable)
             );
             const oldIndex =
                 windowRemovedIndex === oldTileableList.length - 1
@@ -92,7 +92,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.msWorkspace.msWindowList.forEach(msWindow => {
+        this.msWorkspace.msWindowList.forEach((msWindow) => {
             if (msWindow !== this.windowNotDialogFocused) {
                 msWindow.show();
             }
@@ -110,7 +110,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             this.monitor.height
         );
         if (!this.translationAnimator.get_parent()) {
-            this.msWorkspace.actor.insert_child_above(
+            this.msWorkspace.msWorkspaceActor.insert_child_above(
                 this.translationAnimator,
                 this.msWorkspace.tileableContainer
             );
@@ -124,7 +124,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.msWorkspace.actor.remove_child(this.translationAnimator);
+        this.msWorkspace.msWorkspaceActor.remove_child(
+            this.translationAnimator
+        );
         this.onTile();
     }
 };

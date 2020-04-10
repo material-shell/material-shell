@@ -20,17 +20,19 @@ var MsWorkspaceModule = class MsWorkspaceModule {
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
         Main.layoutManager.panelBox.add_child(this.topBarSpacer);
 
-        this.legacyPanelGhost = Main.overview._panelGhost;
+        this.legacyPanelGhost =
+            Main.overview._panelGhost ||
+            Main.overview._overview.get_child_at_index(0);
         this.legacyPanelGhostIndex = Main.overview._overview
             .get_children()
             .indexOf(this.legacyPanelGhost);
 
         this.myPanelGhost = new St.Bin({
             child: new Clutter.Clone({
-                source: this.topBarSpacer
+                source: this.topBarSpacer,
             }),
             reactive: false,
-            opacity: 0
+            opacity: 0,
         });
 
         Main.overview._overview.remove_child(this.legacyPanelGhost);
@@ -57,7 +59,7 @@ var MsWorkspaceModule = class MsWorkspaceModule {
     overrideWindowManagerFunctions() {
         this.original_shouldAnimate =
             WindowManager.WindowManager.prototype._shouldAnimate;
-        WindowManager.WindowManager.prototype._shouldAnimate = function() {
+        WindowManager.WindowManager.prototype._shouldAnimate = function () {
             return false;
         };
     }

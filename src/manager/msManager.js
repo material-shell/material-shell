@@ -8,7 +8,7 @@ var MsManager = class MsManager {
     observe(subject, property, callback) {
         let signal = {
             from: subject,
-            id: subject.connect(property, callback)
+            id: subject.connect(property, callback),
         };
         this.signals.push(signal);
         return () => {
@@ -16,7 +16,7 @@ var MsManager = class MsManager {
         };
     }
     destroy() {
-        this.signals.forEach(signal => {
+        this.signals.forEach((signal) => {
             if (signal.from) {
                 signal.from.disconnect(signal.id);
             }

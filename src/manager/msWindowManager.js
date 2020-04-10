@@ -5,10 +5,11 @@ const Signals = imports.signals;
 
 const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
-
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager {
     constructor() {
+        AddLogToFunctions(this);
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWindowList = [];
         this.msWindowWaitingForMetaWindowList = [];
@@ -20,23 +21,24 @@ var MsWindowManager = class MsWindowManager {
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
                 this.onNewMetaWindow(metaWindow);
-            })
+            }),
         });
 
         this.signals.push({
             from: global.display,
-            id: global.display.connect('notify::focus-window', _ => {
+            id: global.display.connect('notify::focus-window', (_) => {
                 this.onFocusMetaWindow(global.display.focus_window);
-            })
+            }),
         });
     }
 
     init() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            global.get_window_actors().forEach(windowActor => {
+            log('IDLE_ADD');
+            global.get_window_actors().forEach((windowActor) => {
                 const metaWindow = windowActor.metaWindow;
                 if (this._handleWindow(metaWindow)) {
-                    let msWindow = this.msWindowList.find(msWindow => {
+                    let msWindow = this.msWindowList.find((msWindow) => {
                         return (
                             msWindow.metaWindowIdentifier ===
                             this.buildMetaWindowIdentifier(metaWindow)
@@ -79,6 +81,7 @@ var MsWindowManager = class MsWindowManager {
         }
 
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
             const msWindow = this.createNewMsWindow(
                 app.get_id(),
                 this.buildMetaWindowIdentifier(metaWindow),
@@ -100,6 +103,7 @@ var MsWindowManager = class MsWindowManager {
             this.openAppForMsWindow(msWindow);
         });
         msWindow.connect('destroy', () => {
+            log('msWindowManager connected to MsWindowDestroy');
             this.msWindowList.splice(this.msWindowList.indexOf(msWindow), 1);
         });
         this.msWindowList.push(msWindow);
@@ -109,7 +113,7 @@ var MsWindowManager = class MsWindowManager {
 
     findBestEmptyMsWindow(app) {
         const msWindowWaitingForApp = this.msWindowWaitingForMetaWindowList.filter(
-            msWindow => {
+            (msWindow) => {
                 return msWindow.app.get_id() === app.get_id();
             }
         )[0];
@@ -122,7 +126,7 @@ var MsWindowManager = class MsWindowManager {
             );
             return msWindowWaitingForApp;
         }
-        const emptyMsWindowListOfApp = this.msWindowList.filter(msWindow => {
+        const emptyMsWindowListOfApp = this.msWindowList.filter((msWindow) => {
             return (
                 !msWindow.metaWindow && msWindow.app.get_id() === app.get_id()
             );
@@ -131,7 +135,7 @@ var MsWindowManager = class MsWindowManager {
 
         const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
         const emptyMsWindowOfCurrentWorkspace = emptyMsWindowListOfApp.filter(
-            msWindow => {
+            (msWindow) => {
                 return msWindow.msWorkspace === activeMsWorkspace;
             }
         );
@@ -181,7 +185,7 @@ var MsWindowManager = class MsWindowManager {
         let dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY
+            Meta.WindowType.UTILITY,
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||

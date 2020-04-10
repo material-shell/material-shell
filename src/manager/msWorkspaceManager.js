@@ -4,16 +4,18 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
 const { MsWorkspace } = Me.imports.src.materialShell.msWorkspace.msWorkspace;
 const {
-    MsWorkspaceContainer
+    MsWorkspaceContainer,
 } = Me.imports.src.materialShell.msWorkspaceContainer;
 const { WorkspaceList } = Me.imports.src.widget.workspaceList;
 const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 const { MsManager } = Me.imports.src.manager.msManager;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     constructor() {
         super();
+        AddLogToFunctions(this);
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
@@ -36,7 +38,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         });
 
         this.observe(global.display, 'in-fullscreen-changed', () => {
-            Main.layoutManager.monitors.forEach(monitor => {
+            Main.layoutManager.monitors.forEach((monitor) => {
                 let msWorkspace;
                 if (Main.layoutManager.primaryIndex === monitor.index) {
                     msWorkspace = this.getActiveMsWorkspace();
@@ -153,7 +155,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     get primaryMsWorkspaces() {
-        return this.msWorkspaceList.filter(msWorkspace => {
+        if (!this.msWorkspaceList) return [];
+        return this.msWorkspaceList.filter((msWorkspace) => {
             return (
                 msWorkspace.monitor.index === Main.layoutManager.primaryIndex
             );
@@ -161,13 +164,13 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     get msWorkspacesWithCategory() {
-        return this.primaryMsWorkspaces.filter(msWorkspace => {
+        return this.primaryMsWorkspaces.filter((msWorkspace) => {
             return msWorkspace.category != null;
         });
     }
 
     get dynamicMsWorkspaces() {
-        return this.primaryMsWorkspaces.filter(msWorkspace => {
+        return this.primaryMsWorkspaces.filter((msWorkspace) => {
             return !msWorkspace.category;
         });
     }
@@ -187,10 +190,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     createNewMsWorkspace(monitor, initialState) {
         log('createNewMsWorkspace');
         let msWorkspace = new MsWorkspace(this, monitor, initialState);
-        msWorkspace.connect('tileableList-changed', _ => {
+        msWorkspace.connect('tileableList-changed', (_) => {
             this.stateChanged();
         });
-        msWorkspace.connect('tiling-layout-changed', _ => {
+        msWorkspace.connect('tiling-layout-changed', (_) => {
             this.saveCurrentState();
         });
         this.msWorkspaceList.push(msWorkspace);
@@ -213,6 +216,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         if (this.restoringState && this.stateChangedTriggered) return;
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
             this.refreshWorkspaceWindows();
             this.refreshVisiblePrimaryMsWorkspace();
             this.checkWorkspaceKeepAlive();
@@ -223,7 +227,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     checkWorkspaceKeepAlive() {
         log('checkWorkspaceKeepAlive');
-        this.primaryMsWorkspaces.forEach(msWorkspace => {
+        this.primaryMsWorkspaces.forEach((msWorkspace) => {
             const workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
             if (workspace) {
                 workspace._keepAliveId = msWorkspace.msWindowList.length > 0;
@@ -271,15 +275,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     saveCurrentState() {
         const workspacesState = {
-            externalWorkspaces: []
+            externalWorkspaces: [],
         };
         for (let monitor of Main.layoutManager.monitors) {
             if (Main.layoutManager.primaryIndex === monitor.index) {
                 workspacesState.primaryWorkspaceList = this.primaryMsWorkspaces
-                    .filter(msWorkspace => {
+                    .filter((msWorkspace) => {
                         return msWorkspace.tileableList.length;
                     })
-                    .map(msWorkspace => {
+                    .map((msWorkspace) => {
                         return msWorkspace.getState();
                     });
             } else {
@@ -292,7 +296,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     refreshWorkspaceWindows() {
-        this.primaryMsWorkspaces.forEach(msWorkspace => {
+        this.primaryMsWorkspaces.forEach((msWorkspace) => {
             let workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
             for (let msWindow of msWorkspace.msWindowList) {
                 if (msWindow.metaWindow) {
@@ -304,7 +308,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     refreshVisiblePrimaryMsWorkspace() {
         let activeMsWorkspace = this.getActiveMsWorkspace();
-        this.msWorkspaceList.forEach(msWorkspace => {
+        this.msWorkspaceList.forEach((msWorkspace) => {
             if (
                 msWorkspace.monitor !== Main.layoutManager.primaryMonitor ||
                 msWorkspace === activeMsWorkspace
@@ -324,7 +328,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     getMsWorkspaceByCategoryKey(categoryKey) {
-        return this.msWorkspaceList.find(msWorkspace => {
+        return this.msWorkspaceList.find((msWorkspace) => {
             return msWorkspace.categoryKey === categoryKey;
         });
     }
@@ -336,7 +340,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     getMsWorkspacesOfMonitorIndex(monitorIndex) {
-        return this.msWorkspaceList.filter(msWorkspace => {
+        return this.msWorkspaceList.filter((msWorkspace) => {
             return msWorkspace.monitor.index === monitorIndex;
         });
     }
@@ -351,7 +355,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     getMsWorkspaceOfMsWindow(msWindow) {
-        return this.msWorkspaceList.find(msWorkspace => {
+        return this.msWorkspaceList.find((msWorkspace) => {
             return msWorkspace.msWindowList.includes(msWindow);
         });
     }
