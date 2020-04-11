@@ -114,7 +114,9 @@ var BaseTilingLayout = class BaseTilingLayout {
             (tileable) => !oldTileableList.includes(tileable)
         );
         const leavingTileableList = oldTileableList.filter(
-            (tileable) => !tileableList.includes(tileable)
+            (tileable) =>
+                !tileableList.includes(tileable) &&
+                Me.msWindowManager.msWindowList.includes(tileable)
         );
 
         enteringTileableList.forEach((tileable) => {

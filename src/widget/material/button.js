@@ -1,4 +1,4 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
+const { Clutter, GObject, St, Meta } = imports.gi;
 const Params = imports.misc.params;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { Stack } = Me.imports.src.widget.layout;
@@ -8,9 +8,9 @@ var MatButton = GObject.registerClass(
     {
         Signals: {
             clicked: {
-                param_types: [GObject.TYPE_INT]
-            }
-        }
+                param_types: [GObject.TYPE_INT],
+            },
+        },
     },
     class MatButton extends St.Widget {
         _init(params = {}) {
@@ -22,7 +22,7 @@ var MatButton = GObject.registerClass(
             super._init({
                 reactive: true,
                 track_hover: true,
-                clip_to_allocation: true
+                clip_to_allocation: true,
             });
 
             this.add_child(this.rippleBackground);
@@ -36,14 +36,14 @@ var MatButton = GObject.registerClass(
                 if (
                     [
                         Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN
+                        Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
                     this.pressed = true;
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END
+                        Clutter.EventType.TOUCH_END,
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.pressed) {
@@ -52,6 +52,9 @@ var MatButton = GObject.registerClass(
                     }
                 } else if (eventType === Clutter.EventType.LEAVE) {
                     this.pressed = false;
+                    global.display.set_cursor(Meta.Cursor.DEFAULT);
+                } else if (eventType === Clutter.EventType.ENTER) {
+                    global.display.set_cursor(Meta.Cursor.POINTING_HAND);
                 }
             });
         }

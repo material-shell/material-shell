@@ -102,6 +102,7 @@ function disable() {
     log('----------------');
     log('DISABLE EXTENSION');
     log('----------------');
+    if (!modules) return;
     modules.reverse().forEach((module) => {
         log('Destroy', module);
         module.destroy();

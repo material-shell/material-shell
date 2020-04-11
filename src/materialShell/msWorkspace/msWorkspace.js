@@ -160,20 +160,13 @@ var MsWorkspace = class MsWorkspace {
         if (msWindow.isDialog) {
             const oldFloatableList = [...this.floatableList];
             this.floatableList.push(msWindow);
-            this.emit(
-                'floatableList-changed',
-                this.floatableList,
-                oldFloatableList
-            );
+            this.emitFloatableListChangedOnce(oldFloatableList);
         } else {
             const oldTileableList = [...this.tileableList];
             this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
 
-            this.emit(
-                'tileableList-changed',
-                this.tileableList,
-                oldTileableList
-            );
+            this.emitTileableListChangedOnce(oldTileableList);
+
             this.focusTileable(msWindow);
         }
 
@@ -185,28 +178,54 @@ var MsWorkspace = class MsWorkspace {
 
     removeMsWindow(msWindow) {
         if (this.msWindowList.indexOf(msWindow) === -1) return;
-        if (msWindow.isDialog) {
+        if (this.floatableList.includes(msWindow)) {
             const oldFloatableList = [...this.floatableList];
             this.floatableList.splice(this.floatableList.indexOf(msWindow), 1);
-            this.emit(
-                'floatableList-changed',
-                this.floatableList,
-                oldFloatableList
-            );
+            this.emitFloatableListChangedOnce(oldFloatableList);
         } else {
             const tileableIndex = this.tileableList.indexOf(msWindow);
             const oldTileableList = [...this.tileableList];
             this.tileableList.splice(tileableIndex, 1);
-            if (this.focusedIndex === tileableIndex) {
-                this.focusLastTileable();
+            if (this.focusedIndex > tileableIndex) {
+                this.focusedIndex--;
+            } else if (
+                this.focusedIndex === this.tileableList.length - 1 &&
+                this.tileableList.length > 1
+            ) {
+                this.focusedIndex--;
+            } else {
             }
+            this.emitTileableListChangedOnce(oldTileableList);
+            // If there's no more focused msWindow on this workspace focus the last one
+        }
+    }
+
+    emitTileableListChangedOnce(oldTileableList) {
+        if (this.emitTileableChangedInProgress) return;
+        this.emitTileableChangedInProgress = true;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
+            delete this.emitTileableChangedInProgress;
             this.emit(
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
             );
-            // If there's no more focused msWindow on this workspace focus the last one
-        }
+        });
+    }
+
+    emitFloatableListChangedOnce(oldFloatableList) {
+        if (this.emitFloatableChangedInProgress) return;
+        this.emitFloatableChangedInProgress = true;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            log('IDLE_ADD');
+            delete this.emitFloatableChangedInProgress;
+            this.emit(
+                'floatableList-changed',
+                this.floatableList,
+                oldFloatableList
+            );
+        });
     }
 
     swapTileable(firstTileable, secondTileable) {

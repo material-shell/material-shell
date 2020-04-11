@@ -11,19 +11,25 @@ var AddLogToFunctions = function (object) {
         if (typeof value === 'function') {
             object[key] = function () {
                 // Before
-                let indentString = '-'.repeat(indent);
+                let indentString = '  '.repeat(indent);
                 /* for (var i = 0; 0 < indent; i++) {
                         indentString = indentString + '-';
                     } */
                 log(
-                    `${indentString} START ${key} - ${prototype.constructor.name}`
+                    `${indentString}${
+                        prototype.constructor.name
+                    }.${key} (${Array.from(arguments)
+                        .map((param) => {
+                            try {
+                                return param.toString();
+                            } catch {}
+                        })
+                        .join(',')})`
                 );
                 indent++;
                 var result = value.apply(this, arguments); // use .apply() to call it
                 // After
-                log(
-                    `${indentString} END ${key} - ${prototype.constructor.name}`
-                );
+                log(`${indentString}>${result != undefined ? result : ''}`);
                 indent--;
                 return result;
             }.bind(object);

@@ -66,11 +66,7 @@ var MsWindowManager = class MsWindowManager {
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
         metaWindow.connect('unmanaged', () => {
-            if (metaWindow.msWindow) {
-                const msWindow = metaWindow.msWindow;
-                if (!msWindow.isDialog) return;
-                msWindow.kill();
-            }
+            this.onMetaWindowUnManaged(metaWindow);
         });
         let app = this.windowTracker.get_window_app(metaWindow);
         if (!this.isMetaWindowDialog(metaWindow)) {
@@ -89,6 +85,15 @@ var MsWindowManager = class MsWindowManager {
             );
             Me.msWorkspaceManager.addWindowToAppropriateMsWorkspace(msWindow);
         });
+    }
+
+    onMetaWindowUnManaged(metaWindow) {
+        if (metaWindow.msWindow) {
+            const msWindow = metaWindow.msWindow;
+            if (!msWindow.isDialog) return;
+            msWindow.msWorkspace.removeMsWindow(this);
+            msWindow.destroy();
+        }
     }
 
     createNewMsWindow(appId, description, metaWindow) {

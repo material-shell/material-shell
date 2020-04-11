@@ -1,5 +1,6 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Main = imports.ui.main;
 const { AppsManager } = Me.imports.src.manager.appsManager;
 const { MatButton } = Me.imports.src.widget.material.button;
@@ -10,6 +11,7 @@ var MsApplicationLauncher = GObject.registerClass(
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
             super._init({
+                reactive: true,
                 style: 'padding:64px',
             });
             this.msWorkspace = msWorkspace;
@@ -134,20 +136,38 @@ var MsApplicationButtonContainer = GObject.registerClass(
             });
             this._text.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
-                switch (symbol) {
-                    case Clutter.Escape:
-                        return Clutter.EVENT_STOP;
-                    case Clutter.Tab:
-                        this.highlightNextButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.ISO_Left_Tab:
-                        this.highlightPreviousButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.Return:
-                    case Clutter.KP_Enter:
-                        this.currentButtonFocused.emit('clicked', 0);
-                        return Clutter.EVENT_STOP;
+                if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+                    switch (symbol) {
+                        case Clutter.Escape:
+                            return Clutter.EVENT_STOP;
+                        case Clutter.Tab:
+                            this.highlightNextButton();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.ISO_Left_Tab:
+                            this.highlightPreviousButton();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.Return:
+                        case Clutter.KP_Enter:
+                            this.currentButtonFocused.emit('clicked', 0);
+                            return Clutter.EVENT_STOP;
+                    }
+                } else {
+                    switch (symbol) {
+                        case Clutter.KEY_Escape:
+                            return Clutter.EVENT_STOP;
+                        case Clutter.KEY_Tab:
+                            this.highlightNextButton();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.KEY_ISO_Left_Tab:
+                            this.highlightPreviousButton();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.KEY_Return:
+                        case Clutter.KEY_KP_Enter:
+                            this.currentButtonFocused.emit('clicked', 0);
+                            return Clutter.EVENT_STOP;
+                    }
                 }
+
                 return Clutter.EVENT_PROPAGATE;
             });
 

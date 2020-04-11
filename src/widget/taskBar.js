@@ -26,13 +26,11 @@ var TaskBar = GObject.registerClass(
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
-            this.taskButtonContainer = new St.BoxLayout({});
+            this.taskButtonContainer = new St.Widget({
+                layout_manager: new Clutter.GridLayout(),
+            });
             this.add_child(this.taskButtonContainer);
             this.msWorkspace = msWorkspace;
-            this.connect('notify::height', () => {
-                this.taskActiveIndicator.translation_y =
-                    this.height - this.taskActiveIndicator.height;
-            });
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceSignals = [
                 msWorkspace.connect('tileableList-changed', () => {
@@ -283,14 +281,14 @@ var TaskBar = GObject.registerClass(
                 }
                 if (ShellVersionMatch('3.32')) {
                     Tweener.addTween(this.taskActiveIndicator, {
-                        x: taskBarItem.x,
+                        translation_x: taskBarItem.x,
                         width: taskBarItem.width,
                         time: 0.25,
                         transition: 'easeOutQuad',
                     });
                 } else {
                     this.taskActiveIndicator.ease({
-                        x: taskBarItem.x,
+                        translation_x: taskBarItem.x,
                         width: taskBarItem.width,
                         duration: 250,
                         mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -302,14 +300,14 @@ var TaskBar = GObject.registerClass(
 
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.taskActiveIndicator, {
-                    x: 0,
+                    translation_x: 0,
                     width: 0,
                     time: 0.25,
                     transition: 'easeOutQuad',
                 });
             } else {
                 this.taskActiveIndicator.ease({
-                    x: 0,
+                    translation_x: 0,
                     width: 0,
                     duration: 250,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -321,6 +319,23 @@ var TaskBar = GObject.registerClass(
             return this.items.find((item) => {
                 return item.tileable === tileable;
             });
+        }
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            const contentBox = themeNode.get_content_box(box);
+            this.taskButtonContainer.allocate(box, flags);
+
+            let taskActiveIndicatorBox = new Clutter.ActorBox();
+            taskActiveIndicatorBox.x1 = contentBox.x1;
+            taskActiveIndicatorBox.x2 =
+                contentBox.x1 +
+                this.taskActiveIndicator.get_preferred_width(-1)[0];
+            taskActiveIndicatorBox.y1 =
+                contentBox.y2 -
+                this.taskActiveIndicator.get_preferred_height(-1)[0];
+            taskActiveIndicatorBox.y2 = contentBox.y2;
+            this.taskActiveIndicator.allocate(taskActiveIndicatorBox, flags);
         }
 
         _onDestroy() {

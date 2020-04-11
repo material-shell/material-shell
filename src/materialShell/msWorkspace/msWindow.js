@@ -25,7 +25,10 @@ var MsWindow = GObject.registerClass(
         _init(app, metaWindowIdentifier, metaWindow) {
             AddLogToFunctions(this);
             super._init({ reactive: true, clip_to_allocation: true });
-            this.connect('destroy', this._onDestroy.bind(this));
+            this.destroyId = this.connect(
+                'destroy',
+                this._onDestroy.bind(this)
+            );
             this.app = app;
             this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
@@ -427,11 +430,22 @@ var MsWindow = GObject.registerClass(
         }
 
         kill() {
-            if (this.metaWindow) {
-                this.metaWindow.delete(global.get_current_time());
-            }
-            this.msWorkspace.removeMsWindow(this);
-            this.destroy();
+            let promise = new Promise((resolve) => {
+                if (this.metaWindow) {
+                    this.metaWindow.connect('unmanaged', (_) => {
+                        resolve();
+                    });
+                    this.metaWindow.delete(global.get_current_time());
+                } else {
+                    resolve();
+                }
+            });
+            promise.then(() => {
+                this._onDestroy();
+                this.msWorkspace.removeMsWindow(this);
+                this.disconnect(this.destroyId);
+                this.destroy();
+            });
         }
 
         fadeOutPlaceholder() {
