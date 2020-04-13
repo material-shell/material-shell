@@ -224,7 +224,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             ); */
             this.msWorkspace.msWorkspaceActor.insert_child_above(
                 this.overContainer,
-                this.msWorkspace.tileableContainer
+                this.msWorkspace.msWorkspaceActor.tileableContainer
             );
             this.animationInProgress = true;
         }

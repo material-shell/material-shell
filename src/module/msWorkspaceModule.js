@@ -18,7 +18,11 @@ var MsWorkspaceModule = class MsWorkspaceModule {
         this.enabled = false;
 
         this.topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
-        Main.layoutManager.panelBox.add_child(this.topBarSpacer);
+        //Main.layoutManager.panelBox.add_child(this.topBarSpacer);
+        /* Main.layoutManager.addChrome(this.topBarSpacer, {
+            affectsStruts: true,
+            trackFullscreen: true,
+        }); */
 
         this.legacyPanelGhost =
             Main.overview._panelGhost ||
@@ -28,9 +32,7 @@ var MsWorkspaceModule = class MsWorkspaceModule {
             .indexOf(this.legacyPanelGhost);
 
         this.myPanelGhost = new St.Bin({
-            child: new Clutter.Clone({
-                source: this.topBarSpacer,
-            }),
+            child: this.topBarSpacer,
             reactive: false,
             opacity: 0,
         });

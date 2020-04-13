@@ -79,8 +79,8 @@ var WorkspaceList = GObject.registerClass(
                             msWorkspace
                         );
                         workspaceButton._draggable.connect('drag-begin', () => {
-                            let workspaceButtonIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
-                                workspaceButton.categoryKey
+                            let workspaceButtonIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                                msWorkspace
                             );
                             this.tempDragData = {
                                 workspaceButton: workspaceButton,
@@ -170,9 +170,10 @@ var WorkspaceList = GObject.registerClass(
         _onDragEnd() {
             this.buttonList.remove_child(this.dropPlaceholder);
             if (this.tempDragData.draggedOver) {
-                let toIndex = this.msWorkspaceManager.categoryKeyOrderedList.indexOf(
-                    this.tempDragData.draggedOver.categoryKey
+                let toIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    this.tempDragData.draggedOver.msWorkspace
                 );
+
                 if (this.tempDragData.draggedBefore) {
                     this.buttonList.set_child_at_index(
                         this.tempDragData.workspaceButton,
@@ -180,9 +181,9 @@ var WorkspaceList = GObject.registerClass(
                             (this.tempDragData.initialIndex < toIndex ? 1 : 0)
                     );
 
-                    this.msWorkspaceManager.setWorkspaceBefore(
-                        this.tempDragData.workspaceButton.categoryKey,
-                        this.tempDragData.draggedOver.categoryKey
+                    this.msWorkspaceManager.setMsWorkspaceBefore(
+                        this.tempDragData.workspaceButton.msWorkspace,
+                        this.tempDragData.draggedOver.msWorkspace
                     );
                 } else {
                     this.buttonList.set_child_at_index(
@@ -190,9 +191,9 @@ var WorkspaceList = GObject.registerClass(
                         toIndex +
                             (this.tempDragData.initialIndex < toIndex ? 0 : 1)
                     );
-                    this.msWorkspaceManager.setWorkspaceAfter(
-                        this.tempDragData.workspaceButton.categoryKey,
-                        this.tempDragData.draggedOver.categoryKey
+                    this.msWorkspaceManager.setMsWorkspaceAfter(
+                        this.tempDragData.workspaceButton.msWorkspace,
+                        this.tempDragData.draggedOver.msWorkspace
                     );
                 }
                 //this.buttonList.set_child_at_index(this.tempDragData.item, this.tempDragData.draggedBefore ? index : index + 1);
@@ -292,12 +293,7 @@ var WorkspaceButton = GObject.registerClass(
         _init(msWorkspaceManager, msWorkspace) {
             this.msWorkspaceManager = msWorkspaceManager;
             this.msWorkspace = msWorkspace;
-            let icon = new St.Icon({
-                gicon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/plus-symbolic.svg`
-                ),
-                style_class: 'mat-panel-button-icon',
-            });
+
             this.workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
 
             super._init({
@@ -368,7 +364,11 @@ var WorkspaceButton = GObject.registerClass(
                     this.mouseData.pressed = false;
                     this.mouseData.dragged = false;
                 } else if (eventType === Clutter.EventType.LEAVE) {
-                    if (this.mouseData.pressed && !this.mouseData.dragged) {
+                    if (
+                        this.draggable &&
+                        this.mouseData.pressed &&
+                        !this.mouseData.dragged
+                    ) {
                         this.mouseData.dragged = true;
                         this._draggable.startDrag(
                             this.mouseData.originalCoords[0],
@@ -381,6 +381,15 @@ var WorkspaceButton = GObject.registerClass(
             });
 
             this.initDrag();
+        }
+
+        get draggable() {
+            return (
+                this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    this.msWorkspace
+                ) !==
+                this.msWorkspaceManager.primaryMsWorkspaces.length - 1
+            );
         }
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
@@ -395,7 +404,7 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (!(source instanceof WorkspaceButton)) {
+            if (!(source instanceof WorkspaceButton) || !this.draggable) {
                 return DND.DragMotionResult.NO_DROP;
             }
             this.emit('drag-over', y < this.height / 2);

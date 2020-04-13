@@ -23,9 +23,11 @@ var MsDndManager = class MsDndManager {
                         newMsWorkspace
                     );
                     if (this.msWindowDragged.isDialog) {
-                        this.originalParent = newMsWorkspace.floatableContainer;
+                        this.originalParent =
+                            newMsWorkspace.msWorkspaceActor.floatableContainer;
                     } else {
-                        this.originalParent = newMsWorkspace.tileableContainer;
+                        this.originalParent =
+                            newMsWorkspace.msWorkspaceActor.tileableContainer;
                     }
                 }
             }
@@ -74,7 +76,8 @@ var MsDndManager = class MsDndManager {
                 (tileable) =>
                     tileable instanceof MsWindow &&
                     tileable.visible &&
-                    tileable.get_parent() === msWorkspace.tileableContainer
+                    tileable.get_parent() ===
+                        msWorkspace.msWorkspaceActor.tileableContainer
             )
             .forEach((tileable) => {
                 if (

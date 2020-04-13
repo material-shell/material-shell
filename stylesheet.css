@@ -147,35 +147,36 @@ subtitle-1 {
   .dark-theme #topPanel .task-active-indicator {
     background: white;
     height: 2px; }
-  .dark-theme #topPanel .task-bar-item {
-    font-size: 14px;
-    height: 48px; }
-    .dark-theme #topPanel .task-bar-item.active .task-bar-item-content {
-      color: rgba(255, 255, 255, 0.87); }
-    .dark-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 12px;
-      color: rgba(255, 255, 255, 0.6); }
-      .dark-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px; }
-      .dark-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
-        max-width: 248px;
-        margin-left: 8px;
-        margin-right: 8px;
-        font-weight: 600;
-        font-size: 14px; }
-      .dark-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
-        border-radius: 20px;
-        width: 24px;
-        height: 20px; }
-        .dark-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-          icon-size: 18px;
-          color: rgba(255, 255, 255, 0.6); }
   .dark-theme #topPanel .mat-panel-button .mat-panel-button-icon {
     color: rgba(255, 255, 255, 0.6); }
   .dark-theme #topPanel .mat-panel-button.active {
     background: rgba(255, 255, 255, 0.12); }
     .dark-theme #topPanel .mat-panel-button.active .mat-panel-button-icon {
       color: rgba(255, 255, 255, 0.87); }
+
+.dark-theme .task-bar-item {
+  font-size: 14px;
+  height: 48px; }
+  .dark-theme .task-bar-item.active .task-bar-item-content {
+    color: rgba(255, 255, 255, 0.87); }
+  .dark-theme .task-bar-item .task-bar-item-content {
+    padding: 0px 12px;
+    color: rgba(255, 255, 255, 0.6); }
+    .dark-theme .task-bar-item .task-bar-item-content .app-icon {
+      icon-size: 24px; }
+    .dark-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
+      max-width: 248px;
+      margin-left: 8px;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 14px; }
+    .dark-theme .task-bar-item .task-bar-item-content .task-close-button {
+      border-radius: 20px;
+      width: 24px;
+      height: 20px; }
+      .dark-theme .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+        icon-size: 18px;
+        color: rgba(255, 255, 255, 0.6); }
 
 .dark-theme .system-status-icon {
   height: 24px;
@@ -310,35 +311,36 @@ subtitle-1 {
   .light-theme #topPanel .task-active-indicator {
     background: #3f51b5;
     height: 2px; }
-  .light-theme #topPanel .task-bar-item {
-    font-size: 14px;
-    height: 48px; }
-    .light-theme #topPanel .task-bar-item.active .task-bar-item-content {
-      color: #3f51b5; }
-    .light-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 12px;
-      color: rgba(0, 0, 0, 0.6); }
-      .light-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px; }
-      .light-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
-        max-width: 248px;
-        margin-left: 8px;
-        margin-right: 8px;
-        font-weight: 600;
-        font-size: 14px; }
-      .light-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
-        border-radius: 20px;
-        width: 24px;
-        height: 20px; }
-        .light-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-          icon-size: 18px;
-          color: rgba(0, 0, 0, 0.6); }
   .light-theme #topPanel .mat-panel-button .mat-panel-button-icon {
     color: rgba(0, 0, 0, 0.6); }
   .light-theme #topPanel .mat-panel-button.active {
     background: rgba(0, 0, 0, 0.12); }
     .light-theme #topPanel .mat-panel-button.active .mat-panel-button-icon {
       color: rgba(0, 0, 0, 0.87); }
+
+.light-theme .task-bar-item {
+  font-size: 14px;
+  height: 48px; }
+  .light-theme .task-bar-item.active .task-bar-item-content {
+    color: #3f51b5; }
+  .light-theme .task-bar-item .task-bar-item-content {
+    padding: 0px 12px;
+    color: rgba(0, 0, 0, 0.6); }
+    .light-theme .task-bar-item .task-bar-item-content .app-icon {
+      icon-size: 24px; }
+    .light-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
+      max-width: 248px;
+      margin-left: 8px;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 14px; }
+    .light-theme .task-bar-item .task-bar-item-content .task-close-button {
+      border-radius: 20px;
+      width: 24px;
+      height: 20px; }
+      .light-theme .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+        icon-size: 18px;
+        color: rgba(0, 0, 0, 0.6); }
 
 .light-theme .system-status-icon {
   height: 24px;
@@ -509,35 +511,44 @@ subtitle-1 {
   .primary-theme #topPanel .task-active-indicator {
     background: #3f51b5;
     height: 2px; }
-  .primary-theme #topPanel .task-bar-item {
-    font-size: 14px;
-    height: 48px; }
-    .primary-theme #topPanel .task-bar-item.active .task-bar-item-content {
-      color: #3f51b5; }
-    .primary-theme #topPanel .task-bar-item .task-bar-item-content {
-      padding: 0px 12px;
-      color: rgba(0, 0, 0, 0.6); }
-      .primary-theme #topPanel .task-bar-item .task-bar-item-content .app-icon {
-        icon-size: 24px; }
-      .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
-        max-width: 248px;
-        margin-left: 8px;
-        margin-right: 8px;
-        font-weight: 600;
-        font-size: 14px; }
-      .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button {
-        border-radius: 20px;
-        width: 24px;
-        height: 20px; }
-        .primary-theme #topPanel .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-          icon-size: 18px;
-          color: rgba(0, 0, 0, 0.6); }
   .primary-theme #topPanel .mat-panel-button .mat-panel-button-icon {
     color: rgba(0, 0, 0, 0.6); }
   .primary-theme #topPanel .mat-panel-button.active {
     background: rgba(0, 0, 0, 0.12); }
     .primary-theme #topPanel .mat-panel-button.active .mat-panel-button-icon {
       color: rgba(0, 0, 0, 0.87); }
+
+.primary-theme .task-bar-item {
+  font-size: 14px;
+  height: 48px; }
+  .light-primary.primary-theme .task-bar-item.active .task-bar-item-content {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary.primary-theme .task-bar-item.active .task-bar-item-content {
+    color: rgba(255, 255, 255, 0.87); }
+  .primary-theme .task-bar-item .task-bar-item-content {
+    padding: 0px 12px; }
+    .light-primary.primary-theme .task-bar-item .task-bar-item-content {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary.primary-theme .task-bar-item .task-bar-item-content {
+      color: rgba(255, 255, 255, 0.6); }
+    .primary-theme .task-bar-item .task-bar-item-content .app-icon {
+      icon-size: 24px; }
+    .primary-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
+      max-width: 248px;
+      margin-left: 8px;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 14px; }
+    .primary-theme .task-bar-item .task-bar-item-content .task-close-button {
+      border-radius: 20px;
+      width: 24px;
+      height: 20px; }
+      .primary-theme .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+        icon-size: 18px; }
+        .light-primary.primary-theme .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+          color: rgba(0, 0, 0, 0.6); }
+        .dark-primary.primary-theme .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
+          color: rgba(255, 255, 255, 0.6); }
 
 .primary-theme .system-status-icon {
   height: 24px;

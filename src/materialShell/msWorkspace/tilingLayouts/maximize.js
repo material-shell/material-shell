@@ -89,7 +89,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 actor.remove_clip();
             }
             if (!actor.dragged) {
-                actor.set_position(workArea.x, workArea.y);
+                actor.set_position(0, 0);
                 actor.set_size(workArea.width, workArea.height);
                 actor.translation_x = index * workArea.width;
             }
@@ -98,14 +98,14 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             } else {
                 actor.show();
             } */
-            this.msWorkspace.tileableContainer.translation_x =
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
                 -this.msWorkspace.focusedIndex * workArea.width;
         });
     }
 
     onDestroy() {
         super.onDestroy();
-        this.msWorkspace.tileableContainer.translation_x = 0;
+        this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x = 0;
         this.msWorkspace.msWindowList.forEach((msWindow) => {
             if (msWindow !== this.windowNotDialogFocused) {
                 msWindow.show();
@@ -121,16 +121,19 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             this.monitor.index
         );
         if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(this.msWorkspace.tileableContainer, {
-                translation_x: -newIndex * workArea.width,
-                time: Math.min(0.25 * Math.abs(oldIndex - newIndex), 0.4),
-                transition: 'easeOutQuad',
-                onComplete: () => {
-                    this.endTransition();
-                },
-            });
+            Tweener.addTween(
+                this.msWorkspace.msWorkspaceActor.tileableContainer,
+                {
+                    translation_x: -newIndex * workArea.width,
+                    time: Math.min(0.25 * Math.abs(oldIndex - newIndex), 0.4),
+                    transition: 'easeOutQuad',
+                    onComplete: () => {
+                        this.endTransition();
+                    },
+                }
+            );
         } else {
-            this.msWorkspace.tileableContainer.ease({
+            this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
                 translation_x: -newIndex * workArea.width,
                 duration: Math.min(250 * Math.abs(oldIndex - newIndex), 400),
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,

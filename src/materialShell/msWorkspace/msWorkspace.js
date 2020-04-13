@@ -1,4 +1,4 @@
-const { Clutter, GLib, St, Shell } = imports.gi;
+const { Clutter, GLib, St, Shell, GObject } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 const Background = imports.ui.background;
@@ -30,24 +30,22 @@ var MsWorkspace = class MsWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
         this.floatableList = [];
-        this.uiVisible = false;
+        this.uiVisible = true;
         this.focusedIndex = 0;
 
         const Layout = global.tilingManager.getLayoutByKey(
             initialState ? initialState.tilingLayout : 'maximized'
         );
         this.tilingLayout = new Layout(this);
-        this.msWorkspaceActor = new St.Widget({ style_class: 'msWorkspace' });
-        this.msWorkspaceActor.set_position(this.monitor.x, this.monitor.y);
-        this.tileableContainer = new St.Widget();
-        this.floatableContainer = new St.Widget();
         this.appLauncher = new MsApplicationLauncher(this);
         this.tileableList.push(this.appLauncher);
-        this.tileableContainer.add_child(this.appLauncher);
-        this.panel = new TopPanel(this);
+        this.msWorkspaceActor = new MsWorkspaceActor(this);
+        this.msWorkspaceActor.set_position(this.monitor.x, this.monitor.y);
+
+        this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
 
         if (this.monitor.index !== Main.layoutManager.primaryIndex) {
-            Main.layoutManager._trackActor(this.panel, {
+            Main.layoutManager._trackActor(this.msWorkspaceActor.panel, {
                 affectsStruts: true,
             });
         }
@@ -63,9 +61,13 @@ var MsWorkspace = class MsWorkspace {
             this.handleExtensionLoaded.bind(this)
         );
 
-        this.msWorkspaceActor.add_child(this.tileableContainer);
-        this.msWorkspaceActor.add_child(this.floatableContainer);
-        this.msWorkspaceActor.add_child(this.panel);
+        this.msWorkspaceActor.add_child(
+            this.msWorkspaceActor.tileableContainer
+        );
+        this.msWorkspaceActor.add_child(
+            this.msWorkspaceActor.floatableContainer
+        );
+        this.msWorkspaceActor.add_child(this.msWorkspaceActor.panel);
         this.updateLayout();
         this.updateUI();
         this.msWorkspaceManager.msWorkspaceContainer.add_child(
@@ -122,8 +124,8 @@ var MsWorkspace = class MsWorkspace {
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.visible = this.uiVisible;
         }
-        if (this.panel) {
-            this.panel.visible = this.shouldPanelBeVisible();
+        if (this.msWorkspaceActor.panel) {
+            this.msWorkspaceActor.panel.visible = this.shouldPanelBeVisible();
         }
     }
 
@@ -131,14 +133,21 @@ var MsWorkspace = class MsWorkspace {
         let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
+        log('UPDATE LAYOUT', workArea.width);
+
         //this.actorContainer.set_position(this.monitor.x, this.monitor.y);
-        this.msWorkspaceActor.set_size(this.monitor.width, this.monitor.height);
-        //this.tileableContainer.set_size(workArea.width, workArea.height);
-        //this.tileableContainer.set_position(workArea.x, workArea.y);
-        //this.floatableContainer.set_size(workArea.width, workArea.height);
-        //this.floatableContainer.set_position(workArea.x, workArea.y);
-        this.panel.set_position(workArea.x - this.monitor.x, 0);
-        this.panel.set_width(workArea.width);
+        this.msWorkspaceActor.set_size(workArea.width, this.monitor.height);
+        this.msWorkspaceActor.set_position(workArea.x, this.monitor.y);
+
+        //this.msWorkspaceActor.tileableContainer.set_size(workArea.width, workArea.height);
+        //this.msWorkspaceActor.tileableContainer.set_position(workArea.x, workArea.y);
+        //this.msWorkspaceActor.floatableContainer.set_size(workArea.width, workArea.height);
+        //this.msWorkspaceActor.floatableContainer.set_position(workArea.x, workArea.y);
+        this.msWorkspaceActor.panel.set_position(
+            workArea.x - this.monitor.x,
+            0
+        );
+        this.msWorkspaceActor.panel.set_width(workArea.width);
     }
 
     addMsWindow(msWindow) {
@@ -153,8 +162,8 @@ var MsWorkspace = class MsWorkspace {
             reparentActor(
                 msWindow,
                 msWindow.isDialog
-                    ? this.floatableContainer
-                    : this.tileableContainer
+                    ? this.msWorkspaceActor.floatableContainer
+                    : this.msWorkspaceActor.tileableContainer
             );
         }
         if (msWindow.isDialog) {
@@ -193,7 +202,6 @@ var MsWorkspace = class MsWorkspace {
                 this.tileableList.length > 1
             ) {
                 this.focusedIndex--;
-            } else {
             }
             this.emitTileableListChangedOnce(oldTileableList);
             // If there's no more focused msWindow on this workspace focus the last one
@@ -268,6 +276,14 @@ var MsWorkspace = class MsWorkspace {
         this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
 
+    refreshFocus() {
+        if (this.tileableFocused instanceof MsWindow) {
+            this.tileableFocused.takeFocus();
+        } else {
+            this.tileableFocused.grab_key_focus();
+        }
+    }
+
     setTileableBefore(tileableToMove, tileableRelative) {
         const oldTileableList = [...this.tileableList];
         let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
@@ -275,7 +291,7 @@ var MsWorkspace = class MsWorkspace {
 
         let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
-        this.emitWindowsChanged(this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
     setTileableAfter(tileableToMove, tileableRelative) {
@@ -285,7 +301,7 @@ var MsWorkspace = class MsWorkspace {
 
         let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
-        this.emitWindowsChanged(this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
     nextTiling(direction) {
@@ -296,7 +312,7 @@ var MsWorkspace = class MsWorkspace {
         );
         this.tilingLayout = new Layout(this);
 
-        this.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.emit('tiling-layout-changed');
         this.tilingLayout.onTile();
     }
@@ -391,3 +407,38 @@ var MsWorkspace = class MsWorkspace {
     }
 };
 Signals.addSignalMethods(MsWorkspace.prototype);
+
+var MsWorkspaceActor = GObject.registerClass(
+    {},
+    class MsWorkspaceActor extends St.Widget {
+        _init(msWorkspace) {
+            super._init({ style_class: 'msWorkspace' });
+            this.msWorkspace = msWorkspace;
+            this.tileableContainer = new St.Widget();
+            this.floatableContainer = new St.Widget();
+            this.panel = new TopPanel(msWorkspace);
+            this.add_child(this.tileableContainer);
+            this.add_child(this.floatableContainer);
+            this.add_child(this.panel);
+        }
+
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            box = themeNode.get_content_box(box);
+            let panelBox = new Clutter.ActorBox();
+            panelBox.x1 = box.x1;
+            panelBox.x2 = box.x2;
+            panelBox.y1 = box.y1;
+            panelBox.y2 = panelBox.y1 + this.panel.get_preferred_height(-1)[1];
+            this.panel.allocate(panelBox, flags);
+            let containerBox = new Clutter.ActorBox();
+            containerBox.x1 = box.x1;
+            containerBox.x2 = box.x2;
+            containerBox.y1 = panelBox.y2;
+            containerBox.y2 = box.y2;
+            this.tileableContainer.allocate(containerBox, flags);
+            this.floatableContainer.allocate(containerBox, flags);
+        }
+    }
+);

@@ -281,48 +281,6 @@ $panel-size: 48px;
             height: 2px;
         }
 
-        .task-bar-item {
-            font-size: 14px;
-            height: $panel-size;
-
-            &.active {
-                .task-bar-item-content {
-                    @if ($topPanelTheme== 'light') {
-                        color: $color-primary;
-                    } @else {
-                        @include foreground-high-emphasis($topPanelTheme);
-                    }
-                }
-            }
-
-            .task-bar-item-content {
-                padding: 0px 12px;
-                @include foreground-medium-emphasis($topPanelTheme);
-                .app-icon {
-                    icon-size: 24px;
-                }
-
-                .task-bar-item-title {
-                    max-width: 248px;
-                    margin-left: 8px;
-                    margin-right: 8px;
-                    font-weight: 600;
-                    font-size: 14px;
-                }
-
-                .task-close-button {
-                    border-radius: 20px;
-                    width: 24px;
-                    height: 20px;
-
-                    .task-close-icon {
-                        icon-size: 18px;
-                        @include foreground-medium-emphasis($topPanelTheme);
-                    }
-                }
-            }
-        }
-
         .mat-panel-button {
             .mat-panel-button-icon {
                 @include foreground-medium-emphasis($topPanelTheme);
@@ -333,6 +291,48 @@ $panel-size: 48px;
 
                 .mat-panel-button-icon {
                     @include foreground-high-emphasis($topPanelTheme);
+                }
+            }
+        }
+    }
+
+    .task-bar-item {
+        font-size: 14px;
+        height: $panel-size;
+
+        &.active {
+            .task-bar-item-content {
+                @if ($theme== 'light') {
+                    color: $color-primary;
+                } @else {
+                    @include foreground-high-emphasis($theme);
+                }
+            }
+        }
+
+        .task-bar-item-content {
+            padding: 0px 12px;
+            @include foreground-medium-emphasis($theme);
+            .app-icon {
+                icon-size: 24px;
+            }
+
+            .task-bar-item-title {
+                max-width: 248px;
+                margin-left: 8px;
+                margin-right: 8px;
+                font-weight: 600;
+                font-size: 14px;
+            }
+
+            .task-close-button {
+                border-radius: 20px;
+                width: 24px;
+                height: 20px;
+
+                .task-close-icon {
+                    icon-size: 18px;
+                    @include foreground-medium-emphasis($theme);
                 }
             }
         }

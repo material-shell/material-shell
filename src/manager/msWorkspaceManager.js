@@ -22,12 +22,21 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
         this.metaWindowFocused = null;
-
         this.msWorkspaceContainer = new MsWorkspaceContainer(this);
         Main.uiGroup.insert_child_above(
             this.msWorkspaceContainer,
             global.window_group
         );
+
+        //
+        this.originalPanelBoxIndex = Main.layoutManager.uiGroup
+            .get_children()
+            .indexOf(Main.layoutManager.panelBox);
+
+        /*  Main.layoutManager.uiGroup.set_child_below_sibling(
+            Main.layoutManager.panelBox,
+            this.msWorkspaceContainer
+        ); */
 
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
@@ -84,10 +93,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
         this.observe(Main.layoutManager, 'monitors-changed', () => {
             //Manage multiple monitors
+            this.buildMonitorPanelSpacers();
         });
     }
 
     init() {
+        this.buildMonitorPanelSpacers();
         this.setupInitialState();
         this.refreshVisiblePrimaryMsWorkspace();
     }
@@ -103,6 +114,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
         this.workspaceList.destroy();
         this.msWorkspaceContainer.destroy();
+        /* Main.layoutManager.uiGroup.set_child_at_index(
+            Main.layoutManager.panelBox,
+            this.originalPanelBoxIndex
+        ); */
     }
 
     setupInitialState() {
@@ -152,6 +167,29 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
         }
         delete this.restoringState;
+    }
+
+    buildMonitorPanelSpacers() {
+        if (this.monitorPanelSpacerList) {
+            this.monitorPanelSpacerList.forEach((actor) => {
+                actor.destroy();
+            });
+        }
+        this.monitorPanelSpacerList = [];
+        for (let monitor of Main.layoutManager.monitors) {
+            let topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
+            topBarSpacer.set_position(monitor.x, monitor.y);
+            topBarSpacer.set_width(monitor.width);
+            Main.layoutManager.addChrome(topBarSpacer, {
+                affectsStruts: true,
+                trackFullscreen: true,
+            });
+            Main.layoutManager.uiGroup.set_child_below_sibling(
+                topBarSpacer,
+                this.msWorkspaceContainer
+            );
+            this.monitorPanelSpacerList.push(topBarSpacer);
+        }
     }
 
     get primaryMsWorkspaces() {
@@ -239,36 +277,36 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
     }
 
-    setWorkspaceBefore(categoryKeyToMove, categoryKeyRelative) {
-        let categoryKeyToMoveIndex = this.categoryKeyOrderedList.indexOf(
-            categoryKeyToMove
+    setMsWorkspaceBefore(msWorkspaceToMove, msWorkspaceRelative) {
+        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
+            msWorkspaceToMove
         );
-        this.categoryKeyOrderedList.splice(categoryKeyToMoveIndex, 1);
+        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
 
-        let categoryKeyRelativeIndex = this.categoryKeyOrderedList.indexOf(
-            categoryKeyRelative
+        let msWorkspaceRelativeIndex = this.msWorkspaceList.indexOf(
+            msWorkspaceRelative
         );
-        this.categoryKeyOrderedList.splice(
-            categoryKeyRelativeIndex,
+        this.msWorkspaceList.splice(
+            msWorkspaceRelativeIndex,
             0,
-            categoryKeyToMove
+            msWorkspaceToMove
         );
         this.stateChanged();
     }
 
-    setWorkspaceAfter(categoryKeyToMove, categoryKeyRelative) {
-        let categoryKeyToMoveIndex = this.categoryKeyOrderedList.indexOf(
-            categoryKeyToMove
+    setMsWorkspaceAfter(msWorkspaceToMove, msWorkspaceRelative) {
+        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
+            msWorkspaceToMove
         );
-        this.categoryKeyOrderedList.splice(categoryKeyToMoveIndex, 1);
+        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
 
-        let categoryKeyRelativeIndex = this.categoryKeyOrderedList.indexOf(
-            categoryKeyRelative
+        let msWorkspaceRelativeIndex = this.msWorkspaceList.indexOf(
+            msWorkspaceRelative
         );
-        this.categoryKeyOrderedList.splice(
-            categoryKeyRelativeIndex + 1,
+        this.msWorkspaceList.splice(
+            msWorkspaceRelativeIndex + 1,
             0,
-            categoryKeyToMove
+            msWorkspaceToMove
         );
         this.stateChanged();
     }
@@ -288,7 +326,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     });
             } else {
                 workspacesState.externalWorkspaces.push(
-                    this.getMsWorkspacesOfMonitorIndex(monitor.index).getState()
+                    this.getMsWorkspacesOfMonitorIndex(
+                        monitor.index
+                    )[0].getState()
                 );
             }
         }

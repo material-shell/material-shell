@@ -76,8 +76,10 @@ var MsWorkspaceContainer = GObject.registerClass(
         onTransitionCompleted() {
             this.remove_child(this.translationAnimator);
             const activeMsWorkspace = this.msWorkspaceManager.getActiveMsWorkspace();
+            activeMsWorkspace.refreshFocus();
             this.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
                 msWorkspace.msWorkspaceActor.visible =
+                    msWorkspace.monitor != Main.layoutManager.primaryMonitor ||
                     msWorkspace === activeMsWorkspace;
             });
         }

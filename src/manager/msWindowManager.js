@@ -173,11 +173,10 @@ var MsWindowManager = class MsWindowManager {
 
     openAppForMsWindow(msWindow) {
         this.msWindowWaitingForMetaWindowList.push(msWindow);
-        msWindow.app.open_new_window(
-            Me.msWorkspaceManager
-                .getWorkspaceOfMsWorkspace(msWindow.msWorkspace)
-                .index()
+        let workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+            msWindow.msWorkspace
         );
+        msWindow.app.open_new_window(workspaceIndex);
     }
 
     _handleWindow(metaWindow) {

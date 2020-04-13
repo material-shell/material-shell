@@ -321,8 +321,8 @@ var MsWindow = GObject.registerClass(
                     //Set the size accordingly
                     this.metaWindow.move_resize_frame(
                         true,
-                        this.x,
-                        this.y,
+                        workArea.x + this.x,
+                        workArea.y + this.y,
                         this.width,
                         this.height
                     );

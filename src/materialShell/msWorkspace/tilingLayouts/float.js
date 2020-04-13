@@ -16,8 +16,8 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
             });
         });
-        msWorkspace.tileableContainer.hide();
-        msWorkspace.floatableContainer.hide(); */
+        msWorkspace.msWorkspaceActor.tileableContainer.hide();
+        msWorkspace.msWorkspaceActor.floatableContainer.hide(); */
     }
 
     alterTileable(tileable) {

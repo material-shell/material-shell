@@ -1,4 +1,4 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio, GLib } = imports.gi;
 
 const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
@@ -20,6 +20,7 @@ var TaskBar = GObject.registerClass(
         _init(msWorkspace) {
             super._init({
                 name: 'taskBar',
+                x_expand: true,
             });
             this._delegate = this;
             this.taskActiveIndicator = new St.Widget({
@@ -27,7 +28,7 @@ var TaskBar = GObject.registerClass(
             });
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.Widget({
-                layout_manager: new Clutter.GridLayout(),
+                layout_manager: new Clutter.BoxLayout(),
             });
             this.add_child(this.taskButtonContainer);
             this.msWorkspace = msWorkspace;
@@ -210,11 +211,16 @@ var TaskBar = GObject.registerClass(
                 draggedOver,
                 draggedBefore,
             } = dragData;
-
+            let index = currentTaskBar.taskButtonContainer
+                .get_children()
+                .indexOf(dropPlaceholder);
             currentTaskBar.taskButtonContainer.remove_child(dropPlaceholder);
             dropPlaceholder.destroy();
-
-            if (originalTaskBar !== currentTaskBar) {
+            currentTaskBar.taskButtonContainer.set_child_at_index(item, index);
+            if (
+                originalTaskBar !== currentTaskBar &&
+                item.tileable.metaWindow
+            ) {
                 item.tileable.metaWindow.move_to_monitor(
                     currentTaskBar.msWorkspace.monitor.index
                 );
@@ -249,8 +255,6 @@ var TaskBar = GObject.registerClass(
                 draggedOver,
                 draggedBefore,
             } = dragData;
-
-            dropPlaceholder.resize(draggedOver);
 
             const dropPlaceholderIndex = currentTaskBar.taskButtonContainer
                 .get_children()
@@ -359,7 +363,7 @@ let TaskBarItem = GObject.registerClass(
             'close-clicked': {},
         },
     },
-    class TaskBarItem extends MatButton {
+    class TaskBarItemClass extends MatButton {
         _init(tileable, actif) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`,
@@ -522,6 +526,7 @@ let TaskBarItem = GObject.registerClass(
         }
 
         acceptDrop(source) {
+            log('acceptDrop');
             if (!(source instanceof TaskBarItem)) {
                 return false;
             }
