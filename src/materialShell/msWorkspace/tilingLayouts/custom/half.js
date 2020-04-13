@@ -2,7 +2,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported HalfLayout */
@@ -32,8 +32,8 @@ var HalfLayout = class HalfLayout extends BaseTilingLayout {
             if (index === 0) {
                 this.moveAndResizeActor(
                     window,
-                    workArea.x,
-                    workArea.y,
+                    0,
+                    0,
                     masterWidth,
                     workArea.height,
                     true
@@ -41,9 +41,8 @@ var HalfLayout = class HalfLayout extends BaseTilingLayout {
             } else {
                 this.moveAndResizeActor(
                     window,
-                    workArea.x + masterWidth,
-                    workArea.y +
-                        ((index - 1) * workArea.height) / (windows.length - 1),
+                    masterWidth,
+                    ((index - 1) * workArea.height) / (windows.length - 1),
                     workArea.width - masterWidth,
                     workArea.height / (windows.length - 1),
                     true
@@ -64,7 +63,7 @@ var HalfLayout = class HalfLayout extends BaseTilingLayout {
             if (index === 0) {
                 this.moveAndResizeActor(
                     window,
-                    workArea.x,
+                    0,
                     workArea.y,
                     workArea.width,
                     masterHeight,
@@ -73,8 +72,7 @@ var HalfLayout = class HalfLayout extends BaseTilingLayout {
             } else {
                 this.moveAndResizeActor(
                     window,
-                    workArea.x +
-                        ((index - 1) * workArea.width) / (windows.length - 1),
+                    0 + ((index - 1) * workArea.width) / (windows.length - 1),
                     workArea.y + masterHeight,
                     workArea.width / (windows.length - 1),
                     workArea.height - masterHeight,

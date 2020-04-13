@@ -116,7 +116,7 @@ subtitle-1 {
 .dark-theme #panel {
   background: #191919;
   width: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .dark-theme #panel #panelLeft,
   .dark-theme #panel #panelCenter,
   .dark-theme #panel #panelRight {
@@ -143,7 +143,7 @@ subtitle-1 {
 .dark-theme #topPanel {
   background: #191919;
   height: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .dark-theme #topPanel .task-active-indicator {
     background: white;
     height: 2px; }
@@ -189,7 +189,7 @@ subtitle-1 {
 .dark-theme .mat-card {
   background: #191919;
   border-radius: 6px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .dark-theme .mat-card .mat-card-title {
     background: rgba(255, 255, 255, 0.04);
     color: rgba(255, 255, 255, 0.87);
@@ -227,8 +227,11 @@ subtitle-1 {
   background: #121212; }
 
 .dark-theme MsWindow {
-  border: 4px solid black;
   background-color: red; }
+
+.dark-theme .floatable-container MsWindow {
+  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 10px; }
 
 .light-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -280,7 +283,7 @@ subtitle-1 {
 .light-theme #panel {
   background: white;
   width: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .light-theme #panel #panelLeft,
   .light-theme #panel #panelCenter,
   .light-theme #panel #panelRight {
@@ -307,7 +310,7 @@ subtitle-1 {
 .light-theme #topPanel {
   background: white;
   height: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .light-theme #topPanel .task-active-indicator {
     background: #3f51b5;
     height: 2px; }
@@ -353,7 +356,7 @@ subtitle-1 {
 .light-theme .mat-card {
   background: white;
   border-radius: 6px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .light-theme .mat-card .mat-card-title {
     background: rgba(0, 0, 0, 0.04);
     color: #3f51b5;
@@ -391,8 +394,11 @@ subtitle-1 {
   background: #b3b3b3; }
 
 .light-theme MsWindow {
-  border: 4px solid black;
   background-color: red; }
+
+.light-theme .floatable-container MsWindow {
+  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 10px; }
 
 .light-primary.primary-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
@@ -471,7 +477,7 @@ subtitle-1 {
 .primary-theme #panel {
   background: #3f51b5;
   width: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .primary-theme #panel #panelLeft,
   .primary-theme #panel #panelCenter,
   .primary-theme #panel #panelRight {
@@ -507,7 +513,7 @@ subtitle-1 {
 .primary-theme #topPanel {
   background: white;
   height: 48px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .primary-theme #topPanel .task-active-indicator {
     background: #3f51b5;
     height: 2px; }
@@ -561,7 +567,7 @@ subtitle-1 {
 .primary-theme .mat-card {
   background: white;
   border-radius: 6px;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3); }
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .primary-theme .mat-card .mat-card-title {
     background: #3f51b5;
     height: 72px;
@@ -605,5 +611,8 @@ subtitle-1 {
   background: #2c397f; }
 
 .primary-theme MsWindow {
-  border: 4px solid black;
   background-color: red; }
+
+.primary-theme .floatable-container MsWindow {
+  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 10px; }

@@ -1,7 +1,7 @@
 @import 'typography';
 $color-primary: #3f51b5;
 $ripple: rgba(255, 255, 255, 0.12);
-$shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+$shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 $panel-size: 48px;
 
 @mixin foreground($theme, $opacity) {
@@ -425,8 +425,17 @@ $panel-size: 48px;
     }
 
     MsWindow {
-        border: 4px solid black;
         background-color: red;
+    }
+    MsWindowContent {
+        //background-color: blue;
+    }
+
+    .floatable-container {
+        MsWindow {
+            box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+        }
     }
 }
 

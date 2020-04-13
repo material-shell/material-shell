@@ -24,7 +24,7 @@ var MsWindow = GObject.registerClass(
     class MsWindow extends St.Widget {
         _init(app, metaWindowIdentifier, metaWindow) {
             AddLogToFunctions(this);
-            super._init({ reactive: true, clip_to_allocation: true });
+            super._init({ reactive: true });
             this.destroyId = this.connect(
                 'destroy',
                 this._onDestroy.bind(this)
@@ -38,8 +38,22 @@ var MsWindow = GObject.registerClass(
             });
             this.metaWindowSignals = [];
             this.dragged = false;
-            this.add_child(this.windowClone);
-            this.add_child(this.placeholder);
+            this.msContent = new MsWindowContent(
+                this.placeholder,
+                this.windowClone
+            );
+            this.propagate = true;
+            this.msContent.connect('notify::position', () => {
+                if (this.propagate) {
+                    this.updateMetaWindowPositionAndSize();
+                }
+            });
+            this.msContent.connect('notify::size', () => {
+                if (this.propagate) {
+                    this.updateMetaWindowPositionAndSize();
+                }
+            });
+            this.add_child(this.msContent);
             if (metaWindow) {
                 this.setWindow(metaWindow);
             }
@@ -117,6 +131,9 @@ var MsWindow = GObject.registerClass(
                                 stageMotionEventId = global.stage.connect(
                                     'captured-event',
                                     (_, event) => {
+                                        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                                            this.msWorkspace.monitor
+                                        );
                                         const [
                                             currentX,
                                             currentY,
@@ -128,8 +145,12 @@ var MsWindow = GObject.registerClass(
                                             originMsWindowY,
                                         ] = originMsWindowPosition;
                                         this.set_position(
-                                            Math.round(originMsWindowX - diffX),
-                                            Math.round(originMsWindowY - diffY)
+                                            Math.round(
+                                                originMsWindowX - diffX
+                                            ) + workArea.x,
+                                            Math.round(
+                                                originMsWindowY - diffY
+                                            ) + workArea.y
                                         );
 
                                         if (
@@ -163,7 +184,10 @@ var MsWindow = GObject.registerClass(
             this.superConnectId = Me.connect(
                 'super-pressed-change',
                 (_, pressed) => {
-                    this.reactive = !this.metaWindow || pressed;
+                    this.reactive =
+                        (!this.metaWindow || pressed) &&
+                        this.msWorkspace.tilingLayout.constructor.key !==
+                            'float';
                 }
             );
         }
@@ -248,29 +272,10 @@ var MsWindow = GObject.registerClass(
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
-            if (this.metaWindow) {
-                let windowFrameRect = this.metaWindow.get_frame_rect();
-                let windowActor = this.metaWindow.get_compositor_private();
-                //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
-                if (windowActor) {
-                    let cloneBox = new Clutter.ActorBox();
-                    cloneBox.x1 = windowActor.x - windowFrameRect.x;
-                    cloneBox.y1 = windowActor.y - windowFrameRect.y;
-                    cloneBox.x2 = cloneBox.x1 + windowActor.width;
-                    cloneBox.y2 = cloneBox.y1 + windowActor.height;
-                    this.windowClone.allocate(cloneBox, flags);
-                } else {
-                    log('windowactor is missing', this.title);
-                }
-            }
-
-            if (this.placeholder.get_parent() === this) {
-                this.placeholder.set_size(box.get_width(), box.get_height());
-                this.placeholder.allocate(box, flags);
-            }
+            this.msContent.allocate(box, flags);
         }
 
-        set_position(x, y, propagate = true) {
+        /* set_position(x, y, propagate = true) {
             super.set_position(Math.round(x), Math.round(y));
             if (propagate) {
                 this.updateMetaWindowPositionAndSize();
@@ -282,7 +287,7 @@ var MsWindow = GObject.registerClass(
             if (propagate) {
                 this.updateMetaWindowPositionAndSize();
             }
-        }
+        } */
 
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
@@ -318,24 +323,34 @@ var MsWindow = GObject.registerClass(
                     if (this.metaWindow.maximized_horizontally) {
                         this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                     }
+                    let x = this.x + this.msContent.x;
+                    let y = this.y + this.msContent.y;
                     //Set the size accordingly
                     this.metaWindow.move_resize_frame(
                         true,
-                        workArea.x + this.x,
-                        workArea.y + this.y,
-                        this.width,
-                        this.height
+                        this.dragged ? x : workArea.x + x,
+                        this.dragged ? y : workArea.y + y,
+                        this.msContent.width,
+                        this.msContent.height
                     );
                 });
             });
         }
 
         mimicMetaWindowPositionAndSize() {
+            if (this.dragged) return;
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.metaWindow.get_monitor()
+            );
             const currentFrameRect = this.metaWindow.get_frame_rect();
-            this.set_position(currentFrameRect.x, currentFrameRect.y, false);
+            this.set_position(
+                currentFrameRect.x - workArea.x - this.msContent.x,
+                currentFrameRect.y - workArea.y - this.msContent.y,
+                false
+            );
             this.set_size(
-                currentFrameRect.width,
-                currentFrameRect.height,
+                currentFrameRect.width + this.msContent.x * 2,
+                currentFrameRect.height + this.msContent.y * 2,
                 false
             );
         }
@@ -386,6 +401,10 @@ var MsWindow = GObject.registerClass(
                 this.metaWindow.connect('position-changed', () => {
                     if (!this.followMetaWindow) return;
                     this.mimicMetaWindowPositionAndSize();
+                }),
+                this.metaWindow.connect('size-changed', () => {
+                    if (!this.followMetaWindow) return;
+                    this.mimicMetaWindowPositionAndSize();
                 })
             );
         }
@@ -403,7 +422,7 @@ var MsWindow = GObject.registerClass(
             this.reactive = true;
             delete this.metaWindow;
             delete this.metaWindowUpdateInProgress;
-            this.add_child(this.placeholder);
+            this.msContent.add_child(this.placeholder);
             this.emit('title-changed', this.title);
         }
 
@@ -451,7 +470,7 @@ var MsWindow = GObject.registerClass(
         fadeOutPlaceholder() {
             const onComplete = () => {
                 this.placeholder.set_opacity(255);
-                this.remove_child(this.placeholder);
+                this.msContent.remove_child(this.placeholder);
                 this.placeholder.reset();
             };
             if (ShellVersionMatch('3.32')) {
@@ -485,6 +504,48 @@ var MsWindow = GObject.registerClass(
             log('msWindow to its own destroy');
             this.unregisterOnMetaWindowSignals();
             Me.disconnect(this.superConnectId);
+        }
+    }
+);
+
+var MsWindowContent = GObject.registerClass(
+    {
+        GTypeName: 'MsWindowContent',
+    },
+    class MsWindowContent extends St.Widget {
+        _init(placeholder, clone) {
+            super._init({ clip_to_allocation: true });
+            this.placeholder = placeholder;
+            this.clone = clone;
+            this.add_child(this.clone);
+            this.add_child(this.placeholder);
+        }
+
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            box = themeNode.get_content_box(box);
+            let metaWindow = this.get_parent().metaWindow;
+            if (metaWindow) {
+                let windowFrameRect = metaWindow.get_frame_rect();
+                let windowActor = metaWindow.get_compositor_private();
+                //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
+                if (windowActor) {
+                    let cloneBox = new Clutter.ActorBox();
+                    cloneBox.x1 = windowActor.x - windowFrameRect.x;
+                    cloneBox.y1 = windowActor.y - windowFrameRect.y;
+                    cloneBox.x2 = cloneBox.x1 + windowActor.width;
+                    cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                    this.clone.allocate(cloneBox, flags);
+                } else {
+                    log('windowactor is missing', this.title);
+                }
+            }
+
+            if (this.placeholder.get_parent() === this) {
+                this.placeholder.set_size(box.get_width(), box.get_height());
+                this.placeholder.allocate(box, flags);
+            }
         }
     }
 );

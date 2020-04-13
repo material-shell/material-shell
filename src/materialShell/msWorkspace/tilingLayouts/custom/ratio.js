@@ -1,7 +1,7 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported RatioLayout */
@@ -12,11 +12,13 @@ var RatioLayout = class RatioLayout extends BaseTilingLayout {
         const ratio = global.tilingManager.ratio;
 
         const workArea = this.getWorkspaceBounds();
+        workArea.x = 0;
+        workArea.y = 0;
 
         windows.forEach((window, index) => {
             let windowArea = {
                 x: workArea.x,
-                y: workArea.y
+                y: workArea.y,
             };
 
             if (index === windows.length - 1) {

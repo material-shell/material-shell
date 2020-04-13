@@ -414,8 +414,12 @@ var MsWorkspaceActor = GObject.registerClass(
         _init(msWorkspace) {
             super._init({ style_class: 'msWorkspace' });
             this.msWorkspace = msWorkspace;
-            this.tileableContainer = new St.Widget();
-            this.floatableContainer = new St.Widget();
+            this.tileableContainer = new St.Widget({
+                style_class: 'tileable-container',
+            });
+            this.floatableContainer = new St.Widget({
+                style_class: 'floatable-container',
+            });
             this.panel = new TopPanel(msWorkspace);
             this.add_child(this.tileableContainer);
             this.add_child(this.floatableContainer);

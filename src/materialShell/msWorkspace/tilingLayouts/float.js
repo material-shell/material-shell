@@ -6,17 +6,13 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
+const { reparentActor } = Me.imports.src.utils.index;
 
 /* exported FloatLayout */
 var FloatLayout = class FloatLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
-        /* GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.msWorkspace.msWindowList.forEach(msWindow => {
-                WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
-            });
-        });
-        msWorkspace.msWorkspaceActor.tileableContainer.hide();
+        /* msWorkspace.msWorkspaceActor.tileableContainer.hide();
         msWorkspace.msWorkspaceActor.floatableContainer.hide(); */
     }
 
@@ -27,6 +23,10 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
             });
         }
+        reparentActor(
+            tileable,
+            this.msWorkspace.msWorkspaceActor.floatableContainer
+        );
     }
 
     restoreTileable(tileable) {
@@ -36,6 +36,10 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
             });
         }
+        reparentActor(
+            tileable,
+            this.msWorkspace.msWorkspaceActor.tileableContainer
+        );
     }
 
     alterFloatable(floatable) {
@@ -46,11 +50,18 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
         this.restoreTileable(floatable);
     }
 
+    onFocusChanged(tileableFocused) {
+        this.msWorkspace.msWorkspaceActor.floatableContainer.set_child_above_sibling(
+            tileableFocused,
+            null
+        );
+    }
+
     onDestroy() {
         super.onDestroy();
+        /* this.msWorkspace.msWorkspaceActor.tileableContainer.show();
+        this.msWorkspace.msWorkspaceActor.floatableContainer.show(); */
     }
-    onTile() {}
-    onTileDialogs() {}
 };
 
 FloatLayout.key = 'float';

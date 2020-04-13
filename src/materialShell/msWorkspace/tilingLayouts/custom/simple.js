@@ -2,7 +2,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported SimpleLayout */
@@ -28,8 +28,8 @@ var SimpleLayout = class SimpleLayout extends BaseTilingLayout {
         windows.forEach((window, index) => {
             this.moveAndResizeActor(
                 window,
-                workArea.x + (index * workArea.width) / windows.length,
-                workArea.y,
+                (index * workArea.width) / windows.length,
+                0,
                 workArea.width / windows.length,
                 workArea.height,
                 true
@@ -45,8 +45,8 @@ var SimpleLayout = class SimpleLayout extends BaseTilingLayout {
         windows.forEach((window, index) => {
             this.moveAndResizeActor(
                 window,
-                workArea.x,
-                workArea.y + (index * workArea.height) / windows.length,
+                0,
+                (index * workArea.height) / windows.length,
                 workArea.width,
                 workArea.height / windows.length,
                 true

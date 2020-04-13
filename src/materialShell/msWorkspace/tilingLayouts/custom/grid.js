@@ -2,7 +2,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { range } = Me.imports.src.utils.index;
 const {
-    BaseTilingLayout
+    BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported GridLayout */
@@ -16,16 +16,16 @@ var GridLayout = class GridLayout extends BaseTilingLayout {
         const rows = Math.ceil(windows.length / columns);
         const width = workArea.width / columns;
         const height = workArea.height / rows;
-        range(columns).forEach(i => {
-            range(rows).forEach(j => {
+        range(columns).forEach((i) => {
+            range(rows).forEach((j) => {
                 const index = j + i * rows;
                 const window = windows[index];
                 if (!window) return;
 
                 this.moveAndResizeActor(
                     window,
-                    workArea.x + i * width,
-                    workArea.y + j * height,
+                    i * width,
+                    j * height,
                     width,
                     index == windows.length - 1
                         ? // If last window fill remaining space

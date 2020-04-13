@@ -90,7 +90,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 !this.activeTileableList.includes(window);
             })
             .forEach((window) => {
-                window.set_position(workArea.x, workArea.y);
+                window.set_position(0, 0);
                 window.set_size(
                     workArea.width /
                         (workArea.width > workArea.height
@@ -105,8 +105,8 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         // Positionning active windows
         this.activeTileableList.forEach((window, i) => {
             const windowBounds = {
-                x: workArea.x,
-                y: workArea.y,
+                x: 0,
+                y: 0,
                 width: workArea.width,
                 height: workArea.height,
             };
@@ -191,10 +191,10 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             });
 
         const workArea = this.getWorkspaceBounds();
-        let xFrom = workArea.x;
-        let xTo = workArea.x;
-        let yFrom = workArea.y;
-        let yTo = workArea.y;
+        let xFrom = 0;
+        let xTo = 0;
+        let yFrom = 0;
+        let yTo = 0;
         if (workArea.width > workArea.height) {
             const shift =
                 (workArea.width * newTileableList.length) / WINDOW_PER_SCREEN;

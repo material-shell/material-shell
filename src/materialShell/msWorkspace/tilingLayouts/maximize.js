@@ -8,6 +8,7 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
@@ -35,10 +36,24 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     alterTileable(tileable) {
         tileable.show();
+        if (tileable instanceof MsWindow) {
+            tileable.maximizeDraggedConnectId = tileable.connect(
+                'dragged_changed',
+                () => {
+                    if (tileable.dragged) {
+                        tileable.translation_x = 0;
+                    }
+                }
+            );
+        }
     }
 
     restoreTileable(tileable) {
         tileable.translation_x = 0;
+        if (tileable.maximizeDraggedConnectId) {
+            tileable.disconnect(tileable.maximizeDraggedConnectId);
+            delete tileable.maximizeDraggedConnectId;
+        }
     }
 
     onTileableListChanged(tileableList, oldTileableList) {
@@ -93,11 +108,11 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 actor.set_size(workArea.width, workArea.height);
                 actor.translation_x = index * workArea.width;
             }
-            /* if (index !== this.currentWindowIndex && !actor.dragged) {
+            if (index !== this.currentWindowIndex && !actor.dragged) {
                 actor.hide();
             } else {
                 actor.show();
-            } */
+            }
             this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
                 -this.msWorkspace.focusedIndex * workArea.width;
         });
@@ -120,6 +135,16 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
+        let i = oldIndex;
+        while (i != newIndex) {
+            this.msWorkspace.tileableList[i].show();
+            if (newIndex > oldIndex) {
+                i++;
+            } else {
+                i--;
+            }
+        }
+        this.msWorkspace.tileableList[newIndex].show();
         if (ShellVersionMatch('3.32')) {
             Tweener.addTween(
                 this.msWorkspace.msWorkspaceActor.tileableContainer,
