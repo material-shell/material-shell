@@ -29,7 +29,11 @@ var AddLogToFunctions = function (object) {
                 indent++;
                 var result = value.apply(this, arguments); // use .apply() to call it
                 // After
-                log(`${indentString}>${result != undefined ? result : ''}`);
+                log(
+                    `${'  '.repeat(indent)}>${
+                        result != undefined ? result : ''
+                    }`
+                );
                 indent--;
                 return result;
             }.bind(object);

@@ -120,6 +120,7 @@ var MsWorkspace = class MsWorkspace {
             !Main.overview.visible
         );
     }
+
     updateUI() {
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.visible = this.uiVisible;
@@ -133,21 +134,25 @@ var MsWorkspace = class MsWorkspace {
         let workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-        log('UPDATE LAYOUT', workArea.width);
-
-        //this.actorContainer.set_position(this.monitor.x, this.monitor.y);
         this.msWorkspaceActor.set_size(workArea.width, this.monitor.height);
         this.msWorkspaceActor.set_position(workArea.x, this.monitor.y);
-
-        //this.msWorkspaceActor.tileableContainer.set_size(workArea.width, workArea.height);
-        //this.msWorkspaceActor.tileableContainer.set_position(workArea.x, workArea.y);
-        //this.msWorkspaceActor.floatableContainer.set_size(workArea.width, workArea.height);
-        //this.msWorkspaceActor.floatableContainer.set_position(workArea.x, workArea.y);
         this.msWorkspaceActor.panel.set_position(
             workArea.x - this.monitor.x,
             0
         );
         this.msWorkspaceActor.panel.set_width(workArea.width);
+    }
+
+    close() {
+        Promise.all(
+            this.msWindowList
+                .map((msWindow) => {
+                    return msWindow.kill();
+                })
+                .then((params) => {
+                    log('ready to be closed');
+                })
+        );
     }
 
     addMsWindow(msWindow) {

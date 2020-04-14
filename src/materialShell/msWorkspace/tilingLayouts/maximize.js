@@ -79,14 +79,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 windowRemovedIndex === oldTileableList.length - 1
                     ? windowRemovedIndex
                     : -1;
-
-            this.currentWindowIndex = this.msWorkspace.focusedIndex;
-
-            const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
-            let oldActor = this.msWorkspace.tileableList[oldIndex];
-            let newActor = this.msWorkspace.tileableList[
-                this.currentWindowIndex
-            ];
         }
     }
 
@@ -108,7 +100,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 actor.set_size(workArea.width, workArea.height);
                 actor.translation_x = index * workArea.width;
             }
-            if (index !== this.currentWindowIndex && !actor.dragged) {
+            if (index !== this.msWorkspace.focusedIndex && !actor.dragged) {
                 actor.hide();
             } else {
                 actor.show();
@@ -129,9 +121,6 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     startTransition(newIndex, oldIndex) {
-        const direction = this.currentWindowIndex > oldIndex ? 1 : -1;
-        let oldActor = this.msWorkspace.tileableList[oldIndex];
-        let newActor = this.msWorkspace.tileableList[this.currentWindowIndex];
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );

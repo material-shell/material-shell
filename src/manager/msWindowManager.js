@@ -62,6 +62,7 @@ var MsWindowManager = class MsWindowManager {
                 metaWindow.get_compositor_private()
             );
         }
+        if (metaWindow.handledByMaterialShell) return;
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;

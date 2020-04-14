@@ -355,6 +355,34 @@ var MsWindow = GObject.registerClass(
             );
         }
 
+        registerOnMetaWindowSignals() {
+            if (!this.metaWindow) return;
+            this.metaWindowSignals.push(
+                this.metaWindow.connect('unmanaged', (_) => {
+                    this.unsetWindow();
+                }),
+                this.metaWindow.connect('notify::title', (_) => {
+                    this.emit('title-changed', this.title);
+                }),
+                this.metaWindow.connect('position-changed', () => {
+                    if (!this.followMetaWindow) return;
+                    this.mimicMetaWindowPositionAndSize();
+                }),
+                this.metaWindow.connect('size-changed', () => {
+                    if (!this.followMetaWindow) return;
+                    this.mimicMetaWindowPositionAndSize();
+                })
+            );
+        }
+
+        unregisterOnMetaWindowSignals() {
+            if (!this.metaWindow) return;
+            this.metaWindowSignals.forEach((signalId) => {
+                this.metaWindow.disconnect(signalId);
+            });
+            this.metaWindowSignals = [];
+        }
+
         setWindow(metaWindow) {
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow
@@ -389,40 +417,14 @@ var MsWindow = GObject.registerClass(
             this.emit('title-changed', this.title);
         }
 
-        registerOnMetaWindowSignals() {
-            if (!this.metaWindow) return;
-            this.metaWindowSignals.push(
-                this.metaWindow.connect('unmanaged', (_) => {
-                    this.unsetWindow();
-                }),
-                this.metaWindow.connect('notify::title', (_) => {
-                    this.emit('title-changed', this.title);
-                }),
-                this.metaWindow.connect('position-changed', () => {
-                    if (!this.followMetaWindow) return;
-                    this.mimicMetaWindowPositionAndSize();
-                }),
-                this.metaWindow.connect('size-changed', () => {
-                    if (!this.followMetaWindow) return;
-                    this.mimicMetaWindowPositionAndSize();
-                })
-            );
-        }
-
-        unregisterOnMetaWindowSignals() {
-            if (!this.metaWindow) return;
-            this.metaWindowSignals.forEach((signalId) => {
-                this.metaWindow.disconnect(signalId);
-            });
-            this.metaWindowSignals = [];
-        }
-
         unsetWindow() {
             this.unregisterOnMetaWindowSignals();
             this.reactive = true;
             delete this.metaWindow;
             delete this.metaWindowUpdateInProgress;
-            this.msContent.add_child(this.placeholder);
+            if (!this.placeholder.get_parent()) {
+                this.msContent.add_child(this.placeholder);
+            }
             this.emit('title-changed', this.title);
         }
 
@@ -465,12 +467,16 @@ var MsWindow = GObject.registerClass(
                 this.disconnect(this.destroyId);
                 this.destroy();
             });
+
+            return promise;
         }
 
         fadeOutPlaceholder() {
             const onComplete = () => {
                 this.placeholder.set_opacity(255);
-                this.msContent.remove_child(this.placeholder);
+                if (this.metaWindow) {
+                    this.msContent.remove_child(this.placeholder);
+                }
                 this.placeholder.reset();
             };
             if (ShellVersionMatch('3.32')) {

@@ -304,10 +304,15 @@ var WorkspaceButton = GObject.registerClass(
             });
             this._delegate = this;
 
-            this.connect('clicked', () => {
-                this.msWorkspaceManager
-                    .getWorkspaceOfMsWorkspace(this.msWorkspace)
-                    .activate(global.get_current_time());
+            this.connect('clicked', (_, button) => {
+                log(button);
+                if (button === 2) {
+                    msWorkspace.close();
+                } else {
+                    this.msWorkspaceManager
+                        .getWorkspaceOfMsWorkspace(this.msWorkspace)
+                        .activate(global.get_current_time());
+                }
             });
 
             this.mouseData = {

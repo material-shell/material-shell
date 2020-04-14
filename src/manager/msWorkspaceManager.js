@@ -28,16 +28,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             global.window_group
         );
 
-        //
-        this.originalPanelBoxIndex = Main.layoutManager.uiGroup
-            .get_children()
-            .indexOf(Main.layoutManager.panelBox);
-
-        /*  Main.layoutManager.uiGroup.set_child_below_sibling(
-            Main.layoutManager.panelBox,
-            this.msWorkspaceContainer
-        ); */
-
         this.workspaceList = new WorkspaceList(this);
         Main.panel._leftBox.add_child(this.workspaceList);
         this.observe(Me.msWindowManager, 'ms-window-focused', (_, msWindow) => {
@@ -114,10 +104,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
         this.workspaceList.destroy();
         this.msWorkspaceContainer.destroy();
-        /* Main.layoutManager.uiGroup.set_child_at_index(
-            Main.layoutManager.panelBox,
-            this.originalPanelBoxIndex
-        ); */
     }
 
     setupInitialState() {
@@ -249,6 +235,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.emit('dynamic-super-workspaces-changed');
         }
     }
+
+    closeMsWorkspace(msWorkspace) {}
 
     stateChanged() {
         if (this.restoringState && this.stateChangedTriggered) return;
