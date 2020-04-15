@@ -50,6 +50,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onNewMetaWindow(metaWindow) {
+        metaWindow.get_compositor_private().connect('first-frame', (params) => {
+            metaWindow.firstFrameDrawn = true;
+        });
         if (!this._handleWindow(metaWindow)) {
             return Me.msWorkspaceManager.msWorkspaceContainer.setActorAbove(
                 metaWindow.get_compositor_private()

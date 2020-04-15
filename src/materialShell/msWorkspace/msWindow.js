@@ -302,43 +302,39 @@ var MsWindow = GObject.registerClass(
             //If an update is already in progress discard all incoming call
             if (this.metaWindowUpdateInProgress) return;
             this.metaWindowUpdateInProgress = true;
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                log('IDLE_ADD'); //Wait for the WindowActor to be available
-                this.onMetaWindowActorExist().then(() => {
-                    if (!this.metaWindow) return;
-                    delete this.metaWindowUpdateInProgress;
-                    const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                        this.metaWindow.get_monitor()
-                    );
-                    //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
-                    const isMaximized =
-                        this.x === workArea.x &&
-                        this.y === workArea.y &&
-                        this.width === workArea.width &&
-                        this.height === workArea.height;
+            //Wait for the WindowActor to be available
+            this.onMetaWindowActorExist().then(() => {
+                if (!this.metaWindow) return;
+                delete this.metaWindowUpdateInProgress;
+                const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                    this.metaWindow.get_monitor()
+                );
+                //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
+                const isMaximized =
+                    this.x === workArea.x &&
+                    this.y === workArea.y &&
+                    this.width === workArea.width &&
+                    this.height === workArea.height;
 
-                    //Set the metaWindow maximized if it's the case
-                    if (isMaximized) {
-                        if (this.metaWindow.maximized) return;
-                        return this.metaWindow.maximize(
-                            Meta.MaximizeFlags.BOTH
-                        );
-                    }
-                    //Or remove the maximized if it's not
-                    if (this.metaWindow.maximized_horizontally) {
-                        this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
-                    }
-                    let x = this.x + this.msContent.x;
-                    let y = this.y + this.msContent.y;
-                    //Set the size accordingly
-                    this.metaWindow.move_resize_frame(
-                        true,
-                        this.dragged ? x : workArea.x + x,
-                        this.dragged ? y : workArea.y + y,
-                        this.msContent.width,
-                        this.msContent.height
-                    );
-                });
+                //Set the metaWindow maximized if it's the case
+                if (isMaximized) {
+                    if (this.metaWindow.maximized) return;
+                    return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                }
+                //Or remove the maximized if it's not
+                if (this.metaWindow.maximized_horizontally) {
+                    this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                }
+                let x = this.x + this.msContent.x;
+                let y = this.y + this.msContent.y;
+                //Set the size accordingly
+                this.metaWindow.move_resize_frame(
+                    true,
+                    this.dragged ? x : workArea.x + x,
+                    this.dragged ? y : workArea.y + y,
+                    this.msContent.width,
+                    this.msContent.height
+                );
             });
         }
 
@@ -403,22 +399,34 @@ var MsWindow = GObject.registerClass(
                 if (workspace && metaWindow.get_workspace() != workspace) {
                     metaWindow.change_workspace(workspace);
                 }
-                WindowUtils.updateTitleBarVisibility(this.metaWindow);
             }
 
             this.onMetaWindowActorExist().then((_) => {
-                this.windowClone.set_source(
-                    metaWindow.get_compositor_private()
-                );
-                if (this.followMetaWindow) {
-                    this.mimicMetaWindowPositionAndSize();
-                } else {
-                    this.updateMetaWindowPositionAndSize();
-                }
+                let promise = new Promise((resolve) => {
+                    if (metaWindow.firstFrameDrawn) {
+                        resolve();
+                    } else {
+                        let windowActor = metaWindow.get_compositor_private();
+                        windowActor.connect('first-frame', () => {
+                            resolve();
+                        });
+                    }
+                });
+                promise.then(() => {
+                    WindowUtils.updateTitleBarVisibility(this.metaWindow);
+                    this.windowClone.set_source(
+                        metaWindow.get_compositor_private()
+                    );
+                    if (this.followMetaWindow) {
+                        this.mimicMetaWindowPositionAndSize();
+                    } else {
+                        this.updateMetaWindowPositionAndSize();
+                    }
+                    if (this.placeholder.get_parent()) {
+                        this.fadeOutPlaceholder();
+                    }
+                });
             });
-            if (this.placeholder.get_parent()) {
-                this.fadeOutPlaceholder();
-            }
             this.emit('title-changed', this.title);
         }
 
