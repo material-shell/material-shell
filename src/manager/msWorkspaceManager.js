@@ -294,18 +294,23 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.saveCurrentState();
         });
         msWorkspace.connect('readyToBeClosed', () => {
-            log('ready to be closed');
             let index = this.primaryMsWorkspaces.indexOf(msWorkspace);
-            if (this.primaryMsWorkspaces[index + 1]) {
-                this.getWorkspaceOfMsWorkspace(
-                    this.primaryMsWorkspaces[index + 1]
-                ).activate(global.get_current_time());
-            } else if (this.primaryMsWorkspaces[index - 1]) {
-                this.getWorkspaceOfMsWorkspace(
-                    this.primaryMsWorkspaces[index - 1]
-                ).activate(global.get_current_time());
-            } else {
-                return;
+            if (this.getActiveMsWorkspace() === msWorkspace) {
+                //Try to switch to the next workspace before kill it
+                if (this.primaryMsWorkspaces[index + 1]) {
+                    this.getWorkspaceOfMsWorkspace(
+                        this.primaryMsWorkspaces[index + 1]
+                    ).activate(global.get_current_time());
+                }
+                //Try to switch to the prev workspace is there is no next one before kill it
+                else if (this.primaryMsWorkspaces[index - 1]) {
+                    this.getWorkspaceOfMsWorkspace(
+                        this.primaryMsWorkspaces[index - 1]
+                    ).activate(global.get_current_time());
+                } else {
+                    //This is the single workspace don't kill it
+                    return;
+                }
             }
             this.workspaceManager.remove_workspace(
                 this.getWorkspaceOfMsWorkspace(msWorkspace),

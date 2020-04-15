@@ -307,7 +307,13 @@ var WorkspaceButton = GObject.registerClass(
             this.connect('clicked', (_, button) => {
                 log(button);
                 if (button === 2) {
-                    msWorkspace.close();
+                    if (
+                        this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                            this.msWorkspace
+                        ) !==
+                        this.msWorkspaceManager.primaryMsWorkspaces.length - 1
+                    )
+                        msWorkspace.close();
                 } else {
                     this.msWorkspaceManager
                         .getWorkspaceOfMsWorkspace(this.msWorkspace)

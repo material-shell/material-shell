@@ -43,6 +43,11 @@ var MsWindow = GObject.registerClass(
                 this.windowClone
             );
             this.propagate = true;
+            this.connect('notify::position', () => {
+                if (this.propagate) {
+                    this.updateMetaWindowPositionAndSize();
+                }
+            });
             this.msContent.connect('notify::position', () => {
                 if (this.propagate) {
                     this.updateMetaWindowPositionAndSize();
