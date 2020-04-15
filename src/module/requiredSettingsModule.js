@@ -7,39 +7,39 @@ const { getSettings } = Me.imports.src.utils.settings;
 var RequiredSettingsModule = class RequiredSettingsModule {
     constructor() {
         this.mutterSettings = new Gio.Settings({
-            schema_id: 'org.gnome.mutter'
+            schema_id: 'org.gnome.mutter',
         });
         this.settingsToForce = [
             {
                 schema: 'org.gnome.mutter',
                 key: 'dynamic-workspaces',
-                value: true,
-                valueType: 'boolean'
+                value: false,
+                valueType: 'boolean',
             },
             {
                 schema: 'org.gnome.mutter',
                 key: 'workspaces-only-on-primary',
                 value: true,
-                valueType: 'boolean'
+                valueType: 'boolean',
             },
             {
                 schema: 'org.gnome.shell.overrides',
                 key: 'edge-tiling',
                 value: false,
-                valueType: 'boolean'
+                valueType: 'boolean',
             },
             {
                 schema: 'org.gnome.mutter',
                 key: 'edge-tiling',
                 value: false,
-                valueType: 'boolean'
-            }
+                valueType: 'boolean',
+            },
         ];
 
         this.signals = [];
-        this.settingsToForce.forEach(settingToForce => {
+        this.settingsToForce.forEach((settingToForce) => {
             let setting = new Gio.Settings({
-                schema_id: settingToForce.schema
+                schema_id: settingToForce.schema,
             });
 
             this.setValueIfDifferentAndNotify(
@@ -63,12 +63,12 @@ var RequiredSettingsModule = class RequiredSettingsModule {
 
             this.signals.push({
                 from: setting,
-                signalId: signalId
+                signalId: signalId,
             });
         });
 
         const bindingSettings = getSettings('bindings');
-        this.hotkeysToRemove = bindingSettings.list_keys().map(key => {
+        this.hotkeysToRemove = bindingSettings.list_keys().map((key) => {
             return bindingSettings.get_strv(key)[0];
         });
 
@@ -76,13 +76,13 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             'org.gnome.desktop.wm.keybindings',
             'org.gnome.shell.keybindings',
             'org.gnome.mutter.keybindings',
-            'org.gnome.mutter.wayland.keybindings'
+            'org.gnome.mutter.wayland.keybindings',
         ]) {
             let setting = new Gio.Settings({
-                schema_id: schema
+                schema_id: schema,
             });
 
-            setting.list_keys().forEach(key => {
+            setting.list_keys().forEach((key) => {
                 let shortcut = setting.get_strv(key);
                 if (
                     shortcut[0] &&
@@ -99,7 +99,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
     }
 
     destroy() {
-        this.signals.forEach(signal => {
+        this.signals.forEach((signal) => {
             signal.from.disconnect(signal.signalId);
         });
         this.signals = [];

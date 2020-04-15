@@ -2,13 +2,14 @@ const { Shell, Meta, St, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
-
+const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 /* exported MsWindowManager */
-var MsWindowManager = class MsWindowManager {
+var MsWindowManager = class MsWindowManager extends MsManager {
     constructor() {
+        super();
         AddLogToFunctions(this);
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWindowList = [];
@@ -17,18 +18,12 @@ var MsWindowManager = class MsWindowManager {
         this.msDndManager = new MsDndManager(this);
         this.signals = [];
 
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect('window-created', (_, metaWindow) => {
-                this.onNewMetaWindow(metaWindow);
-            }),
+        this.observe(global.display, 'window-created', (_, metaWindow) => {
+            this.onNewMetaWindow(metaWindow);
         });
 
-        this.signals.push({
-            from: global.display,
-            id: global.display.connect('notify::focus-window', (_) => {
-                this.onFocusMetaWindow(global.display.focus_window);
-            }),
+        this.observe(global.display, 'notify::focus-window', (_) => {
+            this.onFocusMetaWindow(global.display.focus_window);
         });
     }
 
@@ -53,8 +48,6 @@ var MsWindowManager = class MsWindowManager {
             this.onFocusMetaWindow(global.display.focus_window);
         });
     }
-
-    destroy() {}
 
     onNewMetaWindow(metaWindow) {
         if (!this._handleWindow(metaWindow)) {

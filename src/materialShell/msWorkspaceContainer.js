@@ -44,7 +44,7 @@ var MsWorkspaceContainer = GObject.registerClass(
             this.set_child_above_sibling(this.aboveContainer, null);
         }
 
-        onSwitchWorkspace(window_manager, from, to) {
+        onSwitchWorkspace(from, to) {
             const direction = to > from ? 1 : -1;
             let oldActor = this.msWorkspaceManager.primaryMsWorkspaces[from]
                 .msWorkspaceActor;
@@ -87,11 +87,11 @@ var MsWorkspaceContainer = GObject.registerClass(
             this.signals = [];
 
             this.signals.push({
-                from: global.window_manager,
-                id: global.window_manager.connect(
+                from: this.msWorkspaceManager,
+                id: this.msWorkspaceManager.connect(
                     'switch-workspace',
-                    (window_manager, from, to) => {
-                        this.onSwitchWorkspace(window_manager, from, to);
+                    (_, from, to) => {
+                        this.onSwitchWorkspace(from, to);
                     }
                 ),
             });

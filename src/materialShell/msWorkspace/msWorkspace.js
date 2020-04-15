@@ -145,14 +145,12 @@ var MsWorkspace = class MsWorkspace {
 
     close() {
         Promise.all(
-            this.msWindowList
-                .map((msWindow) => {
-                    return msWindow.kill();
-                })
-                .then((params) => {
-                    log('ready to be closed');
-                })
-        );
+            this.msWindowList.map((msWindow) => {
+                return msWindow.kill();
+            })
+        ).then((params) => {
+            this.emit('readyToBeClosed');
+        });
     }
 
     addMsWindow(msWindow) {
