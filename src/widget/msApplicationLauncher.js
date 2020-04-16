@@ -54,7 +54,7 @@ var MsApplicationLauncher = GObject.registerClass(
                 contentBox.get_height()
             );
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                this.msWorkspace.monitor
+                this.msWorkspace.monitor.index
             );
             const containerWidth = Math.min(
                 contentBox.get_width() * 0.8,

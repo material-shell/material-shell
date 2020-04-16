@@ -90,7 +90,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             'switch-workspace',
             (_, from, to) => {
                 this.checkWorkspaces();
-                this.emit('switch-workspace', from, to);
+                if (!this.restoringState)
+                    this.emit('switch-workspace', from, to);
             }
         );
     }
@@ -353,6 +354,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     checkWorkspaces() {
         log('checkWorkspaces', this.primaryMsWorkspaces.length);
         if (
+            this.primaryMsWorkspaces[this.primaryMsWorkspaces.length - 1] &&
             this.primaryMsWorkspaces[this.primaryMsWorkspaces.length - 1]
                 .msWindowList.length != 0
         ) {

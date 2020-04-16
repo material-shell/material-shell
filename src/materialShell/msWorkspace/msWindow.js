@@ -137,7 +137,7 @@ var MsWindow = GObject.registerClass(
                                     'captured-event',
                                     (_, event) => {
                                         const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                                            this.msWorkspace.monitor
+                                            this.msWorkspace.monitor.index
                                         );
                                         const [
                                             currentX,
@@ -316,7 +316,7 @@ var MsWindow = GObject.registerClass(
                 if (!this.metaWindow) return;
                 delete this.metaWindowUpdateInProgress;
                 const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                    this.metaWindow.get_monitor()
+                    this.msWorkspace.monitor.index
                 );
                 //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
                 const isMaximized =

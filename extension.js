@@ -89,8 +89,8 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
-    Me.msWorkspaceManager.init();
     Me.msWindowManager.init();
+    Me.msWorkspaceManager.init();
     Me.loaded = true;
     Main.wm._blockAnimations = false;
     Me.emit('extension-loaded');

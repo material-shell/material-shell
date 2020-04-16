@@ -46,7 +46,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             log('IDLE_ADD');
             global.get_window_actors().forEach((windowActor) => {
                 const metaWindow = windowActor.metaWindow;
-                /* if (this._handleWindow(metaWindow)) {
+                if (this._handleWindow(metaWindow)) {
                     let msWindow = this.msWindowList.find((msWindow) => {
                         return (
                             msWindow.metaWindowIdentifier ===
@@ -56,7 +56,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     if (msWindow) {
                         return msWindow.setWindow(metaWindow);
                     }
-                } */
+                }
                 metaWindow.firstFrameDrawn = true;
                 this.onNewMetaWindow(metaWindow);
             });
