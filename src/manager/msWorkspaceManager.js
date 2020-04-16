@@ -570,9 +570,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     newMsWorkspace.monitor
                 );
             }
-            const newWorkspace = this.getWorkspaceOfMsWorkspace(newMsWorkspace);
-            if (msWindow.metaWindow.get_workspace() != newWorkspace) {
-                return msWindow.metaWindow.change_workspace(newWorkspace);
+            if (
+                newMsWorkspace.monitor.index === Main.layoutManager.primaryIndex
+            ) {
+                const newWorkspace = this.getWorkspaceOfMsWorkspace(
+                    newMsWorkspace
+                );
+                if (msWindow.metaWindow.get_workspace() != newWorkspace) {
+                    return msWindow.metaWindow.change_workspace(newWorkspace);
+                }
             }
         }
         let oldMsWorkspace = msWindow.msWorkspace;

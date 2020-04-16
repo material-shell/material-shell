@@ -415,7 +415,10 @@ var MsWorkspaceActor = GObject.registerClass(
     {},
     class MsWorkspaceActor extends St.Widget {
         _init(msWorkspace) {
-            super._init({ style_class: 'msWorkspace' });
+            super._init({
+                style_class: 'msWorkspace',
+                clip_to_allocation: true,
+            });
             this.msWorkspace = msWorkspace;
             this.tileableContainer = new St.Widget({
                 style_class: 'tileable-container',
