@@ -186,15 +186,24 @@ var MsWindow = GObject.registerClass(
 
                 //log('EVENT', this.title, event.type());
             });
-            this.superConnectId = Me.connect(
+            this.Keymap = imports.gi.Gdk.Keymap.get_default();
+            this.superConnectId = this.Keymap.connect('state_changed', (_) => {
+                let isSuperPressed = this.Keymap.get_modifier_state() === 64;
+                this.reactive =
+                    (!this.metaWindow || isSuperPressed) &&
+                    this.msWorkspace.tilingLayout.constructor.key !== 'float';
+            });
+            this.grabEndSignal = global.display.connect('grab-op-end', () => {
+                if (this.metaWindow) {
+                    this.updateMetaWindowPositionAndSize();
+                }
+            });
+            /* this.superConnectId = Me.connect(
                 'super-pressed-change',
                 (_, pressed) => {
-                    this.reactive =
-                        (!this.metaWindow || pressed) &&
-                        this.msWorkspace.tilingLayout.constructor.key !==
-                            'float';
+                    
                 }
-            );
+            ); */
         }
 
         delayGetMetaWindowActor(delayedCount, resolve, reject) {
@@ -522,7 +531,9 @@ var MsWindow = GObject.registerClass(
         _onDestroy() {
             log('msWindow to its own destroy');
             this.unregisterOnMetaWindowSignals();
-            Me.disconnect(this.superConnectId);
+            this.Keymap.disconnect(this.superConnectId);
+            global.display.disconnect(this.grabEndSignal);
+            //Me.disconnect(this.superConnectId);
         }
     }
 );

@@ -19,9 +19,6 @@ const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 
 let disableIncompatibleExtensionsModule, modules, _startupPreparedId;
 
-//detect the keyboard key press event
-const Keymap = imports.gi.Gdk.Keymap.get_default();
-
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
@@ -43,13 +40,15 @@ function enable() {
     Me.loaded = false;
     Me.stateManager = new StateManager();
     let superPressed = false;
+    //detect the keyboard key press event
+    /* const Keymap = imports.gi.Gdk.Keymap.get_default();
     Keymap.connect('state_changed', (_) => {
         let isSuperPressed = Keymap.get_modifier_state() === 64;
         if (superPressed != isSuperPressed) {
             superPressed = isSuperPressed;
             Me.emit('super-pressed-change', superPressed);
         }
-    });
+    }); */
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         log('IDLE_ADD'); //Then disable incompatibles extensions;

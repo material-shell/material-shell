@@ -17,13 +17,27 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
         this.signals = [];
-
+        this.metaWindowWaitForAppList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {
             this.onNewMetaWindow(metaWindow);
         });
 
         this.observe(global.display, 'notify::focus-window', (_) => {
             this.onFocusMetaWindow(global.display.focus_window);
+        });
+
+        this.observe(this.windowTracker, 'tracked-windows-changed', () => {
+            log(
+                'tracked-windows-changed',
+                this.metaWindowWaitForAppList.length
+            );
+            this.metaWindowWaitForAppList.forEach((metaWindow, index) => {
+                let app = this.windowTracker.get_window_app(metaWindow);
+                if (app && !app.is_window_backed()) {
+                    this.metaWindowWaitForAppList.splice(index, 1);
+                    this.onNewMetaWindow(metaWindow);
+                }
+            });
         });
     }
 
@@ -60,12 +74,17 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         }
         if (metaWindow.handledByMaterialShell) return;
 
+        let app = this.windowTracker.get_window_app(metaWindow);
+        if (app.is_window_backed()) {
+            log('add to wait for app list');
+            return this.metaWindowWaitForAppList.push(metaWindow);
+        }
+        log(app.get_id());
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
         metaWindow.connect('unmanaged', () => {
             this.onMetaWindowUnManaged(metaWindow);
         });
-        let app = this.windowTracker.get_window_app(metaWindow);
         if (!this.isMetaWindowDialog(metaWindow)) {
             const existingEmptyMsWindow = this.findBestEmptyMsWindow(app);
             if (existingEmptyMsWindow) {
