@@ -55,6 +55,10 @@ var MsWorkspaceContainer = GObject.registerClass(
                         index * Main.layoutManager.primaryMonitor.height;
                 }
             );
+            this.primaryContainer.translation_y =
+                -1 *
+                global.workspace_manager.get_active_workspace_index() *
+                Main.layoutManager.primaryMonitor.height;
         }
 
         setActorAbove(actor) {
@@ -86,18 +90,12 @@ var MsWorkspaceContainer = GObject.registerClass(
         }
 
         onSwitchWorkspace(from, to) {
-            const direction = to > from ? 1 : -1;
-            let oldActor = this.msWorkspaceManager.primaryMsWorkspaces[from]
-                .msWorkspaceActor;
-            let newActor = this.msWorkspaceManager.primaryMsWorkspaces[to]
-                .msWorkspaceActor;
             for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
                 this.msWorkspaceManager.primaryMsWorkspaces[
                     i
                 ].msWorkspaceActor.show();
             }
-            /* oldActor.show();
-            newActor.show(); */
+
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.primaryContainer, {
                     translation_y:
@@ -119,25 +117,6 @@ var MsWorkspaceContainer = GObject.registerClass(
                     },
                 });
             }
-            /* this.translationAnimator.set_position(
-                Main.layoutManager.primaryMonitor.x,
-                Main.layoutManager.primaryMonitor.y
-            );
-            this.translationAnimator.set_size(
-                Main.layoutManager.primaryMonitor.width,
-                Main.layoutManager.primaryMonitor.height
-            );
-            if (!this.translationAnimator.get_parent()) {
-                this.insert_child_below(
-                    this.translationAnimator,
-                    this.aboveContainer
-                );
-            }
-            this.translationAnimator.setTranslation(
-                oldActor,
-                newActor,
-                direction
-            ); */
         }
 
         onTransitionCompleted() {

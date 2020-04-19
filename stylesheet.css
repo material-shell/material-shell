@@ -201,8 +201,17 @@ subtitle-1 {
 .dark-theme .task-bar-item {
   font-size: 14px;
   height: 48px; }
-  .dark-theme .task-bar-item.active .task-bar-item-content {
+  .dark-theme .task-bar-item.active .task-bar-item-content,
+  .dark-theme .task-bar-item.active .task-bar-icon-container {
     color: rgba(255, 255, 255, 0.87); }
+  .dark-theme .task-bar-item .task-bar-icon-container {
+    height: 48px;
+    width: 48px;
+    color: rgba(255, 255, 255, 0.6); }
+    .dark-theme .task-bar-item .task-bar-icon-container .icon {
+      icon-size: 24px;
+      width: 24px;
+      height: 24px; }
   .dark-theme .task-bar-item .task-bar-item-content {
     padding: 0px 12px;
     color: rgba(255, 255, 255, 0.6); }
@@ -404,8 +413,17 @@ subtitle-1 {
 .light-theme .task-bar-item {
   font-size: 14px;
   height: 48px; }
-  .light-theme .task-bar-item.active .task-bar-item-content {
+  .light-theme .task-bar-item.active .task-bar-item-content,
+  .light-theme .task-bar-item.active .task-bar-icon-container {
     color: #3f51b5; }
+  .light-theme .task-bar-item .task-bar-icon-container {
+    height: 48px;
+    width: 48px;
+    color: rgba(0, 0, 0, 0.6); }
+    .light-theme .task-bar-item .task-bar-icon-container .icon {
+      icon-size: 24px;
+      width: 24px;
+      height: 24px; }
   .light-theme .task-bar-item .task-bar-item-content {
     padding: 0px 12px;
     color: rgba(0, 0, 0, 0.6); }
@@ -641,10 +659,21 @@ subtitle-1 {
 .primary-theme .task-bar-item {
   font-size: 14px;
   height: 48px; }
-  .light-primary.primary-theme .task-bar-item.active .task-bar-item-content {
+  .light-primary.primary-theme .task-bar-item.active .task-bar-item-content, .primary-theme .task-bar-item.active .task-bar-icon-container {
     color: rgba(0, 0, 0, 0.87); }
-  .dark-primary.primary-theme .task-bar-item.active .task-bar-item-content {
+  .dark-primary.primary-theme .task-bar-item.active .task-bar-item-content, .primary-theme .task-bar-item.active .task-bar-icon-container {
     color: rgba(255, 255, 255, 0.87); }
+  .primary-theme .task-bar-item .task-bar-icon-container {
+    height: 48px;
+    width: 48px; }
+    .light-primary.primary-theme .task-bar-item .task-bar-icon-container {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary.primary-theme .task-bar-item .task-bar-icon-container {
+      color: rgba(255, 255, 255, 0.6); }
+    .primary-theme .task-bar-item .task-bar-icon-container .icon {
+      icon-size: 24px;
+      width: 24px;
+      height: 24px; }
   .primary-theme .task-bar-item .task-bar-item-content {
     padding: 0px 12px; }
     .light-primary.primary-theme .task-bar-item .task-bar-item-content {

@@ -351,12 +351,24 @@ $panel-size: 48px;
         height: $panel-size;
 
         &.active {
-            .task-bar-item-content {
+            .task-bar-item-content,
+            .task-bar-icon-container {
                 @if ($theme== 'light') {
                     color: $color-primary;
                 } @else {
                     @include foreground-high-emphasis($theme);
                 }
+            }
+        }
+        .task-bar-icon-container {
+            height: $panel-size;
+            width: $panel-size;
+            @include foreground-medium-emphasis($theme);
+
+            .icon {
+                icon-size: 24px;
+                width: 24px;
+                height: 24px;
             }
         }
 

@@ -289,7 +289,7 @@ var WorkspaceButton = GObject.registerClass(
             },
         },
     },
-    class WorkspaceButton extends MatButton {
+    class WorkspaceButtonClass extends MatButton {
         _init(msWorkspaceManager, msWorkspace) {
             this.msWorkspaceManager = msWorkspaceManager;
             this.msWorkspace = msWorkspace;
@@ -408,6 +408,7 @@ var WorkspaceButton = GObject.registerClass(
             if (!(source instanceof WorkspaceButton) || !this.draggable) {
                 return DND.DragMotionResult.NO_DROP;
             }
+            log('dragover');
             this.emit('drag-over', y < this.height / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }

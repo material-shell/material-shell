@@ -49,15 +49,11 @@ var TaskBar = GObject.registerClass(
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.connect('notify::mapped', () => {
-                log('mapped', this.get_preferred_height(-1));
-                if (this.mapped) this.updateItems();
-            });
+            this.updateItems();
+            this._animateActiveIndicator();
         }
 
         onTileableListChange() {
-            if (!this.mapped) return;
-            log('this.updateItems');
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -90,16 +86,11 @@ var TaskBar = GObject.registerClass(
         }
 
         updateItems() {
-            log('here', this.get_preferred_height(-1)[1]);
             this.items.forEach((item) => item.destroy());
             this.items = this.msWorkspace.tileableList.map(
                 (tileable, index) => {
                     if (tileable instanceof MsWindow) {
-                        const item = new TaskBarItem(
-                            tileable,
-                            index === this.msWorkspace.focusedIndex,
-                            this.get_preferred_height(-1)[1]
-                        );
+                        const item = new TileableItem(tileable);
 
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
@@ -167,7 +158,6 @@ var TaskBar = GObject.registerClass(
                         );
 
                         item.connect('drag-over', (_, before) => {
-                            log('drag-over');
                             dragData.draggedOverByChild = true;
                             this._onDragOver(item, before);
                         });
@@ -180,9 +170,7 @@ var TaskBar = GObject.registerClass(
                             tileable,
                             Gio.icon_new_for_string(
                                 `${Me.path}/assets/icons/plus-symbolic.svg`
-                            ),
-                            false,
-                            this.get_preferred_height(-1)[1]
+                            )
                         );
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
@@ -192,6 +180,10 @@ var TaskBar = GObject.registerClass(
                     }
                 }
             );
+
+            this.items[
+                this.msWorkspace.focusedIndex
+            ].actorContainer.add_style_class_name('active');
         }
 
         updateCurrentTaskBar() {
@@ -282,45 +274,26 @@ var TaskBar = GObject.registerClass(
             let taskBarItem = this.getTaskBarItemOfTileable(
                 this.msWorkspace.tileableFocused
             );
-            if (taskBarItem) {
-                if (!taskBarItem.widthSignalId) {
-                    taskBarItem.widthSignalId = taskBarItem.connect(
-                        'notify::width',
-                        () => {
-                            if (!dragData) this._animateActiveIndicator();
-                        }
-                    );
-                }
-                if (ShellVersionMatch('3.32')) {
-                    Tweener.addTween(this.taskActiveIndicator, {
-                        translation_x: taskBarItem.x,
-                        width: taskBarItem.width,
-                        time: 0.25,
-                        transition: 'easeOutQuad',
-                    });
-                } else {
-                    this.taskActiveIndicator.ease({
-                        translation_x: taskBarItem.x,
-                        width: taskBarItem.width,
-                        duration: 250,
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    });
-                }
-
-                return;
+            if (!taskBarItem.widthSignalId) {
+                taskBarItem.widthSignalId = taskBarItem.connect(
+                    'notify::width',
+                    () => {
+                        if (!dragData) this._animateActiveIndicator();
+                    }
+                );
             }
-
+            if (!this.mapped) return;
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.taskActiveIndicator, {
-                    translation_x: 0,
-                    width: 0,
+                    translation_x: taskBarItem.x,
+                    width: taskBarItem.width,
                     time: 0.25,
                     transition: 'easeOutQuad',
                 });
             } else {
                 this.taskActiveIndicator.ease({
-                    translation_x: 0,
-                    width: 0,
+                    translation_x: taskBarItem.x,
+                    width: taskBarItem.width,
                     duration: 250,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
@@ -372,23 +345,215 @@ let TaskBarItem = GObject.registerClass(
         },
     },
     class TaskBarItemClass extends MatButton {
-        _init(tileable, actif, parentHeight) {
+        _init(contentActor, draggable) {
             super._init({
-                style_class: `task-bar-item ${actif ? ' active' : ''}`,
+                style_class: 'task-bar-item ',
+            });
+            this.y_expand = true;
+            this._delegate = this;
+            this.draggable = draggable;
+            this.contentActor = contentActor;
+            this.set_child(this.contentActor);
+            this.mouseData = {
+                pressed: false,
+                dragged: false,
+                originalCoords: null,
+                originalSequence: null,
+            };
+
+            this.connect('event', (actor, event) => {
+                let eventType = event.type();
+                switch (eventType) {
+                    case Clutter.EventType.BUTTON_PRESS:
+                    case Clutter.EventType.TOUCH_BEGIN:
+                        this.mouseData.pressed = true;
+                        this.mouseData.originalCoords = event.get_coords();
+                        this.mouseData.originalSequence = event.get_event_sequence();
+                        break;
+
+                    case Clutter.EventType.MOTION:
+                    case Clutter.EventType.TOUCH_UPDATE:
+                        if (this.mouseData.pressed && !this.mouseData.dragged) {
+                            let coords = event.get_coords();
+                            if (
+                                Math.abs(
+                                    this.mouseData.originalCoords[0] - coords[0]
+                                ) > this.get_preferred_height(-1)[1] &&
+                                !this.mouseData.dragged
+                            ) {
+                                if (this.draggable) {
+                                    this.mouseData.dragged = true;
+                                    this._draggable.startDrag(
+                                        this.mouseData.originalCoords[0],
+                                        this.mouseData.originalCoords[1],
+                                        global.get_current_time(),
+                                        this.mouseData.originalSequence
+                                    );
+                                }
+                            }
+                        }
+                        break;
+
+                    case Clutter.EventType.BUTTON_RELEASE:
+                    case Clutter.EventType.TOUCH_END:
+                        this.mouseData.pressed = false;
+                        this.mouseData.dragged = false;
+                        switch (event.get_button()) {
+                            case 1:
+                                this.emit('left-clicked');
+                                break;
+
+                            case 2:
+                                this.emit('right-clicked');
+                                break;
+                        }
+                        break;
+
+                    case Clutter.EventType.LEAVE:
+                        if (this.mouseData.pressed && !this.mouseData.dragged) {
+                            if (this.draggable) {
+                                this.mouseData.dragged = true;
+                                this._draggable.startDrag(
+                                    this.mouseData.originalCoords[0],
+                                    this.mouseData.originalCoords[1],
+                                    global.get_current_time(),
+                                    this.mouseData.originalSequence
+                                );
+                            }
+                        }
+                        break;
+                }
+            });
+
+            if (this.draggable) {
+                this.initDrag();
+            }
+        }
+
+        initDrag() {
+            this._draggable = DND.makeDraggable(this, {
+                restoreOnSuccess: false,
+                manualMode: true,
+            });
+
+            this._draggable.connect('drag-end', () => {
+                this.mouseData.pressed = false;
+                this.mouseData.dragged = false;
+            });
+        }
+
+        handleDragOver(source, actor, x) {
+            if (!this.draggable || !(source instanceof TaskBarItem)) {
+                return DND.DragMotionResult.NO_DROP;
+            }
+            this.emit('drag-over', x < this.width / 2);
+            return DND.DragMotionResult.MOVE_DROP;
+        }
+
+        acceptDrop(source) {
+            if (!this.draggable || !(source instanceof TaskBarItem)) {
+                return false;
+            }
+            this.emit('drag-dropped');
+            return true;
+        }
+    }
+);
+
+let TileableItem = GObject.registerClass(
+    {
+        Signals: {
+            'close-clicked': {},
+        },
+    },
+    class TileableItemClass extends TaskBarItem {
+        _init(tileable) {
+            this.container = new St.BoxLayout({
+                style_class: 'task-bar-item-content',
+            });
+            super._init(this.container, true);
+            this.tileable = tileable;
+            this.app = tileable.app;
+            this.iconContainer = new St.Bin();
+
+            // TITLE
+            this.title = new St.Label({
+                style_class: 'task-bar-item-title',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+            this.updateTitle();
+
+            this.connectSignal = this.tileable.connect('title-changed', () => {
+                this.updateTitle();
+            });
+
+            // CLOSE BUTTON
+            this.closeButton = new St.Button({
+                style_class: 'task-close-button',
+                child: new St.Icon({
+                    style_class: 'task-close-icon',
+                    gicon: Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/close-symbolic.svg`
+                    ),
+                }),
+            });
+
+            this.closeButton.connect('clicked', () => {
+                this.emit('close-clicked');
+            });
+
+            // LAYOUT CONTAINER
+            this.container.add_child(this.iconContainer);
+            this.container.add_child(this.title);
+            this.container.add_child(this.closeButton);
+        }
+
+        buildIcon(height) {
+            if (this.icon) this.icon.destroy();
+            this.iconSize = height;
+            this.icon = this.app.create_icon_texture(this.iconSize / 2);
+            this.icon.style_class = 'app-icon';
+            this.iconContainer.set_child(this.icon);
+            this.queue_relayout();
+        }
+
+        // Update the title and crop it if it's too long
+        updateTitle() {
+            this.title.text = this.tileable.title;
+        }
+        vfunc_allocate(box, flags) {
+            if (!this.icon || this.iconSize != box.get_height()) {
+                this.buildIcon(box.get_height());
+            }
+            super.vfunc_allocate(box, flags);
+        }
+        _onDestroy() {
+            log('TaskbarItem to its own destroy');
+            if (this.connectSignal) {
+                this.tileable.disconnect(this.connectSignal);
+            }
+        }
+    }
+); /* 
+let TileableContent = GObject.registerClass(
+    {
+        Signals: {
+            'close-clicked': {},
+        },
+    },
+    class TileableContentClass extends St.Widget {
+        _init(tileable) {
+            super._init({
+                style_class: 'task-bar-item-content',
             });
             this.connect('destroy', this._onDestroy.bind(this));
             tileable.connect('destroy', () => {
                 delete this.connectSignal;
             });
-            this._delegate = this;
             this.tileable = tileable;
             this.app = tileable.app;
             if (this.app) {
                 // ICON
-                this.iconSize = parentHeight / 2;
-                log('iconSize', this.iconSize);
-                this.icon = this.app.create_icon_texture(this.iconSize);
-                this.icon.style_class = 'app-icon';
             }
 
             // TITLE
@@ -418,91 +583,17 @@ let TaskBarItem = GObject.registerClass(
             });
 
             // LAYOUT CONTAINER
-            this.container = new St.BoxLayout({
-                style_class: 'task-bar-item-content',
-                y_align: Clutter.ActorAlign.CENTER,
-                vertical: false,
-            });
-            if (this.icon) {
-                this.container.add_child(this.icon);
-            }
-            this.container.add_child(this.title);
-            this.container.add_child(this.closeButton);
+            this.add_child(this.title);
+            this.add_child(this.closeButton);
+        }
 
-            this.set_child(this.container);
-
-            this.mouseData = {
-                pressed: false,
-                dragged: false,
-                originalCoords: null,
-                originalSequence: null,
-            };
-
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                if (
-                    [
-                        Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = true;
-                    this.mouseData.originalCoords = event.get_coords();
-                    this.mouseData.originalSequence = event.get_event_sequence();
-                } else if (
-                    [
-                        Clutter.EventType.MOTION,
-                        Clutter.EventType.TOUCH_UPDATE,
-                    ].indexOf(eventType) > -1
-                ) {
-                    if (this.mouseData.pressed && !this.mouseData.dragged) {
-                        let coords = event.get_coords();
-                        if (
-                            Math.abs(
-                                this.mouseData.originalCoords[0] - coords[0]
-                            ) > this.get_preferred_height(-1)[1] &&
-                            !this.mouseData.dragged
-                        ) {
-                            this.mouseData.dragged = true;
-                            this._draggable.startDrag(
-                                this.mouseData.originalCoords[0],
-                                this.mouseData.originalCoords[1],
-                                global.get_current_time(),
-                                this.mouseData.originalSequence
-                            );
-                        }
-                    }
-                } else if (
-                    [
-                        Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = false;
-                    this.mouseData.dragged = false;
-                    switch (event.get_button()) {
-                        case 1:
-                            this.emit('left-clicked');
-                            break;
-
-                        case 2:
-                            this.emit('right-clicked');
-                            break;
-                    }
-                } else if (eventType === Clutter.EventType.LEAVE) {
-                    if (this.mouseData.pressed && !this.mouseData.dragged) {
-                        this.mouseData.dragged = true;
-                        this._draggable.startDrag(
-                            this.mouseData.originalCoords[0],
-                            this.mouseData.originalCoords[1],
-                            global.get_current_time(),
-                            this.mouseData.originalSequence
-                        );
-                    }
-                }
-            });
-
-            this.initDrag();
+        buildIcon(height) {
+            if (this.icon) this.icon.destroy();
+            this.iconSize = height;
+            log('iconSize', this.iconSize);
+            this.icon = this.app.create_icon_texture(this.iconSize / 2);
+            this.icon.style_class = 'app-icon';
+            this.add_child(this.icon);
         }
 
         // Update the title and crop it if it's too long
@@ -510,33 +601,67 @@ let TaskBarItem = GObject.registerClass(
             this.title.text = this.tileable.title;
         }
 
-        initDrag() {
-            this._draggable = DND.makeDraggable(this, {
-                restoreOnSuccess: false,
-                manualMode: true,
-            });
-
-            this._draggable.connect('drag-end', () => {
-                this.mouseData.pressed = false;
-                this.mouseData.dragged = false;
-            });
+        vfunc_get_preferred_width(_forHeight) {
+            let maxIconWidth = this.icon ? this.iconSize : 0;
+            log('maxTitleWidth', this.title.get_preferred_width(_forHeight));
+            let maxTitleWidth = this.title.get_preferred_width(_forHeight)[1];
+            let maxCloseWidth = this.closeButton.get_preferred_width(-1)[1];
+            return [
+                maxIconWidth + maxCloseWidth,
+                maxIconWidth + maxTitleWidth + maxCloseWidth,
+            ];
         }
-
-        handleDragOver(source, actor, x) {
-            if (!(source instanceof TaskBarItem)) {
-                return DND.DragMotionResult.NO_DROP;
-            }
-            this.emit('drag-over', x < this.width / 2);
-            return DND.DragMotionResult.MOVE_DROP;
+        vfunc_get_preferred_height(_forWidth) {
+            return [
+                super.vfunc_get_preferred_height(_forWidth)[1],
+                super.vfunc_get_preferred_height(_forWidth)[1],
+            ];
         }
+        vfunc_allocate(box, flags) {
+            log('width', box.get_width(), this.get_preferred_width(-1));
+            log('height', box.get_height(), this.get_preferred_height(-1));
 
-        acceptDrop(source) {
-            log('acceptDrop');
-            if (!(source instanceof TaskBarItem)) {
-                return false;
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            box = themeNode.get_content_box(box);
+            let iconBox = new Clutter.ActorBox();
+            iconBox.x1 = box.x1;
+            iconBox.x2 = box.get_height();
+            iconBox.y1 = box.y1;
+            iconBox.y2 = box.y2;
+            if (!this.icon || iconBox.get_height() != this.iconSize) {
+                this.buildIcon(iconBox.get_height());
             }
-            this.emit('drag-dropped');
-            return true;
+            if (this.icon) {
+                this.icon.allocate(iconBox, flags);
+            }
+            let closeButtonBox = new Clutter.ActorBox();
+            closeButtonBox.x1 =
+                box.x2 - this.closeButton.get_preferred_width(-1)[1];
+            closeButtonBox.x2 = box.x2;
+            closeButtonBox.y1 =
+                (box.get_height() -
+                    this.closeButton.get_preferred_height(-1)[1]) /
+                2;
+            closeButtonBox.y2 =
+                closeButtonBox.y1 +
+                this.closeButton.get_preferred_height(-1)[1];
+            log(
+                'closeButtonBox',
+                closeButtonBox.x1,
+                closeButtonBox.x2,
+                closeButtonBox.y1,
+                closeButtonBox.y2
+            );
+            this.closeButton.allocate(closeButtonBox, flags);
+
+            let titleBox = new Clutter.ActorBox();
+            titleBox.x1 = iconBox.x2;
+            titleBox.x2 = closeButtonBox.x1;
+            titleBox.y1 = box.y1;
+            titleBox.y2 = box.y2;
+            log('titleBox', titleBox.x1, titleBox.x2, titleBox.y1, titleBox.y2);
+            this.title.allocate(titleBox, flags);
         }
 
         _onDestroy() {
@@ -546,79 +671,22 @@ let TaskBarItem = GObject.registerClass(
             }
         }
     }
-);
+); */
 
 let IconTaskBarItem = GObject.registerClass(
-    {
-        Signals: {
-            'drag-dropped': {},
-            'drag-over': {
-                param_types: [GObject.TYPE_BOOLEAN],
-            },
-            'left-clicked': {},
-            'right-clicked': {},
-            'close-clicked': {},
-        },
-    },
-    class IconTaskBarItem extends MatButton {
-        _init(tileable, gicon, actif, parentHeight) {
-            super._init({
-                style_class: `task-bar-item ${actif ? ' active' : ''}`,
+    class IconTaskBarItem extends TaskBarItem {
+        _init(tileable, gicon) {
+            this.container = new St.Bin({
+                style_class: 'task-bar-icon-container',
             });
-            this.iconSize = parentHeight / 2;
+            super._init(this.container, false);
+            this.tileable = tileable;
+
             this.icon = new St.Icon({
                 gicon,
-                width: this.iconSize,
-                height: this.iconSize,
+                style_class: 'icon',
             });
-            this.icon.style_class = 'app-icon';
-            this.tileable = tileable;
-            this.container = new St.BoxLayout({
-                style_class: 'task-bar-item-content',
-                x_align: Clutter.ActorAlign.CENTER,
-                y_align: Clutter.ActorAlign.CENTER,
-                vertical: false,
-            });
-            this.container.add_child(this.icon);
-            this.set_child(this.container);
-
-            this.mouseData = {
-                pressed: false,
-                dragged: false,
-                originalCoords: null,
-                originalSequence: null,
-            };
-
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                if (
-                    [
-                        Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = true;
-                    this.mouseData.originalCoords = event.get_coords();
-                    this.mouseData.originalSequence = event.get_event_sequence();
-                } else if (
-                    [
-                        Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = false;
-                    this.mouseData.dragged = false;
-                    switch (event.get_button()) {
-                        case 1:
-                            this.emit('left-clicked');
-                            break;
-
-                        case 2:
-                            this.emit('right-clicked');
-                            break;
-                    }
-                }
-            });
+            this.container.set_child(this.icon);
         }
     }
 );

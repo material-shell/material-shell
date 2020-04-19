@@ -368,7 +368,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             0,
             msWorkspaceToMove
         );
+
         this.stateChanged();
+        this.emit('dynamic-super-workspaces-changed');
     }
 
     setMsWorkspaceAfter(msWorkspaceToMove, msWorkspaceRelative) {
@@ -386,6 +388,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             msWorkspaceToMove
         );
         this.stateChanged();
+        this.emit('dynamic-super-workspaces-changed');
     }
 
     saveCurrentState() {
