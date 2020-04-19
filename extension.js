@@ -104,7 +104,7 @@ function loaded(disconnect) {
     /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
     Me.emit('extension-loaded');
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
     });
 }
