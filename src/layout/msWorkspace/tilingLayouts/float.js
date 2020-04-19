@@ -4,7 +4,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
 const { reparentActor } = Me.imports.src.utils.index;
 

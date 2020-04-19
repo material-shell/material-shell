@@ -2,12 +2,8 @@ const { Shell, Meta, St, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
-const { MsWorkspace } = Me.imports.src.materialShell.msWorkspace.msWorkspace;
-const {
-    MsWorkspaceContainer,
-} = Me.imports.src.materialShell.msWorkspaceContainer;
-const { WorkspaceList } = Me.imports.src.widget.workspaceList;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 
@@ -22,14 +18,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
         this.metaWindowFocused = null;
-        this.msWorkspaceContainer = new MsWorkspaceContainer(this);
-        Main.uiGroup.insert_child_above(
-            this.msWorkspaceContainer,
-            global.window_group
-        );
 
-        this.workspaceList = new WorkspaceList(this);
-        Main.panel._leftBox.add_child(this.workspaceList);
         this.observe(Me.msWindowManager, 'ms-window-focused', (_, msWindow) => {
             if (msWindow && !msWindow.isDialog && msWindow.msWorkspace) {
                 msWindow.msWorkspace.focusTileable(msWindow);
@@ -83,7 +72,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
         this.observe(Main.layoutManager, 'monitors-changed', () => {
             //Manage multiple monitors
-            this.buildMonitorPanelSpacers();
+            //this.buildMonitorPanelSpacers();
         });
         this.observe(
             global.window_manager,
@@ -97,8 +86,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     init() {
-        this.buildMonitorPanelSpacers();
-        this.setupInitialState();
         this.refreshVisiblePrimaryMsWorkspace();
     }
 
@@ -111,8 +98,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         for (let msWorkspace of this.msWorkspaceList) {
             msWorkspace.destroy();
         }
-        this.workspaceList.destroy();
-        this.msWorkspaceContainer.destroy();
     }
 
     setupInitialState() {
@@ -124,7 +109,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             log(
                 `State contain ${previousState.primaryWorkspaceList.length} to restore and we currently have ${this.workspaceManager.n_workspaces} workspaces`
             );
-            if (
+            /* if (
                 this.workspaceManager.n_workspaces >
                 previousState.primaryWorkspaceList.length
             ) {
@@ -147,7 +132,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     );
                     log('after ', this.workspaceManager.n_workspaces);
                 }
-            }
+            } */
             if (
                 this.workspaceManager.n_workspaces <
                 previousState.primaryWorkspaceList.length
@@ -228,29 +213,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     global.get_current_time()
                 );
             });
-    }
-
-    buildMonitorPanelSpacers() {
-        if (this.monitorPanelSpacerList) {
-            this.monitorPanelSpacerList.forEach((actor) => {
-                actor.destroy();
-            });
-        }
-        this.monitorPanelSpacerList = [];
-        for (let monitor of Main.layoutManager.monitors) {
-            let topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
-            topBarSpacer.set_position(monitor.x, monitor.y);
-            topBarSpacer.set_width(monitor.width);
-            Main.layoutManager.addChrome(topBarSpacer, {
-                affectsStruts: true,
-                trackFullscreen: true,
-            });
-            Main.layoutManager.uiGroup.set_child_below_sibling(
-                topBarSpacer,
-                this.msWorkspaceContainer
-            );
-            this.monitorPanelSpacerList.push(topBarSpacer);
-        }
     }
 
     get primaryMsWorkspaces() {
@@ -559,7 +521,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             return;
         }
 
-        this.setWindowToMsWorkspace(metaWindow, msWorkspace);
+        this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
     setWindowToMsWorkspace(msWindow, newMsWorkspace) {

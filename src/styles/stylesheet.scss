@@ -146,10 +146,14 @@ $panel-size: 48px;
         width: $panel-size;
 
         .mat-panel-button-icon {
-            width: 24px;
-            height: 24px;
             icon-size: 24px;
         }
+    }
+
+    WorkspaceButton,
+    WorkspaceButtonIcon {
+        height: $panel-size;
+        width: $panel-size;
     }
 
     .workspace-active-indicator {
@@ -167,11 +171,6 @@ $panel-size: 48px;
         //This is a hack because percentage is not handled yet
         border-radius: 10000px;
         @include active($theme);
-    }
-
-    #leftPanelBox,
-    #leftDashSpacer {
-        width: $panel-size;
     }
 
     .mat-button {
@@ -217,21 +216,72 @@ $panel-size: 48px;
             }
         }
     }
+    #leftPanelBox,
+    #leftDashSpacer {
+        width: $panel-size;
+    }
 
-    #panel {
+    #msPanel {
         @include background($theme);
         width: $panel-size;
         box-shadow: $shadow;
 
-        #panelLeft,
-        #panelCenter,
-        #panelRight {
-            // spacing between activities<>app menu and such
-            spacing: 0px;
-        }
-
         .panel-button {
             @include foreground-medium-emphasis($theme);
+            text-align: center;
+            font-weight: bold;
+            color: #ccc;
+            .app-menu-icon {
+                -st-icon-style: symbolic;
+                margin-left: 4px;
+                margin-right: 4px;
+                //dimensions of the icon are hardcoded
+            }
+
+            &:hover {
+                @include hover($theme);
+            }
+
+            &:active,
+            &:overview,
+            &:focus,
+            &:checked {
+                // Trick due to St limitations. It needs a background to draw
+                // a box-shadow
+                //background-color: rgba(0, 0, 0, 0.01);
+                @include hover($theme);
+                box-shadow: inset 3px 0 0px $color-primary;
+                @include foreground-high-emphasis($theme);
+            }
+
+            .system-status-icon {
+                icon-size: 1.09em;
+            }
+            .unlock-screen &,
+            .login-screen &,
+            .lock-screen & {
+                @include foreground-medium-emphasis($theme);
+                &:focus,
+                &:hover,
+                &:active {
+                    @include foreground-high-emphasis($theme);
+                }
+            }
+        }
+
+        .panel-status-indicators-box {
+            min-height: 24px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .panel-status-indicators-box,
+        .panel-status-menu-box {
+            spacing: 2px;
+        }
+        // spacing between power icon and (optional) percentage label
+        /*         .power-status.panel-status-indicators-box {
+            spacing: 0;
             text-align: center;
             padding: 0px;
             spacing: 0px;
@@ -253,7 +303,7 @@ $panel-size: 48px;
             &:checked {
                 box-shadow: inset 3px 0 0px $color-primary;
             }
-        }
+        } */
     }
 
     #topBarSpacer {
@@ -313,9 +363,6 @@ $panel-size: 48px;
         .task-bar-item-content {
             padding: 0px 12px;
             @include foreground-medium-emphasis($theme);
-            .app-icon {
-                icon-size: 24px;
-            }
 
             .task-bar-item-title {
                 max-width: 248px;
@@ -392,19 +439,6 @@ $panel-size: 48px;
         }
     }
 
-    .categorized-app-card {
-        .overview-icon {
-            margin: 8px;
-        }
-
-        .overview-icon-with-label {
-            @if ($theme== 'primary') {
-                @include foreground-high-emphasis('light');
-            } @else {
-                @include foreground-high-emphasis($theme);
-            }
-        }
-    }
     .search-entry {
         @include background($theme);
         border-radius: 48px;

@@ -6,9 +6,9 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Tweener = imports.ui.tweener;
 const {
     BaseTilingLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {

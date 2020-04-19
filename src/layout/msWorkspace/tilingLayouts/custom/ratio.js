@@ -2,7 +2,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported RatioLayout */
 var RatioLayout = class RatioLayout extends BaseTilingLayout {

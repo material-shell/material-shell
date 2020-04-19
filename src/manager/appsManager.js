@@ -3,8 +3,8 @@ const { Shell } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
-    WorkspaceCategories
-} = Me.imports.src.materialShell.msWorkspace.workspaceCategories;
+    WorkspaceCategories,
+} = Me.imports.src.layout.msWorkspace.workspaceCategories;
 
 /* exported AppsManager */
 var AppsManager = class AppsManager {
@@ -13,7 +13,7 @@ var AppsManager = class AppsManager {
     static getApps() {
         let usage = Shell.AppUsage.get_default();
         let appSystem = Shell.AppSystem.get_default();
-        let appsInstalled = appSystem.get_installed().filter(appInfo => {
+        let appsInstalled = appSystem.get_installed().filter((appInfo) => {
             try {
                 let id = appInfo.get_id(); // catch invalid file encodings
             } catch (e) {
@@ -26,7 +26,7 @@ var AppsManager = class AppsManager {
             .sort((a, b) => {
                 return usage.compare(a.get_id(), b.get_id());
             })
-            .map(appInfo => {
+            .map((appInfo) => {
                 return appSystem.lookup_app(appInfo.get_id());
             });
     }
@@ -68,7 +68,7 @@ var AppsManager = class AppsManager {
         for (let [key, category] of Object.entries(WorkspaceCategories)) {
             let flagIncluded = false;
             let flagExcluded = false;
-            appCategoriesList.forEach(appCategory => {
+            appCategoriesList.forEach((appCategory) => {
                 flagIncluded =
                     flagIncluded ||
                     category.categoriesIncluded.indexOf(appCategory) >= 0;

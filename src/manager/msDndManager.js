@@ -1,6 +1,6 @@
 const { GLib } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
@@ -54,7 +54,7 @@ var MsDndManager = class MsDndManager {
         this.dragInProgress = true;
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
-        Me.msWorkspaceManager.msWorkspaceContainer.setActorAbove(msWindow);
+        Me.layout.msWorkspaceContainer.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
     }
 

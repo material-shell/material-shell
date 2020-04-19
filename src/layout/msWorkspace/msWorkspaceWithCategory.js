@@ -5,12 +5,12 @@ const Background = imports.ui.background;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    MaximizeLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
+    MaximizeLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.src.utils.index;
 const WindowUtils = Me.imports.src.utils.windows;
-const { MsWorkspace } = Me.imports.src.materialShell.msWorkspace.msWorkspace;
+const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
 const CategorizedAppCard =
     Me.imports.src.widget.categorizedAppCard.CategorizedAppCard;
 

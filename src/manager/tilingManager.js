@@ -4,11 +4,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const {
     MaximizeLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
 
 const {
     TilingLayoutByKey,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.layouts;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
 
 /* exported TilingManager */
 var TilingManager = class TilingManager {

@@ -3,7 +3,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const {
     BaseTilingLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported SimpleLayout */
 var SimpleLayout = class SimpleLayout extends BaseTilingLayout {

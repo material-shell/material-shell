@@ -8,7 +8,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
@@ -18,6 +18,7 @@ let dragData = null;
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
         _init(msWorkspace) {
+            AddLogToFunctions(this);
             super._init({
                 name: 'taskBar',
                 x_expand: true,
@@ -48,11 +49,15 @@ var TaskBar = GObject.registerClass(
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.onTileableListChange();
-            AddLogToFunctions(this);
+            this.connect('notify::mapped', () => {
+                log('mapped', this.get_preferred_height(-1));
+                if (this.mapped) this.updateItems();
+            });
         }
 
         onTileableListChange() {
+            if (!this.mapped) return;
+            log('this.updateItems');
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -85,13 +90,15 @@ var TaskBar = GObject.registerClass(
         }
 
         updateItems() {
+            log('here', this.get_preferred_height(-1)[1]);
             this.items.forEach((item) => item.destroy());
             this.items = this.msWorkspace.tileableList.map(
                 (tileable, index) => {
                     if (tileable instanceof MsWindow) {
                         const item = new TaskBarItem(
                             tileable,
-                            index === this.msWorkspace.focusedIndex
+                            index === this.msWorkspace.focusedIndex,
+                            this.get_preferred_height(-1)[1]
                         );
 
                         item.connect('left-clicked', (_) => {
@@ -174,7 +181,8 @@ var TaskBar = GObject.registerClass(
                             Gio.icon_new_for_string(
                                 `${Me.path}/assets/icons/plus-symbolic.svg`
                             ),
-                            false
+                            false,
+                            this.get_preferred_height(-1)[1]
                         );
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
@@ -364,7 +372,7 @@ let TaskBarItem = GObject.registerClass(
         },
     },
     class TaskBarItemClass extends MatButton {
-        _init(tileable, actif) {
+        _init(tileable, actif, parentHeight) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`,
             });
@@ -377,7 +385,8 @@ let TaskBarItem = GObject.registerClass(
             this.app = tileable.app;
             if (this.app) {
                 // ICON
-                this.iconSize = 24;
+                this.iconSize = parentHeight / 2;
+                log('iconSize', this.iconSize);
                 this.icon = this.app.create_icon_texture(this.iconSize);
                 this.icon.style_class = 'app-icon';
             }
@@ -448,14 +457,10 @@ let TaskBarItem = GObject.registerClass(
                 ) {
                     if (this.mouseData.pressed && !this.mouseData.dragged) {
                         let coords = event.get_coords();
-                        let scaleFactor = St.ThemeContext.get_for_stage(
-                            global.stage
-                        ).scale_factor;
                         if (
                             Math.abs(
                                 this.mouseData.originalCoords[0] - coords[0]
-                            ) >
-                                48 * scaleFactor &&
+                            ) > this.get_preferred_height(-1)[1] &&
                             !this.mouseData.dragged
                         ) {
                             this.mouseData.dragged = true;
@@ -556,11 +561,11 @@ let IconTaskBarItem = GObject.registerClass(
         },
     },
     class IconTaskBarItem extends MatButton {
-        _init(tileable, gicon, actif) {
+        _init(tileable, gicon, actif, parentHeight) {
             super._init({
                 style_class: `task-bar-item ${actif ? ' active' : ''}`,
             });
-            this.iconSize = 24;
+            this.iconSize = parentHeight / 2;
             this.icon = new St.Icon({
                 gicon,
                 width: this.iconSize,

@@ -1,15 +1,11 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
-    MaximizeLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
-const {
-    SplitLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.split;
-const {
-    FloatLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.float;
-const custom = Me.imports.src.materialShell.msWorkspace.tilingLayouts.custom;
+    MaximizeLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
+const { SplitLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.split;
+const { FloatLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.float;
+const custom = Me.imports.src.layout.msWorkspace.tilingLayouts.custom;
 const { HalfLayout } = custom.half;
 const { HalfHorizontalLayout } = custom.halfHorizontal;
 const { HalfVerticalLayout } = custom.halfVertical;
@@ -30,7 +26,7 @@ const layouts = [
     FloatLayout,
     SimpleLayout,
     SimpleHorizontalLayout,
-    SimpleVerticalLayout
+    SimpleVerticalLayout,
 ];
 
 /* exported TilingLayoutByKey */

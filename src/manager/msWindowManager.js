@@ -3,7 +3,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
 const { MsManager } = Me.imports.src.manager.msManager;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 /* exported MsWindowManager */
@@ -41,27 +41,24 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         });
     }
 
-    init() {
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log('IDLE_ADD');
-            global.get_window_actors().forEach((windowActor) => {
-                const metaWindow = windowActor.metaWindow;
-                if (this._handleWindow(metaWindow)) {
-                    let msWindow = this.msWindowList.find((msWindow) => {
-                        return (
-                            msWindow.metaWindowIdentifier ===
-                            this.buildMetaWindowIdentifier(metaWindow)
-                        );
-                    });
-                    if (msWindow) {
-                        return msWindow.setWindow(metaWindow);
-                    }
+    handleExistingMetaWindow() {
+        global.get_window_actors().forEach((windowActor) => {
+            const metaWindow = windowActor.metaWindow;
+            metaWindow.firstFrameDrawn = true;
+            if (this._handleWindow(metaWindow)) {
+                let msWindow = this.msWindowList.find((msWindow) => {
+                    return (
+                        msWindow.metaWindowIdentifier ===
+                        this.buildMetaWindowIdentifier(metaWindow)
+                    );
+                });
+                if (msWindow) {
+                    return msWindow.setWindow(metaWindow);
                 }
-                metaWindow.firstFrameDrawn = true;
-                this.onNewMetaWindow(metaWindow);
-            });
-            this.onFocusMetaWindow(global.display.focus_window);
+            }
+            this.onNewMetaWindow(metaWindow);
         });
+        this.onFocusMetaWindow(global.display.focus_window);
     }
 
     onNewMetaWindow(metaWindow) {
@@ -69,7 +66,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             metaWindow.firstFrameDrawn = true;
         });
         if (!this._handleWindow(metaWindow)) {
-            return Me.msWorkspaceManager.msWorkspaceContainer.setActorAbove(
+            return Me.layout.msWorkspaceContainer.setActorAbove(
                 metaWindow.get_compositor_private()
             );
         }

@@ -6,8 +6,8 @@ const Background = imports.ui.background;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     MaximizeLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.maximize;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { debounce } = Me.imports.src.utils.index;
@@ -44,16 +44,10 @@ var MsWorkspace = class MsWorkspace {
 
         this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
 
-        if (this.monitor.index !== Main.layoutManager.primaryIndex) {
-            Main.layoutManager._trackActor(this.msWorkspaceActor.panel, {
-                affectsStruts: true,
-            });
-        }
-
         this.workAreaChangedId = global.display.connect(
             'workareas-changed',
             () => {
-                this.updateLayout();
+                this.msWorkspaceActor.updateLayout();
             }
         );
         this.loadedSignalId = Me.connect(
@@ -61,18 +55,7 @@ var MsWorkspace = class MsWorkspace {
             this.handleExtensionLoaded.bind(this)
         );
 
-        this.msWorkspaceActor.add_child(
-            this.msWorkspaceActor.tileableContainer
-        );
-        this.msWorkspaceActor.add_child(
-            this.msWorkspaceActor.floatableContainer
-        );
-        this.msWorkspaceActor.add_child(this.msWorkspaceActor.panel);
-        this.updateLayout();
         this.updateUI();
-        this.msWorkspaceManager.msWorkspaceContainer.add_child(
-            this.msWorkspaceActor
-        );
 
         if (initialState) {
             log(
@@ -128,19 +111,6 @@ var MsWorkspace = class MsWorkspace {
         if (this.msWorkspaceActor.panel) {
             this.msWorkspaceActor.panel.visible = this.shouldPanelBeVisible();
         }
-    }
-
-    updateLayout() {
-        let workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
-        this.msWorkspaceActor.set_size(workArea.width, this.monitor.height);
-        this.msWorkspaceActor.set_position(workArea.x, this.monitor.y);
-        this.msWorkspaceActor.panel.set_position(
-            workArea.x - this.monitor.x,
-            0
-        );
-        this.msWorkspaceActor.panel.set_width(workArea.width);
     }
 
     close() {
@@ -415,6 +385,7 @@ var MsWorkspaceActor = GObject.registerClass(
     {},
     class MsWorkspaceActor extends St.Widget {
         _init(msWorkspace) {
+            log('new MsWorkspaceActor');
             super._init({
                 style_class: 'msWorkspace',
                 clip_to_allocation: true,
@@ -427,9 +398,18 @@ var MsWorkspaceActor = GObject.registerClass(
                 style_class: 'floatable-container',
             });
             this.panel = new TopPanel(msWorkspace);
+            this.updateLayout();
             this.add_child(this.tileableContainer);
             this.add_child(this.floatableContainer);
             this.add_child(this.panel);
+        }
+
+        updateLayout() {
+            let workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.msWorkspace.monitor.index
+            );
+            this.set_size(workArea.width, this.msWorkspace.monitor.height);
+            this.set_position(workArea.x, 0);
         }
 
         vfunc_allocate(box, flags) {

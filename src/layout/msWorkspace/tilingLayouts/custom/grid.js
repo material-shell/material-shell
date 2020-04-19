@@ -3,7 +3,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { range } = Me.imports.src.utils.index;
 const {
     BaseTilingLayout,
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseTilingLayout {

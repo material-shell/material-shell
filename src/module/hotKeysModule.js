@@ -147,13 +147,33 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                let newWorkspace = global.workspace_manager.get_workspace_by_index(
+                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                if (
+                    activeMsWorkspace ===
+                    Me.msWorkspaceManager.primaryMsWorkspaces[0]
+                ) {
+                    return;
+                }
+                const newMsWorkspaceIndex =
+                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                        activeMsWorkspace
+                    ) - 1;
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        newMsWorkspaceIndex
+                    ]
+                );
+                global.workspace_manager
+                    .get_workspace_by_index(newMsWorkspaceIndex)
+                    .activate(global.get_current_time());
+                /*                 let newWorkspace = global.workspace_manager.get_workspace_by_index(
                     global.display.focus_window.get_workspace().index() - 1
                 );
                 if (newWorkspace) {
                     global.display.focus_window.change_workspace(newWorkspace);
                     newWorkspace.activate(global.get_current_time());
-                }
+                } */
             }
         );
 
@@ -173,13 +193,26 @@ var HotKeysModule = class HotKeysModule {
                 ) {
                     return;
                 }
-                let newWorkspace = global.workspace_manager.get_workspace_by_index(
+                const newMsWorkspaceIndex =
+                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                        activeMsWorkspace
+                    ) + 1;
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        newMsWorkspaceIndex
+                    ]
+                );
+                global.workspace_manager
+                    .get_workspace_by_index(newMsWorkspaceIndex)
+                    .activate(global.get_current_time());
+                /* let newWorkspace = global.workspace_manager.get_workspace_by_index(
                     global.display.focus_window.get_workspace().index() + 1
                 );
                 if (newWorkspace) {
                     global.display.focus_window.change_workspace(newWorkspace);
-                    newWorkspace.activate(global.get_current_time());
-                }
+                    newWorkspace.activate();
+                } */
             }
         );
 
@@ -210,7 +243,7 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const noUImode = Me.msWorkspaceManager.noUImode;
                 Me.msWorkspaceManager.noUImode = !noUImode;
-                Me.msWorkspaceManager.msWorkspaceContainer.visible = noUImode;
+                Me.layout.msWorkspaceContainer.visible = noUImode;
 
                 /* Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;

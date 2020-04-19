@@ -2,8 +2,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    HalfLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.custom.half;
+    HalfLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.half;
 
 /* exported HalfHorizontalLayout */
 var HalfHorizontalLayout = class HalfHorizontalLayout extends HalfLayout {

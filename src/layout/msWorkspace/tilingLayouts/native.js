@@ -1,8 +1,8 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.baseTiling;
+    BaseTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported NativeLayout */
 var NativeLayout = class NativeLayout extends BaseTilingLayout {

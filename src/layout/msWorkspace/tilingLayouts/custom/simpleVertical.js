@@ -2,8 +2,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const {
-    SimpleLayout
-} = Me.imports.src.materialShell.msWorkspace.tilingLayouts.custom.simple;
+    SimpleLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.simple;
 
 /* exported SimpleVerticalLayout */
 var SimpleVerticalLayout = class SimpleVerticalLayout extends SimpleLayout {

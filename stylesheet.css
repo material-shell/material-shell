@@ -73,9 +73,12 @@ subtitle-1 {
   height: 48px;
   width: 48px; }
   .dark-theme .mat-panel-button .mat-panel-button-icon {
-    width: 24px;
-    height: 24px;
     icon-size: 24px; }
+
+.dark-theme WorkspaceButton,
+.dark-theme WorkspaceButtonIcon {
+  height: 48px;
+  width: 48px; }
 
 .dark-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -85,10 +88,6 @@ subtitle-1 {
 .dark-theme .ripple-wave {
   border-radius: 10000px;
   background: rgba(255, 255, 255, 0.12); }
-
-.dark-theme #leftPanelBox,
-.dark-theme #leftDashSpacer {
-  width: 48px; }
 
 .dark-theme .mat-button .mat-button-container {
   color: rgba(255, 255, 255, 0.87); }
@@ -113,29 +112,74 @@ subtitle-1 {
     background: rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.87); }
 
-.dark-theme #panel {
+.dark-theme #leftPanelBox,
+.dark-theme #leftDashSpacer {
+  width: 48px; }
+
+.dark-theme #msPanel {
   background: #191919;
   width: 48px;
-  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
-  .dark-theme #panel #panelLeft,
-  .dark-theme #panel #panelCenter,
-  .dark-theme #panel #panelRight {
-    spacing: 0px; }
-  .dark-theme #panel .panel-button {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  /*         .power-status.panel-status-indicators-box {
+            spacing: 0;
+            text-align: center;
+            padding: 0px;
+            spacing: 0px;
+
+            > * {
+                width: $panel-size - 20px;
+                padding: 4px 0px;
+                margin: 0px;
+                @include foreground-medium-emphasis($theme);
+            }
+
+            &:hover {
+                @include hover($theme);
+                box-shadow: none;
+            }
+
+            &:active,
+            &:focus,
+            &:checked {
+                box-shadow: inset 3px 0 0px $color-primary;
+            }
+        } */ }
+  .dark-theme #msPanel .panel-button {
     color: rgba(255, 255, 255, 0.6);
     text-align: center;
-    padding: 0px;
-    spacing: 0px; }
-    .dark-theme #panel .panel-button > * {
-      width: 28px;
-      padding: 4px 0px;
-      margin: 0px;
-      color: rgba(255, 255, 255, 0.6); }
-    .dark-theme #panel .panel-button:hover {
+    font-weight: bold;
+    color: #ccc; }
+    .dark-theme #msPanel .panel-button .app-menu-icon {
+      -st-icon-style: symbolic;
+      margin-left: 4px;
+      margin-right: 4px; }
+    .dark-theme #msPanel .panel-button:hover {
+      background: rgba(255, 255, 255, 0.04); }
+    .dark-theme #msPanel .panel-button:active, .dark-theme #msPanel .panel-button:overview, .dark-theme #msPanel .panel-button:focus, .dark-theme #msPanel .panel-button:checked {
       background: rgba(255, 255, 255, 0.04);
-      box-shadow: none; }
-    .dark-theme #panel .panel-button:active, .dark-theme #panel .panel-button:focus, .dark-theme #panel .panel-button:checked {
-      box-shadow: inset 3px 0 0px #3f51b5; }
+      box-shadow: inset 3px 0 0px #3f51b5;
+      color: rgba(255, 255, 255, 0.87); }
+    .dark-theme #msPanel .panel-button .system-status-icon {
+      icon-size: 1.09em; }
+    .unlock-screen .dark-theme #msPanel .panel-button,
+    .login-screen .dark-theme #msPanel .panel-button,
+    .lock-screen .dark-theme #msPanel .panel-button {
+      color: rgba(255, 255, 255, 0.6); }
+      .unlock-screen .dark-theme #msPanel .panel-button:focus, .unlock-screen .dark-theme #msPanel .panel-button:hover, .unlock-screen .dark-theme #msPanel .panel-button:active,
+      .login-screen .dark-theme #msPanel .panel-button:focus,
+      .login-screen .dark-theme #msPanel .panel-button:hover,
+      .login-screen .dark-theme #msPanel .panel-button:active,
+      .lock-screen .dark-theme #msPanel .panel-button:focus,
+      .lock-screen .dark-theme #msPanel .panel-button:hover,
+      .lock-screen .dark-theme #msPanel .panel-button:active {
+        color: rgba(255, 255, 255, 0.87); }
+  .dark-theme #msPanel .panel-status-indicators-box {
+    min-height: 24px;
+    vertical-align: middle;
+    text-align: center; }
+  .dark-theme #msPanel .panel-status-indicators-box,
+  .dark-theme #msPanel .panel-status-menu-box {
+    spacing: 2px; }
 
 .dark-theme #topBarSpacer {
   height: 48px; }
@@ -162,8 +206,6 @@ subtitle-1 {
   .dark-theme .task-bar-item .task-bar-item-content {
     padding: 0px 12px;
     color: rgba(255, 255, 255, 0.6); }
-    .dark-theme .task-bar-item .task-bar-item-content .app-icon {
-      icon-size: 24px; }
     .dark-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
       max-width: 248px;
       margin-left: 8px;
@@ -204,12 +246,6 @@ subtitle-1 {
     padding: 24px;
     color: rgba(255, 255, 255, 0.87); }
 
-.dark-theme .categorized-app-card .overview-icon {
-  margin: 8px; }
-
-.dark-theme .categorized-app-card .overview-icon-with-label {
-  color: rgba(255, 255, 255, 0.87); }
-
 .dark-theme .search-entry {
   background: #191919;
   border-radius: 48px; }
@@ -240,9 +276,12 @@ subtitle-1 {
   height: 48px;
   width: 48px; }
   .light-theme .mat-panel-button .mat-panel-button-icon {
-    width: 24px;
-    height: 24px;
     icon-size: 24px; }
+
+.light-theme WorkspaceButton,
+.light-theme WorkspaceButtonIcon {
+  height: 48px;
+  width: 48px; }
 
 .light-theme .workspace-active-indicator {
   background: #3f51b5;
@@ -252,10 +291,6 @@ subtitle-1 {
 .light-theme .ripple-wave {
   border-radius: 10000px;
   background: rgba(0, 0, 0, 0.12); }
-
-.light-theme #leftPanelBox,
-.light-theme #leftDashSpacer {
-  width: 48px; }
 
 .light-theme .mat-button .mat-button-container {
   color: rgba(0, 0, 0, 0.87); }
@@ -280,29 +315,74 @@ subtitle-1 {
     background: rgba(0, 0, 0, 0.12);
     color: #3f51b5; }
 
-.light-theme #panel {
+.light-theme #leftPanelBox,
+.light-theme #leftDashSpacer {
+  width: 48px; }
+
+.light-theme #msPanel {
   background: white;
   width: 48px;
-  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
-  .light-theme #panel #panelLeft,
-  .light-theme #panel #panelCenter,
-  .light-theme #panel #panelRight {
-    spacing: 0px; }
-  .light-theme #panel .panel-button {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  /*         .power-status.panel-status-indicators-box {
+            spacing: 0;
+            text-align: center;
+            padding: 0px;
+            spacing: 0px;
+
+            > * {
+                width: $panel-size - 20px;
+                padding: 4px 0px;
+                margin: 0px;
+                @include foreground-medium-emphasis($theme);
+            }
+
+            &:hover {
+                @include hover($theme);
+                box-shadow: none;
+            }
+
+            &:active,
+            &:focus,
+            &:checked {
+                box-shadow: inset 3px 0 0px $color-primary;
+            }
+        } */ }
+  .light-theme #msPanel .panel-button {
     color: rgba(0, 0, 0, 0.6);
     text-align: center;
-    padding: 0px;
-    spacing: 0px; }
-    .light-theme #panel .panel-button > * {
-      width: 28px;
-      padding: 4px 0px;
-      margin: 0px;
-      color: rgba(0, 0, 0, 0.6); }
-    .light-theme #panel .panel-button:hover {
+    font-weight: bold;
+    color: #ccc; }
+    .light-theme #msPanel .panel-button .app-menu-icon {
+      -st-icon-style: symbolic;
+      margin-left: 4px;
+      margin-right: 4px; }
+    .light-theme #msPanel .panel-button:hover {
+      background: rgba(0, 0, 0, 0.04); }
+    .light-theme #msPanel .panel-button:active, .light-theme #msPanel .panel-button:overview, .light-theme #msPanel .panel-button:focus, .light-theme #msPanel .panel-button:checked {
       background: rgba(0, 0, 0, 0.04);
-      box-shadow: none; }
-    .light-theme #panel .panel-button:active, .light-theme #panel .panel-button:focus, .light-theme #panel .panel-button:checked {
-      box-shadow: inset 3px 0 0px #3f51b5; }
+      box-shadow: inset 3px 0 0px #3f51b5;
+      color: rgba(0, 0, 0, 0.87); }
+    .light-theme #msPanel .panel-button .system-status-icon {
+      icon-size: 1.09em; }
+    .unlock-screen .light-theme #msPanel .panel-button,
+    .login-screen .light-theme #msPanel .panel-button,
+    .lock-screen .light-theme #msPanel .panel-button {
+      color: rgba(0, 0, 0, 0.6); }
+      .unlock-screen .light-theme #msPanel .panel-button:focus, .unlock-screen .light-theme #msPanel .panel-button:hover, .unlock-screen .light-theme #msPanel .panel-button:active,
+      .login-screen .light-theme #msPanel .panel-button:focus,
+      .login-screen .light-theme #msPanel .panel-button:hover,
+      .login-screen .light-theme #msPanel .panel-button:active,
+      .lock-screen .light-theme #msPanel .panel-button:focus,
+      .lock-screen .light-theme #msPanel .panel-button:hover,
+      .lock-screen .light-theme #msPanel .panel-button:active {
+        color: rgba(0, 0, 0, 0.87); }
+  .light-theme #msPanel .panel-status-indicators-box {
+    min-height: 24px;
+    vertical-align: middle;
+    text-align: center; }
+  .light-theme #msPanel .panel-status-indicators-box,
+  .light-theme #msPanel .panel-status-menu-box {
+    spacing: 2px; }
 
 .light-theme #topBarSpacer {
   height: 48px; }
@@ -329,8 +409,6 @@ subtitle-1 {
   .light-theme .task-bar-item .task-bar-item-content {
     padding: 0px 12px;
     color: rgba(0, 0, 0, 0.6); }
-    .light-theme .task-bar-item .task-bar-item-content .app-icon {
-      icon-size: 24px; }
     .light-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
       max-width: 248px;
       margin-left: 8px;
@@ -371,12 +449,6 @@ subtitle-1 {
     padding: 24px;
     color: rgba(0, 0, 0, 0.87); }
 
-.light-theme .categorized-app-card .overview-icon {
-  margin: 8px; }
-
-.light-theme .categorized-app-card .overview-icon-with-label {
-  color: rgba(0, 0, 0, 0.87); }
-
 .light-theme .search-entry {
   background: white;
   border-radius: 48px; }
@@ -410,9 +482,12 @@ subtitle-1 {
   height: 48px;
   width: 48px; }
   .primary-theme .mat-panel-button .mat-panel-button-icon {
-    width: 24px;
-    height: 24px;
     icon-size: 24px; }
+
+.primary-theme WorkspaceButton,
+.primary-theme WorkspaceButtonIcon {
+  height: 48px;
+  width: 48px; }
 
 .primary-theme .workspace-active-indicator {
   width: 3px;
@@ -428,10 +503,6 @@ subtitle-1 {
     background: rgba(0, 0, 0, 0.12); }
   .dark-primary.primary-theme .ripple-wave {
     background: rgba(255, 255, 255, 0.12); }
-
-.primary-theme #leftPanelBox,
-.primary-theme #leftDashSpacer {
-  width: 48px; }
 
 .light-primary.primary-theme .mat-button .mat-button-container {
   color: rgba(0, 0, 0, 0.87); }
@@ -474,38 +545,81 @@ subtitle-1 {
 .dark-primary.primary-theme .mat-button .mat-panel-button.active {
   color: rgba(255, 255, 255, 0.87); }
 
-.primary-theme #panel {
+.primary-theme #leftPanelBox,
+.primary-theme #leftDashSpacer {
+  width: 48px; }
+
+.primary-theme #msPanel {
   background: #3f51b5;
   width: 48px;
-  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
-  .primary-theme #panel #panelLeft,
-  .primary-theme #panel #panelCenter,
-  .primary-theme #panel #panelRight {
-    spacing: 0px; }
-  .primary-theme #panel .panel-button {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  /*         .power-status.panel-status-indicators-box {
+            spacing: 0;
+            text-align: center;
+            padding: 0px;
+            spacing: 0px;
+
+            > * {
+                width: $panel-size - 20px;
+                padding: 4px 0px;
+                margin: 0px;
+                @include foreground-medium-emphasis($theme);
+            }
+
+            &:hover {
+                @include hover($theme);
+                box-shadow: none;
+            }
+
+            &:active,
+            &:focus,
+            &:checked {
+                box-shadow: inset 3px 0 0px $color-primary;
+            }
+        } */ }
+  .primary-theme #msPanel .panel-button {
     text-align: center;
-    padding: 0px;
-    spacing: 0px; }
-    .light-primary.primary-theme #panel .panel-button {
+    font-weight: bold;
+    color: #ccc; }
+    .light-primary.primary-theme #msPanel .panel-button {
       color: rgba(0, 0, 0, 0.6); }
-    .dark-primary.primary-theme #panel .panel-button {
+    .dark-primary.primary-theme #msPanel .panel-button {
       color: rgba(255, 255, 255, 0.6); }
-    .primary-theme #panel .panel-button > * {
-      width: 28px;
-      padding: 4px 0px;
-      margin: 0px; }
-      .light-primary.primary-theme #panel .panel-button > * {
-        color: rgba(0, 0, 0, 0.6); }
-      .dark-primary.primary-theme #panel .panel-button > * {
-        color: rgba(255, 255, 255, 0.6); }
-    .primary-theme #panel .panel-button:hover {
-      box-shadow: none; }
-      .light-primary.primary-theme #panel .panel-button:hover {
-        background: rgba(0, 0, 0, 0.04); }
-      .dark-primary.primary-theme #panel .panel-button:hover {
-        background: rgba(255, 255, 255, 0.04); }
-    .primary-theme #panel .panel-button:active, .primary-theme #panel .panel-button:focus, .primary-theme #panel .panel-button:checked {
+    .primary-theme #msPanel .panel-button .app-menu-icon {
+      -st-icon-style: symbolic;
+      margin-left: 4px;
+      margin-right: 4px; }
+    .light-primary.primary-theme #msPanel .panel-button:hover {
+      background: rgba(0, 0, 0, 0.04); }
+    .dark-primary.primary-theme #msPanel .panel-button:hover {
+      background: rgba(255, 255, 255, 0.04); }
+    .primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
       box-shadow: inset 3px 0 0px #3f51b5; }
+      .light-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
+        background: rgba(0, 0, 0, 0.04); }
+      .dark-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
+        background: rgba(255, 255, 255, 0.04); }
+      .light-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
+        color: rgba(0, 0, 0, 0.87); }
+      .dark-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
+        color: rgba(255, 255, 255, 0.87); }
+    .primary-theme #msPanel .panel-button .system-status-icon {
+      icon-size: 1.09em; }
+    .light-primary.unlock-screen .primary-theme #msPanel .panel-button, .login-screen .primary-theme #msPanel .panel-button, .lock-screen .primary-theme #msPanel .panel-button {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary.unlock-screen .primary-theme #msPanel .panel-button, .login-screen .primary-theme #msPanel .panel-button, .lock-screen .primary-theme #msPanel .panel-button {
+      color: rgba(255, 255, 255, 0.6); }
+    .light-primary.unlock-screen .primary-theme #msPanel .panel-button:focus, .unlock-screen .primary-theme #msPanel .panel-button:hover, .unlock-screen .primary-theme #msPanel .panel-button:active, .login-screen .primary-theme #msPanel .panel-button:focus, .login-screen .primary-theme #msPanel .panel-button:hover, .login-screen .primary-theme #msPanel .panel-button:active, .lock-screen .primary-theme #msPanel .panel-button:focus, .lock-screen .primary-theme #msPanel .panel-button:hover, .lock-screen .primary-theme #msPanel .panel-button:active {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.unlock-screen .primary-theme #msPanel .panel-button:focus, .unlock-screen .primary-theme #msPanel .panel-button:hover, .unlock-screen .primary-theme #msPanel .panel-button:active, .login-screen .primary-theme #msPanel .panel-button:focus, .login-screen .primary-theme #msPanel .panel-button:hover, .login-screen .primary-theme #msPanel .panel-button:active, .lock-screen .primary-theme #msPanel .panel-button:focus, .lock-screen .primary-theme #msPanel .panel-button:hover, .lock-screen .primary-theme #msPanel .panel-button:active {
+      color: rgba(255, 255, 255, 0.87); }
+  .primary-theme #msPanel .panel-status-indicators-box {
+    min-height: 24px;
+    vertical-align: middle;
+    text-align: center; }
+  .primary-theme #msPanel .panel-status-indicators-box,
+  .primary-theme #msPanel .panel-status-menu-box {
+    spacing: 2px; }
 
 .primary-theme #topBarSpacer {
   height: 48px; }
@@ -537,8 +651,6 @@ subtitle-1 {
       color: rgba(0, 0, 0, 0.6); }
     .dark-primary.primary-theme .task-bar-item .task-bar-item-content {
       color: rgba(255, 255, 255, 0.6); }
-    .primary-theme .task-bar-item .task-bar-item-content .app-icon {
-      icon-size: 24px; }
     .primary-theme .task-bar-item .task-bar-item-content .task-bar-item-title {
       max-width: 248px;
       margin-left: 8px;
@@ -587,12 +699,6 @@ subtitle-1 {
       color: rgba(0, 0, 0, 0.87); }
     .dark-primary.primary-theme .mat-card .mat-card-content {
       color: rgba(255, 255, 255, 0.87); }
-
-.primary-theme .categorized-app-card .overview-icon {
-  margin: 8px; }
-
-.primary-theme .categorized-app-card .overview-icon-with-label {
-  color: rgba(0, 0, 0, 0.87); }
 
 .primary-theme .search-entry {
   background: #3f51b5;

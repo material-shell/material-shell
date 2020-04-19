@@ -7,25 +7,25 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const {
     WorkspaceCategories,
-} = Me.imports.src.materialShell.msWorkspace.workspaceCategories;
+} = Me.imports.src.layout.msWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { MsWindow } = Me.imports.src.materialShell.msWorkspace.msWindow;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
-        _init(msWorkspaceManager) {
+        _init() {
             super._init({
                 clip_to_allocation: true,
                 style_class: 'workspace-list',
             });
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceButtonMap = new Map();
-            this.msWorkspaceManager = msWorkspaceManager;
+            this.msWorkspaceManager = Me.msWorkspaceManager;
 
-            this.buttonList = new St.BoxLayout({
-                vertical: true,
+            this.buttonList = new St.Widget({
+                layout_manager: new Clutter.BoxLayout({ vertical: true }),
             });
 
             this.add_child(this.buttonList);
@@ -48,8 +48,14 @@ var WorkspaceList = GObject.registerClass(
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
             this.add_child(this.workspaceActiveIndicator);
-
-            this.buildButtons();
+            this.connect('notify::mapped', () => {
+                if (this.mapped) {
+                    this.buildButtons();
+                    this.activeButtonForIndex(
+                        global.workspace_manager.get_active_workspace_index()
+                    );
+                }
+            });
             this.msWorkspaceManager.connect(
                 'dynamic-super-workspaces-changed',
                 () => {
@@ -63,10 +69,6 @@ var WorkspaceList = GObject.registerClass(
                         global.workspace_manager.get_active_workspace_index()
                     );
                 }
-            );
-
-            this.activeButtonForIndex(
-                global.workspace_manager.get_active_workspace_index()
             );
         }
 
@@ -249,18 +251,15 @@ var WorkspaceList = GObject.registerClass(
                 this.buttonActive.actorContainer.add_style_class_name('active');
             }
 
-            let scaleFactor = St.ThemeContext.get_for_stage(global.stage)
-                .scale_factor;
-
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.workspaceActiveIndicator, {
-                    translation_y: 48 * scaleFactor * index,
+                    translation_y: this.get_preferred_width(-1)[1] * index,
                     time: 0.25,
                     transition: 'easeOutQuad',
                 });
             } else {
                 this.workspaceActiveIndicator.ease({
-                    translation_y: 48 * scaleFactor * index,
+                    translation_y: this.get_preferred_width(-1)[1] * index,
                     duration: 250,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
@@ -282,6 +281,7 @@ var WorkspaceList = GObject.registerClass(
 
 var WorkspaceButton = GObject.registerClass(
     {
+        GTypeName: 'WorkspaceButton',
         Signals: {
             'drag-dropped': {},
             'drag-over': {
@@ -289,23 +289,17 @@ var WorkspaceButton = GObject.registerClass(
             },
         },
     },
-    class InnerWorkspaceButton extends MatButton {
+    class WorkspaceButton extends MatButton {
         _init(msWorkspaceManager, msWorkspace) {
             this.msWorkspaceManager = msWorkspaceManager;
             this.msWorkspace = msWorkspace;
-
             this.workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
-
             super._init({
-                x_fill: true,
-                y_fill: true,
                 child: this.workspaceButtonIcon,
-                style_class: 'mat-panel-button',
             });
             this._delegate = this;
 
             this.connect('clicked', (_, button) => {
-                log(button);
                 if (button === 2) {
                     if (
                         this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
@@ -347,14 +341,10 @@ var WorkspaceButton = GObject.registerClass(
                 ) {
                     if (this.mouseData.pressed && !this.mouseData.dragged) {
                         let coords = event.get_coords();
-                        let scaleFactor = St.ThemeContext.get_for_stage(
-                            global.stage
-                        ).scale_factor;
                         if (
                             Math.abs(
                                 this.mouseData.originalCoords[0] - coords[0]
-                            ) >
-                                48 * scaleFactor &&
+                            ) > this.get_preferred_width(-1)[1] &&
                             !this.mouseData.dragged
                         ) {
                             this.mouseData.dragged = true;
@@ -434,28 +424,29 @@ var WorkspaceButton = GObject.registerClass(
 
 var WorkspaceButtonIcon = GObject.registerClass(
     {
-        Signals: {},
+        GTypeName: 'WorkspaceButtonIcon',
     },
     class WorkspaceButtonIcon extends St.Widget {
         _init(msWorkspace) {
             this.msWorkspace = msWorkspace;
-            super._init({
-                x_expand: true,
-                y_expand: true,
-            });
+            super._init();
+            this.appIconList = [];
             this.add_effect(new Clutter.DesaturateEffect());
-            this.buildIcons();
+            this.connect('notify::mapped', () => {
+                if (this.mapped) {
+                    this.buildIcons();
+                }
+            });
             this.msWorkspace.connect('tileableList-changed', (_) => {
                 this.buildIcons();
             });
         }
 
         buildIcons() {
-            if (this.appIconList) {
-                this.appIconList.forEach((icon) => {
-                    icon.destroy();
-                });
-            }
+            this.appIconList.forEach((icon) => {
+                icon.destroy();
+            });
+
             const appList = this.msWorkspace.tileableList
                 .filter((tileable) => {
                     return tileable instanceof MsWindow;
@@ -488,7 +479,9 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     });
 
                 sortedByInstanceAppList.forEach((app) => {
-                    const icon = app.create_icon_texture(24);
+                    const icon = app.create_icon_texture(
+                        this.get_preferred_width(-1)[1] / 2
+                    );
                     this.appIconList.push(icon);
                     this.add_child(icon);
                 });
@@ -497,7 +490,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    style_class: 'mat-panel-button-icon',
+                    icon_size: this.get_preferred_width(-1)[1] / 2,
                 });
                 this.appIconList.push(icon);
                 this.add_child(icon);
@@ -519,30 +512,28 @@ var WorkspaceButtonIcon = GObject.registerClass(
                 this.appIconList[0].allocate(centerBox, flags);
             } else {
                 this.appIconList.forEach((icon, index) => {
+                    let box = new Clutter.ActorBox();
                     switch (index) {
                         case 0:
-                            let leftCenterBox = new Clutter.ActorBox();
-                            leftCenterBox.x1 = allocationBox.x1 + portion;
-                            leftCenterBox.x2 = allocationBox.x2 - 3 * portion;
-                            leftCenterBox.y1 = allocationBox.y1 + 2 * portion;
-                            leftCenterBox.y2 = allocationBox.y2 - 2 * portion;
-                            this.appIconList[0].allocate(leftCenterBox, flags);
+                            box.x1 = allocationBox.x1 + portion;
+                            box.x2 = allocationBox.x2 - 3 * portion;
+                            box.y1 = allocationBox.y1 + 2 * portion;
+                            box.y2 = allocationBox.y2 - 2 * portion;
+                            icon.allocate(box, flags);
                             break;
                         case 1:
-                            let bottomRightBox = new Clutter.ActorBox();
-                            bottomRightBox.x1 = allocationBox.x1 + 3 * portion;
-                            bottomRightBox.x2 = allocationBox.x2 - portion;
-                            bottomRightBox.y1 = allocationBox.y1 + 3 * portion;
-                            bottomRightBox.y2 = allocationBox.y2 - portion;
-                            icon.allocate(bottomRightBox, flags);
+                            box.x1 = allocationBox.x1 + 3 * portion;
+                            box.x2 = allocationBox.x2 - portion;
+                            box.y1 = allocationBox.y1 + 3 * portion;
+                            box.y2 = allocationBox.y2 - portion;
+                            icon.allocate(box, flags);
                             break;
                         case 2:
-                            let topRightBox = new Clutter.ActorBox();
-                            topRightBox.x1 = allocationBox.x1 + 4 * portion;
-                            topRightBox.x2 = allocationBox.x2 - portion;
-                            topRightBox.y1 = allocationBox.y1 + portion;
-                            topRightBox.y2 = allocationBox.y2 - 4 * portion;
-                            icon.allocate(topRightBox, flags);
+                            box.x1 = allocationBox.x1 + 4 * portion;
+                            box.x2 = allocationBox.x2 - portion;
+                            box.y1 = allocationBox.y1 + portion;
+                            box.y2 = allocationBox.y2 - 4 * portion;
+                            icon.allocate(box, flags);
                             break;
                     }
                 });
