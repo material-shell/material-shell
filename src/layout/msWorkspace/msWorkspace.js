@@ -40,8 +40,6 @@ var MsWorkspace = class MsWorkspace {
         this.appLauncher = new MsApplicationLauncher(this);
         this.tileableList.push(this.appLauncher);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
-        this.msWorkspaceActor.set_position(this.monitor.x, this.monitor.y);
-
         this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
         this.loadedSignalId = Me.connect(
             'extension-loaded',
