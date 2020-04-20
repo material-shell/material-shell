@@ -481,10 +481,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     addWindowToAppropriateMsWorkspace(msWindow) {
-        const windowMonitorIndex = msWindow.metaWindow.get_monitor();
-        const currentWindowWorkspace = msWindow.metaWindow.get_workspace();
+        let msWindowToSearchMsWorkspace = msWindow.isDialog
+            ? msWindow.metaWindow.find_root_ancestor().msWindow
+            : msWindow;
+        const windowMonitorIndex = msWindowToSearchMsWorkspace.metaWindow.get_monitor();
+        const currentWindowWorkspace = msWindowToSearchMsWorkspace.metaWindow.get_workspace();
         let msWorkspace;
-
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             msWorkspace = this.getMsWorkspacesOfMonitorIndex(
                 windowMonitorIndex
@@ -528,11 +530,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     setWindowToMsWorkspace(msWindow, newMsWorkspace) {
-        if (msWindow.metaWindow) {
+        /* if (msWindow.metaWindow) {
             if (
                 newMsWorkspace.monitor.index !=
                 msWindow.metaWindow.get_monitor()
             ) {
+                log('move to monitor');
                 return msWindow.metaWindow.move_to_monitor(
                     newMsWorkspace.monitor
                 );
@@ -544,10 +547,11 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     newMsWorkspace
                 );
                 if (msWindow.metaWindow.get_workspace() != newWorkspace) {
+                    log('move to workspace');
                     return msWindow.metaWindow.change_workspace(newWorkspace);
                 }
             }
-        }
+        } */
         let oldMsWorkspace = msWindow.msWorkspace;
 
         if (oldMsWorkspace) {

@@ -124,7 +124,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     addMsWindow(msWindow) {
-        if (this.msWindowList.indexOf(msWindow) >= 0) return;
+        if (msWindow.msWorkspace === this) return;
 
         msWindow.msWorkspace = this;
         if (msWindow.metaWindow) {

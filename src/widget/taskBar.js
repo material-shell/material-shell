@@ -274,14 +274,23 @@ var TaskBar = GObject.registerClass(
             let taskBarItem = this.getTaskBarItemOfTileable(
                 this.msWorkspace.tileableFocused
             );
-            if (!taskBarItem.widthSignalId) {
-                taskBarItem.widthSignalId = taskBarItem.connect(
-                    'notify::width',
-                    () => {
-                        if (!dragData) this._animateActiveIndicator();
-                    }
+            if (
+                this.taskBarItemSignal &&
+                this.items.includes(this.taskBarItemSignal.from)
+            ) {
+                this.taskBarItemSignal.from.disconnect(
+                    this.taskBarItemSignal.id
                 );
             }
+            if (!taskBarItem) {
+                return;
+            }
+            this.taskBarItemSignal = {
+                from: taskBarItem,
+                id: taskBarItem.connect('notify::width', () => {
+                    this._animateActiveIndicator();
+                }),
+            };
             if (!this.mapped) return;
             if (ShellVersionMatch('3.32')) {
                 Tweener.addTween(this.taskActiveIndicator, {

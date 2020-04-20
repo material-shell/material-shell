@@ -44,17 +44,17 @@ var MsWindow = GObject.registerClass(
             );
             this.propagate = true;
             this.connect('notify::position', () => {
-                if (this.propagate) {
+                if (this.propagate && !this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
             });
             this.msContent.connect('notify::position', () => {
-                if (this.propagate) {
+                if (this.propagate && !this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
             });
             this.msContent.connect('notify::size', () => {
-                if (this.propagate) {
+                if (this.propagate && !this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
             });
@@ -188,6 +188,7 @@ var MsWindow = GObject.registerClass(
             });
             this.Keymap = imports.gi.Gdk.Keymap.get_default();
             this.superConnectId = this.Keymap.connect('state_changed', (_) => {
+                if (!this.msWorkspace) log(this.title);
                 let isSuperPressed = this.Keymap.get_modifier_state() === 64;
                 this.reactive =
                     (!this.metaWindow || isSuperPressed) &&
@@ -355,13 +356,11 @@ var MsWindow = GObject.registerClass(
             const currentFrameRect = this.metaWindow.get_frame_rect();
             this.set_position(
                 currentFrameRect.x - workArea.x - this.msContent.x,
-                currentFrameRect.y - workArea.y - this.msContent.y,
-                false
+                currentFrameRect.y - workArea.y - this.msContent.y
             );
             this.set_size(
                 currentFrameRect.width + this.msContent.x * 2,
-                currentFrameRect.height + this.msContent.y * 2,
-                false
+                currentFrameRect.height + this.msContent.y * 2
             );
         }
 
