@@ -5,9 +5,6 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
-const {
-    WorkspaceCategories,
-} = Me.imports.src.layout.msWorkspace.workspaceCategories;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;

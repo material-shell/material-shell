@@ -54,7 +54,7 @@ var MsDndManager = class MsDndManager {
         this.dragInProgress = true;
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
-        Me.layout.msWorkspaceContainer.setActorAbove(msWindow);
+        Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
     }
 

@@ -17,8 +17,7 @@ var MsPanel = GObject.registerClass(
             super._init({
                 name: 'msPanel',
                 vertical: true,
-                x: Main.layoutManager.primaryMonitor.x,
-                y: Main.layoutManager.primaryMonitor.y,
+                y_align: Clutter.ActorAlign.START,
             });
             this.gnomeShellPanel = Main.panel;
             this.gnomeShellPanel.hide();

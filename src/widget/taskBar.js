@@ -350,7 +350,6 @@ let TaskBarItem = GObject.registerClass(
             },
             'left-clicked': {},
             'right-clicked': {},
-            'close-clicked': {},
         },
     },
     class TaskBarItemClass extends MatButton {
@@ -495,7 +494,10 @@ let TileableItem = GObject.registerClass(
             this.connectSignal = this.tileable.connect('title-changed', () => {
                 this.updateTitle();
             });
-
+            this.tileable.connect('destroy', () => {
+                delete this.connectSignal;
+            });
+            this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',

@@ -115,6 +115,7 @@ function disable() {
     log('DISABLE EXTENSION');
     log('----------------');
     if (!modules) return;
+    Me.emit('extension-disable');
     Main.layoutManager.disconnect(monitorChangedId);
     modules.reverse().forEach((module) => {
         log('Destroy', module);
@@ -125,10 +126,10 @@ function disable() {
     log('destroy msWindowManager');
     Me.msWindowManager.destroy();
 
-    Me.emit('extension-disable');
     Me.layout.destroy();
     Main.uiGroup.remove_style_class_name(`dark-theme`);
     Me.loaded = false;
+    log('END DISABLE EXTENSION');
 }
 
 function showSplashScreens() {

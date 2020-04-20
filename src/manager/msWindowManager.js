@@ -66,9 +66,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             metaWindow.firstFrameDrawn = true;
         });
         if (!this._handleWindow(metaWindow)) {
-            return Me.layout.msWorkspaceContainer.setActorAbove(
-                metaWindow.get_compositor_private()
-            );
+            return Me.layout.setActorAbove(metaWindow.get_compositor_private());
         }
         if (metaWindow.handledByMaterialShell) return;
 

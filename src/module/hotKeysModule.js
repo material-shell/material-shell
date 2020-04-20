@@ -243,7 +243,7 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const noUImode = Me.msWorkspaceManager.noUImode;
                 Me.msWorkspaceManager.noUImode = !noUImode;
-                Me.layout.msWorkspaceContainer.visible = noUImode;
+                Me.layout.visible = noUImode;
 
                 /* Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;

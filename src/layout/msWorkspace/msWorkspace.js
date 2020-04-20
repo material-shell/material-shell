@@ -43,13 +43,6 @@ var MsWorkspace = class MsWorkspace {
         this.msWorkspaceActor.set_position(this.monitor.x, this.monitor.y);
 
         this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
-
-        this.workAreaChangedId = global.display.connect(
-            'workareas-changed',
-            () => {
-                this.msWorkspaceActor.updateLayout();
-            }
-        );
         this.loadedSignalId = Me.connect(
             'extension-loaded',
             this.handleExtensionLoaded.bind(this)
@@ -76,7 +69,6 @@ var MsWorkspace = class MsWorkspace {
 
     destroy() {
         log('destroy msWorkspace');
-        global.display.disconnect(this.workAreaChangedId);
         Me.disconnect(this.loadedSignalId);
         this.tilingLayout.onDestroy();
         if (this.msWorkspaceActor) {
@@ -398,18 +390,9 @@ var MsWorkspaceActor = GObject.registerClass(
                 style_class: 'floatable-container',
             });
             this.panel = new TopPanel(msWorkspace);
-            this.updateLayout();
             this.add_child(this.tileableContainer);
             this.add_child(this.floatableContainer);
             this.add_child(this.panel);
-        }
-
-        updateLayout() {
-            let workArea = Main.layoutManager.getWorkAreaForMonitor(
-                this.msWorkspace.monitor.index
-            );
-            this.set_size(workArea.width, this.msWorkspace.monitor.height);
-            this.set_position(workArea.x, 0);
         }
 
         vfunc_allocate(box, flags) {

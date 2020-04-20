@@ -22,6 +22,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused, oldWindowFocused) {
+        log('onFocusChanged');
         //if (!this.msWorkspace.msWindowList.includes(oldWindowFocused)) return;
         if (!windowFocused.isDialog) {
             const oldIndex = this.currentWindowIndex;

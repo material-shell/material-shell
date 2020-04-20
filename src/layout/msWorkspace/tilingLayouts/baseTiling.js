@@ -5,10 +5,12 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { Backdrop } = Me.imports.src.widget.backdrop;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {
     constructor(msWorkspace) {
+        AddLogToFunctions(this);
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
         );
@@ -159,7 +161,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     onFocusChanged() {
-        this.onTile();
+        if (Me.loaded) {
+            this.onTile();
+        }
     }
 
     onTile() {
