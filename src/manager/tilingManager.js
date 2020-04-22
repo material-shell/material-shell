@@ -9,39 +9,40 @@ const {
 const {
     TilingLayoutByKey,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
+const { MsManager } = Me.imports.src.manager.msManager;
 
 /* exported TilingManager */
-var TilingManager = class TilingManager {
+var TilingManager = class TilingManager extends MsManager {
     constructor() {
+        super();
         this.workspaceManager = global.workspace_manager;
         this.grabInProgress = false;
         this.signals = [];
         this.windows = [];
         this.layoutsSettings = getSettings('layouts');
-        this.settingsSignals = [
-            this.layoutsSettings.connect('changed::gap', (schema) => {
-                this.gap = schema.get_int('gap');
+        this.observe(this.layoutsSettings, 'changed::gap', (schema) => {
+            this.gap = schema.get_int('gap');
+            this.tileWindows();
+        });
+        this.observe(
+            this.layoutsSettings,
+            'changed::use-screen-gap',
+            (schema) => {
+                this.useScreenGap = schema.get_boolean('use-screen-gap');
                 this.tileWindows();
-            }),
-            this.layoutsSettings.connect(
-                'changed::use-screen-gap',
-                (schema) => {
-                    this.useScreenGap = schema.get_boolean('use-screen-gap');
-                    this.tileWindows();
-                }
-            ),
-            this.layoutsSettings.connect('changed::screen-gap', (schema) => {
-                this.screenGap = schema.get_int('screen-gap');
-                this.tileWindows();
-            }),
-            this.layoutsSettings.connect('changed::tween-time', (schema) => {
-                this.tweenTime = schema.get_double('tween-time');
-            }),
-            this.layoutsSettings.connect('changed::ratio-value', (schema) => {
-                this.ratio = schema.get_double('ratio-value');
-                this.tileWindows();
-            }),
-        ];
+            }
+        );
+        this.observe(this.layoutsSettings, 'changed::screen-gap', (schema) => {
+            this.screenGap = schema.get_int('screen-gap');
+            this.tileWindows();
+        });
+        this.observe(this.layoutsSettings, 'changed::tween-time', (schema) => {
+            this.tweenTime = schema.get_double('tween-time');
+        });
+        this.observe(this.layoutsSettings, 'changed::ratio-value', (schema) => {
+            this.ratio = schema.get_double('ratio-value');
+            this.tileWindows();
+        });
 
         this.ratio = this.layoutsSettings.get_double('ratio-value');
         this.gap = this.layoutsSettings.get_int('gap');
@@ -52,33 +53,30 @@ var TilingManager = class TilingManager {
         this.allLayouts = Object.keys(TilingLayoutByKey);
         // On layout settings change
         this.allLayouts.forEach((key) => {
-            this.settingsSignals.push(
-                this.layoutsSettings.connect(
-                    `changed::${key}`,
-                    (schema, key) => {
-                        // Compute new available layouts
-                        this.refreshAvailableLayouts();
+            this.observe(
+                this.layoutsSettings,
+                `changed::${key}`,
+                (schema, key) => {
+                    // Compute new available layouts
+                    this.refreshAvailableLayouts();
 
-                        if (!schema.get_boolean(key)) {
-                            // If a layout has been removed,
-                            // change tiling of all workspaces using that layout.
+                    if (!schema.get_boolean(key)) {
+                        // If a layout has been removed,
+                        // change tiling of all workspaces using that layout.
 
-                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                log('IDLE_ADD');
-                                Me.msWorkspaceManager.msWorkspaceList.forEach(
-                                    (msWorkspace) => {
-                                        if (
-                                            key == msWorkspace.tilingLayout.key
-                                        ) {
-                                            msWorkspace.nextTiling(1);
-                                        }
+                        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                            log('IDLE_ADD');
+                            Me.msWorkspaceManager.msWorkspaceList.forEach(
+                                (msWorkspace) => {
+                                    if (key == msWorkspace.tilingLayout.key) {
+                                        msWorkspace.nextTiling(1);
                                     }
-                                );
-                                return GLib.SOURCE_REMOVE;
-                            });
-                        }
+                                }
+                            );
+                            return GLib.SOURCE_REMOVE;
+                        });
                     }
-                )
+                }
             );
         });
 
@@ -150,11 +148,5 @@ var TilingManager = class TilingManager {
             this.tilingInProgress = false;
             return GLib.SOURCE_REMOVE;
         });
-    }
-
-    onDestroy() {
-        this.settingsSignals.forEach((signal) =>
-            this.settings.disconnect(signal)
-        );
     }
 };

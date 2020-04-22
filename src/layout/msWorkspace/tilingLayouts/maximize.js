@@ -87,9 +87,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         if (this.animationInProgress) {
             return;
         }
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
+        const workArea = this.getWorkspaceBounds();
         tileableList.forEach((actor, index) => {
             // Unclip windows in maximize
             if (actor.has_clip) {

@@ -22,7 +22,7 @@ var MsMain = GObject.registerClass(
             this.add_child(this.aboveContainer);
             this.buildMonitorsLayout();
 
-            this.primaryContainer = new St.Widget();
+            this.primaryContainer = new PrimaryContainer();
             this.monitorsContainer[
                 Main.layoutManager.primaryIndex
             ].setPrimaryContainer(this.primaryContainer);
@@ -246,12 +246,55 @@ var PrimaryMonitorContainer = GObject.registerClass(
             }
             if (this.primaryContainer) {
                 let primaryContainerBox = new Clutter.ActorBox();
-                primaryContainerBox.x1 = this.panel ? panelBox.x2 : box.x1;
+                primaryContainerBox.x1 =
+                    this.panel && this.panel.visible ? panelBox.x2 : box.x1;
                 primaryContainerBox.x2 = box.x2;
                 primaryContainerBox.y1 = box.y1;
                 primaryContainerBox.y2 = box.y2;
                 this.primaryContainer.allocate(primaryContainerBox, flags);
             }
+        }
+    }
+);
+
+var PrimaryContainer = GObject.registerClass(
+    {
+        GTypeName: 'PrimaryContainer',
+    },
+    class PrimaryContainer extends St.Widget {
+        _init(params) {
+            super._init(params);
+        }
+
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            box = themeNode.get_content_box(box);
+            this.get_children().forEach((actor, index) => {
+                let actorBox = new Clutter.ActorBox();
+                actorBox.x1 = box.x1;
+                actorBox.x2 = box.x2;
+                actorBox.y1 = index * box.get_height();
+                actorBox.y2 = actorBox.y1 + box.get_height();
+                actor.allocate(actorBox, flags);
+            });
+            /* let panelBox = new Clutter.ActorBox();
+            if (this.panel) {
+                panelBox.x1 = box.x1;
+                panelBox.x2 = this.panel.get_preferred_width(-1)[1];
+                panelBox.y1 = box.y1;
+                panelBox.y2 = this.panel.get_preferred_height(-1)[1];
+                this.panel.allocate(panelBox, flags);
+            }
+            if (this.primaryContainer) {
+                let primaryContainerBox = new Clutter.ActorBox();
+                primaryContainerBox.x1 =
+                    this.panel && this.panel.visible ? panelBox.x2 : box.x1;
+                primaryContainerBox.x2 = box.x2;
+                primaryContainerBox.y1 = box.y1;
+                primaryContainerBox.y2 = box.y2;
+                this.primaryContainer.allocate(primaryContainerBox, flags);
+            } */
         }
     }
 );

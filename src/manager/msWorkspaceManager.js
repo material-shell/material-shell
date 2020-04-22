@@ -306,7 +306,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             log('IDLE_ADD');
             this.refreshWorkspaceWindows();
-            this.refreshVisiblePrimaryMsWorkspace();
             this.checkWorkspaces();
             this.saveCurrentState();
             this.stateChangedTriggered = false;

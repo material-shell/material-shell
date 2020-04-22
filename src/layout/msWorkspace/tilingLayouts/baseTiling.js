@@ -279,25 +279,20 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     getWorkspaceBounds() {
-        const {
-            x,
-            y,
-            width,
-            height,
-        } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
+        const box = this.msWorkspace.msWorkspaceActor.tileableContainer.get_allocation_box();
         return {
-            x,
-            y,
-            width,
-            height,
+            x: box.x1,
+            y: box.x2,
+            width: box.get_width(),
+            height: box.get_height(),
         };
     }
 
     applyGaps(x, y, width, height) {
         // Reduces box size according to gap setting
-        const gap = global.tilingManager.gap;
-        const screenGap = global.tilingManager.screenGap;
-        const useScreenGap = global.tilingManager.useScreenGap;
+        const gap = Me.tilingManager.gap;
+        const screenGap = Me.tilingManager.screenGap;
+        const useScreenGap = Me.tilingManager.useScreenGap;
 
         if (!gap && (!useScreenGap || !screenGap)) {
             return { x, y, width, height };

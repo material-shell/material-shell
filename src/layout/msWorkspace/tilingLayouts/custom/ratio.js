@@ -9,7 +9,7 @@ var RatioLayout = class RatioLayout extends BaseTilingLayout {
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         if (!windows.length) return;
-        const ratio = global.tilingManager.ratio;
+        const ratio = Me.tilingManager.ratio;
 
         const workArea = this.getWorkspaceBounds();
         workArea.x = 0;

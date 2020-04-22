@@ -16,11 +16,20 @@ const WINDOW_SLIDE_TWEEN_TIME = 250;
 var SplitLayout = class SplitLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
-
         this.overContainer = new St.Widget();
-
         this.updateActiveTileableListFromFocused();
-        this.addTransitionContainer();
+        this.horizontal = this.monitor.width > this.monitor.height;
+        /* const workArea = this.getWorkspaceBounds();
+
+        if (this.horizontal) {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
+                -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
+        } else {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_y =
+                -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
+        } */
+
+        //this.addTransitionContainer();
     }
 
     updateActiveTileableListFromFocused() {
@@ -38,19 +47,18 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
     }
 
     onWorkAreasChanged() {
-        this.addTransitionContainer();
         super.onWorkAreasChanged();
     }
 
     onTileableListChanged(msWorkspace, newWindows, oldWindows) {
         this.updateActiveTileableListFromFocused();
+        this.transition();
         super.onTileableListChanged(msWorkspace, newWindows, oldWindows); // Calls onTile
     }
 
     onFocusChanged(tileableFocused, oldTileableFocused) {
         if (tileableFocused.isDialog || oldTileableFocused.isDialog) return;
 
-        super.onFocusChanged(tileableFocused, oldTileableFocused);
         if (this.activeTileableList.includes(tileableFocused)) {
             return;
         }
@@ -71,9 +79,15 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 newIndex + WINDOW_PER_SCREEN
             );
         }
+        log(
+            this.activeTileableList.map((tileable) => {
+                return tileable.title;
+            })
+        );
         this.baseIndex = this.msWorkspace.tileableList.indexOf(
             this.activeTileableList[0]
         );
+        super.onFocusChanged(tileableFocused, oldTileableFocused);
         if (
             Me.loaded &&
             this.msWorkspace.tileableList.length > WINDOW_PER_SCREEN
@@ -82,28 +96,49 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         }
     }
 
-    onTileRegulars(windows) {
+    onTileRegulars(tileableList) {
         const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
-        windows
-            .filter((window) => {
-                !this.activeTileableList.includes(window);
-            })
-            .forEach((window) => {
-                window.set_position(0, 0);
-                window.set_size(
-                    workArea.width /
-                        (workArea.width > workArea.height
-                            ? WINDOW_PER_SCREEN
-                            : 1),
-                    workArea.height /
-                        (workArea.width <= workArea.height
-                            ? WINDOW_PER_SCREEN
-                            : 1)
-                );
-            });
+        tileableList.forEach((tileable, index) => {
+            tileable.set_size(
+                workArea.width / (this.horizontal ? WINDOW_PER_SCREEN : 1),
+                workArea.height / (this.horizontal ? 1 : WINDOW_PER_SCREEN)
+            );
+            if (this.activeTileableList.includes(tileable)) {
+                const activeIndex = this.activeTileableList.indexOf(tileable);
+                if (this.horizontal) {
+                    tileable.set_position(
+                        activeIndex * (workArea.width / WINDOW_PER_SCREEN),
+                        0
+                    );
+                    tileable.translation_x =
+                        (workArea.width / WINDOW_PER_SCREEN) *
+                        (index - activeIndex);
+                } else {
+                    tileable.set_position(
+                        0,
+
+                        activeIndex * (workArea.height / WINDOW_PER_SCREEN)
+                    );
+                    tileable.translation_y =
+                        (workArea.height / WINDOW_PER_SCREEN) *
+                        (index - activeIndex);
+                }
+                tileable.show();
+            } else {
+                tileable.set_position(0, 0);
+                if (this.horizontal) {
+                    tileable.translation_x =
+                        (workArea.width / WINDOW_PER_SCREEN) * index;
+                } else {
+                    tileable.translation_y =
+                        (workArea.height / WINDOW_PER_SCREEN) * index;
+                }
+                tileable.hide();
+            }
+        });
         // Positionning active windows
-        this.activeTileableList.forEach((window, i) => {
+        /* this.activeTileableList.forEach((tileable, i) => {
             const windowBounds = {
                 x: 0,
                 y: 0,
@@ -117,7 +152,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 windowBounds.height /= WINDOW_PER_SCREEN;
                 windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
             }
-            if (windows.length < WINDOW_PER_SCREEN) {
+            if (tileableList.length < WINDOW_PER_SCREEN) {
                 this.animateSetPosition(window, windowBounds.x, windowBounds.y);
                 this.animateSetSize(
                     window,
@@ -129,23 +164,13 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 window.set_size(windowBounds.width, windowBounds.height);
             }
         });
-        windows.forEach((window) => {
+        tileableList.forEach((window) => {
             if (!this.activeTileableList.includes(window)) {
                 window.hide();
             } else {
                 window.show();
             }
-        });
-    }
-
-    addTransitionContainer() {
-        const workArea = this.getWorkspaceBounds();
-        this.overContainer.remove_all_children();
-        this.transitionContainer = new (workArea.width > workArea.height
-            ? Row
-            : Column)();
-        this.transitionContainer.set_style('background: rgba(200,200,0,0.8)');
-        this.overContainer.add_actor(this.transitionContainer);
+        }); */
     }
 
     onDestroy() {
@@ -157,114 +182,101 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         });
     }
 
-    transition(newTileableList, oldTileableList) {
-        newTileableList = newTileableList.filter(
-            (tileable) => !oldTileableList.includes(tileable)
-        );
-        //this.transitionContainer.remove_all_children();
-        const direction =
-            this.msWorkspace.tileableList.indexOf(newTileableList[0]) -
-            this.msWorkspace.tileableList.indexOf(oldTileableList[0]);
-
-        const allTileableList =
-            direction > 0
-                ? oldTileableList.concat(newTileableList)
-                : newTileableList.concat(oldTileableList);
-
-        allTileableList
-            .filter((tileable) => !tileable.grabbed)
-            .forEach((tileable) => {
-                if (tileable && !tileable.origin) {
-                    if (!tileable.get_parent()) {
-                        log('no parent for ', tileable.title);
-                    }
-                    tileable.origin = {
-                        parent: tileable.get_parent(),
-                        index: tileable
-                            .get_parent()
-                            .get_children()
-                            .indexOf(tileable),
-                    };
-                }
-                reparentActor(tileable, this.transitionContainer);
-                tileable.show();
-            });
-
+    transition() {
         const workArea = this.getWorkspaceBounds();
-        let xFrom = 0;
-        let xTo = 0;
-        let yFrom = 0;
-        let yTo = 0;
-        if (workArea.width > workArea.height) {
-            const shift =
-                (workArea.width * newTileableList.length) / WINDOW_PER_SCREEN;
-            if (direction > 0) {
-                xTo -= shift;
-            } else {
-                xFrom -= shift;
-            }
-        } else {
-            const shift =
-                (workArea.height * newTileableList.length) / WINDOW_PER_SCREEN;
-            if (direction > 0) {
-                yTo -= shift;
-            } else {
-                yFrom -= shift;
-            }
-        }
-
-        if (!this.animationInProgress) {
-            this.transitionContainer.set_position(xFrom, yFrom);
-
-            /* this.overContainer.set_clip(
-                this.monitor.x,
-                this.monitor.y,
-                this.monitor.width,
-                this.monitor.height
-            ); */
-            this.msWorkspace.msWorkspaceActor.insert_child_above(
-                this.overContainer,
+        let newIndex = this.baseIndex;
+        let oldIndex = Math.floor(
+            Math.abs(
                 this.msWorkspace.msWorkspaceActor.tileableContainer
-            );
-            this.animationInProgress = true;
+                    .translation_x
+            ) /
+                (workArea.width / WINDOW_PER_SCREEN)
+        );
+        let i =
+            newIndex > oldIndex
+                ? oldIndex - WINDOW_PER_SCREEN
+                : oldIndex + WINDOW_PER_SCREEN;
+        let to =
+            newIndex > oldIndex
+                ? newIndex + WINDOW_PER_SCREEN
+                : newIndex - WINDOW_PER_SCREEN;
+        while (i != to) {
+            log(i);
+            if (this.msWorkspace.tileableList[i])
+                this.msWorkspace.tileableList[i].show();
+            if (newIndex > oldIndex) {
+                i++;
+            } else {
+                i--;
+            }
         }
-
-        if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(this.transitionContainer, {
-                x: xTo,
-                y: yTo,
-                time: WINDOW_SLIDE_TWEEN_TIME / 1000,
-                transition: 'easeOutQuad',
-                onComplete: () => {
-                    this.animationInProgress = false;
-                    this.endTransition();
-                },
-            });
+        if (this.horizontal) {
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(
+                    this.msWorkspace.msWorkspaceActor.tileableContainer,
+                    {
+                        translation_x:
+                            -1 *
+                            this.baseIndex *
+                            (workArea.width / WINDOW_PER_SCREEN),
+                        time: WINDOW_SLIDE_TWEEN_TIME / 1000,
+                        transition: 'easeOutQuad',
+                        onComplete: () => {
+                            this.animationInProgress = false;
+                            this.endTransition();
+                        },
+                    }
+                );
+            } else {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
+                    translation_x:
+                        -1 *
+                        this.baseIndex *
+                        (workArea.width / WINDOW_PER_SCREEN),
+                    duration: WINDOW_SLIDE_TWEEN_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this.animationInProgress = false;
+                        this.endTransition();
+                    },
+                });
+            }
         } else {
-            this.transitionContainer.ease({
-                x: xTo,
-                y: yTo,
-                duration: WINDOW_SLIDE_TWEEN_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this.animationInProgress = false;
-                    this.endTransition();
-                },
-            });
+            if (ShellVersionMatch('3.32')) {
+                Tweener.addTween(
+                    this.msWorkspace.msWorkspaceActor.tileableContainer,
+                    {
+                        translation_y:
+                            -1 *
+                            this.baseIndex *
+                            (workArea.width / WINDOW_PER_SCREEN),
+                        time: WINDOW_SLIDE_TWEEN_TIME / 1000,
+                        transition: 'easeOutQuad',
+                        onComplete: () => {
+                            this.animationInProgress = false;
+                            this.endTransition();
+                        },
+                    }
+                );
+            } else {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
+                    translation_y:
+                        -1 *
+                        this.baseIndex *
+                        (workArea.width / WINDOW_PER_SCREEN),
+                    duration: WINDOW_SLIDE_TWEEN_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this.animationInProgress = false;
+                        this.endTransition();
+                    },
+                });
+            }
         }
     }
 
     endTransition() {
-        this.activeTileableList.forEach((tileable) => {
-            tileable.show();
-        });
-        this.msWorkspace.msWorkspaceActor.remove_child(this.overContainer);
-        this.transitionContainer.get_children().forEach((actor) => {
-            reparentActor(actor, actor.origin.parent);
-            actor.origin.parent.set_child_at_index(actor, actor.origin.index);
-            delete actor.origin;
-        });
-        this.onTile();
+        //this.onTile();
     }
 };
 

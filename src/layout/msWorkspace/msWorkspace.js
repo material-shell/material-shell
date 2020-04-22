@@ -33,7 +33,7 @@ var MsWorkspace = class MsWorkspace {
         this.uiVisible = true;
         this.focusedIndex = 0;
 
-        const Layout = global.tilingManager.getLayoutByKey(
+        const Layout = Me.tilingManager.getLayoutByKey(
             initialState ? initialState.tilingLayout : 'maximized'
         );
         this.tilingLayout = new Layout(this);
@@ -87,13 +87,6 @@ var MsWorkspace = class MsWorkspace {
         });
     }
 
-    isTopBarVisible() {
-        return (
-            !global.display.get_monitor_in_fullscreen(this.monitor.index) &&
-            !Main.overview.visible
-        );
-    }
-
     updateUI() {
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.visible = this.uiVisible;
@@ -101,6 +94,7 @@ var MsWorkspace = class MsWorkspace {
         if (this.msWorkspaceActor.panel) {
             this.msWorkspaceActor.panel.visible = this.shouldPanelBeVisible();
         }
+        this.tilingLayout.onTile();
     }
 
     close() {
@@ -269,7 +263,7 @@ var MsWorkspace = class MsWorkspace {
 
     nextTiling(direction) {
         this.tilingLayout.onDestroy();
-        const Layout = global.tilingManager.getNextLayout(
+        const Layout = Me.tilingManager.getNextLayout(
             this.tilingLayout,
             direction
         );
@@ -379,6 +373,7 @@ var MsWorkspaceActor = GObject.registerClass(
             super._init({
                 style_class: 'msWorkspace',
                 clip_to_allocation: true,
+                x_expand: true,
             });
             this.msWorkspace = msWorkspace;
             this.tileableContainer = new St.Widget({
@@ -406,7 +401,8 @@ var MsWorkspaceActor = GObject.registerClass(
             let containerBox = new Clutter.ActorBox();
             containerBox.x1 = box.x1;
             containerBox.x2 = box.x2;
-            containerBox.y1 = panelBox.y2;
+            containerBox.y1 =
+                this.panel && this.panel.visible ? panelBox.y2 : box.y1;
             containerBox.y2 = box.y2;
             this.tileableContainer.allocate(containerBox, flags);
             this.floatableContainer.allocate(containerBox, flags);
