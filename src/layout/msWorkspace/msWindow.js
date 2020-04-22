@@ -32,6 +32,9 @@ var MsWindow = GObject.registerClass(
             this.app = app;
             this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
+            this.windowClone.set_background_color(
+                new Clutter.Color({ red: 255, alpha: 255 })
+            );
             this.placeholder = new AppPlaceholder(this.app);
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
@@ -45,18 +48,33 @@ var MsWindow = GObject.registerClass(
             this.propagate = true;
             this.connect('notify::position', () => {
                 if (this.propagate && !this.followMetaWindow) {
+                    log('this notify::position');
                     this.updateMetaWindowPositionAndSize();
                 }
             });
             this.msContent.connect('notify::position', () => {
+                log('msContent notify::position');
+
                 if (this.propagate && !this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
             });
             this.msContent.connect('notify::size', () => {
+                log('msContent notify::size');
+
                 if (this.propagate && !this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
+            });
+            this.msContent.connect('notify::width', () => {
+                log('msContent notify::width');
+                /* 
+                if (this.propagate && !this.followMetaWindow) {
+                    this.updateMetaWindowPositionAndSize();
+                } */
+            });
+            this.msContent.connect('notify::height', () => {
+                log('msContent notify::height');
             });
             this.add_child(this.msContent);
             if (metaWindow) {
@@ -196,7 +214,8 @@ var MsWindow = GObject.registerClass(
             });
             this.grabEndSignal = global.display.connect('grab-op-end', () => {
                 if (this.metaWindow) {
-                    this.updateMetaWindowPositionAndSize();
+                    log('grab-open-end');
+                    //this.updateMetaWindowPositionAndSize();
                 }
             });
             /* this.superConnectId = Me.connect(
@@ -284,25 +303,12 @@ var MsWindow = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
+            log('allocate msWindow', this.title);
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             this.msContent.allocate(box, flags);
         }
-
-        /* set_position(x, y, propagate = true) {
-            super.set_position(Math.round(x), Math.round(y));
-            if (propagate) {
-                this.updateMetaWindowPositionAndSize();
-            }
-        }
-
-        set_size(width, height, propagate = true) {
-            super.set_size(Math.round(width), Math.round(height));
-            if (propagate) {
-                this.updateMetaWindowPositionAndSize();
-            }
-        } */
 
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
@@ -313,12 +319,16 @@ var MsWindow = GObject.registerClass(
             if (this.metaWindowUpdateInProgress) return;
             this.metaWindowUpdateInProgress = true;
             //Wait for the WindowActor to be available
-            this.onMetaWindowActorExist().then(() => {
+            return this.onMetaWindowActorExist().then(() => {
                 if (!this.metaWindow) return;
                 delete this.metaWindowUpdateInProgress;
                 const workArea = Main.layoutManager.getWorkAreaForMonitor(
                     this.msWorkspace.monitor.index
                 );
+                let contentBox = this.msContent.get_allocation_box();
+                let x = this.x + contentBox.x1;
+                let y = this.y + contentBox.y1;
+
                 //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
                 const isMaximized =
                     this.x === workArea.x &&
@@ -327,6 +337,10 @@ var MsWindow = GObject.registerClass(
                     this.height === workArea.height;
 
                 //Set the metaWindow maximized if it's the case
+                let moveTo = {
+                    x: this.dragged ? x : workArea.x + x,
+                    y: this.dragged ? y : workArea.y + y,
+                };
                 if (isMaximized) {
                     if (this.metaWindow.maximized) return;
                     return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
@@ -335,16 +349,110 @@ var MsWindow = GObject.registerClass(
                 if (this.metaWindow.maximized_horizontally) {
                     this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                 }
-                let x = this.x + this.msContent.x;
-                let y = this.y + this.msContent.y;
+                log('dragged', this.dragged, workArea.x, workArea.y);
                 //Set the size accordingly
+                log(
+                    'resize metaWindow to ',
+                    moveTo.x,
+                    moveTo.y,
+                    contentBox.get_width(),
+                    contentBox.get_height()
+                );
+                //return new Promise((resolve, reject) => {});
+
+                let resizeTo = {
+                    width: contentBox.get_width(),
+                    height: contentBox.get_height(),
+                };
+
+                let currentFrameRect = this.metaWindow.get_frame_rect();
+
+                let willMove =
+                    currentFrameRect.x != moveTo.x ||
+                    currentFrameRect.y != moveTo.y;
+                let willResize =
+                    currentFrameRect.width != resizeTo.width ||
+                    currentFrameRect.height != resizeTo.height;
+                if (!willMove && !willResize) {
+                    return;
+                }
+                let promises = [];
+                if (willMove) {
+                    promises.push(
+                        new Promise((resolve) => {
+                            let connectId = this.metaWindow.connect(
+                                'position-changed',
+                                () => {
+                                    this.metaWindow.disconnect(connectId);
+                                    resolve();
+                                }
+                            );
+                        })
+                    );
+                }
+                if (willResize) {
+                    promises.push(
+                        new Promise((resolve) => {
+                            let connectId = this.metaWindow.connect(
+                                'size-changed',
+                                () => {
+                                    this.metaWindow.disconnect(connectId);
+                                    resolve();
+                                }
+                            );
+                        })
+                    );
+                }
                 this.metaWindow.move_resize_frame(
                     true,
-                    this.dragged ? x : workArea.x + x,
-                    this.dragged ? y : workArea.y + y,
-                    this.msContent.width,
-                    this.msContent.height
+                    moveTo.x,
+                    moveTo.y,
+                    resizeTo.width,
+                    resizeTo.height
                 );
+                return Promise.all(promises);
+                log(
+                    this.metaWindow.get_frame_rect().x,
+                    this.metaWindow.get_frame_rect().y,
+                    this.metaWindow.get_frame_rect().width,
+                    this.metaWindow.get_frame_rect().height
+                );
+                let compositorPrivate = this.metaWindow.get_compositor_private();
+                let texture = compositorPrivate.get_texture();
+                let [
+                    _,
+                    textureWidth,
+                    textureHeight,
+                ] = texture.get_preferred_size();
+                log(
+                    compositorPrivate.width,
+                    textureWidth,
+                    compositorPrivate.height,
+                    textureHeight
+                );
+
+                if (
+                    compositorPrivate.width != textureWidth ||
+                    compositorPrivate.height != textureHeight
+                ) {
+                }
+                /*     if(compositorPrivate.width ===
+                let box = compositorPrivate.get_allocation_box();
+                log(box.x1, box.y1, box.get_width(), box.get_height());
+
+                log('texture', texture, texture.get_preferred_size());
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    log('queue_relayout');
+                    compositorPrivate.queue_relayout();
+                }); */
+                /* let box2 = texture.get_allocation_box();
+                log(
+                    'texture',
+                    box2.x1,
+                    box2.y1,
+                    box2.get_width(),
+                    box2.get_height()
+                ); */
             });
         }
 
@@ -378,8 +486,16 @@ var MsWindow = GObject.registerClass(
                     this.mimicMetaWindowPositionAndSize();
                 }),
                 this.metaWindow.connect('size-changed', () => {
-                    if (!this.followMetaWindow) return;
-                    this.mimicMetaWindowPositionAndSize();
+                    if (this.followMetaWindow) {
+                        this.mimicMetaWindowPositionAndSize();
+                    } else if (
+                        this.metaWindow.get_frame_rect().width !=
+                            this.msContent.width ||
+                        this.metaWindow.get_frame_rect().height !=
+                            this.msContent.height
+                    ) {
+                        this.updateMetaWindowPositionAndSize();
+                    }
                 })
             );
         }
@@ -409,32 +525,38 @@ var MsWindow = GObject.registerClass(
                 }
             }
 
-            this.onMetaWindowActorExist().then((_) => {
-                let promise = new Promise((resolve) => {
-                    if (metaWindow.firstFrameDrawn) {
-                        resolve();
-                    } else {
-                        let windowActor = metaWindow.get_compositor_private();
-                        windowActor.connect('first-frame', () => {
+            this.onMetaWindowActorExist()
+                .then((_) => {
+                    return new Promise((resolve) => {
+                        if (metaWindow.firstFrameDrawn) {
                             resolve();
-                        });
-                    }
-                });
-                promise.then(() => {
+                        } else {
+                            metaWindow
+                                .get_compositor_private()
+                                .connect('first-frame', () => {
+                                    resolve();
+                                });
+                        }
+                    });
+                })
+                .then(() => {
                     WindowUtils.updateTitleBarVisibility(this.metaWindow);
                     this.windowClone.set_source(
                         metaWindow.get_compositor_private()
                     );
                     if (this.followMetaWindow) {
-                        this.mimicMetaWindowPositionAndSize();
+                        return Promise.resolve(
+                            this.mimicMetaWindowPositionAndSize()
+                        );
                     } else {
-                        this.updateMetaWindowPositionAndSize();
+                        return this.updateMetaWindowPositionAndSize();
                     }
+                })
+                .then(() => {
                     if (this.placeholder.get_parent()) {
                         this.fadeOutPlaceholder();
                     }
                 });
-            });
             this.emit('title-changed', this.title);
         }
 
@@ -551,6 +673,7 @@ var MsWindowContent = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
+            log('allocate msContent', box.get_width(), box.get_height());
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);

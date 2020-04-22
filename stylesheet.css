@@ -274,6 +274,9 @@ subtitle-1 {
 .dark-theme MsWindow {
   background-color: red; }
 
+.dark-theme MsWindowContent {
+  background-color: blue; }
+
 .dark-theme .floatable-container MsWindow {
   box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
   border-radius: 10px; }
@@ -485,6 +488,9 @@ subtitle-1 {
 
 .light-theme MsWindow {
   background-color: red; }
+
+.light-theme MsWindowContent {
+  background-color: blue; }
 
 .light-theme .floatable-container MsWindow {
   box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
@@ -747,6 +753,9 @@ subtitle-1 {
 
 .primary-theme MsWindow {
   background-color: red; }
+
+.primary-theme MsWindowContent {
+  background-color: blue; }
 
 .primary-theme .floatable-container MsWindow {
   box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);

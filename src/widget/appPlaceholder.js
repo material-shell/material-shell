@@ -28,7 +28,6 @@ var AppPlaceholder = GObject.registerClass(
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
             this._spinner = new Animation.Spinner(16);
-            this._spinner.play();
             let spinnerActor;
             if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
                 spinnerActor = this._spinner.actor;
@@ -93,6 +92,7 @@ var AppPlaceholder = GObject.registerClass(
                         this.emit('clicked', event.get_button());
                         this.pressed = false;
                         this.clickableContainer.reactive = false;
+                        this._spinner.play();
                         this.spinnerContainer.set_opacity(255);
                     }
                 } else if (eventType === Clutter.EventType.LEAVE) {
@@ -103,6 +103,7 @@ var AppPlaceholder = GObject.registerClass(
 
         reset() {
             this.clickableContainer.reactive = true;
+            this._spinner.stop();
             this.spinnerContainer.set_opacity(0);
             delete this.waitForReset;
         }

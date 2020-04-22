@@ -70,10 +70,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
         );
 
-        this.observe(Main.layoutManager, 'monitors-changed', () => {
-            //Manage multiple monitors
-            //this.buildMonitorPanelSpacers();
-        });
         this.observe(
             global.window_manager,
             'switch-workspace',

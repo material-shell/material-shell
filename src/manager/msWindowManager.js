@@ -27,10 +27,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         });
 
         this.observe(this.windowTracker, 'tracked-windows-changed', () => {
-            log(
-                'tracked-windows-changed',
-                this.metaWindowWaitForAppList.length
-            );
             this.metaWindowWaitForAppList.forEach((metaWindow, index) => {
                 let app = this.windowTracker.get_window_app(metaWindow);
                 if (app && !app.is_window_backed()) {
