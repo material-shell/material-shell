@@ -45,17 +45,15 @@ var MsWindow = GObject.registerClass(
                 this.placeholder,
                 this.windowClone
             );
-            this.propagate = true;
             this.connect('notify::position', () => {
-                if (this.propagate && !this.followMetaWindow) {
+                if (this.propagate && !this.dragged && !this.followMetaWindow) {
                     log('this notify::position');
                     this.updateMetaWindowPositionAndSize();
                 }
             });
             this.msContent.connect('notify::position', () => {
                 log('msContent notify::position');
-
-                if (this.propagate && !this.followMetaWindow) {
+                if (!this.followMetaWindow) {
                     this.updateMetaWindowPositionAndSize();
                 }
             });
@@ -66,22 +64,16 @@ var MsWindow = GObject.registerClass(
                     this.updateMetaWindowPositionAndSize();
                 }
             });
-            this.msContent.connect('notify::width', () => {
-                log('msContent notify::width');
-                /* 
-                if (this.propagate && !this.followMetaWindow) {
-                    this.updateMetaWindowPositionAndSize();
-                } */
-            });
-            this.msContent.connect('notify::height', () => {
-                log('msContent notify::height');
-            });
             this.add_child(this.msContent);
             if (metaWindow) {
                 this.setWindow(metaWindow);
             }
 
             this.registerToEvents();
+        }
+
+        get propagate() {
+            return true;
         }
 
         get title() {
@@ -107,16 +99,50 @@ var MsWindow = GObject.registerClass(
         }
 
         registerToEvents() {
-            let cursorTracker = Meta.CursorTracker.get_for_display(
-                global.display
-            );
             let buttonPressed = false;
+            let originPointerAnchor = null;
             let originPointerCoords = null;
-            let originMsWindowPosition = null;
             let stageMotionEventId = null;
             this.wmPreferenceSettings = new Gio.Settings({
                 schema_id: 'org.gnome.desktop.wm.preferences',
             });
+            const listenToStageEvent = () => {
+                stageMotionEventId = global.stage.connect(
+                    'captured-event',
+                    (_, event) => {
+                        const [currentX, currentY] = event.get_coords();
+
+                        this.set_position(
+                            Math.round(
+                                currentX - this.width * originPointerAnchor[0]
+                            ),
+                            Math.round(
+                                currentY - this.height * originPointerAnchor[1]
+                            )
+                        );
+
+                        if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
+                            buttonPressed = false;
+                            if (this.dragged) {
+                                this.dragged = false;
+                                if (this.metaWindow) {
+                                    this.metaWindow.unminimize();
+                                    this.metaWindow
+                                        .get_compositor_private()
+                                        .show();
+                                    this.updateMetaWindowPositionAndSize();
+                                }
+
+                                this.emit('dragged-changed', this.dragged);
+                            }
+                            global.stage.disconnect(stageMotionEventId);
+                            stageMotionEventId = null;
+                        }
+
+                        return Clutter.EVENT_PROPAGATE;
+                    }
+                );
+            };
             this.connect('event', (_, event) => {
                 const focusOnHover =
                     this.wmPreferenceSettings.get_enum('focus-mode') > 0;
@@ -124,6 +150,18 @@ var MsWindow = GObject.registerClass(
                     case Clutter.EventType.BUTTON_PRESS:
                         buttonPressed = true;
                         originPointerCoords = event.get_coords();
+                        let [stageX, stageY] = event.get_coords();
+                        let [
+                            _,
+                            relativeX,
+                            relativeY,
+                        ] = this.transform_stage_point(stageX, stageY);
+                        log('relative', relativeX, relativeY);
+                        originPointerAnchor = [
+                            relativeX / this.width,
+                            relativeY / this.height,
+                        ];
+                        log(originPointerAnchor);
                         if (!focusOnHover) {
                             this.takeFocus();
                         }
@@ -150,52 +188,14 @@ var MsWindow = GObject.registerClass(
                             );
                             if (distance > 48) {
                                 this.dragged = true;
-                                originMsWindowPosition = this.get_position();
-                                stageMotionEventId = global.stage.connect(
-                                    'captured-event',
-                                    (_, event) => {
-                                        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                                            this.msWorkspace.monitor.index
-                                        );
-                                        const [
-                                            currentX,
-                                            currentY,
-                                        ] = event.get_coords();
-                                        const diffX = originX - currentX;
-                                        const diffY = originY - currentY;
-                                        const [
-                                            originMsWindowX,
-                                            originMsWindowY,
-                                        ] = originMsWindowPosition;
-                                        this.set_position(
-                                            Math.round(
-                                                originMsWindowX - diffX
-                                            ) + workArea.x,
-                                            Math.round(
-                                                originMsWindowY - diffY
-                                            ) + workArea.y
-                                        );
+                                if (this.metaWindow) {
+                                    this.metaWindow.minimize();
+                                    this.metaWindow
+                                        .get_compositor_private()
+                                        .hide();
+                                }
 
-                                        if (
-                                            event.type() ===
-                                            Clutter.EventType.BUTTON_RELEASE
-                                        ) {
-                                            if (this.dragged) {
-                                                this.dragged = false;
-                                                this.emit(
-                                                    'dragged-changed',
-                                                    this.dragged
-                                                );
-                                            }
-                                            global.stage.disconnect(
-                                                stageMotionEventId
-                                            );
-                                            stageMotionEventId = null;
-                                        }
-
-                                        return Clutter.EVENT_PROPAGATE;
-                                    }
-                                );
+                                listenToStageEvent();
                                 this.emit('dragged-changed', this.dragged);
                             }
                         }
@@ -326,6 +326,8 @@ var MsWindow = GObject.registerClass(
                     this.msWorkspace.monitor.index
                 );
                 let contentBox = this.msContent.get_allocation_box();
+                let currentFrameRect = this.metaWindow.get_frame_rect();
+
                 let x = this.x + contentBox.x1;
                 let y = this.y + contentBox.y1;
 
@@ -338,8 +340,8 @@ var MsWindow = GObject.registerClass(
 
                 //Set the metaWindow maximized if it's the case
                 let moveTo = {
-                    x: this.dragged ? x : workArea.x + x,
-                    y: this.dragged ? y : workArea.y + y,
+                    x: this.dragged ? currentFrameRect.x : workArea.x + x,
+                    y: this.dragged ? currentFrameRect.y : workArea.y + y,
                 };
                 if (isMaximized) {
                     if (this.metaWindow.maximized) return;
@@ -364,8 +366,6 @@ var MsWindow = GObject.registerClass(
                     width: contentBox.get_width(),
                     height: contentBox.get_height(),
                 };
-
-                let currentFrameRect = this.metaWindow.get_frame_rect();
 
                 let willMove =
                     currentFrameRect.x != moveTo.x ||

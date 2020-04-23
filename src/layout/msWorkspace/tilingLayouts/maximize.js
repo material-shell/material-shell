@@ -98,6 +98,8 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 actor.set_position(0, 0);
                 actor.set_size(workArea.width, workArea.height);
                 actor.translation_x = index * workArea.width;
+            } else {
+                this.animateSetSize(actor, workArea.width, workArea.height);
             }
             if (index !== this.msWorkspace.focusedIndex && !actor.dragged) {
                 actor.hide();

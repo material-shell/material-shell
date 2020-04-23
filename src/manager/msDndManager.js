@@ -3,10 +3,12 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
+const Main = imports.ui.main;
 
 /* exported MsDndManager */
 var MsDndManager = class MsDndManager {
     constructor(msWindowManager) {
+        AddLogToFunctions(this);
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.msWindowManager.connect('ms-window-created', () => {
@@ -18,10 +20,18 @@ var MsDndManager = class MsDndManager {
             () => {
                 if (this.dragInProgress) {
                     const newMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                    Me.msWorkspaceManager.setWindowToMsWorkspace(
-                        this.msWindowDragged,
-                        newMsWorkspace
-                    );
+                    if (this.msWindowDragged.metaWindow) {
+                        this.msWindowDragged.metaWindow.change_workspace_by_index(
+                            global.workspace_manager.get_active_workspace_index(),
+                            true
+                        );
+                    } else {
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                            this.msWindowDragged,
+                            newMsWorkspace
+                        );
+                    }
+
                     if (this.msWindowDragged.isDialog) {
                         this.originalParent =
                             newMsWorkspace.msWorkspaceActor.floatableContainer;
@@ -32,7 +42,6 @@ var MsDndManager = class MsDndManager {
                 }
             }
         );
-        AddLogToFunctions(this);
     }
 
     listenForMsWindowsDragSignal() {
@@ -69,8 +78,48 @@ var MsDndManager = class MsDndManager {
     checkUnderThePointerRoutine() {
         if (!this.dragInProgress) return;
         let [x, y] = global.get_pointer();
+
+        let monitor = Main.layoutManager.monitors.find((monitor) => {
+            return (
+                x >= monitor.x &&
+                x <= monitor.x + monitor.width &&
+                y >= monitor.y &&
+                y <= monitor.y + monitor.height
+            );
+        });
+
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWorkspace = this.msWindowDragged.msWorkspace;
+        if (monitor !== msWorkspace.monitor) {
+            let newMsWorkspace;
+            if (monitor === Main.layoutManager.primaryMonitor) {
+                newMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+            } else {
+                newMsWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                    monitor.index
+                )[0];
+            }
+
+            Me.msWorkspaceManager.setWindowToMsWorkspace(
+                this.msWindowDragged,
+                newMsWorkspace
+            );
+            if (this.msWindowDragged.isDialog) {
+                this.originalParent =
+                    newMsWorkspace.msWorkspaceActor.floatableContainer;
+            } else {
+                this.originalParent =
+                    newMsWorkspace.msWorkspaceActor.tileableContainer;
+            }
+        }
+
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+            msWorkspace.monitor.index
+        );
+        let relativeX = x - workArea.x;
+        let relativeY = y - workArea.y;
+        log('check under', x, y, relativeX, relativeY);
+
         msWorkspace.tileableList
             .filter(
                 (tileable) =>
@@ -81,10 +130,10 @@ var MsDndManager = class MsDndManager {
             )
             .forEach((tileable) => {
                 if (
-                    x >= tileable.x &&
-                    x <= tileable.x + tileable.width &&
-                    y >= tileable.y &&
-                    y <= tileable.y + tileable.height
+                    relativeX >= tileable.x &&
+                    relativeX <= tileable.x + tileable.width &&
+                    relativeY >= tileable.y &&
+                    relativeY <= tileable.y + tileable.height
                 ) {
                     msWorkspace.swapTileable(this.msWindowDragged, tileable);
                 }

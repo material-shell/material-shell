@@ -232,8 +232,6 @@ var BaseTilingLayout = class BaseTilingLayout {
     }
 
     animateSetSize(actor, width, height) {
-        if (actor.dragged) return;
-
         const { width: oldWidth, height: oldHeight } = actor;
         actor.set_size(width, height);
         actor.scale_x = oldWidth / width;
