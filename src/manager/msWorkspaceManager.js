@@ -172,7 +172,17 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     );
                 }
             } else {
-                this.createNewMsWorkspace(monitor);
+                let externalIndex = Main.layoutManager.monitors
+                    .filter((monitor) => {
+                        return monitor != Main.layoutManager.primaryMonitor;
+                    })
+                    .indexOf(monitor);
+                this.createNewMsWorkspace(
+                    monitor,
+                    previousState &&
+                        previousState.externalWorkspaces &&
+                        previousState.externalWorkspaces[externalIndex]
+                );
             }
         }
         delete this.restoringState;
@@ -319,11 +329,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 false,
                 global.get_current_time()
             );
-            //this.createNewMsWorkspace(Main.layoutManager.primaryMonitor);
         }
         let workspacesToRemove = [];
         this.primaryMsWorkspaces.forEach((msWorkspace, index) => {
-            log(index);
             if (
                 msWorkspace.msWindowList.length === 0 &&
                 msWorkspace != this.getActiveMsWorkspace() &&
@@ -338,7 +346,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 workspacesToRemove.push(
                     this.workspaceManager.get_workspace_by_index(index)
                 );
-                //this.removeMsWorkspaceAtIndex(index);
             }
         });
         workspacesToRemove.forEach((workspace) => {

@@ -33,7 +33,7 @@ function init() {
     global.materialShell = Me;
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
-    //St.set_slow_down_factor(1);
+    //St.set_slow_down_factor(10);
 }
 
 // eslint-disable-next-line no-unused-vars

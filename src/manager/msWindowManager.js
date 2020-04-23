@@ -41,6 +41,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow = windowActor.metaWindow;
             metaWindow.firstFrameDrawn = true;
+            log(metaWindow.get_title());
             if (this._handleWindow(metaWindow)) {
                 let msWindow = this.msWindowList.find((msWindow) => {
                     return (
@@ -208,6 +209,15 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     buildMetaWindowIdentifier(metaWindow) {
         return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
+    }
+
+    destroy() {
+        super.destroy();
+        global.get_window_actors().forEach((windowActor) => {
+            const metaWindow = windowActor.metaWindow;
+            if (metaWindow.handledByMaterialShell)
+                delete metaWindow.handledByMaterialShell;
+        });
     }
 };
 Signals.addSignalMethods(MsWindowManager.prototype);
