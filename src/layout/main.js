@@ -55,8 +55,10 @@ var MsMain = GObject.registerClass(
                         clip_to_allocation: true,
                     });
                 } else {
-                    this.monitorsContainer[monitor.index] = new St.BoxLayout({
+                    this.monitorsContainer[monitor.index] = new St.Bin({
                         clip_to_allocation: true,
+                        x_fill: true,
+                        y_fill: true,
                     });
                 }
 
@@ -140,7 +142,7 @@ var MsMain = GObject.registerClass(
                     msWorkspace.msWorkspaceActor.get_parent() !==
                     this.monitorsContainer[msWorkspace.monitor.index]
                 ) {
-                    this.monitorsContainer[msWorkspace.monitor.index].add_child(
+                    this.monitorsContainer[msWorkspace.monitor.index].set_child(
                         msWorkspace.msWorkspaceActor
                     );
                 }
