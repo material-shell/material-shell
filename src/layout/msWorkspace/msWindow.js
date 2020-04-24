@@ -310,6 +310,20 @@ var MsWindow = GObject.registerClass(
             this.msContent.allocate(box, flags);
         }
 
+        getRelativeMetaWindowPosition() {
+            let contentBox = this.msContent.get_allocation_box();
+            let x = this.x + contentBox.x1;
+            let y = this.y + contentBox.y1;
+            let currentFrameRect = this.metaWindow.get_frame_rect();
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.msWorkspace.monitor.index
+            );
+            return {
+                x: this.dragged ? currentFrameRect.x : workArea.x + x,
+                y: this.dragged ? currentFrameRect.y : workArea.y + y,
+            };
+        }
+
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
@@ -328,9 +342,6 @@ var MsWindow = GObject.registerClass(
                 let contentBox = this.msContent.get_allocation_box();
                 let currentFrameRect = this.metaWindow.get_frame_rect();
 
-                let x = this.x + contentBox.x1;
-                let y = this.y + contentBox.y1;
-
                 //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
                 const isMaximized =
                     this.x === workArea.x &&
@@ -339,10 +350,7 @@ var MsWindow = GObject.registerClass(
                     this.height === workArea.height;
 
                 //Set the metaWindow maximized if it's the case
-                let moveTo = {
-                    x: this.dragged ? currentFrameRect.x : workArea.x + x,
-                    y: this.dragged ? currentFrameRect.y : workArea.y + y,
-                };
+                let moveTo = this.getRelativeMetaWindowPosition();
                 if (isMaximized) {
                     if (this.metaWindow.maximized) return;
                     return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
@@ -482,8 +490,21 @@ var MsWindow = GObject.registerClass(
                     this.emit('title-changed', this.title);
                 }),
                 this.metaWindow.connect('position-changed', () => {
-                    if (!this.followMetaWindow) return;
-                    this.mimicMetaWindowPositionAndSize();
+                    if (this.followMetaWindow) {
+                        this.mimicMetaWindowPositionAndSize();
+                    } else {
+                        if (!this.dragged) {
+                            let wantedPosition = this.getRelativeMetaWindowPosition();
+                            if (
+                                wantedPosition.x !=
+                                    this.metaWindow.get_frame_rect().x ||
+                                wantedPosition.y !=
+                                    this.metaWindow.get_frame_rect().y
+                            ) {
+                                this.updateMetaWindowPositionAndSize();
+                            }
+                        }
+                    }
                 }),
                 this.metaWindow.connect('size-changed', () => {
                     if (this.followMetaWindow) {
