@@ -369,21 +369,22 @@ var MsWindow = GObject.registerClass(
             if (this.metaWindowUpdateInProgressPromise) {
                 return this.metaWindowUpdateInProgressPromise;
             }
-
+            log('step 1 call');
             //Wait for the WindowActor to be available
             this.metaWindowUpdateInProgressPromise = new Promise((resolve) => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    log('step 2 delay');
                     resolve();
                 });
             })
                 .then(() => {
                     return this.onMetaWindowActorExist().then(() => {
                         if (!this.metaWindow) return;
+                        log('step 3 actor exist');
                         const workArea = Main.layoutManager.getWorkAreaForMonitor(
                             this.msWorkspace.monitor.index
                         );
                         let contentBox = this.msContent.get_allocation_box();
-                        let currentFrameRect = this.metaWindow.get_frame_rect();
 
                         //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
                         const isMaximized =
@@ -408,13 +409,19 @@ var MsWindow = GObject.registerClass(
                         if (this.metaWindow.maximized_horizontally) {
                             this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                         }
+                        let currentFrameRect = this.metaWindow.get_frame_rect();
                         //Set the size accordingly
                         log(
                             'resize metaWindow to ',
                             moveTo.x,
                             moveTo.y,
                             resizeTo.width,
-                            resizeTo.height
+                            resizeTo.height,
+                            ' from: ',
+                            currentFrameRect.x,
+                            currentFrameRect.y,
+                            currentFrameRect.width,
+                            currentFrameRect.height
                         );
                         //return new Promise((resolve, reject) => {});
 
@@ -422,14 +429,12 @@ var MsWindow = GObject.registerClass(
                             currentFrameRect.x != moveTo.x ||
                             currentFrameRect.y != moveTo.y;
 
-                        let willResize = !(
-                            this.previousResize.width === resizeTo.width &&
-                            this.previousResize.height === resizeTo.height &&
-                            currentFrameRect.width ===
-                                this.previousRealSize.width &&
-                            currentFrameRect.height ===
-                                this.previousRealSize.height
-                        );
+                        let willResize =
+                            currentFrameRect.width !== resizeTo.width ||
+                            currentFrameRect.height !== resizeTo.height;
+
+                        log('WILL RESIZE:', willResize);
+
                         if (!willMove && !willResize) {
                             return;
                         }
@@ -457,6 +462,7 @@ var MsWindow = GObject.registerClass(
                                     let connectId = this.metaWindow.connect(
                                         'size-changed',
                                         () => {
+                                            log('did resize');
                                             this.previousRealSize = {
                                                 width: this.metaWindow.get_frame_rect()
                                                     .width,
@@ -469,17 +475,20 @@ var MsWindow = GObject.registerClass(
                                             resolve();
                                         }
                                     );
-                                    // In some case the size-changed it's not called
+                                    // Gnome-terminal decide his own size so in some case the size-changed it's not called
                                     GLib.timeout_add(
                                         GLib.PRIORITY_DEFAULT,
                                         100,
                                         () => {
+                                            log('did resize fake');
                                             resolve();
                                         }
                                     );
                                 })
                             );
                         }
+                        log('step 4 call resize');
+
                         this.metaWindow.move_resize_frame(
                             true,
                             moveTo.x,
@@ -491,6 +500,7 @@ var MsWindow = GObject.registerClass(
                     });
                 })
                 .then(() => {
+                    log('step 5 delete promise');
                     delete this.metaWindowUpdateInProgressPromise;
                 });
 
@@ -540,6 +550,11 @@ var MsWindow = GObject.registerClass(
                     }
                 }),
                 this.metaWindow.connect('size-changed', () => {
+                    log(
+                        'meta window size changed',
+                        this.metaWindow.get_frame_rect().width,
+                        this.metaWindow.get_frame_rect().height
+                    );
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
                     } else if (
@@ -581,15 +596,6 @@ var MsWindow = GObject.registerClass(
 
             await this.onMetaWindowActorExist();
             await this.onMetaWindowFirstFrameDrawn();
-            const { width, height } = metaWindow.get_frame_rect();
-            this.previousResize = {
-                width,
-                height,
-            };
-            this.previousRealSize = {
-                width,
-                height,
-            };
             WindowUtils.updateTitleBarVisibility(this.metaWindow);
             this.windowClone.set_source(metaWindow.get_compositor_private());
 
