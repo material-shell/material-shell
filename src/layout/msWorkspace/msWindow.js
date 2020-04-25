@@ -367,6 +367,7 @@ var MsWindow = GObject.registerClass(
             if (!this.metaWindow) return Promise.resolve();
             //If an update is already in progress discard all incoming call
             if (this.metaWindowUpdateInProgressPromise) {
+                log('update already in progress');
                 return this.metaWindowUpdateInProgressPromise;
             }
             log('step 1 call');
