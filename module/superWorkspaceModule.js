@@ -2,11 +2,10 @@ const { Clutter, St, Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Tweener = imports.ui.tweener;
 
 const { AppsManager } = Me.imports.superWorkspace.appsManager;
 const {
-    SuperWorkspaceManager
+    SuperWorkspaceManager,
 } = Me.imports.superWorkspace.superWorkspaceManager;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
 
@@ -17,7 +16,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.workspaceManager = global.workspace_manager;
         this.enabled = false;
         this.signals = [];
-        Main.wm.getWindowClone = function(metaWindow) {
+        Main.wm.getWindowClone = function (metaWindow) {
             let windowActor = metaWindow.get_compositor_private();
             /* let actorContent = Shell.util_get_content_for_window_actor(
                 windowActor,
@@ -25,12 +24,12 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             );
             let actorClone = new St.Widget({ content: actorContent }); */
             let actorClone = new Clutter.Clone({
-                source: windowActor
+                source: windowActor,
             });
 
             let constraint = new Clutter.BindConstraint({
                 source: windowActor,
-                coordinate: Clutter.BindCoordinate.ALL
+                coordinate: Clutter.BindCoordinate.ALL,
             });
 
             actorClone.add_constraint(constraint);
@@ -50,7 +49,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
         this.signals.push({
             from: global.display,
             id: global.display.connect('in-fullscreen-changed', () => {
-                Main.layoutManager.monitors.forEach(monitor => {
+                Main.layoutManager.monitors.forEach((monitor) => {
                     let superWorkspace;
                     if (Main.layoutManager.primaryIndex === monitor.index) {
                         superWorkspace = global.superWorkspaceManager.getActiveSuperWorkspace();
@@ -61,7 +60,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     }
                     superWorkspace.updateUI();
                 });
-            })
+            }),
         });
 
         this.legacyPanelGhost =
@@ -73,10 +72,10 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
         this.myPanelGhost = new St.Bin({
             child: new Clutter.Clone({
-                source: this.topBarSpacer
+                source: this.topBarSpacer,
             }),
             reactive: false,
-            opacity: 0
+            opacity: 0,
         });
 
         Main.overview._overview.remove_child(this.legacyPanelGhost);
@@ -99,14 +98,14 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     this.currentSuperWorkspace.uiVisible = true;
                     this.currentSuperWorkspace.updateUI();
                 }
-            )
+            ),
         });
 
         this.signals.push({
             from: global.display,
             id: global.display.connect('window-created', (_, metaWindow) => {
                 global.superWorkspaceManager.onNewWindow(metaWindow);
-            })
+            }),
         });
 
         this._listenToDispatchWindow();
@@ -118,7 +117,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 () => {
                     this.dispatchApps();
                 }
-            )
+            ),
         });
 
         this.signalMonitorId = Main.layoutManager.connect(
@@ -134,7 +133,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
     }
 
     disable() {
-        this.signals.forEach(signal => {
+        this.signals.forEach((signal) => {
             signal.from.disconnect(signal.id);
         });
         this.signals = [];
@@ -160,7 +159,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
          *  2- Add the panels and backgrounds to the animated container so they will follow the transition animation.
          */
         this.original_prepareWorkspaceSwitch = Main.wm._prepareWorkspaceSwitch;
-        Main.wm._prepareWorkspaceSwitch = function(from, to, direction) {
+        Main.wm._prepareWorkspaceSwitch = function (from, to, direction) {
             if (this._switchData) return;
 
             let wgroup = Main.uiGroup;
@@ -234,7 +233,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
 
                 let info = {
                     index: ws.index(),
-                    actor: new Clutter.Actor()
+                    actor: new Clutter.Actor(),
                 };
                 switchData.surroundings[dir] = info;
                 switchData.container.add_actor(info.actor);
@@ -307,7 +306,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
          */
         this.original_finishWorkspaceSwitch = Main.wm._finishWorkspaceSwitch;
 
-        Main.wm._finishWorkspaceSwitch = function(switchData) {
+        Main.wm._finishWorkspaceSwitch = function (switchData) {
             this._switchData = null;
             switchData.superWorkspace.frontendContainer
                 .get_parent()
@@ -342,7 +341,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 }
             }
             if (ShellVersionMatch('3.32')) {
-                Tweener.removeTweens(switchData.container);
+                imports.ui.tweener.removeTweens(switchData.container);
             } else {
                 switchData.container.remove_all_transitions();
             }
@@ -353,7 +352,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             this._movingWindow = null;
         };
 
-        Main.wm.__switchWorkspace = function(shellwm, from, to, direction) {
+        Main.wm.__switchWorkspace = function (shellwm, from, to, direction) {
             if (!Main.sessionMode.hasWorkspaces || !this._shouldAnimate()) {
                 shellwm.completed_switch_workspace();
                 return;
@@ -375,14 +374,14 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
             xDest = -xDest;
             yDest = -yDest;
             if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this._switchData.container, {
+                imports.ui.tweener.addTween(this._switchData.container, {
                     translate_x: xDest,
                     translate_y: yDest,
                     time: WINDOW_ANIMATION_TIME,
                     transition: 'easeOutQuad',
                     onComplete: this._switchWorkspaceDone,
                     onCompleteScope: this,
-                    onCompleteParams: [shellwm]
+                    onCompleteParams: [shellwm],
                 });
             } else {
                 this._switchData.container.ease({
@@ -390,15 +389,15 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     translate_y: yDest,
                     duration: WINDOW_ANIMATION_TIME,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => this._switchWorkspaceDone(shellwm)
+                    onComplete: () => this._switchWorkspaceDone(shellwm),
                 });
             }
         };
 
         this.original_actionMoveWorkspace = Main.wm.actionMoveWorkspace;
-        Main.wm.actionMoveWorkspace = (function() {
+        Main.wm.actionMoveWorkspace = (function () {
             var cachedFunction = Main.wm.actionMoveWorkspace;
-            return function() {
+            return function () {
                 // Before
                 var result = cachedFunction.apply(this, arguments); // use .apply() to call it
                 // After
@@ -433,7 +432,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                 (_, workspace) => {
                     this.listenWorkspaceEventToDispatch(workspace);
                 }
-            )
+            ),
         });
 
         this.signals.push({
@@ -447,7 +446,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                         monitorIndex
                     );
                 }
-            )
+            ),
         });
 
         this.signals.push({
@@ -462,7 +461,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                         monitorIndex
                     ); */
                 }
-            )
+            ),
         });
     }
 
@@ -474,7 +473,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     window,
                     workspace
                 );
-            })
+            }),
         });
 
         this.signals.push({
@@ -484,7 +483,7 @@ var SuperWorkspaceModule = class SuperWorkspaceModule {
                     window,
                     workspace
                 ); */
-            })
+            }),
         });
     }
 };

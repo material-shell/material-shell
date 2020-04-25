@@ -1,6 +1,5 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 
-const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -16,11 +15,11 @@ var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
         _init(superWorkspace) {
             super._init({
-                name: 'taskBar'
+                name: 'taskBar',
             });
             this._delegate = this;
             this.taskActiveIndicator = new St.Widget({
-                style_class: 'task-active-indicator'
+                style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
             this.taskButtonContainer = new St.BoxLayout({});
@@ -41,7 +40,7 @@ var TaskBar = GObject.registerClass(
                 superWorkspace.connect(
                     'window-focused-changed',
                     this.onFocusChanged.bind(this)
-                )
+                ),
             ];
 
             this.tracker = Shell.WindowTracker.get_default();
@@ -81,14 +80,14 @@ var TaskBar = GObject.registerClass(
         }
 
         getFilteredWindows() {
-            return this.superWorkspace.windows.filter(window => {
+            return this.superWorkspace.windows.filter((window) => {
                 return !window.skip_taskbar;
             });
         }
 
         updateItems() {
-            this.items.forEach(item => item.destroy());
-            this.items = this.getFilteredWindows().map(window => {
+            this.items.forEach((item) => item.destroy());
+            this.items = this.getFilteredWindows().map((window) => {
                 const item = new TaskBarItem(
                     window,
                     this.tracker.get_window_app(window),
@@ -104,7 +103,7 @@ var TaskBar = GObject.registerClass(
                         initialIndex,
                         dropPlaceholder,
                         originalTaskBar: this,
-                        currentTaskBar: this
+                        currentTaskBar: this,
                     };
                     dropPlaceholder.connect(
                         'drag-dropped',
@@ -133,7 +132,7 @@ var TaskBar = GObject.registerClass(
                     const {
                         currentTaskBar,
                         dropPlaceholder,
-                        initialIndex
+                        initialIndex,
                     } = dragData;
 
                     currentTaskBar.taskButtonContainer.set_child_at_index(
@@ -180,7 +179,7 @@ var TaskBar = GObject.registerClass(
                 currentTaskBar,
                 dropPlaceholder,
                 draggedOver,
-                draggedBefore
+                draggedBefore,
             } = dragData;
 
             currentTaskBar.taskButtonContainer.remove_child(dropPlaceholder);
@@ -219,7 +218,7 @@ var TaskBar = GObject.registerClass(
                 currentTaskBar,
                 dropPlaceholder,
                 draggedOver,
-                draggedBefore
+                draggedBefore,
             } = dragData;
 
             dropPlaceholder.resize(draggedOver);
@@ -253,18 +252,18 @@ var TaskBar = GObject.registerClass(
                         );
                     }
                     if (ShellVersionMatch('3.32')) {
-                        Tweener.addTween(this.taskActiveIndicator, {
+                        imports.ui.tweener.addTween(this.taskActiveIndicator, {
                             x: taskBarItem.x,
                             width: taskBarItem.width,
                             time: 0.25,
-                            transition: 'easeOutQuad'
+                            transition: 'easeOutQuad',
                         });
                     } else {
                         this.taskActiveIndicator.ease({
                             x: taskBarItem.x,
                             width: taskBarItem.width,
                             duration: 250,
-                            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                         });
                     }
 
@@ -272,30 +271,30 @@ var TaskBar = GObject.registerClass(
                 }
             }
             if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.taskActiveIndicator, {
+                imports.ui.tweener.addTween(this.taskActiveIndicator, {
                     x: 0,
                     width: 0,
                     time: 0.25,
-                    transition: 'easeOutQuad'
+                    transition: 'easeOutQuad',
                 });
             } else {
                 this.taskActiveIndicator.ease({
                     x: 0,
                     width: 0,
                     duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             }
         }
 
         getTaskBarItemOfWindow(window) {
-            return this.items.find(item => {
+            return this.items.find((item) => {
                 return item.window === window;
             });
         }
 
         _onDestroy() {
-            this.superWorkspaceSignals.forEach(signal =>
+            this.superWorkspaceSignals.forEach((signal) =>
                 this.superWorkspace.disconnect(signal)
             );
         }
@@ -307,14 +306,14 @@ let TaskBarItem = GObject.registerClass(
         Signals: {
             'drag-dropped': {},
             'drag-over': {
-                param_types: [GObject.TYPE_BOOLEAN]
-            }
-        }
+                param_types: [GObject.TYPE_BOOLEAN],
+            },
+        },
     },
     class InnerTaskBarItem extends MatButton {
         _init(window, app, actif) {
             super._init({
-                style_class: `task-bar-item ${actif ? ' active' : ''}`
+                style_class: `task-bar-item ${actif ? ' active' : ''}`,
             });
 
             this._delegate = this;
@@ -333,7 +332,7 @@ let TaskBarItem = GObject.registerClass(
             // TITLE
             this.title = new St.Label({
                 style_class: 'task-bar-item-title',
-                y_align: Clutter.ActorAlign.CENTER
+                y_align: Clutter.ActorAlign.CENTER,
             });
             this.updateTitle();
 
@@ -348,8 +347,8 @@ let TaskBarItem = GObject.registerClass(
                     style_class: 'task-close-icon',
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/close-symbolic.svg`
-                    )
-                })
+                    ),
+                }),
             });
 
             this.closeButton.connect('clicked', () => {
@@ -360,7 +359,7 @@ let TaskBarItem = GObject.registerClass(
             this.container = new St.BoxLayout({
                 style_class: 'task-bar-item-content',
                 y_align: Clutter.ActorAlign.CENTER,
-                vertical: false
+                vertical: false,
             });
 
             this.container.add_child(this.icon);
@@ -373,7 +372,7 @@ let TaskBarItem = GObject.registerClass(
                 pressed: false,
                 dragged: false,
                 originalCoords: null,
-                originalSequence: null
+                originalSequence: null,
             };
 
             this.connect('event', (actor, event) => {
@@ -381,7 +380,7 @@ let TaskBarItem = GObject.registerClass(
                 if (
                     [
                         Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN
+                        Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = true;
@@ -390,7 +389,7 @@ let TaskBarItem = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.MOTION,
-                        Clutter.EventType.TOUCH_UPDATE
+                        Clutter.EventType.TOUCH_UPDATE,
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.mouseData.pressed && !this.mouseData.dragged) {
@@ -417,7 +416,7 @@ let TaskBarItem = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END
+                        Clutter.EventType.TOUCH_END,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = false;
@@ -455,7 +454,7 @@ let TaskBarItem = GObject.registerClass(
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
-                manualMode: true
+                manualMode: true,
             });
 
             this._draggable.connect('drag-end', () => {
@@ -486,8 +485,8 @@ var DropPlaceholder = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
-            'drag-over': {}
-        }
+            'drag-over': {},
+        },
     },
     class DropPlaceholder extends St.Widget {
         _init(targetClass) {

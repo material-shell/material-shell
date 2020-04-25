@@ -1,5 +1,4 @@
 const { Meta } = imports.gi;
-const Tweener = imports.ui.tweener;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -20,7 +19,7 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                     let x = windowRect.x + windowRect.width / 2;
                     let y = windowRect.y + windowRect.height / 2;
                     const windowHovered = this.superWorkspace.windows.find(
-                        windowToCheck => {
+                        (windowToCheck) => {
                             if (windowToCheck === this.grabWindow) return false;
                             let rect = windowToCheck.get_frame_rect();
                             return (
@@ -37,7 +36,7 @@ var BaseGrabbableLayout = class BaseGrabbableLayout extends BaseTilingLayout {
                             -1 &&
                         this.superWorkspace.windows.indexOf(this.grabWindow) >
                             -1 &&
-                        !Tweener.getTweenCount(
+                        !imports.ui.tweener.getTweenCount(
                             windowHovered.get_compositor_private()
                         )
                     ) {

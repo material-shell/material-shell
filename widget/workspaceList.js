@@ -1,7 +1,7 @@
 const { Clutter, GObject, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Tweener = imports.ui.tweener;
+
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.widget.material.button;
@@ -15,13 +15,13 @@ var WorkspaceList = GObject.registerClass(
         _init(superWorkspaceManager) {
             super._init({
                 clip_to_allocation: true,
-                style_class: 'workspace-list'
+                style_class: 'workspace-list',
             });
 
             this.superWorkspaceManager = superWorkspaceManager;
 
             this.buttonList = new St.BoxLayout({
-                vertical: true
+                vertical: true,
             });
 
             this.connect('destroy', this._onDestroy.bind(this));
@@ -38,7 +38,7 @@ var WorkspaceList = GObject.registerClass(
                 this.tempDragData.draggedOverByChild = true;
             });
             this.workspaceActiveIndicator = new St.Widget({
-                style_class: 'workspace-active-indicator'
+                style_class: 'workspace-active-indicator',
             });
 
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
@@ -59,7 +59,7 @@ var WorkspaceList = GObject.registerClass(
                     );
                     this.tempDragData = {
                         workspaceButton: workspaceButton,
-                        initialIndex: workspaceButtonIndex
+                        initialIndex: workspaceButtonIndex,
                     };
                     this.dropPlaceholder.resize(workspaceButton);
                     this.buttonList.add_child(this.dropPlaceholder);
@@ -218,7 +218,7 @@ var WorkspaceList = GObject.registerClass(
                 .scale_factor;
 
             if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.workspaceActiveIndicator, {
+                imports.ui.tweener.addTween(this.workspaceActiveIndicator, {
                     translation_y:
                         48 *
                         scaleFactor *
@@ -226,7 +226,7 @@ var WorkspaceList = GObject.registerClass(
                             categoryKey
                         ),
                     time: 0.25,
-                    transition: 'easeOutQuad'
+                    transition: 'easeOutQuad',
                 });
             } else {
                 this.workspaceActiveIndicator.ease({
@@ -237,13 +237,13 @@ var WorkspaceList = GObject.registerClass(
                             categoryKey
                         ),
                     duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             }
         }
 
         getButtonFromCategoryKey(categoryKey) {
-            return this.buttonList.get_children().find(workspaceButton => {
+            return this.buttonList.get_children().find((workspaceButton) => {
                 return workspaceButton.categoryKey === categoryKey;
             });
         }
@@ -259,19 +259,19 @@ var WorkspaceButton = GObject.registerClass(
         Signals: {
             'drag-dropped': {},
             'drag-over': {
-                param_types: [GObject.TYPE_BOOLEAN]
-            }
-        }
+                param_types: [GObject.TYPE_BOOLEAN],
+            },
+        },
     },
     class InnerWorkspaceButton extends MatButton {
         _init(superWorkspaceManager, categoryKey, category) {
             let icon = new St.Icon({
                 gicon: category.icon,
-                style_class: 'mat-panel-button-icon'
+                style_class: 'mat-panel-button-icon',
             });
             super._init({
                 child: icon,
-                style_class: 'mat-panel-button'
+                style_class: 'mat-panel-button',
             });
             this._delegate = this;
 
@@ -291,7 +291,7 @@ var WorkspaceButton = GObject.registerClass(
                 pressed: false,
                 dragged: false,
                 originalCoords: null,
-                originalSequence: null
+                originalSequence: null,
             };
 
             this.connect('event', (actor, event) => {
@@ -299,7 +299,7 @@ var WorkspaceButton = GObject.registerClass(
                 if (
                     [
                         Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN
+                        Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = true;
@@ -308,7 +308,7 @@ var WorkspaceButton = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.MOTION,
-                        Clutter.EventType.TOUCH_UPDATE
+                        Clutter.EventType.TOUCH_UPDATE,
                     ].indexOf(eventType) > -1
                 ) {
                     if (this.mouseData.pressed && !this.mouseData.dragged) {
@@ -335,7 +335,7 @@ var WorkspaceButton = GObject.registerClass(
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END
+                        Clutter.EventType.TOUCH_END,
                     ].indexOf(eventType) > -1
                 ) {
                     this.mouseData.pressed = false;
@@ -358,7 +358,7 @@ var WorkspaceButton = GObject.registerClass(
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
-                manualMode: true
+                manualMode: true,
             });
 
             this._draggable.connect('drag-end', () => {

@@ -1,9 +1,9 @@
 const { St, Shell, Clutter } = imports.gi;
-const Tweener = imports.ui.tweener;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
-    BaseGrabbableLayout
+    BaseGrabbableLayout,
 } = Me.imports.tilingManager.tilingLayouts.custom.baseGrabbable;
 const { Column, Row } = Me.imports.widget.layout;
 const { ShellVersionMatch } = Me.imports.utils.compatibility;
@@ -82,10 +82,10 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
         windows
-            .filter(window => {
+            .filter((window) => {
                 !this.activeWindows.includes(window);
             })
-            .forEach(window => {
+            .forEach((window) => {
                 this.moveAndResizeMetaWindow(
                     window,
                     workArea.x,
@@ -108,7 +108,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 x: workArea.x,
                 y: workArea.y,
                 width: workArea.width,
-                height: workArea.height
+                height: workArea.height,
             };
             if (workArea.width > workArea.height) {
                 windowBounds.width /= WINDOW_PER_SCREEN;
@@ -128,7 +128,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 true
             );
         });
-        windows.forEach(window => {
+        windows.forEach((window) => {
             if (
                 !this.activeWindows.includes(window) ||
                 !this.superWorkspace.isDisplayed()
@@ -152,7 +152,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.windows.forEach(window => {
+        this.superWorkspace.windows.forEach((window) => {
             if (!this.activeWindows.includes(window)) {
                 window.get_compositor_private().show();
             }
@@ -162,7 +162,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
     transition(newMetaWindows, oldMetaWindows) {
         const { regularWindows } = this.getDialogAndRegularWindows();
         newMetaWindows = newMetaWindows.filter(
-            window => !oldMetaWindows.includes(window)
+            (window) => !oldMetaWindows.includes(window)
         );
         this.transitionContainer.remove_all_children();
         const direction =
@@ -176,17 +176,17 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
 
         allMetaWindows
             .filter(
-                window => window.get_compositor_private() && !window.grabbed
+                (window) => window.get_compositor_private() && !window.grabbed
             )
-            .map(metaWindow => metaWindow.get_compositor_private())
-            .forEach(window => {
+            .map((metaWindow) => metaWindow.get_compositor_private())
+            .forEach((window) => {
                 let rect = window.meta_window.get_frame_rect();
                 let actorContent = Shell.util_get_content_for_window_actor(
                     window,
                     rect
                 );
                 let actorClone = new St.Widget({
-                    content: actorContent
+                    content: actorContent,
                 });
                 actorClone.set_size(rect.width, rect.height);
                 this.transitionContainer.add_child(actorClone);
@@ -230,7 +230,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
         }
 
         if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(this.transitionContainer, {
+            imports.ui.tweener.addTween(this.transitionContainer, {
                 x: xTo,
                 y: yTo,
                 time: WINDOW_SLIDE_TWEEN_TIME / 1000,
@@ -238,7 +238,7 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         } else {
             this.transitionContainer.ease({
@@ -249,16 +249,16 @@ var SplitLayout = class SplitLayout extends BaseGrabbableLayout {
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         }
     }
 
     endTransition() {
         this.activeWindows
-            .map(metaWindow => metaWindow.get_compositor_private())
-            .filter(window => window)
-            .forEach(window => {
+            .map((metaWindow) => metaWindow.get_compositor_private())
+            .filter((window) => window)
+            .forEach((window) => {
                 window.show();
             });
         global.window_group.remove_child(this.overContainer);

@@ -1,6 +1,6 @@
 const { Meta, Gio, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.utils.settings;
 const { Backdrop } = Me.imports.widget.backdrop;
@@ -32,11 +32,18 @@ var BaseTilingLayout = class BaseTilingLayout {
         );
 
         this.themeSettings = getSettings('theme');
-        this.doDialogBackdrop = this.themeSettings.get_boolean('do-dialog-backdrop');
-        this.dialogSetting = this.themeSettings.connect('changed::do-dialog-backdrop', schema => {
-            this.doDialogBackdrop = schema.get_boolean('do-dialog-backdrop');
-            this.onTile();
-        });
+        this.doDialogBackdrop = this.themeSettings.get_boolean(
+            'do-dialog-backdrop'
+        );
+        this.dialogSetting = this.themeSettings.connect(
+            'changed::do-dialog-backdrop',
+            (schema) => {
+                this.doDialogBackdrop = schema.get_boolean(
+                    'do-dialog-backdrop'
+                );
+                this.onTile();
+            }
+        );
     }
 
     onWorkAreasChanged() {
@@ -54,7 +61,7 @@ var BaseTilingLayout = class BaseTilingLayout {
     onTile() {
         const {
             dialogWindows,
-            regularWindows
+            regularWindows,
         } = this.getDialogAndRegularWindows();
         this.onTileRegulars(regularWindows);
         this.onTileDialogs(dialogWindows);
@@ -62,8 +69,8 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     onTileRegulars(windows) {
         windows
-            .filter(window => window.get_maximized())
-            .forEach(window => {
+            .filter((window) => window.get_maximized())
+            .forEach((window) => {
                 Main.wm.skipNextEffect(window.get_compositor_private());
                 window.unmaximize(Meta.MaximizeFlags.BOTH);
             });
@@ -75,7 +82,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-        windows.forEach(metaWindow => {
+        windows.forEach((metaWindow) => {
             if (metaWindow.grabbed) return;
             let window = metaWindow.get_compositor_private();
             if (!window) return;
@@ -136,7 +143,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 x: oldX,
                 y: oldY,
                 width: oldWidth,
-                height: oldHeight
+                height: oldHeight,
             } = actor;
 
             if (actor.has_clip) {
@@ -157,7 +164,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 // const grabY = (py - actor.y) / actor.height;
                 // actor.set_pivot_point(grabX, grabY);
                 //
-                // Tweener.addTween(actor, {
+                // imports.ui.tweener.addTween(actor, {
                 //     scale_x: width / rect.width,
                 //     scale_y: height / rect.height,
                 //     time: tweenTime,
@@ -171,7 +178,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                 x: newX,
                 y: newY,
                 width: newWidth,
-                height: newHeight
+                height: newHeight,
             } = actor;
             const frame = metaWindow.get_frame_rect();
 
@@ -195,13 +202,13 @@ var BaseTilingLayout = class BaseTilingLayout {
             actor.translation_y = oldY - newY;
 
             if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(actor, {
+                imports.ui.tweener.addTween(actor, {
                     scale_x: 1.0,
                     scale_y: 1.0,
                     translation_x: 0,
                     translation_y: 0,
                     time: tweenTime,
-                    transition: 'easeOutQuad'
+                    transition: 'easeOutQuad',
                 });
             } else {
                 actor.ease({
@@ -210,7 +217,7 @@ var BaseTilingLayout = class BaseTilingLayout {
                     translation_x: 0,
                     translation_y: 0,
                     duration: tweenTime * 1000,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             }
         });
@@ -252,13 +259,13 @@ var BaseTilingLayout = class BaseTilingLayout {
             x,
             y,
             width,
-            height
+            height,
         } = Main.layoutManager.getWorkAreaForMonitor(this.monitor.index);
         return {
             x,
             y,
             width,
-            height
+            height,
         };
     }
 
@@ -336,7 +343,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         let dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
-            Meta.WindowType.UTILITY
+            Meta.WindowType.UTILITY,
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||

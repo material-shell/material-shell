@@ -1,5 +1,5 @@
 const { St, Meta, Clutter } = imports.gi;
-const Tweener = imports.ui.tweener;
+
 const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -39,9 +39,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
     onWindowsChanged(windows, oldWindows) {
         log('onWindowsChanged', this.superWorkspace.monitor.index);
 
-        let regularWindows = windows.filter(window => !this.isDialog(window));
+        let regularWindows = windows.filter((window) => !this.isDialog(window));
         let oldRegularWindows = oldWindows.filter(
-            window => !this.isDialog(window)
+            (window) => !this.isDialog(window)
         );
         // If the order of the windows changed try to follow the current visible window
         if (oldRegularWindows.length === regularWindows.length) {
@@ -60,7 +60,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
         if (oldRegularWindows.length - regularWindows.length === 1) {
             let windowRemovedIndex = oldRegularWindows.findIndex(
-                window => !regularWindows.includes(window)
+                (window) => !regularWindows.includes(window)
             );
             const oldIndex =
                 windowRemovedIndex === oldRegularWindows.length - 1
@@ -105,7 +105,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     onDestroy() {
         super.onDestroy();
-        this.superWorkspace.windows.forEach(window => {
+        this.superWorkspace.windows.forEach((window) => {
             if (window !== this.windowNotDialogFocused) {
                 window.get_compositor_private().show();
             }
@@ -119,7 +119,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
         const containers = [
             this.leftWindowContainer,
-            this.rightWindowContainer
+            this.rightWindowContainer,
         ];
         if (direction < 0) {
             containers.reverse();
@@ -164,14 +164,14 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
         }
 
         if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(this.transitionContainer, {
+            imports.ui.tweener.addTween(this.transitionContainer, {
                 x: direction > 0 ? -workArea.width : 0,
                 time: 0.25,
                 transition: 'easeOutQuad',
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         } else {
             this.transitionContainer.ease({
@@ -181,7 +181,7 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 onComplete: () => {
                     this.animationInProgress = false;
                     this.endTransition();
-                }
+                },
             });
         }
     }
