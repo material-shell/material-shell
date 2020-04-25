@@ -24,7 +24,11 @@ var MsWindow = GObject.registerClass(
     class MsWindow extends St.Widget {
         _init(app, metaWindowIdentifier, metaWindow) {
             AddLogToFunctions(this);
-            super._init({ reactive: true });
+            super._init({
+                reactive: true,
+                width: 200,
+                height: 200,
+            });
             this.destroyId = this.connect(
                 'destroy',
                 this._onDestroy.bind(this)
@@ -45,6 +49,14 @@ var MsWindow = GObject.registerClass(
                 this.placeholder,
                 this.windowClone
             );
+            this.previousResize = {
+                width: 0,
+                height: 0,
+            };
+            this.previousRealSize = {
+                width: 0,
+                height: 0,
+            };
             this.connect('notify::position', () => {
                 if (this.propagate && !this.dragged && !this.followMetaWindow) {
                     log('this notify::position');
@@ -302,8 +314,32 @@ var MsWindow = GObject.registerClass(
             });
         }
 
+        async onMetaWindowFirstFrameDrawn() {
+            return new Promise((resolve) => {
+                if (!this.metaWindow) {
+                    return resolve();
+                }
+                if (this.metaWindow.firstFrameDrawn) {
+                    resolve();
+                } else {
+                    this.metaWindow
+                        .get_compositor_private()
+                        .connect('first-frame', () => {
+                            resolve();
+                        });
+                }
+            });
+        }
+
         vfunc_allocate(box, flags) {
-            log('allocate msWindow', this.title);
+            log(
+                'allocate msWindow',
+                this.title,
+                box.x1,
+                box.y1,
+                box.get_width(),
+                box.get_height()
+            );
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
@@ -327,141 +363,138 @@ var MsWindow = GObject.registerClass(
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
-        updateMetaWindowPositionAndSize() {
-            if (!this.metaWindow) return;
+        async updateMetaWindowPositionAndSize() {
+            if (!this.metaWindow) return Promise.resolve();
             //If an update is already in progress discard all incoming call
-            if (this.metaWindowUpdateInProgress) return;
-            this.metaWindowUpdateInProgress = true;
+            if (this.metaWindowUpdateInProgressPromise) {
+                return this.metaWindowUpdateInProgressPromise;
+            }
+
             //Wait for the WindowActor to be available
-            return this.onMetaWindowActorExist().then(() => {
-                if (!this.metaWindow) return;
-                delete this.metaWindowUpdateInProgress;
-                const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                    this.msWorkspace.monitor.index
-                );
-                let contentBox = this.msContent.get_allocation_box();
-                let currentFrameRect = this.metaWindow.get_frame_rect();
-
-                //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
-                const isMaximized =
-                    this.x === workArea.x &&
-                    this.y === workArea.y &&
-                    this.width === workArea.width &&
-                    this.height === workArea.height;
-
-                //Set the metaWindow maximized if it's the case
-                let moveTo = this.getRelativeMetaWindowPosition();
-                if (isMaximized) {
-                    if (this.metaWindow.maximized) return;
-                    return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-                }
-                //Or remove the maximized if it's not
-                if (this.metaWindow.maximized_horizontally) {
-                    this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
-                }
-                log('dragged', this.dragged, workArea.x, workArea.y);
-                //Set the size accordingly
-                log(
-                    'resize metaWindow to ',
-                    moveTo.x,
-                    moveTo.y,
-                    contentBox.get_width(),
-                    contentBox.get_height()
-                );
-                //return new Promise((resolve, reject) => {});
-
-                let resizeTo = {
-                    width: contentBox.get_width(),
-                    height: contentBox.get_height(),
-                };
-
-                let willMove =
-                    currentFrameRect.x != moveTo.x ||
-                    currentFrameRect.y != moveTo.y;
-                let willResize =
-                    currentFrameRect.width != resizeTo.width ||
-                    currentFrameRect.height != resizeTo.height;
-                if (!willMove && !willResize) {
-                    return;
-                }
-                let promises = [];
-                if (willMove) {
-                    promises.push(
-                        new Promise((resolve) => {
-                            let connectId = this.metaWindow.connect(
-                                'position-changed',
-                                () => {
-                                    this.metaWindow.disconnect(connectId);
-                                    resolve();
-                                }
-                            );
-                        })
-                    );
-                }
-                if (willResize) {
-                    promises.push(
-                        new Promise((resolve) => {
-                            let connectId = this.metaWindow.connect(
-                                'size-changed',
-                                () => {
-                                    this.metaWindow.disconnect(connectId);
-                                    resolve();
-                                }
-                            );
-                        })
-                    );
-                }
-                this.metaWindow.move_resize_frame(
-                    true,
-                    moveTo.x,
-                    moveTo.y,
-                    resizeTo.width,
-                    resizeTo.height
-                );
-                return Promise.all(promises);
-                log(
-                    this.metaWindow.get_frame_rect().x,
-                    this.metaWindow.get_frame_rect().y,
-                    this.metaWindow.get_frame_rect().width,
-                    this.metaWindow.get_frame_rect().height
-                );
-                let compositorPrivate = this.metaWindow.get_compositor_private();
-                let texture = compositorPrivate.get_texture();
-                let [
-                    _,
-                    textureWidth,
-                    textureHeight,
-                ] = texture.get_preferred_size();
-                log(
-                    compositorPrivate.width,
-                    textureWidth,
-                    compositorPrivate.height,
-                    textureHeight
-                );
-
-                if (
-                    compositorPrivate.width != textureWidth ||
-                    compositorPrivate.height != textureHeight
-                ) {
-                }
-                /*     if(compositorPrivate.width ===
-                let box = compositorPrivate.get_allocation_box();
-                log(box.x1, box.y1, box.get_width(), box.get_height());
-
-                log('texture', texture, texture.get_preferred_size());
+            this.metaWindowUpdateInProgressPromise = new Promise((resolve) => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('queue_relayout');
-                    compositorPrivate.queue_relayout();
-                }); */
-                /* let box2 = texture.get_allocation_box();
-                log(
-                    'texture',
-                    box2.x1,
-                    box2.y1,
-                    box2.get_width(),
-                    box2.get_height()
-                ); */
-            });
+                    resolve();
+                });
+            })
+                .then(() => {
+                    return this.onMetaWindowActorExist().then(() => {
+                        if (!this.metaWindow) return;
+                        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                            this.msWorkspace.monitor.index
+                        );
+                        let contentBox = this.msContent.get_allocation_box();
+                        let currentFrameRect = this.metaWindow.get_frame_rect();
+
+                        //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
+                        const isMaximized =
+                            this.x === workArea.x &&
+                            this.y === workArea.y &&
+                            this.width === workArea.width &&
+                            this.height === workArea.height;
+
+                        //Set the metaWindow maximized if it's the case
+                        let moveTo = this.getRelativeMetaWindowPosition();
+                        let resizeTo = {
+                            width: contentBox.get_width(),
+                            height: contentBox.get_height(),
+                        };
+                        if (isMaximized) {
+                            if (this.metaWindow.maximized) return;
+                            return this.metaWindow.maximize(
+                                Meta.MaximizeFlags.BOTH
+                            );
+                        }
+                        //Or remove the maximized if it's not
+                        if (this.metaWindow.maximized_horizontally) {
+                            this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                        }
+                        //Set the size accordingly
+                        log(
+                            'resize metaWindow to ',
+                            moveTo.x,
+                            moveTo.y,
+                            resizeTo.width,
+                            resizeTo.height
+                        );
+                        //return new Promise((resolve, reject) => {});
+
+                        let willMove =
+                            currentFrameRect.x != moveTo.x ||
+                            currentFrameRect.y != moveTo.y;
+
+                        let willResize = !(
+                            this.previousResize.width === resizeTo.width &&
+                            this.previousResize.height === resizeTo.height &&
+                            currentFrameRect.width ===
+                                this.previousRealSize.width &&
+                            currentFrameRect.height ===
+                                this.previousRealSize.height
+                        );
+                        if (!willMove && !willResize) {
+                            return;
+                        }
+                        let promises = [];
+                        if (willMove) {
+                            promises.push(
+                                new Promise((resolve) => {
+                                    let connectId = this.metaWindow.connect(
+                                        'position-changed',
+                                        () => {
+                                            log('did move');
+                                            this.metaWindow.disconnect(
+                                                connectId
+                                            );
+                                            resolve();
+                                        }
+                                    );
+                                })
+                            );
+                        }
+                        if (willResize) {
+                            this.previousResize = resizeTo;
+                            promises.push(
+                                new Promise((resolve) => {
+                                    let connectId = this.metaWindow.connect(
+                                        'size-changed',
+                                        () => {
+                                            this.previousRealSize = {
+                                                width: this.metaWindow.get_frame_rect()
+                                                    .width,
+                                                height: this.metaWindow.get_frame_rect()
+                                                    .height,
+                                            };
+                                            this.metaWindow.disconnect(
+                                                connectId
+                                            );
+                                            resolve();
+                                        }
+                                    );
+                                    // In some case the size-changed it's not called
+                                    GLib.timeout_add(
+                                        GLib.PRIORITY_DEFAULT,
+                                        100,
+                                        () => {
+                                            resolve();
+                                        }
+                                    );
+                                })
+                            );
+                        }
+                        this.metaWindow.move_resize_frame(
+                            true,
+                            moveTo.x,
+                            moveTo.y,
+                            resizeTo.width,
+                            resizeTo.height
+                        );
+                        return Promise.all(promises);
+                    });
+                })
+                .then(() => {
+                    delete this.metaWindowUpdateInProgressPromise;
+                });
+
+            return this.metaWindowUpdateInProgressPromise;
         }
 
         mimicMetaWindowPositionAndSize() {
@@ -511,9 +544,9 @@ var MsWindow = GObject.registerClass(
                         this.mimicMetaWindowPositionAndSize();
                     } else if (
                         this.metaWindow.get_frame_rect().width !=
-                            this.msContent.width ||
+                            this.previousRealSize.width ||
                         this.metaWindow.get_frame_rect().height !=
-                            this.msContent.height
+                            this.previousRealSize.height
                     ) {
                         this.updateMetaWindowPositionAndSize();
                     }
@@ -529,7 +562,7 @@ var MsWindow = GObject.registerClass(
             this.metaWindowSignals = [];
         }
 
-        setWindow(metaWindow) {
+        async setWindow(metaWindow) {
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow
             );
@@ -546,38 +579,27 @@ var MsWindow = GObject.registerClass(
                 }
             }
 
-            this.onMetaWindowActorExist()
-                .then((_) => {
-                    return new Promise((resolve) => {
-                        if (metaWindow.firstFrameDrawn) {
-                            resolve();
-                        } else {
-                            metaWindow
-                                .get_compositor_private()
-                                .connect('first-frame', () => {
-                                    resolve();
-                                });
-                        }
-                    });
-                })
-                .then(() => {
-                    WindowUtils.updateTitleBarVisibility(this.metaWindow);
-                    this.windowClone.set_source(
-                        metaWindow.get_compositor_private()
-                    );
-                    if (this.followMetaWindow) {
-                        return Promise.resolve(
-                            this.mimicMetaWindowPositionAndSize()
-                        );
-                    } else {
-                        return this.updateMetaWindowPositionAndSize();
-                    }
-                })
-                .then(() => {
-                    if (this.placeholder.get_parent()) {
-                        this.fadeOutPlaceholder();
-                    }
-                });
+            await this.onMetaWindowActorExist();
+            await this.onMetaWindowFirstFrameDrawn();
+            const { width, height } = metaWindow.get_frame_rect();
+            this.previousResize = {
+                width,
+                height,
+            };
+            this.previousRealSize = {
+                width,
+                height,
+            };
+            WindowUtils.updateTitleBarVisibility(this.metaWindow);
+            this.windowClone.set_source(metaWindow.get_compositor_private());
+
+            await (this.followMetaWindow
+                ? Promise.resolve(this.mimicMetaWindowPositionAndSize())
+                : this.updateMetaWindowPositionAndSize());
+
+            if (this.placeholder.get_parent()) {
+                this.fadeOutPlaceholder();
+            }
             this.emit('title-changed', this.title);
         }
 
@@ -585,7 +607,7 @@ var MsWindow = GObject.registerClass(
             this.unregisterOnMetaWindowSignals();
             this.reactive = true;
             delete this.metaWindow;
-            delete this.metaWindowUpdateInProgress;
+            delete this.metaWindowUpdateInProgressPromise;
             if (!this.placeholder.get_parent()) {
                 this.msContent.add_child(this.placeholder);
             }

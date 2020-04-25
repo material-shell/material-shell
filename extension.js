@@ -130,7 +130,7 @@ function showSplashScreens() {
     Main.layoutManager.monitors.forEach((monitor) => {
         let icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/menu-symbolic.svg`
+                `${Me.path}/assets/icons/on-dark-small.svg`
             ),
             icon_size: 200,
         });
