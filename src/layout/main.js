@@ -129,15 +129,14 @@ var MsMain = GObject.registerClass(
                         this.primaryContainer.add_child(
                             msWorkspace.msWorkspaceActor
                         );
+                    } else {
+                        this.primaryContainer.set_child_at_index(
+                            msWorkspace.msWorkspaceActor,
+                            Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                                msWorkspace
+                            )
+                        );
                     }
-                    msWorkspace.msWorkspaceActor.set_height(
-                        Main.layoutManager.primaryMonitor.height
-                    );
-                    msWorkspace.msWorkspaceActor.set_y(
-                        Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                            msWorkspace
-                        ) * Main.layoutManager.primaryMonitor.height
-                    );
                 } else if (
                     msWorkspace.msWorkspaceActor.get_parent() !==
                     this.monitorsContainer[msWorkspace.monitor.index]
@@ -185,7 +184,8 @@ var MsMain = GObject.registerClass(
 
         onTransitionCompleted() {
             /*             this.remove_child(this.translationAnimator);
-             */ const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+             */
+            const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             activeMsWorkspace.refreshFocus();
             Me.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
                 msWorkspace.msWorkspaceActor.visible =
