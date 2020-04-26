@@ -100,7 +100,10 @@ var HotKeysModule = class HotKeysModule {
                               currentMonitorIndex
                           )[0];
 
-                if (msWorkspace.focusedIndex > 0) {
+                if (
+                    msWorkspace.focusedIndex > 0 &&
+                    msWorkspace.tileableFocused != msWorkspace.appLauncher
+                ) {
                     let previousTileable =
                         msWorkspace.tileableList[msWorkspace.focusedIndex - 1];
                     msWorkspace.swapTileable(
@@ -132,6 +135,9 @@ var HotKeysModule = class HotKeysModule {
                 ) {
                     let nextTileable =
                         msWorkspace.tileableList[msWorkspace.focusedIndex + 1];
+                    if (nextTileable === msWorkspace.appLauncher) {
+                        return;
+                    }
                     msWorkspace.swapTileable(
                         msWorkspace.tileableFocused,
                         nextTileable
@@ -150,7 +156,9 @@ var HotKeysModule = class HotKeysModule {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 if (
                     activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[0]
+                        Me.msWorkspaceManager.primaryMsWorkspaces[0] ||
+                    activeMsWorkspace.tileableFocused ===
+                        activeMsWorkspace.appLauncher
                 ) {
                     return;
                 }
@@ -185,11 +193,13 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 if (
-                    activeMsWorkspace ===
+                    (activeMsWorkspace ===
                         Me.msWorkspaceManager.primaryMsWorkspaces[
                             Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
                         ] &&
-                    activeMsWorkspace.msWindowList.length === 1
+                        activeMsWorkspace.msWindowList.length === 1) ||
+                    activeMsWorkspace.tileableFocused ===
+                        activeMsWorkspace.appLauncher
                 ) {
                     return;
                 }

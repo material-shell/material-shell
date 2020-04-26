@@ -199,7 +199,6 @@ var MsWorkspace = class MsWorkspace {
         const oldTileableList = [...this.tileableList];
         this.tileableList[firstIndex] = secondTileable;
         this.tileableList[secondIndex] = firstTileable;
-
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
