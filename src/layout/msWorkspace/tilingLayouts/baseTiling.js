@@ -212,6 +212,9 @@ var BaseTilingLayout = class BaseTilingLayout {
         if (actor.dragged) return;
         const { x: oldX, y: oldY } = actor;
         actor.set_position(x, y);
+        if (actor.metaWindow && actor.metaWindow.fullscreen) {
+            return;
+        }
         actor.translation_x = oldX - x;
         actor.translation_y = oldY - y;
         if (ShellVersionMatch('3.32')) {
@@ -234,6 +237,9 @@ var BaseTilingLayout = class BaseTilingLayout {
     animateSetSize(actor, width, height) {
         const { width: oldWidth, height: oldHeight } = actor;
         actor.set_size(width, height);
+        if (actor.metaWindow && actor.metaWindow.fullscreen) {
+            return;
+        }
         actor.scale_x = oldWidth / width;
         actor.scale_y = oldHeight / height;
 

@@ -190,7 +190,11 @@ var MsWindow = GObject.registerClass(
                         break;
 
                     case Clutter.EventType.MOTION:
-                        if (this.dragged) return;
+                        if (
+                            this.dragged ||
+                            (this.metaWindow && this.metaWindow.fullscreen)
+                        )
+                            return;
                         if (buttonPressed) {
                             const [originX, originY] = originPointerCoords;
                             const [currentX, currentY] = event.get_coords();
@@ -266,7 +270,9 @@ var MsWindow = GObject.registerClass(
             return (
                 this.isDialog ||
                 (this.msWorkspace &&
-                    this.msWorkspace.tilingLayout.constructor.key === 'float')
+                    this.msWorkspace.tilingLayout.constructor.key ===
+                        'float') ||
+                (this.metaWindow && this.metaWindow.fullscreen)
             );
         }
 
@@ -364,7 +370,8 @@ var MsWindow = GObject.registerClass(
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
         async updateMetaWindowPositionAndSize() {
-            if (!this.metaWindow) return Promise.resolve();
+            if (!this.metaWindow || this.followMetaWindow)
+                return Promise.resolve();
             //If an update is already in progress discard all incoming call
             if (this.metaWindowUpdateInProgressPromise) {
                 log('update already in progress');
@@ -508,20 +515,38 @@ var MsWindow = GObject.registerClass(
             return this.metaWindowUpdateInProgressPromise;
         }
 
+        set_position(x, y) {
+            if (this.followMetaWindow) return;
+            super.set_position(x, y);
+        }
+
+        set_size(width, height) {
+            if (this.followMetaWindow) return;
+            super.set_size(width, height);
+        }
+
         mimicMetaWindowPositionAndSize() {
             if (this.dragged) return;
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.metaWindow.get_monitor()
             );
             const currentFrameRect = this.metaWindow.get_frame_rect();
-            this.set_position(
-                currentFrameRect.x - workArea.x - this.msContent.x,
-                currentFrameRect.y - workArea.y - this.msContent.y
-            );
-            this.set_size(
-                currentFrameRect.width + this.msContent.x * 2,
-                currentFrameRect.height + this.msContent.y * 2
-            );
+            let newPosition = {
+                x:
+                    currentFrameRect.x -
+                    (this.metaWindow.fullscreen ? 0 : workArea.x) -
+                    this.msContent.x,
+                y:
+                    currentFrameRect.y -
+                    (this.metaWindow.fullscreen ? 0 : workArea.y) -
+                    this.msContent.y,
+            };
+            let newSize = {
+                width: currentFrameRect.width + this.msContent.x * 2,
+                height: currentFrameRect.height + this.msContent.y * 2,
+            };
+            super.set_position(newPosition.x, newPosition.y);
+            super.set_size(newSize.width, newSize.height);
         }
 
         registerOnMetaWindowSignals() {
@@ -565,6 +590,12 @@ var MsWindow = GObject.registerClass(
                             this.previousRealSize.height
                     ) {
                         this.updateMetaWindowPositionAndSize();
+                    }
+                }),
+                this.metaWindow.connect('notify::fullscreen', () => {
+                    log('NOTIFY FULLSCREEN !!!!', this.followMetaWindow);
+                    if (this.followMetaWindow) {
+                        this.mimicMetaWindowPositionAndSize();
                     }
                 })
             );
@@ -627,6 +658,7 @@ var MsWindow = GObject.registerClass(
             } else {
                 this.grab_key_focus();
             }
+            this.get_parent().set_child_above_sibling(this, null);
         }
 
         show() {
