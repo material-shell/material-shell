@@ -1,6 +1,6 @@
 const { GLib } = imports.gi;
 
-const DEBUG = true;
+const DEBUG = false;
 let indent = 0;
 var AddLogToFunctions = function (object) {
     if (!DEBUG) return;
@@ -16,9 +16,9 @@ var AddLogToFunctions = function (object) {
                         indentString = indentString + '-';
                     } */
                 log(
-                    `${indentString}${
-                        prototype.constructor.name
-                    }.${key} (${Array.from(arguments)
+                    `${prototype.constructor.name}.${key} (${Array.from(
+                        arguments
+                    )
                         .map((param) => {
                             try {
                                 return param.toString();
@@ -29,16 +29,28 @@ var AddLogToFunctions = function (object) {
                 indent++;
                 var result = value.apply(this, arguments); // use .apply() to call it
                 // After
-                log(
-                    `${'  '.repeat(indent)}>${
-                        result != undefined ? result : ''
-                    }`
-                );
+                log(`>${result != undefined ? result : ''}`);
                 indent--;
                 return result;
             }.bind(object);
         }
     }
+};
+
+var log = function (...args) {
+    if (!DEBUG) return;
+    let fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
+    let domain = 'Material Shell';
+
+    GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
+};
+
+var logFocus = function (...args) {
+    if (!DEBUG) return;
+    let fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
+    let domain = 'Material Shell';
+
+    GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 };
 
 let doLogTick = false;

@@ -30,7 +30,6 @@ var debounce = (fun, delay) => {
 
 var reparentActor = (actor, parent) => {
     if (!actor || !parent) return;
-    log(actor);
     const isFocused = actor.has_key_focus();
     const currentParent = actor.get_parent();
     if (isFocused) {

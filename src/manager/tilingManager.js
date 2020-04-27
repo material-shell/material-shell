@@ -10,6 +10,7 @@ const {
     TilingLayoutByKey,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
 const { MsManager } = Me.imports.src.manager.msManager;
+const { log } = Me.imports.src.utils.debug;
 
 /* exported TilingManager */
 var TilingManager = class TilingManager extends MsManager {

@@ -19,6 +19,18 @@ const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsMain } = Me.imports.src.layout.main;
 
+const { loadInterfaceXML } = imports.misc.fileUtils;
+const SystemdLoginManagerIface = loadInterfaceXML(
+    'org.freedesktop.login1.Manager'
+);
+const LoginManager = imports.misc.loginManager;
+
+const SystemdLoginManager = Gio.DBusProxy.makeProxyWrapper(
+    SystemdLoginManagerIface
+);
+
+const GnomeSession = imports.misc.gnomeSession;
+
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
@@ -33,7 +45,12 @@ function init() {
     global.materialShell = Me;
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
+    Me.closing = false;
     //St.set_slow_down_factor(10);
+    global.display.connect('closing', () => {
+        log('CLOSING');
+        Me.closing = true;
+    });
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -43,13 +60,6 @@ function enable() {
     log('----------------');
     // Show a splashscreen while we are updating the UI layout and theme
     Me.showSplashScreens();
-
-    // When monitors changed we reload the extension completely by disabling and reenabling it
-    monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
-        Me.showSplashScreens();
-        disable();
-        enable();
-    });
 
     Me.loaded = false;
     Me.stateManager = new StateManager();
@@ -96,6 +106,12 @@ function loaded(disconnect) {
     /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
     Me.emit('extension-loaded');
+    // When monitors changed we reload the extension completely by disabling and reenabling it
+    monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
+        Me.showSplashScreens();
+        disable();
+        enable();
+    });
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
     });
@@ -106,6 +122,7 @@ function disable() {
     log('----------------');
     log('DISABLE EXTENSION');
     log('----------------');
+    Me.disableInProgress = true;
     if (!modules) return;
     Me.emit('extension-disable');
     Main.layoutManager.disconnect(monitorChangedId);
@@ -122,6 +139,7 @@ function disable() {
     Me.layout.destroy();
     Main.uiGroup.remove_style_class_name(`dark-theme`);
     Me.loaded = false;
+    delete Me.disableInProgress;
     log('END DISABLE EXTENSION');
 }
 

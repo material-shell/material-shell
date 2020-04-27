@@ -2,7 +2,7 @@ const { St, GObject, Clutter, GLib } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Tweener = imports.ui.tweener;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 /* exported TranslationAnimator */
 var TranslationAnimator = GObject.registerClass(

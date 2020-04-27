@@ -5,7 +5,7 @@ const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Tweener = imports.ui.tweener;
 const WindowUtils = Me.imports.src.utils.windows;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 /* exported MsWindow */
 
 var MsWindow = GObject.registerClass(
@@ -521,6 +521,7 @@ var MsWindow = GObject.registerClass(
         }
 
         set_size(width, height) {
+            logFocus('tutu');
             if (this.followMetaWindow) return;
             super.set_size(width, height);
         }
@@ -552,9 +553,6 @@ var MsWindow = GObject.registerClass(
         registerOnMetaWindowSignals() {
             if (!this.metaWindow) return;
             this.metaWindowSignals.push(
-                this.metaWindow.connect('unmanaged', (_) => {
-                    this.unsetWindow();
-                }),
                 this.metaWindow.connect('notify::title', (_) => {
                     this.emit('title-changed', this.title);
                 }),

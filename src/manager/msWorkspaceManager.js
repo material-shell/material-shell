@@ -5,7 +5,7 @@ const Signals = imports.signals;
 const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsManager } = Me.imports.src.manager.msManager;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
@@ -307,7 +307,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     closeMsWorkspace(msWorkspace) {}
 
     stateChanged() {
-        if (this.restoringState && this.stateChangedTriggered) return;
+        if (
+            this.restoringState ||
+            this.stateChangedTriggered ||
+            Me.disableInProgress
+        )
+            return;
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             log('IDLE_ADD');

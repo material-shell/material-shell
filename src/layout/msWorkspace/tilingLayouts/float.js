@@ -7,6 +7,7 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
 const { reparentActor } = Me.imports.src.utils.index;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported FloatLayout */
 var FloatLayout = class FloatLayout extends BaseTilingLayout {

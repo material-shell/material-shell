@@ -10,6 +10,7 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const RectangularClockSubModule =
     Me.imports.src.module.leftPanel.verticalisePanel.rectangularClockSubModule
         .RectangularClockSubModule;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported VerticalisePanelSubModule */
 var VerticalisePanelSubModule = class VerticalisePanelSubModule {

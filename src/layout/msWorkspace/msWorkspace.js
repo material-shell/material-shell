@@ -18,7 +18,7 @@ const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { Stack } = Me.imports.src.widget.layout;
 
 const EMIT_DEBOUNCE_DELAY = 100;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
 var MsWorkspace = class MsWorkspace {
@@ -162,6 +162,7 @@ var MsWorkspace = class MsWorkspace {
             }
             this.emitTileableListChangedOnce(oldTileableList);
             // If there's no more focused msWindow on this workspace focus the last one
+            this.refreshFocus();
         }
     }
 

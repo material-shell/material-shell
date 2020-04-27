@@ -100,7 +100,6 @@ var MsMain = GObject.registerClass(
             this.signals.push({
                 from: Me,
                 id: Me.connect('extension-disable', () => {
-                    log('ON DISABLE MAIN LAYOUT');
                     this.aboveContainer.get_children().forEach((actor) => {
                         this.aboveContainer.remove_child(actor);
                         global.window_group.add_child(actor);

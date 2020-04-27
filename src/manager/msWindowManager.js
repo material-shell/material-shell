@@ -5,7 +5,7 @@ const Signals = imports.signals;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {
     constructor() {
@@ -59,6 +59,8 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onNewMetaWindow(metaWindow) {
+        if (Me.disableInProgress) return;
+
         metaWindow.get_compositor_private().connect('first-frame', (params) => {
             metaWindow.firstFrameDrawn = true;
         });
@@ -97,11 +99,14 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onMetaWindowUnManaged(metaWindow) {
+        if (Me.disableInProgress || Me.closing) return;
         if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
-            if (!msWindow.isDialog) return;
-            msWindow.msWorkspace.removeMsWindow(this);
-            msWindow.destroy();
+            //if (!msWindow.isDialog) return;
+            /* msWindow.msWorkspace.removeMsWindow(this);
+            msWindow.destroy(); */
+            msWindow.unsetWindow();
+            msWindow.kill();
         }
     }
 
@@ -158,6 +163,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onFocusMetaWindow(metaWindow) {
+        if (Me.disableInProgress || Me.closing) return;
         /*
              If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
              We want to prevent this in order to handle it ourselves to select the next one instead of the previous.

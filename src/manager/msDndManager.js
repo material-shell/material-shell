@@ -1,7 +1,7 @@
 const { GLib } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 const Main = imports.ui.main;
 

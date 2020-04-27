@@ -1,6 +1,6 @@
 module.exports = {
     env: {
-        es6: true
+        es6: true,
     },
     extends: 'eslint:recommended',
     rules: {
@@ -12,105 +12,105 @@ module.exports = {
             'error',
             {
                 before: false,
-                after: true
-            }
+                after: true,
+            },
         ],
         indent: [
             'error',
             4,
             {
                 ignoredNodes: [
-                    'CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child'
+                    'CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child',
                 ],
                 MemberExpression: 'off',
-                SwitchCase: 1
-            }
+                SwitchCase: 1,
+            },
         ],
         'key-spacing': [
             'error',
             {
                 beforeColon: false,
-                afterColon: true
-            }
+                afterColon: true,
+            },
         ],
         'keyword-spacing': [
             'error',
             {
                 before: true,
-                after: true
-            }
+                after: true,
+            },
         ],
         'linebreak-style': ['error', 'unix'],
         'no-empty': [
             'error',
             {
-                allowEmptyCatch: true
-            }
+                allowEmptyCatch: true,
+            },
         ],
         'no-implicit-coercion': [
             'error',
             {
-                allow: ['!!']
-            }
+                allow: ['!!'],
+            },
         ],
         'no-restricted-properties': [
             'error',
             {
                 object: 'Lang',
                 property: 'bind',
-                message: 'Use arrow notation or Function.prototype.bind()'
+                message: 'Use arrow notation or Function.prototype.bind()',
             },
             {
                 object: 'Lang',
                 property: 'Class',
-                message: 'Use ES6 classes'
-            }
+                message: 'Use ES6 classes',
+            },
         ],
         'object-curly-newline': [
             'error',
             {
-                consistent: true
-            }
+                consistent: true,
+            },
         ],
         'prefer-template': 'error',
         quotes: [
             'error',
             'single',
             {
-                avoidEscape: true
-            }
+                avoidEscape: true,
+            },
         ],
         semi: ['error', 'always'],
         'semi-spacing': [
             'error',
             {
                 before: false,
-                after: true
-            }
+                after: true,
+            },
         ],
         'space-before-blocks': 'error',
         'space-infix-ops': [
             'error',
             {
-                int32Hint: false
-            }
+                int32Hint: false,
+            },
         ],
         camelcase: [
             'error',
             {
                 properties: 'never',
-                allow: ['^vfunc_']
-            }
+                allow: ['^vfunc_'],
+            },
         ],
         'no-unused-vars': [
             'error',
             {
                 argsIgnorePattern: '^_',
-                varsIgnorePattern: '_$'
-            }
+                varsIgnorePattern: '_$',
+            },
         ],
         'object-curly-spacing': ['error', 'always'],
-        'prefer-arrow-callback': 'error'
+        'prefer-arrow-callback': 'error',
     },
     globals: {
         ARGV: false,
@@ -118,7 +118,6 @@ module.exports = {
         GIRepositoryGType: false,
         imports: false,
         Intl: false,
-        log: false,
         logError: false,
         print: false,
         printerr: false,
@@ -127,9 +126,9 @@ module.exports = {
         _: false,
         C_: false,
         N_: false,
-        ngettext: false
+        ngettext: false,
     },
     parserOptions: {
-        ecmaVersion: 2017
-    }
+        ecmaVersion: 2017,
+    },
 };

@@ -5,7 +5,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { Backdrop } = Me.imports.src.widget.backdrop;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = class BaseTilingLayout {

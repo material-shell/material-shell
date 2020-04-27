@@ -5,6 +5,8 @@ const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const { reparentActor } = Me.imports.src.utils.index;
 const { DateMenuButton } = imports.ui.dateMenu;
+const { log } = Me.imports.src.utils.debug;
+
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(
     {

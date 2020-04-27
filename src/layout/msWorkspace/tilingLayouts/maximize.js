@@ -9,6 +9,7 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { log } = Me.imports.src.utils.debug;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {

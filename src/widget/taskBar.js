@@ -9,7 +9,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
 let dragData = null;
