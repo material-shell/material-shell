@@ -354,6 +354,9 @@ var MsWorkspace = class MsWorkspace {
                 .filter((tileable) => {
                     return tileable instanceof MsWindow;
                 })
+                .filter((msWindow) => {
+                    return !msWindow.app.is_window_backed();
+                })
                 .map((msWindow) => {
                     return {
                         appId: msWindow.app.get_id(),

@@ -521,7 +521,6 @@ var MsWindow = GObject.registerClass(
         }
 
         set_size(width, height) {
-            logFocus('tutu');
             if (this.followMetaWindow) return;
             super.set_size(width, height);
         }

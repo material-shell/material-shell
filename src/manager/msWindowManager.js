@@ -17,7 +17,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
         this.signals = [];
-        this.metaWindowWaitForAppList = [];
+        this.metaWindowWaitingForAppList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {
             this.onNewMetaWindow(metaWindow);
         });
@@ -26,15 +26,15 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             this.onFocusMetaWindow(global.display.focus_window);
         });
 
-        this.observe(this.windowTracker, 'tracked-windows-changed', () => {
-            this.metaWindowWaitForAppList.forEach((metaWindow, index) => {
+        /* this.observe(this.windowTracker, 'tracked-windows-changed', () => {
+            this.metaWindowWaitingForAppList.forEach((metaWindow, index) => {
                 let app = this.windowTracker.get_window_app(metaWindow);
                 if (app && !app.is_window_backed()) {
-                    this.metaWindowWaitForAppList.splice(index, 1);
+                    this.metaWindowWaitingForAppList.splice(index, 1);
                     this.onNewMetaWindow(metaWindow);
                 }
             });
-        });
+        }); */
     }
 
     handleExistingMetaWindow() {
@@ -69,33 +69,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         }
         if (metaWindow.handledByMaterialShell) return;
 
-        let app = this.windowTracker.get_window_app(metaWindow);
-        if (app.is_window_backed()) {
-            log('add to wait for app list');
-            return this.metaWindowWaitForAppList.push(metaWindow);
-        }
-        log(app.get_id());
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
         metaWindow.connect('unmanaged', () => {
             this.onMetaWindowUnManaged(metaWindow);
         });
-        if (!this.isMetaWindowDialog(metaWindow)) {
-            const existingEmptyMsWindow = this.findBestEmptyMsWindow(app);
-            if (existingEmptyMsWindow) {
-                return existingEmptyMsWindow.setWindow(metaWindow);
-            }
-        }
 
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log('IDLE_ADD');
-            const msWindow = this.createNewMsWindow(
-                app.get_id(),
-                this.buildMetaWindowIdentifier(metaWindow),
-                metaWindow
-            );
-            Me.msWorkspaceManager.addWindowToAppropriateMsWorkspace(msWindow);
-        });
+        return this.setMetaWindowAsWaitingForAssignation(metaWindow);
     }
 
     onMetaWindowUnManaged(metaWindow) {
@@ -112,7 +92,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     createNewMsWindow(appId, description, metaWindow) {
         let appSys = Shell.AppSystem.get_default();
-        const app = appSys.lookup_app(appId);
+        const app =
+            appSys.lookup_app(appId) ||
+            this.windowTracker.get_window_app(metaWindow);
         if (!app) {
             log('unable to get app from id:', appId);
             return;
@@ -130,36 +112,143 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         return msWindow;
     }
 
-    findBestEmptyMsWindow(app) {
-        const msWindowWaitingForApp = this.msWindowWaitingForMetaWindowList.filter(
-            (msWindow) => {
-                return msWindow.app.get_id() === app.get_id();
-            }
-        )[0];
-        if (msWindowWaitingForApp) {
-            this.msWindowWaitingForMetaWindowList.splice(
-                this.msWindowWaitingForMetaWindowList.indexOf(
-                    msWindowWaitingForApp
-                ),
-                1
-            );
-            return msWindowWaitingForApp;
-        }
-        const emptyMsWindowListOfApp = this.msWindowList.filter((msWindow) => {
-            return (
-                !msWindow.metaWindow && msWindow.app.get_id() === app.get_id()
-            );
-        });
-        if (!emptyMsWindowListOfApp.length) return;
+    //Sometime metaWindow don't have the app at start so we try to wait a bit to assign correctly the window.
+    setMetaWindowAsWaitingForAssignation(metaWindow) {
+        log('add to wait for app list');
 
-        const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-        const emptyMsWindowOfCurrentWorkspace = emptyMsWindowListOfApp.filter(
-            (msWindow) => {
-                return msWindow.msWorkspace === activeMsWorkspace;
+        this.metaWindowWaitingForAppList.push({
+            timestamp: Date.now(),
+            metaWindow,
+        });
+
+        this.checkWindowsForAssignations();
+    }
+
+    setMsWindowAsWaitingForMetaWindow(msWindow) {
+        this.msWindowWaitingForMetaWindowList.push({
+            timestamp: Date.now(),
+            msWindow,
+            checked: false,
+        });
+
+        this.checkWindowsForAssignations();
+    }
+
+    checkWindowsForAssignations() {
+        const timestamp = Date.now();
+        log('checkWindowsForAssignations', timestamp, Date.now());
+        this.metaWindowWaitingForAppList.forEach((waitingMetaWindow) => {
+            let app = this.windowTracker.get_window_app(
+                waitingMetaWindow.metaWindow
+            );
+
+            let msWindowFound = null;
+
+            // First check among the msWindow waiting for an App to be opened
+            this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
+                waitingMsWindow.checked = true;
+                if (
+                    !msWindowFound &&
+                    waitingMsWindow.msWindow.app.get_id() === app.get_id()
+                ) {
+                    msWindowFound = waitingMsWindow.msWindow;
+                    this.msWindowWaitingForMetaWindowList.splice(
+                        this.msWindowWaitingForMetaWindowList.indexOf(
+                            waitingMsWindow
+                        ),
+                        1
+                    );
+                }
+            });
+
+            if (!msWindowFound) {
+                //Then check among empty msWindows
+                const emptyMsWindowListOfApp = this.msWindowList.filter(
+                    (msWindow) => {
+                        return (
+                            !msWindow.metaWindow &&
+                            msWindow.app.get_id() === app.get_id()
+                        );
+                    }
+                );
+                if (emptyMsWindowListOfApp.length) {
+                    const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    msWindowFound = emptyMsWindowListOfApp.filter(
+                        (msWindow) => {
+                            return msWindow.msWorkspace === activeMsWorkspace;
+                        }
+                    )[0];
+                    if (!msWindowFound) {
+                        msWindowFound = emptyMsWindowListOfApp[0];
+                    }
+                }
+            }
+
+            if (msWindowFound) {
+                msWindowFound.setWindow(waitingMetaWindow.metaWindow);
+            } else {
+                let app = this.windowTracker.get_window_app(
+                    waitingMetaWindow.metaWindow
+                );
+                log(
+                    'metaWindow waiting since',
+                    timestamp - waitingMetaWindow.timestamp
+                );
+                if (
+                    !this.msWindowWaitingForMetaWindowList.length ||
+                    !app.is_window_backed() ||
+                    timestamp - waitingMetaWindow.timestamp > 2000
+                ) {
+                    const msWindow = this.createNewMsWindow(
+                        app.get_id(),
+                        this.buildMetaWindowIdentifier(
+                            waitingMetaWindow.metaWindow
+                        ),
+                        waitingMetaWindow.metaWindow
+                    );
+                    Me.msWorkspaceManager.addWindowToAppropriateMsWorkspace(
+                        msWindow
+                    );
+                }
+            }
+        });
+        this.metaWindowWaitingForAppList = this.metaWindowWaitingForAppList.filter(
+            (waitingMetaWindow) => {
+                return !waitingMetaWindow.metaWindow.msWindow;
             }
         );
 
-        return emptyMsWindowOfCurrentWorkspace[0] || emptyMsWindowListOfApp[0];
+        this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
+            log(
+                'msWindow waiting since',
+                timestamp - waitingMsWindow.timestamp
+            );
+
+            if (
+                (waitingMsWindow.checked &&
+                    timestamp - waitingMsWindow.timestamp > 2000) ||
+                timestamp - waitingMsWindow.timestamp > 5000
+            ) {
+                waitingMsWindow.msWindow.kill();
+                this.msWindowWaitingForMetaWindowList.splice(
+                    this.msWindowWaitingForMetaWindowList.indexOf(
+                        waitingMsWindow
+                    ),
+                    1
+                );
+            }
+        });
+        if (
+            this.metaWindowWaitingForAppList.length ||
+            this.msWindowWaitingForMetaWindowList.length
+        ) {
+            if (this.checkInProgress) return;
+            this.checkInProgress = true;
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+                this.checkInProgress = false;
+                this.checkWindowsForAssignations();
+            });
+        }
     }
 
     onFocusMetaWindow(metaWindow) {
@@ -187,7 +276,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     openAppForMsWindow(msWindow) {
-        this.msWindowWaitingForMetaWindowList.push(msWindow);
+        this.setMsWindowAsWaitingForMetaWindow(msWindow);
         let workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
             msWindow.msWorkspace
         );

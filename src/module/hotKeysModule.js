@@ -2,6 +2,7 @@ const { Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported HotKeysModule */
 var HotKeysModule = class HotKeysModule {
@@ -80,9 +81,17 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                global.display
-                    .get_focus_window()
-                    .delete(global.get_current_time());
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const msWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+
+                if (msWorkspace.tileableFocused instanceof MsWindow) {
+                    msWorkspace.tileableFocused.kill();
+                }
             }
         );
 
