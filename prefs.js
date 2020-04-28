@@ -64,13 +64,17 @@ const hotKeysLabels = {
         'Cycle around the tiling layout on the current workspace',
     'reverse-cycle-tiling-layout':
         'Cycle around in reverse order the tiling layout on the current workspace',
+    'customize-layout-increase':
+        'Grow windows in workspace. Depends on the current tiling layout.',
+    'customize-layout-decrease':
+        'Shrink windows in workspace. Depends on the current tiling layout.',
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen'
 };
 
 const layouts = {
     maximize: 'Maximize all windows',
-    split: 'Put all windows side by side, two at a time',
+    split: 'Put all windows side by side',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',

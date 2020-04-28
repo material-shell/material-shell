@@ -77,6 +77,20 @@
         Cycle around in reverse order the tiling layout on the current workspace
       </description>
     </key>
+    <key name="customize-layout-increase" type="as">
+      <default><![CDATA[['<Super>k']]]></default>
+      <summary>Grow windows in workspace. Depends on the current tiling layout.</summary>
+      <description>
+        Grow windows in workspace. Depends on the current tiling layout.
+      </description>
+    </key>
+    <key name="customize-layout-decrease" type="as">
+      <default><![CDATA[['<Super>j']]]></default>
+      <summary>Shrink windows in workspace. Depends on the current tiling layout.</summary>
+      <description>
+        Shrink windows in workspace. Depends on the current tiling layout.
+      </description>
+    </key>
     <key name="toggle-material-shell-ui" type="as">
       <default><![CDATA[['<Super>Escape']]]></default>
       <summary>Toggle the material-shell UI to simulate fullscreen</summary>
