@@ -79,13 +79,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onMetaWindowUnManaged(metaWindow) {
+        if (Me.disableInProgress || Me.closing) return;
         if (
-            Me.disableInProgress ||
-            Me.closing ||
-            this.isMetaWindowDialog(metaWindow)
-        )
-            return;
-        if (metaWindow.msWindow) {
+            metaWindow.msWindow &&
+            metaWindow.msWindow.metaWindow === metaWindow
+        ) {
             const msWindow = metaWindow.msWindow;
             //if (!msWindow.isDialog) return;
             /* msWindow.msWorkspace.removeMsWindow(this);

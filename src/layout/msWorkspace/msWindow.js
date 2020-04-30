@@ -638,6 +638,9 @@ var MsWindow = GObject.registerClass(
         }
 
         addDialog(metaWindow) {
+            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index) {
+                metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
+            }
             let clone = new Clutter.Clone({
                 source: metaWindow.get_compositor_private(),
             });

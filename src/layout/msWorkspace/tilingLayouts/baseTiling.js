@@ -25,9 +25,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.msWorkspace.tileableList.forEach((tileable) => {
             this.alterTileable(tileable);
         });
-        this.msWorkspace.floatableList.forEach((floatable) => {
-            this.alterFloatable(floatable);
-        });
     }
 
     registerToSignals() {
@@ -40,18 +37,6 @@ var BaseTilingLayout = class BaseTilingLayout {
                         this.onTileableListChanged(
                             tileableList,
                             oldTileableList
-                        );
-                    }
-                ),
-            },
-            {
-                from: this.msWorkspace,
-                id: this.msWorkspace.connect(
-                    'floatableList-changed',
-                    (_, floatableList, oldFloatableList) => {
-                        this.onFloatableListChanged(
-                            floatableList,
-                            oldFloatableList
                         );
                     }
                 ),
@@ -99,18 +84,6 @@ var BaseTilingLayout = class BaseTilingLayout {
          */
     }
 
-    alterFloatable(floatable) {
-        /*
-         * Function called automatically at the layout init or when a new window enter
-         */
-    }
-
-    restoreFloatable(floatable) {
-        /*
-         * Function called automatically at the layout destroy or when a window leave
-         */
-    }
-
     onTileableListChanged(tileableList, oldTileableList) {
         const enteringTileableList = tileableList.filter(
             (tileable) => !oldTileableList.includes(tileable)
@@ -133,26 +106,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
     }
 
-    onFloatableListChanged(floatableList, oldFloatableList) {
-        const enteringFloatableList = floatableList.filter(
-            (floatable) => !oldFloatableList.includes(floatable)
-        );
-        const leavingFloatableList = oldFloatableList.filter(
-            (floatable) => !floatableList.includes(floatable)
-        );
-
-        enteringFloatableList.forEach((floatable) => {
-            this.alterFloatable(floatable);
-        });
-        leavingFloatableList.forEach((floatable) => {
-            this.restoreFloatable(floatable);
-        });
-
-        if (Me.loaded) {
-            this.onTileDialogs([...floatableList]);
-        }
-    }
-
     onWorkAreasChanged() {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
@@ -170,7 +123,6 @@ var BaseTilingLayout = class BaseTilingLayout {
 
     onTile() {
         this.onTileRegulars([...this.msWorkspace.tileableList]);
-        this.onTileDialogs([...this.msWorkspace.floatableList]);
     }
 
     onTileRegulars(tileableList) {
@@ -187,27 +139,6 @@ var BaseTilingLayout = class BaseTilingLayout {
             );
         }
         // Define windows sizes and positions
-    }
-
-    onTileDialogs(floatableList) {
-        if (Me.loaded) {
-            const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                this.monitor.index
-            );
-            floatableList.forEach((floatable) => {
-                if (floatable.grabbed) return;
-                if (
-                    floatable.metaWindow &&
-                    floatable.metaWindow.is_attached_dialog()
-                ) {
-                    return;
-                }
-                floatable.set_position(
-                    workArea.x + workArea.width / 2 - floatable.width / 2,
-                    workArea.y + workArea.height / 2 - floatable.height / 2
-                );
-            });
-        }
     }
 
     animateSetPosition(actor, x, y) {
@@ -346,9 +277,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         });
         this.msWorkspace.tileableList.forEach((tileable) => {
             this.restoreTileable(tileable);
-        });
-        this.msWorkspace.floatableList.forEach((floatable) => {
-            this.restoreFloatable(floatable);
         });
     }
 };

@@ -32,13 +32,8 @@ var MsDndManager = class MsDndManager {
                         );
                     }
 
-                    if (this.msWindowDragged.isDialog) {
-                        this.originalParent =
-                            newMsWorkspace.msWorkspaceActor.floatableContainer;
-                    } else {
-                        this.originalParent =
-                            newMsWorkspace.msWorkspaceActor.tileableContainer;
-                    }
+                    this.originalParent =
+                        newMsWorkspace.msWorkspaceActor.tileableContainer;
                 }
             }
         );
@@ -104,13 +99,9 @@ var MsDndManager = class MsDndManager {
                 this.msWindowDragged,
                 newMsWorkspace
             );
-            if (this.msWindowDragged.isDialog) {
-                this.originalParent =
-                    newMsWorkspace.msWorkspaceActor.floatableContainer;
-            } else {
-                this.originalParent =
-                    newMsWorkspace.msWorkspaceActor.tileableContainer;
-            }
+
+            this.originalParent =
+                newMsWorkspace.msWorkspaceActor.tileableContainer;
         }
 
         const workArea = Main.layoutManager.getWorkAreaForMonitor(

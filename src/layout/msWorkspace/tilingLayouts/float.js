@@ -14,7 +14,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
         /* msWorkspace.msWorkspaceActor.tileableContainer.hide();
-        msWorkspace.msWorkspaceActor.floatableContainer.hide(); */
+        msWorkspace.msWorkspaceActor.tileableContainer.hide(); */
     }
 
     alterTileable(tileable) {
@@ -25,10 +25,6 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 tileable.mimicMetaWindowPositionAndSize();
             });
         }
-        reparentActor(
-            tileable,
-            this.msWorkspace.msWorkspaceActor.floatableContainer
-        );
     }
 
     restoreTileable(tileable) {
@@ -38,22 +34,10 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
             });
         }
-        reparentActor(
-            tileable,
-            this.msWorkspace.msWorkspaceActor.tileableContainer
-        );
-    }
-
-    alterFloatable(floatable) {
-        this.alterTileable(floatable);
-    }
-
-    restoreFloatable(floatable) {
-        this.restoreTileable(floatable);
     }
 
     onFocusChanged(tileableFocused) {
-        this.msWorkspace.msWorkspaceActor.floatableContainer.set_child_above_sibling(
+        this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
             tileableFocused,
             null
         );
@@ -62,7 +46,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
     onDestroy() {
         super.onDestroy();
         /* this.msWorkspace.msWorkspaceActor.tileableContainer.show();
-        this.msWorkspace.msWorkspaceActor.floatableContainer.show(); */
+        this.msWorkspace.msWorkspaceActor.tileableContainer.show(); */
     }
 };
 

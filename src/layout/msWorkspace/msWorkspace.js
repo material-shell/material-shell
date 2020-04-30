@@ -29,7 +29,6 @@ var MsWorkspace = class MsWorkspace {
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
-        this.floatableList = [];
         this.uiVisible = true;
         this.focusedIndex = 0;
 
@@ -118,25 +117,15 @@ var MsWorkspace = class MsWorkspace {
         }
 
         if (!msWindow.dragged) {
-            reparentActor(
-                msWindow,
-                msWindow.isDialog
-                    ? this.msWorkspaceActor.floatableContainer
-                    : this.msWorkspaceActor.tileableContainer
-            );
+            reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }
-        if (msWindow.isDialog) {
-            const oldFloatableList = [...this.floatableList];
-            this.floatableList.push(msWindow);
-            this.emitFloatableListChangedOnce(oldFloatableList);
-        } else {
-            const oldTileableList = [...this.tileableList];
-            this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
 
-            this.emitTileableListChangedOnce(oldTileableList);
+        const oldTileableList = [...this.tileableList];
+        this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
 
-            this.focusTileable(msWindow);
-        }
+        this.emitTileableListChangedOnce(oldTileableList);
+
+        this.focusTileable(msWindow);
 
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
@@ -146,26 +135,21 @@ var MsWorkspace = class MsWorkspace {
 
     removeMsWindow(msWindow) {
         if (this.msWindowList.indexOf(msWindow) === -1) return;
-        if (this.floatableList.includes(msWindow)) {
-            const oldFloatableList = [...this.floatableList];
-            this.floatableList.splice(this.floatableList.indexOf(msWindow), 1);
-            this.emitFloatableListChangedOnce(oldFloatableList);
-        } else {
-            const tileableIndex = this.tileableList.indexOf(msWindow);
-            const oldTileableList = [...this.tileableList];
-            this.tileableList.splice(tileableIndex, 1);
-            if (this.focusedIndex > tileableIndex) {
-                this.focusedIndex--;
-            } else if (
-                this.focusedIndex === this.tileableList.length - 1 &&
-                this.tileableList.length > 1
-            ) {
-                this.focusedIndex--;
-            }
-            this.emitTileableListChangedOnce(oldTileableList);
-            // If there's no more focused msWindow on this workspace focus the last one
-            this.refreshFocus();
+
+        const tileableIndex = this.tileableList.indexOf(msWindow);
+        const oldTileableList = [...this.tileableList];
+        this.tileableList.splice(tileableIndex, 1);
+        if (this.focusedIndex > tileableIndex) {
+            this.focusedIndex--;
+        } else if (
+            this.focusedIndex === this.tileableList.length - 1 &&
+            this.tileableList.length > 1
+        ) {
+            this.focusedIndex--;
         }
+        this.emitTileableListChangedOnce(oldTileableList);
+        // If there's no more focused msWindow on this workspace focus the last one
+        this.refreshFocus();
     }
 
     emitTileableListChangedOnce(oldTileableList) {
@@ -178,20 +162,6 @@ var MsWorkspace = class MsWorkspace {
                 'tileableList-changed',
                 this.tileableList,
                 oldTileableList
-            );
-        });
-    }
-
-    emitFloatableListChangedOnce(oldFloatableList) {
-        if (this.emitFloatableChangedInProgress) return;
-        this.emitFloatableChangedInProgress = true;
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log('IDLE_ADD');
-            delete this.emitFloatableChangedInProgress;
-            this.emit(
-                'floatableList-changed',
-                this.floatableList,
-                oldFloatableList
             );
         });
     }
@@ -384,12 +354,9 @@ var MsWorkspaceActor = GObject.registerClass(
             this.tileableContainer = new St.Widget({
                 style_class: 'tileable-container',
             });
-            this.floatableContainer = new St.Widget({
-                style_class: 'floatable-container',
-            });
+
             this.panel = new TopPanel(msWorkspace);
             this.add_child(this.tileableContainer);
-            this.add_child(this.floatableContainer);
             this.add_child(this.panel);
         }
 
@@ -410,7 +377,6 @@ var MsWorkspaceActor = GObject.registerClass(
                 this.panel && this.panel.visible ? panelBox.y2 : box.y1;
             containerBox.y2 = box.y2;
             this.tileableContainer.allocate(containerBox, flags);
-            this.floatableContainer.allocate(containerBox, flags);
         }
     }
 );
