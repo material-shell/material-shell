@@ -46,6 +46,7 @@ var MsApplicationLauncher = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
+            if (!this.visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerBox = new Clutter.ActorBox();
@@ -248,6 +249,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
+            if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerPadding = 16;

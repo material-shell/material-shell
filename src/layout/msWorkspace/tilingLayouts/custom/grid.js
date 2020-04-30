@@ -4,13 +4,14 @@ const { range } = Me.imports.src.utils.index;
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported GridLayout */
 var GridLayout = class GridLayout extends BaseTilingLayout {
     onTileRegulars(windows) {
         super.onTileRegulars(windows);
         if (!windows.length) return;
-
+        log(windows.length);
         const workArea = this.getWorkspaceBounds();
         const columns = Math.ceil(Math.sqrt(windows.length));
         const rows = Math.ceil(windows.length / columns);

@@ -79,7 +79,12 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onMetaWindowUnManaged(metaWindow) {
-        if (Me.disableInProgress || Me.closing) return;
+        if (
+            Me.disableInProgress ||
+            Me.closing ||
+            this.isMetaWindowDialog(metaWindow)
+        )
+            return;
         if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
             //if (!msWindow.isDialog) return;
@@ -144,22 +149,34 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
             let msWindowFound = null;
 
-            // First check among the msWindow waiting for an App to be opened
-            this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
-                waitingMsWindow.checked = true;
-                if (
-                    !msWindowFound &&
-                    waitingMsWindow.msWindow.app.get_id() === app.get_id()
-                ) {
-                    msWindowFound = waitingMsWindow.msWindow;
-                    this.msWindowWaitingForMetaWindowList.splice(
-                        this.msWindowWaitingForMetaWindowList.indexOf(
-                            waitingMsWindow
-                        ),
-                        1
-                    );
+            if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
+                let root = waitingMetaWindow.metaWindow.find_root_ancestor();
+                if (root.msWindow) {
+                    msWindowFound = root.msWindow;
                 }
-            });
+            }
+
+            if (!msWindowFound) {
+                // First check among the msWindow waiting for an App to be opened
+                this.msWindowWaitingForMetaWindowList.forEach(
+                    (waitingMsWindow) => {
+                        waitingMsWindow.checked = true;
+                        if (
+                            !msWindowFound &&
+                            waitingMsWindow.msWindow.app.get_id() ===
+                                app.get_id()
+                        ) {
+                            msWindowFound = waitingMsWindow.msWindow;
+                            this.msWindowWaitingForMetaWindowList.splice(
+                                this.msWindowWaitingForMetaWindowList.indexOf(
+                                    waitingMsWindow
+                                ),
+                                1
+                            );
+                        }
+                    }
+                );
+            }
 
             if (!msWindowFound) {
                 //Then check among empty msWindows
@@ -185,7 +202,12 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             }
 
             if (msWindowFound) {
-                msWindowFound.setWindow(waitingMetaWindow.metaWindow);
+                if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
+                    log(msWindowFound);
+                    msWindowFound.addDialog(waitingMetaWindow.metaWindow);
+                } else {
+                    msWindowFound.setWindow(waitingMetaWindow.metaWindow);
+                }
             } else {
                 let app = this.windowTracker.get_window_app(
                     waitingMetaWindow.metaWindow

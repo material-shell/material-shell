@@ -157,7 +157,9 @@ var BaseTilingLayout = class BaseTilingLayout {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.monitor.index
         );
-        this.onTile();
+        if (Me.loaded) {
+            this.onTile();
+        }
     }
 
     onFocusChanged() {

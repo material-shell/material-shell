@@ -364,12 +364,11 @@ $panel-size: 48px;
             height: $panel-size;
             width: $panel-size;
             @include foreground-medium-emphasis($theme);
-
-            .icon {
-                icon-size: 24px;
-                width: 24px;
-                height: 24px;
-            }
+        }
+        .app-icon {
+            icon-size: 24px;
+            width: 24px;
+            height: 24px;
         }
 
         .task-bar-item-content {

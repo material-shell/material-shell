@@ -38,6 +38,8 @@ var MsWorkspace = class MsWorkspace {
         );
         this.tilingLayout = new Layout(this);
         this.appLauncher = new MsApplicationLauncher(this);
+        //this.appLauncher = new Clutter.Actor();
+
         this.tileableList.push(this.appLauncher);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
@@ -46,7 +48,7 @@ var MsWorkspace = class MsWorkspace {
             this.handleExtensionLoaded.bind(this)
         );
 
-        this.updateUI();
+        //this.updateUI();
 
         if (initialState) {
             log(

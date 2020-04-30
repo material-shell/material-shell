@@ -19,15 +19,6 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         this.overContainer = new St.Widget();
         this.updateActiveTileableListFromFocused();
         this.horizontal = this.monitor.width > this.monitor.height;
-        /* const workArea = this.getWorkspaceBounds();
-
-        if (this.horizontal) {
-            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
-                -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
-        } else {
-            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_y =
-                -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
-        } */
 
         //this.addTransitionContainer();
     }
@@ -37,7 +28,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             0,
             Math.min(
                 this.msWorkspace.focusedIndex,
-                this.msWorkspace.tileableList.length - WINDOW_PER_SCREEN
+                this.msWorkspace.tileableList.length - WINDOW_PER_SCREEN - 1
             )
         );
         this.activeTileableList = this.msWorkspace.tileableList.slice(
@@ -100,12 +91,15 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
         const workArea = this.getWorkspaceBounds();
         // Sizing inactive windows
         tileableList.forEach((tileable, index) => {
+            log('tileable', tileable.title, index, this.baseIndex);
             tileable.set_size(
                 workArea.width / (this.horizontal ? WINDOW_PER_SCREEN : 1),
                 workArea.height / (this.horizontal ? 1 : WINDOW_PER_SCREEN)
             );
             if (this.activeTileableList.includes(tileable)) {
                 const activeIndex = this.activeTileableList.indexOf(tileable);
+                log('activeIndex', activeIndex);
+
                 if (this.horizontal) {
                     tileable.set_position(
                         activeIndex * (workArea.width / WINDOW_PER_SCREEN),
@@ -114,6 +108,11 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                     tileable.translation_x =
                         (workArea.width / WINDOW_PER_SCREEN) *
                         (index - activeIndex);
+                    log(
+                        'tileable.translation_x',
+                        (workArea.width / WINDOW_PER_SCREEN) *
+                            (index - activeIndex)
+                    );
                 } else {
                     tileable.set_position(
                         0,
@@ -137,44 +136,30 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 tileable.hide();
             }
         });
-        // Positionning active windows
-        /* this.activeTileableList.forEach((tileable, i) => {
-            const windowBounds = {
-                x: 0,
-                y: 0,
-                width: workArea.width,
-                height: workArea.height,
-            };
-            if (workArea.width > workArea.height) {
-                windowBounds.width /= WINDOW_PER_SCREEN;
-                windowBounds.x += (i * workArea.width) / WINDOW_PER_SCREEN;
+        if (
+            this.baseIndex != 0 &&
+            this.msWorkspace.msWorkspaceActor.tileableContainer
+                .translation_x === 0 &&
+            this.msWorkspace.msWorkspaceActor.tileableContainer
+                .translation_y === 0
+        ) {
+            if (this.horizontal) {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
+                    -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
             } else {
-                windowBounds.height /= WINDOW_PER_SCREEN;
-                windowBounds.y += (i * workArea.height) / WINDOW_PER_SCREEN;
+                this.msWorkspace.msWorkspaceActor.tileableContainer.translation_y =
+                    -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN);
             }
-            if (tileableList.length < WINDOW_PER_SCREEN) {
-                this.animateSetPosition(window, windowBounds.x, windowBounds.y);
-                this.animateSetSize(
-                    window,
-                    windowBounds.width,
-                    windowBounds.height
-                );
-            } else {
-                window.set_position(windowBounds.x, windowBounds.y);
-                window.set_size(windowBounds.width, windowBounds.height);
-            }
-        });
-        tileableList.forEach((window) => {
-            if (!this.activeTileableList.includes(window)) {
-                window.hide();
-            } else {
-                window.show();
-            }
-        }); */
+        }
     }
 
     onDestroy() {
         super.onDestroy();
+        if (this.horizontal) {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x = 0;
+        } else {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_y = 0;
+        }
         this.msWorkspace.msWindowList.forEach((msWindow) => {
             if (!this.activeTileableList.includes(msWindow)) {
                 msWindow.show();

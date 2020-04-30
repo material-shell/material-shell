@@ -482,7 +482,9 @@ let TileableItem = GObject.registerClass(
             super._init(this.container, true);
             this.tileable = tileable;
             this.app = tileable.app;
-            this.iconContainer = new St.Bin();
+            this.iconContainer = new St.Bin({
+                y_align: Clutter.ActorAlign.CENTER,
+            });
 
             // TITLE
             this.title = new St.Label({
@@ -524,6 +526,7 @@ let TileableItem = GObject.registerClass(
             this.iconSize = height;
             this.icon = this.app.create_icon_texture(this.iconSize / 2);
             this.icon.style_class = 'app-icon';
+            this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
             this.iconContainer.set_child(this.icon);
             this.queue_relayout();
         }
@@ -695,7 +698,7 @@ let IconTaskBarItem = GObject.registerClass(
 
             this.icon = new St.Icon({
                 gicon,
-                style_class: 'icon',
+                style_class: 'app-icon',
             });
             this.container.set_child(this.icon);
         }
