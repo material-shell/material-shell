@@ -109,6 +109,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     addMsWindow(msWindow) {
+        if (!msWindow) return;
         if (msWindow.msWorkspace === this) return;
 
         msWindow.msWorkspace = this;

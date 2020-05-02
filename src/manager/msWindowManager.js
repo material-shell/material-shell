@@ -97,7 +97,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         let appSys = Shell.AppSystem.get_default();
         const app =
             appSys.lookup_app(appId) ||
-            this.windowTracker.get_window_app(metaWindow);
+            (metaWindow && this.windowTracker.get_window_app(metaWindow));
         if (!app) {
             log('unable to get app from id:', appId);
             return;
@@ -146,7 +146,12 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             );
 
             let msWindowFound = null;
-
+            log('window_type', waitingMetaWindow.metaWindow.window_type);
+            log('window_class', waitingMetaWindow.metaWindow.get_wm_class());
+            log(
+                'metaWindow.firstFrameDrawn',
+                waitingMetaWindow.metaWindow.firstFrameDrawn
+            );
             if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                 let root = waitingMetaWindow.metaWindow.find_root_ancestor();
                 if (root.msWindow) {
@@ -212,11 +217,12 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 );
                 log(
                     'metaWindow waiting since',
-                    timestamp - waitingMetaWindow.timestamp
+                    timestamp - waitingMetaWindow.timestamp,
+                    app.is_window_backed()
                 );
                 if (
-                    !this.msWindowWaitingForMetaWindowList.length ||
-                    !app.is_window_backed() ||
+                    (waitingMetaWindow.metaWindow.firstFrameDrawn &&
+                        !app.is_window_backed()) ||
                     timestamp - waitingMetaWindow.timestamp > 2000
                 ) {
                     const msWindow = this.createNewMsWindow(
@@ -264,7 +270,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         ) {
             if (this.checkInProgress) return;
             this.checkInProgress = true;
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
                 this.checkInProgress = false;
                 this.checkWindowsForAssignations();
             });
@@ -317,7 +323,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         ];
         return (
             dialogTypes.includes(metaWindow.window_type) ||
-            !metaWindow.resizeable ||
             (metaWindow.get_transient_for() != null && metaWindow.skip_taskbar)
         );
     }

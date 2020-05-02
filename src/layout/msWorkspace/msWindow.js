@@ -103,17 +103,7 @@ var MsWindow = GObject.registerClass(
 
         get isDialog() {
             if (!this.metaWindow) return false;
-            let dialogTypes = [
-                Meta.WindowType.DIALOG,
-                Meta.WindowType.MODAL_DIALOG,
-                Meta.WindowType.UTILITY,
-            ];
-            return (
-                dialogTypes.includes(this.metaWindow.window_type) ||
-                !this.metaWindow.resizeable ||
-                (this.metaWindow.get_transient_for() != null &&
-                    this.metaWindow.skip_taskbar)
-            );
+            return Me.msWindowManager.isMetaWindowDialog(this.metaWindow);
         }
 
         registerToEvents() {
@@ -227,13 +217,21 @@ var MsWindow = GObject.registerClass(
                 //log('EVENT', this.title, event.type());
             });
             this.Keymap = imports.gi.Gdk.Keymap.get_default();
-            this.superConnectId = this.Keymap.connect('state_changed', (_) => {
-                if (!this.msWorkspace) log(this.title);
-                let isSuperPressed = this.Keymap.get_modifier_state() === 64;
-                this.reactive =
-                    (!this.metaWindow || isSuperPressed) &&
-                    this.msWorkspace.tilingLayout.constructor.key !== 'float';
-            });
+            if (this.Keymap) {
+                this.superConnectId = this.Keymap.connect(
+                    'state_changed',
+                    (_) => {
+                        if (!this.msWorkspace) log(this.title);
+                        let isSuperPressed =
+                            this.Keymap.get_modifier_state() === 64;
+                        this.reactive =
+                            (!this.metaWindow || isSuperPressed) &&
+                            this.msWorkspace.tilingLayout.constructor.key !==
+                                'float';
+                    }
+                );
+            }
+
             this.grabEndSignal = global.display.connect('grab-op-end', () => {
                 if (this.metaWindow) {
                     log('grab-open-end');
@@ -420,14 +418,6 @@ var MsWindow = GObject.registerClass(
                                 this.width === workArea.width &&
                                 this.height === workArea.height;
 
-                            //Set the metaWindow maximized if it's the case
-                            let moveTo = this.getRelativeMetaWindowPosition(
-                                this.metaWindow
-                            );
-                            let resizeTo = {
-                                width: contentBox.get_width(),
-                                height: contentBox.get_height(),
-                            };
                             if (isMaximized) {
                                 if (this.metaWindow.maximized) return;
                                 return this.metaWindow.maximize(
@@ -441,6 +431,37 @@ var MsWindow = GObject.registerClass(
                                 );
                             }
                             let currentFrameRect = this.metaWindow.get_frame_rect();
+                            let moveTo, resizeTo;
+                            if (this.metaWindow.resizeable) {
+                                //Set the metaWindow maximized if it's the case
+                                moveTo = this.getRelativeMetaWindowPosition(
+                                    this.metaWindow
+                                );
+                                resizeTo = {
+                                    width: contentBox.get_width(),
+                                    height: contentBox.get_height(),
+                                };
+                            } else {
+                                let relativePosition = this.getRelativeMetaWindowPosition(
+                                    this.metaWindow
+                                );
+                                moveTo = {
+                                    x:
+                                        relativePosition.x +
+                                        (contentBox.get_width() -
+                                            currentFrameRect.width) /
+                                            2,
+                                    y:
+                                        relativePosition.y +
+                                        (contentBox.get_height() -
+                                            currentFrameRect.height) /
+                                            2,
+                                };
+                                resizeTo = {
+                                    width: currentFrameRect.width,
+                                    height: currentFrameRect.height,
+                                };
+                            }
                             //Set the size accordingly
                             log(
                                 'resize metaWindow to ',
@@ -704,7 +725,9 @@ var MsWindow = GObject.registerClass(
             await this.onMetaWindowFirstFrameDrawn();
             WindowUtils.updateTitleBarVisibility(this.metaWindow);
             this.windowClone.set_source(metaWindow.get_compositor_private());
-
+            if (!this.metaWindow.resizeable) {
+                this.msContent.add_style_class_name('surface-darker');
+            }
             await (this.followMetaWindow
                 ? Promise.resolve(this.mimicMetaWindowPositionAndSize())
                 : this.updateMetaWindowPositionAndSize());
@@ -720,6 +743,9 @@ var MsWindow = GObject.registerClass(
             this.reactive = true;
             delete this.metaWindow;
             delete this.metaWindowUpdateInProgressPromise;
+            if (this.msContent.has_style_class_name('surface-darker')) {
+                this.msContent.remove_style_class_name('surface-darker');
+            }
             if (!this.placeholder.get_parent()) {
                 this.msContent.add_child(this.placeholder);
             }
@@ -845,10 +871,24 @@ var MsWindowContent = GObject.registerClass(
                 //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
                 if (windowActor) {
                     let cloneBox = new Clutter.ActorBox();
-                    cloneBox.x1 = windowActor.x - windowFrameRect.x;
-                    cloneBox.y1 = windowActor.y - windowFrameRect.y;
-                    cloneBox.x2 = cloneBox.x1 + windowActor.width;
-                    cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                    if (metaWindow.resizeable || metaWindow.fullscreen) {
+                        cloneBox.x1 = windowActor.x - windowFrameRect.x;
+                        cloneBox.y1 = windowActor.y - windowFrameRect.y;
+                        cloneBox.x2 = cloneBox.x1 + windowActor.width;
+                        cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                    } else {
+                        const monitor = this.get_parent().msWorkspace.monitor;
+                        const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                            monitor.index
+                        );
+                        cloneBox.x1 =
+                            windowActor.x - workArea.x - this.get_parent().x;
+                        cloneBox.y1 =
+                            windowActor.y - workArea.y - this.get_parent().y;
+                        cloneBox.x2 = cloneBox.x1 + windowActor.width;
+                        cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                    }
+
                     this.clone.allocate(cloneBox, flags);
                 } else {
                     log('windowactor is missing', this.title);
