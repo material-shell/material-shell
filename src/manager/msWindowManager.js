@@ -71,7 +71,8 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
         // This flags if we handle this window or not for the session
         metaWindow.handledByMaterialShell = true;
-        metaWindow.connect('unmanaged', () => {
+        metaWindow.connect('unmanaged', (test, test2, test3) => {
+            log('unmanaged', test, test2, test3);
             this.onMetaWindowUnManaged(metaWindow);
         });
 

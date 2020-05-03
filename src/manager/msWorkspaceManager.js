@@ -337,14 +337,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
         let workspacesToRemove = [];
         this.primaryMsWorkspaces.forEach((msWorkspace, index) => {
+            let msWorkspaceIsEmpty = msWorkspace.msWindowList.length === 0;
+            let msWorkspaceIsActive =
+                msWorkspace === this.getActiveMsWorkspace();
+            let msWorkspaceIsLast =
+                index === this.primaryMsWorkspaces.length - 1;
+            let previousMsWorkspace = this.primaryMsWorkspaces[index - 1];
             if (
-                (msWorkspace.msWindowList.length === 0 &&
-                    msWorkspace != this.getActiveMsWorkspace() &&
-                    index != this.primaryMsWorkspaces.length - 1) ||
-                (index === this.primaryMsWorkspaces.length - 1 &&
-                    this.primaryMsWorkspaces[
-                        this.primaryMsWorkspaces.length - 2
-                    ].msWindowList.length === 0)
+                (msWorkspaceIsEmpty &&
+                    !msWorkspaceIsActive &&
+                    !msWorkspaceIsLast) ||
+                (msWorkspaceIsLast &&
+                    previousMsWorkspace &&
+                    previousMsWorkspace.msWindowList.length === 0)
             ) {
                 log(
                     'SHOULD REMOVE WORKSPACE AT ',
