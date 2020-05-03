@@ -207,7 +207,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
             if (msWindowFound) {
                 if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
-                    log(msWindowFound);
                     msWindowFound.addDialog(waitingMetaWindow.metaWindow);
                 } else {
                     msWindowFound.setWindow(waitingMetaWindow.metaWindow);

@@ -30,15 +30,9 @@ var MsStatusArea = GObject.registerClass(
 
             /* THIS HACK IS TO FIX THE STRANGE HEIGHT OF THE AGGREGATED MENU BUTTON
              * The behavior is defirent between 3.34.2 and more recent version
-             * Hiding then reshowing the button seem to fix the issue
              */
+            this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(false);
 
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this.gnomeShellPanel.statusArea.aggregateMenu.visible = false;
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    this.gnomeShellPanel.statusArea.aggregateMenu.visible = true;
-                });
-            });
             this.disableConnect = Me.connect(
                 'extension-disable',
                 this.onDisable.bind(this)
@@ -210,6 +204,7 @@ var MsStatusArea = GObject.registerClass(
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();
             this.restorePanelActors();
+            this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
         }
     }
 );
