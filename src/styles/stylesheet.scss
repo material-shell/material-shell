@@ -230,7 +230,8 @@ $panel-size: 48px;
             @include foreground-medium-emphasis($theme);
             text-align: center;
             font-weight: bold;
-            color: #ccc;
+            -natural-hpadding: 0px;
+            -minimum-hpadding: 0px;
             .app-menu-icon {
                 -st-icon-style: symbolic;
                 margin-left: 4px;

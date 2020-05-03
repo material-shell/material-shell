@@ -148,7 +148,8 @@ subtitle-1 {
     color: rgba(255, 255, 255, 0.6);
     text-align: center;
     font-weight: bold;
-    color: #ccc; }
+    -natural-hpadding: 0px;
+    -minimum-hpadding: 0px; }
     .dark-theme #msPanel .panel-button .app-menu-icon {
       -st-icon-style: symbolic;
       margin-left: 4px;
@@ -274,13 +275,6 @@ subtitle-1 {
 .dark-theme MsWindow {
   background-color: red; }
 
-.dark-theme MsWindowContent {
-  background-color: blue; }
-
-.dark-theme .floatable-container MsWindow {
-  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
-  border-radius: 10px; }
-
 .light-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
 
@@ -363,7 +357,8 @@ subtitle-1 {
     color: rgba(0, 0, 0, 0.6);
     text-align: center;
     font-weight: bold;
-    color: #ccc; }
+    -natural-hpadding: 0px;
+    -minimum-hpadding: 0px; }
     .light-theme #msPanel .panel-button .app-menu-icon {
       -st-icon-style: symbolic;
       margin-left: 4px;
@@ -489,13 +484,6 @@ subtitle-1 {
 .light-theme MsWindow {
   background-color: red; }
 
-.light-theme MsWindowContent {
-  background-color: blue; }
-
-.light-theme .floatable-container MsWindow {
-  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
-  border-radius: 10px; }
-
 .light-primary.primary-theme .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
 
@@ -604,7 +592,8 @@ subtitle-1 {
   .primary-theme #msPanel .panel-button {
     text-align: center;
     font-weight: bold;
-    color: #ccc; }
+    -natural-hpadding: 0px;
+    -minimum-hpadding: 0px; }
     .light-primary.primary-theme #msPanel .panel-button {
       color: rgba(0, 0, 0, 0.6); }
     .dark-primary.primary-theme #msPanel .panel-button {
@@ -753,10 +742,3 @@ subtitle-1 {
 
 .primary-theme MsWindow {
   background-color: red; }
-
-.primary-theme MsWindowContent {
-  background-color: blue; }
-
-.primary-theme .floatable-container MsWindow {
-  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.4);
-  border-radius: 10px; }
