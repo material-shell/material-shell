@@ -12,7 +12,7 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
         this.incompatibleExtensions = [
             {
                 uuid: 'desktop-icons@csoriano',
-                disable: extension => {
+                disable: (extension) => {
                     if (extension.stateObj) {
                         let _startupPreparedId;
                         if (Main.layoutManager._startingUp) {
@@ -29,20 +29,20 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
                             extension.stateObj.disable();
                         }
                     }
-                }
+                },
             },
             {
                 uuid: 'ubuntu-dock@ubuntu.com',
-                disable: extension => {
+                disable: (extension) => {
                     if (extension.stateObj) extension.stateObj.disable();
-                }
-            }
+                },
+            },
         ];
 
         for (let incompatibleExtension of this.incompatibleExtensions) {
-            let extension = ShellVersionMatch('3.32')
-                ? ExtensionUtils.extensions[incompatibleExtension.uuid]
-                : Main.extensionManager.lookup(incompatibleExtension.uuid);
+            let extension = Main.extensionManager.lookup(
+                incompatibleExtension.uuid
+            );
             if (extension) {
                 incompatibleExtension.disable(extension);
             }

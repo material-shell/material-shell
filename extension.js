@@ -6,7 +6,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     DisableIncompatibleExtensionsModule,
 } = Me.imports.src.module.disableIncompatibleExtensionsModule;
-const { LeftPanelModule } = Me.imports.src.module.leftPanel.leftPanelModule;
 const { OverrideModule } = Me.imports.src.module.overrideModule;
 
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
@@ -36,13 +35,16 @@ let disableIncompatibleExtensionsModule,
     _startupPreparedId,
     monitorChangedId;
 let splashscreens = [];
+
+let originalCount, currentCount;
+originalCount = currentCount = 0;
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
     Signals.addSignalMethods(Me);
-    global.materialShell = Me;
+    global.ms = Me;
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
@@ -51,6 +53,7 @@ function init() {
         log('CLOSING');
         Me.closing = true;
     });
+    Me.sumChild = sumChild;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -58,6 +61,8 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+    originalCount = countActors();
+    logActorRoutine();
     // Show a splashscreen while we are updating the UI layout and theme
     Me.showSplashScreens();
 
@@ -185,4 +190,35 @@ function hideSplashScreens() {
         });
     });
     splashscreens = [];
+}
+
+function logActorRoutine() {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+        currentCount = countActors();
+        log(
+            `ACTORS from ${originalCount.val} to ${currentCount.val} and visible from ${originalCount.visible} to ${currentCount.visible} and mapped from ${originalCount.mapped} to ${currentCount.mapped}`
+        );
+        //logActorRoutine();
+    });
+}
+
+function countActors() {
+    let count = { val: 0, visible: 0, mapped: 0 };
+    sumChild(global.stage, count);
+    return count;
+}
+
+function sumChild(actor, count) {
+    count = count || { val: 0, visible: 0, mapped: 0 };
+    count.val += 1;
+    if (actor.visible) {
+        count.visible += 1;
+    }
+    if (actor.mapped) {
+        count.mapped += 1;
+    }
+    actor.get_children().forEach((child) => {
+        sumChild(child, count);
+    });
+    return count;
 }

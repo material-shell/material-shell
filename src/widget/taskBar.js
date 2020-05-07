@@ -1,6 +1,5 @@
 const { Clutter, GObject, St, Shell, Gio, GLib } = imports.gi;
 
-const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -28,7 +27,7 @@ var TaskBar = GObject.registerClass(
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
-            this.taskButtonContainer = new St.Widget({
+            this.taskButtonContainer = new Clutter.Actor({
                 layout_manager: new Clutter.BoxLayout(),
             });
             this.add_child(this.taskButtonContainer);
@@ -292,21 +291,17 @@ var TaskBar = GObject.registerClass(
                 }),
             };
             if (!this.mapped) return;
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.taskActiveIndicator, {
-                    translation_x: taskBarItem.x,
-                    width: taskBarItem.width,
-                    time: 0.25,
-                    transition: 'easeOutQuad',
-                });
-            } else {
-                this.taskActiveIndicator.ease({
-                    translation_x: taskBarItem.x,
-                    width: taskBarItem.width,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                });
-            }
+
+            this.taskActiveIndicator.ease({
+                translation_x: taskBarItem.x,
+                scale_x: taskBarItem.width / this.taskActiveIndicator.width,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.taskActiveIndicator.scale_x = 1;
+                    this.taskActiveIndicator.width = taskBarItem.width;
+                },
+            });
         }
 
         getTaskBarItemOfTileable(tileable) {

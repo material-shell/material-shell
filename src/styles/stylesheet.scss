@@ -456,10 +456,6 @@ $panel-size: 48px;
         border-radius: 48px;
     }
 
-    .backdrop-container {
-        background: rgba(0, 0, 0, 0.5);
-    }
-
     .surface {
         @include background($theme);
     }

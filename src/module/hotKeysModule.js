@@ -1,13 +1,82 @@
-const { Meta, Shell } = imports.gi;
+const { Meta, Shell, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
+let LogAllocateActor = GObject.registerClass(
+    {
+        GTypeName: 'LogAllocateActor',
+    },
+    class LogAllocateActor extends Clutter.Actor {
+        _init(params) {
+            this.title = params.title;
+            log(this.title);
+            delete params.title;
+            super._init(params);
+        }
+
+        vfunc_allocate(box, flags) {
+            log(`allocate ${this.title}`, this.layout_manager);
+            this.set_allocation(box, flags);
+            this.get_children().forEach((actor, index) => {
+                let childBox = new Clutter.ActorBox();
+                childBox.x2 = box.get_width();
+                childBox.y1 = index * box.get_height();
+                childBox.y2 = childBox.y1 + box.get_height();
+                actor.allocate(childBox, flags);
+            });
+            //this.old_vfunc_allocate(box, flags);
+        }
+    }
+);
+let ColorActor = GObject.registerClass(
+    {
+        GTypeName: 'ColorActor',
+    },
+    class ColorActor extends LogAllocateActor {
+        _init() {
+            super._init({
+                title: 'ColorActor',
+                width: Main.layoutManager.primaryMonitor.width,
+                height: Main.layoutManager.primaryMonitor.height,
+                background_color: new Clutter.Color({
+                    red: Math.random() * 255,
+                    blue: Math.random() * 255,
+                    green: Math.random() * 255,
+                    alpha: 255,
+                }),
+            });
+        }
+    }
+);
+
 /* exported HotKeysModule */
 var HotKeysModule = class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
+        this.testInProgress = false;
+        this.testContainer = new LogAllocateActor({
+            title: 'container',
+            layout_manager: new Clutter.BoxLayout({ vertical: true }),
+        });
+        this.testContainer.add_child(new ColorActor());
+        this.testContainer.add_child(new ColorActor());
+        /* Me.layout.visible = noUImode; */
+        this.testFunc = (to) => {
+            this.testContainer.ease({
+                translation_y:
+                    -1 * to * Main.layoutManager.primaryMonitor.height,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+                onComplete: () => {
+                    let next = to === 1 ? 0 : 1;
+                    if (this.testInProgress) {
+                        this.testFunc(next);
+                    }
+                },
+            });
+        };
 
         const settings = getSettings('bindings');
 
@@ -262,8 +331,15 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const noUImode = Me.msWorkspaceManager.noUImode;
                 Me.msWorkspaceManager.noUImode = !noUImode;
-                Me.layout.visible = noUImode;
 
+                if (!this.testInProgress) {
+                    this.testInProgress = true;
+                    Main.uiGroup.add_child(this.testContainer);
+                    this.testFunc(1);
+                } else {
+                    this.testInProgress = false;
+                    Main.uiGroup.remove_child(this.testContainer);
+                }
                 /* Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
                 Main.panel.get_parent().set_width(!noUImode ? 0 : -1);

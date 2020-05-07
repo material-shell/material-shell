@@ -2,7 +2,6 @@ const { Clutter, St, Meta, Shell, GLib } = imports.gi;
 const Main = imports.ui.main;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Tweener = imports.ui.tweener;
 
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;

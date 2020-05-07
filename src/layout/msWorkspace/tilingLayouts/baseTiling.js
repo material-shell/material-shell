@@ -1,9 +1,8 @@
 const { Meta, Gio, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { Backdrop } = Me.imports.src.widget.backdrop;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
@@ -17,9 +16,7 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.msWorkspace = msWorkspace;
         this.monitor = msWorkspace.monitor;
         this.themeSettings = getSettings('theme');
-        this.doDialogBackdrop = this.themeSettings.get_boolean(
-            'do-dialog-backdrop'
-        );
+
         this.signals = [];
         this.registerToSignals();
         this.msWorkspace.tileableList.forEach((tileable) => {
@@ -55,18 +52,6 @@ var BaseTilingLayout = class BaseTilingLayout {
                 id: global.display.connect(
                     'workareas-changed',
                     this.onWorkAreasChanged.bind(this)
-                ),
-            },
-            {
-                from: this.themeSettings,
-                id: this.themeSettings.connect(
-                    'changed::do-dialog-backdrop',
-                    (schema) => {
-                        this.doDialogBackdrop = schema.get_boolean(
-                            'do-dialog-backdrop'
-                        );
-                        this.onTile();
-                    }
                 ),
             }
         );
@@ -150,21 +135,13 @@ var BaseTilingLayout = class BaseTilingLayout {
         }
         actor.translation_x = oldX - x;
         actor.translation_y = oldY - y;
-        if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(actor, {
-                translation_x: 0,
-                translation_y: 0,
-                time: 0.25,
-                transition: 'easeOutQuad',
-            });
-        } else {
-            actor.ease({
-                translation_x: 0,
-                translation_y: 0,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            });
-        }
+
+        actor.ease({
+            translation_x: 0,
+            translation_y: 0,
+            duration: 250,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        });
     }
 
     animateSetSize(actor, width, height) {
@@ -176,21 +153,12 @@ var BaseTilingLayout = class BaseTilingLayout {
         actor.scale_x = oldWidth / width;
         actor.scale_y = oldHeight / height;
 
-        if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(actor, {
-                scale_x: 1.0,
-                scale_y: 1.0,
-                time: 0.25,
-                transition: 'easeOutQuad',
-            });
-        } else {
-            actor.ease({
-                scale_x: 1.0,
-                scale_y: 1.0,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            });
-        }
+        actor.ease({
+            scale_x: 1.0,
+            scale_y: 1.0,
+            duration: 250,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+        });
     }
 
     moveAndResizeActor(

@@ -1,5 +1,5 @@
 const { St, Shell, Clutter } = imports.gi;
-const Tweener = imports.ui.tweener;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const {
@@ -16,7 +16,6 @@ const WINDOW_SLIDE_TWEEN_TIME = 250;
 var SplitLayout = class SplitLayout extends BaseTilingLayout {
     constructor(msWorkspace) {
         super(msWorkspace);
-        this.overContainer = new St.Widget();
         this.updateActiveTileableListFromFocused();
         this.horizontal = this.monitor.width > this.monitor.height;
 
@@ -174,8 +173,13 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             Math.abs(
                 this.msWorkspace.msWorkspaceActor.tileableContainer
                     .translation_x
-            ) /
-                (workArea.width / WINDOW_PER_SCREEN)
+            ) / Math.max(workArea.width / WINDOW_PER_SCREEN, 1)
+        );
+        log(
+            oldIndex,
+            workArea.width,
+            WINDOW_PER_SCREEN,
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x
         );
         let i =
             newIndex > oldIndex
@@ -186,7 +190,7 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
                 ? newIndex + WINDOW_PER_SCREEN
                 : newIndex - WINDOW_PER_SCREEN;
         while (i != to) {
-            log(i);
+            log('i', i);
             if (this.msWorkspace.tileableList[i])
                 this.msWorkspace.tileableList[i].show();
             if (newIndex > oldIndex) {
@@ -196,67 +200,27 @@ var SplitLayout = class SplitLayout extends BaseTilingLayout {
             }
         }
         if (this.horizontal) {
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(
-                    this.msWorkspace.msWorkspaceActor.tileableContainer,
-                    {
-                        translation_x:
-                            -1 *
-                            this.baseIndex *
-                            (workArea.width / WINDOW_PER_SCREEN),
-                        time: WINDOW_SLIDE_TWEEN_TIME / 1000,
-                        transition: 'easeOutQuad',
-                        onComplete: () => {
-                            this.animationInProgress = false;
-                            this.endTransition();
-                        },
-                    }
-                );
-            } else {
-                this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
-                    translation_x:
-                        -1 *
-                        this.baseIndex *
-                        (workArea.width / WINDOW_PER_SCREEN),
-                    duration: WINDOW_SLIDE_TWEEN_TIME,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.animationInProgress = false;
-                        this.endTransition();
-                    },
-                });
-            }
+            this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
+                translation_x:
+                    -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN),
+                duration: WINDOW_SLIDE_TWEEN_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                },
+            });
         } else {
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(
-                    this.msWorkspace.msWorkspaceActor.tileableContainer,
-                    {
-                        translation_y:
-                            -1 *
-                            this.baseIndex *
-                            (workArea.width / WINDOW_PER_SCREEN),
-                        time: WINDOW_SLIDE_TWEEN_TIME / 1000,
-                        transition: 'easeOutQuad',
-                        onComplete: () => {
-                            this.animationInProgress = false;
-                            this.endTransition();
-                        },
-                    }
-                );
-            } else {
-                this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
-                    translation_y:
-                        -1 *
-                        this.baseIndex *
-                        (workArea.width / WINDOW_PER_SCREEN),
-                    duration: WINDOW_SLIDE_TWEEN_TIME,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.animationInProgress = false;
-                        this.endTransition();
-                    },
-                });
-            }
+            this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
+                translation_y:
+                    -1 * this.baseIndex * (workArea.width / WINDOW_PER_SCREEN),
+                duration: WINDOW_SLIDE_TWEEN_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.animationInProgress = false;
+                    this.endTransition();
+                },
+            });
         }
     }
 

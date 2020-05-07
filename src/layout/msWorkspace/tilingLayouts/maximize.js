@@ -3,7 +3,7 @@ const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const Tweener = imports.ui.tweener;
+
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
@@ -52,6 +52,12 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
 
     restoreTileable(tileable) {
         tileable.translation_x = 0;
+        if (!tileable.get_parent()) {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.add_child(
+                tileable
+            );
+            tileable.show();
+        }
         if (tileable.maximizeDraggedConnectId) {
             tileable.disconnect(tileable.maximizeDraggedConnectId);
             delete tileable.maximizeDraggedConnectId;
@@ -104,6 +110,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             }
             if (index !== this.msWorkspace.focusedIndex && !actor.dragged) {
                 actor.hide();
+                if (actor.get_parent()) {
+                    actor.get_parent().remove_child(actor);
+                }
             } else {
                 actor.show();
             }
@@ -127,37 +136,40 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             this.monitor.index
         );
         let i = oldIndex;
-        while (i != newIndex) {
+        /* while (i != newIndex) {
             this.msWorkspace.tileableList[i].show();
             if (newIndex > oldIndex) {
                 i++;
             } else {
                 i--;
             }
-        }
-        this.msWorkspace.tileableList[newIndex].show();
-        if (ShellVersionMatch('3.32')) {
-            Tweener.addTween(
-                this.msWorkspace.msWorkspaceActor.tileableContainer,
-                {
-                    translation_x: -newIndex * workArea.width,
-                    time: Math.min(0.25 * Math.abs(oldIndex - newIndex), 0.4),
-                    transition: 'easeOutQuad',
-                    onComplete: () => {
-                        this.endTransition();
-                    },
-                }
+        } */
+        if (!this.msWorkspace.tileableList[newIndex].get_parent()) {
+            this.msWorkspace.msWorkspaceActor.tileableContainer.add_child(
+                this.msWorkspace.tileableList[newIndex]
             );
-        } else {
-            this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
-                translation_x: -newIndex * workArea.width,
-                duration: Math.min(250 * Math.abs(oldIndex - newIndex), 400),
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this.endTransition();
-                },
-            });
+            this.msWorkspace.tileableList[newIndex].show();
         }
+
+        if (Math.abs(newIndex - oldIndex) > 1) {
+            let prev = newIndex > oldIndex ? newIndex - 1 : newIndex + 1;
+            this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
+                -1 * prev * workArea.width;
+
+            this.msWorkspace.tileableList[oldIndex].translation_x =
+                (prev > oldIndex ? 1 : -1) *
+                Math.abs(prev - oldIndex) *
+                workArea.width;
+        }
+
+        this.msWorkspace.msWorkspaceActor.tileableContainer.ease({
+            translation_x: -newIndex * workArea.width,
+            duration: 250,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.endTransition();
+            },
+        });
     }
 
     endTransition() {

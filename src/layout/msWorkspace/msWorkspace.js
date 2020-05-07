@@ -90,7 +90,7 @@ var MsWorkspace = class MsWorkspace {
 
     updateUI() {
         if (this.msWorkspaceActor) {
-            this.msWorkspaceActor.visible = this.uiVisible;
+            //this.msWorkspaceActor.visible = this.uiVisible;
         }
         if (this.msWorkspaceActor.panel) {
             this.msWorkspaceActor.panel.visible = this.shouldPanelBeVisible();
@@ -342,18 +342,20 @@ var MsWorkspace = class MsWorkspace {
 Signals.addSignalMethods(MsWorkspace.prototype);
 
 var MsWorkspaceActor = GObject.registerClass(
-    {},
-    class MsWorkspaceActor extends St.Widget {
+    {
+        GTypeName: 'MsWorkspaceActor',
+    },
+    class MsWorkspaceActor extends Clutter.Actor {
         _init(msWorkspace) {
             log('new MsWorkspaceActor');
             super._init({
-                style_class: 'msWorkspace',
                 clip_to_allocation: true,
                 x_expand: true,
+                background_color: new Clutter.Color({ red: 120, alpha: 255 }),
             });
             this.msWorkspace = msWorkspace;
-            this.tileableContainer = new St.Widget({
-                style_class: 'tileable-container',
+            this.tileableContainer = new Clutter.Actor({
+                background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
             });
 
             this.panel = new TopPanel(msWorkspace);
@@ -363,20 +365,21 @@ var MsWorkspaceActor = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
-            let themeNode = this.get_theme_node();
-            box = themeNode.get_content_box(box);
+            let contentBox = new Clutter.ActorBox();
+            contentBox.x2 = box.get_width();
+            contentBox.y2 = box.get_height();
             let panelBox = new Clutter.ActorBox();
-            panelBox.x1 = box.x1;
-            panelBox.x2 = box.x2;
-            panelBox.y1 = box.y1;
+            panelBox.x1 = contentBox.x1;
+            panelBox.x2 = contentBox.x2;
+            panelBox.y1 = contentBox.y1;
             panelBox.y2 = panelBox.y1 + this.panel.get_preferred_height(-1)[1];
             this.panel.allocate(panelBox, flags);
             let containerBox = new Clutter.ActorBox();
-            containerBox.x1 = box.x1;
-            containerBox.x2 = box.x2;
+            containerBox.x1 = contentBox.x1;
+            containerBox.x2 = contentBox.x2;
             containerBox.y1 =
-                this.panel && this.panel.visible ? panelBox.y2 : box.y1;
-            containerBox.y2 = box.y2;
+                this.panel && this.panel.visible ? panelBox.y2 : contentBox.y1;
+            containerBox.y2 = contentBox.y2;
             this.tileableContainer.allocate(containerBox, flags);
         }
     }

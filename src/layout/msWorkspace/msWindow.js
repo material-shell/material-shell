@@ -3,7 +3,6 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const Tweener = imports.ui.tweener;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 /* exported MsWindow */
@@ -21,7 +20,7 @@ var MsWindow = GObject.registerClass(
             request_new_meta_window: {},
         },
     },
-    class MsWindow extends St.Widget {
+    class MsWindow extends Clutter.Actor {
         _init(app, metaWindowIdentifier, metaWindow) {
             AddLogToFunctions(this);
             super._init({
@@ -351,8 +350,9 @@ var MsWindow = GObject.registerClass(
                 box.get_height()
             );
             this.set_allocation(box, flags);
-            let themeNode = this.get_theme_node();
-            let contentBox = themeNode.get_content_box(box);
+            let contentBox = new Clutter.ActorBox();
+            contentBox.x2 = box.get_width();
+            contentBox.y2 = box.get_height();
             this.msContent.allocate(contentBox, flags);
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
@@ -754,7 +754,7 @@ var MsWindow = GObject.registerClass(
 
         takeFocus() {
             if (this.dialogs.length) {
-                this.dialogs[this.dialogs.length - 1].activate(
+                this.dialogs[this.dialogs.length - 1].metaWindow.activate(
                     global.get_current_time()
                 );
             } else if (this.metaWindow) {
@@ -762,7 +762,8 @@ var MsWindow = GObject.registerClass(
             } else {
                 this.grab_key_focus();
             }
-            this.get_parent().set_child_above_sibling(this, null);
+            if (this.get_parent())
+                this.get_parent().set_child_above_sibling(this, null);
         }
 
         show() {
@@ -809,21 +810,13 @@ var MsWindow = GObject.registerClass(
                 }
                 this.placeholder.reset();
             };
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.placeholder, {
-                    opacity: 0,
-                    time: 0.25,
-                    transition: 'easeOutQuad',
-                    onComplete,
-                });
-            } else {
-                this.placeholder.ease({
-                    opacity: 0,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-                    onComplete,
-                });
-            }
+
+            this.placeholder.ease({
+                opacity: 0,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+                onComplete,
+            });
         }
 
         freeze() {
@@ -860,7 +853,6 @@ var MsWindowContent = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            log('allocate msContent', box.get_width(), box.get_height());
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);

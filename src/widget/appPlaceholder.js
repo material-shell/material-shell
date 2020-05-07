@@ -29,14 +29,13 @@ var AppPlaceholder = GObject.registerClass(
             this.icon = this.app.create_icon_texture(248);
             this._spinner = new Animation.Spinner(16);
             let spinnerActor;
-            if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+            if (ShellVersionMatch('3.34')) {
                 spinnerActor = this._spinner.actor;
             } else {
                 spinnerActor = this._spinner;
             }
-            this.spinnerContainer = new St.Bin({
-                child: spinnerActor,
-            });
+            this.spinnerContainer = new Clutter.Actor({});
+            this.spinnerContainer.add_child(spinnerActor);
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),

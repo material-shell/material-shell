@@ -137,7 +137,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             });
             this._text.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
-                if (ShellVersionMatch('3.32') || ShellVersionMatch('3.34')) {
+                if (ShellVersionMatch('3.34')) {
                     switch (symbol) {
                         case Clutter.Escape:
                             return Clutter.EVENT_STOP;

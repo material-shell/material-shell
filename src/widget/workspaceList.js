@@ -1,7 +1,7 @@
 const { Clutter, GObject, St, Gio } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Tweener = imports.ui.tweener;
+
 const DND = imports.ui.dnd;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
@@ -248,19 +248,11 @@ var WorkspaceList = GObject.registerClass(
                 this.buttonActive.actorContainer.add_style_class_name('active');
             }
 
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.workspaceActiveIndicator, {
-                    translation_y: this.get_preferred_width(-1)[1] * index,
-                    time: 0.25,
-                    transition: 'easeOutQuad',
-                });
-            } else {
-                this.workspaceActiveIndicator.ease({
-                    translation_y: this.get_preferred_width(-1)[1] * index,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                });
-            }
+            this.workspaceActiveIndicator.ease({
+                translation_y: this.get_preferred_width(-1)[1] * index,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
         }
 
         getButtonFromCategoryKey(categoryKey) {

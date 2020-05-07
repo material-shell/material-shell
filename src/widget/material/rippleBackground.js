@@ -1,5 +1,5 @@
 const { St, Clutter, GObject, GLib } = imports.gi;
-const Tweener = imports.ui.tweener;
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
@@ -22,44 +22,25 @@ let RippleWave = GObject.registerClass(
             this.scale_y = 32 / this.fullSize;
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 log('IDLE_ADD');
-                if (ShellVersionMatch('3.32')) {
-                    Tweener.addTween(this, {
-                        scale_x: 1,
-                        scale_y: 1,
-                        time: this.fullSize / 800,
-                        transition: 'easeOutQuad',
-                    });
-                } else {
-                    this.ease({
-                        scale_x: 1,
-                        scale_y: 1,
-                        duration: (this.fullSize / 800) * 1000,
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    });
-                }
+
+                this.ease({
+                    scale_x: 1,
+                    scale_y: 1,
+                    duration: (this.fullSize / 800) * 1000,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                });
             });
         }
 
         removeIn(second) {
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this, {
-                    opacity: 0,
-                    time: second,
-                    transition: 'easeOutQuad',
-                    onComplete: () => {
-                        this.destroy();
-                    },
-                });
-            } else {
-                this.ease({
-                    opacity: 0,
-                    duration: second * 1000,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.destroy();
-                    },
-                });
-            }
+            this.ease({
+                opacity: 0,
+                duration: second * 1000,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this.destroy();
+                },
+            });
         }
     }
 );

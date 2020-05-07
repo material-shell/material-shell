@@ -5,16 +5,15 @@ const Main = imports.ui.main;
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const Tweener = imports.ui.tweener;
+const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 /* exported MsMain */
 var MsMain = GObject.registerClass(
     {
         GTypeName: 'MsMain',
     },
-    class MsMain extends St.Widget {
+    class MsMain extends Clutter.Actor {
         _init() {
             super._init({});
-            this.set_style('background: rgba(255,0,255,0.2)');
             Main.uiGroup.insert_child_above(this, global.window_group);
             this.monitorsContainer = [];
             this.monitorPanelSpacerList = [];
@@ -22,10 +21,12 @@ var MsMain = GObject.registerClass(
             this.add_child(this.aboveContainer);
             this.buildMonitorsLayout();
 
-            this.primaryContainer = new PrimaryContainer();
+            //this.primaryContainer = new PrimaryContainer();
             this.monitorsContainer[
                 Main.layoutManager.primaryIndex
-            ].setPrimaryContainer(this.primaryContainer);
+            ].setMsWorkspaceActor(
+                Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
+            );
             this.panel = new MsPanel();
             this.monitorsContainer[Main.layoutManager.primaryIndex].setPanel(
                 this.panel
@@ -115,30 +116,40 @@ var MsMain = GObject.registerClass(
         }
 
         onMsWorkspacesChanged() {
-            Me.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
+            this.monitorsContainer.forEach((container, index) => {
+                if (index === Main.layoutManager.primaryIndex) {
+                    container.setMsWorkspaceActor(
+                        Me.msWorkspaceManager.getActiveMsWorkspace()
+                            .msWorkspaceActor
+                    );
+                } else {
+                    container.set_child(
+                        Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                            index
+                        )[0]
+                    );
+                }
+            });
+            /*             Me.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
+                let parent = msWorkspace.msWorkspaceActor.get_parent();
                 if (
                     Me.msWorkspaceManager.primaryMsWorkspaces.includes(
                         msWorkspace
                     )
                 ) {
-                    if (
-                        msWorkspace.msWorkspaceActor.get_parent() !==
-                        this.primaryContainer
-                    ) {
-                        this.primaryContainer.add_child(
-                            msWorkspace.msWorkspaceActor
-                        );
+                    if (msWorkspace != activeMsWorkspace) {
+                        if (parent)
+                            parent.remove_child(msWorkspace.msWorkspaceActor);
                     } else {
-                        this.primaryContainer.set_child_at_index(
-                            msWorkspace.msWorkspaceActor,
-                            Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                                msWorkspace
-                            )
-                        );
+                        if (!parent) {
+                            this.primaryContainer.add_child(
+                                msWorkspace.msWorkspaceActor
+                            );
+                        }
                     }
+
                 } else if (
-                    msWorkspace.msWorkspaceActor.get_parent() !==
-                    this.monitorsContainer[msWorkspace.monitor.index]
+                    parent !== this.monitorsContainer[msWorkspace.monitor.index]
                 ) {
                     this.monitorsContainer[msWorkspace.monitor.index].set_child(
                         msWorkspace.msWorkspaceActor
@@ -148,49 +159,75 @@ var MsMain = GObject.registerClass(
             this.primaryContainer.translation_y =
                 -1 *
                 global.workspace_manager.get_active_workspace_index() *
-                Main.layoutManager.primaryMonitor.height;
+                Main.layoutManager.primaryMonitor.height; */
         }
 
         onSwitchWorkspace(from, to) {
-            for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    i
-                ].msWorkspaceActor.show();
-            }
+            this.onMsWorkspacesChanged();
 
-            if (ShellVersionMatch('3.32')) {
-                Tweener.addTween(this.primaryContainer, {
-                    translation_y:
-                        -1 * to * Main.layoutManager.primaryMonitor.height,
-                    time: 0.25,
-                    transition: 'easeOutQuad',
-                    onComplete: () => {
-                        this.onTransitionCompleted();
-                    },
-                });
-            } else {
-                this.primaryContainer.ease({
-                    translation_y:
-                        -1 * to * Main.layoutManager.primaryMonitor.height,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-                    onComplete: () => {
-                        this.onTransitionCompleted();
-                    },
-                });
+            /* Me.msWorkspaceManager.primaryMsWorkspaces.forEach(
+                (msWorkspace, index) => {
+                    let actor = msWorkspace.msWorkspaceActor;
+                    let parent = actor.get_parent();
+                    if (index === from || index === to) {
+                        if (!parent) {
+                            this.primaryContainer.add_child(actor);
+                            msWorkspace.tilingLayout.onTile();
+                        }
+                    } else {
+                        if (parent) {
+                            this.primaryContainer.remove_child(actor);
+                        }
+                    }
+                    if (actor.translation_y) {
+                        actor.translation_y = 0;
+                    }
+                }
+            );
+            let prev = to > from ? to - 1 : to + 1;
+            let translationYOffset =
+                this.primaryContainer.translation_y %
+                Main.layoutManager.primaryMonitor.height;
+            log('translationYOffset', translationYOffset);
+            this.primaryContainer.remove_all_transitions();
+            this.primaryContainer.translation_y =
+                -1 * prev * Main.layoutManager.primaryMonitor.height +
+                (to < from
+                    ? Math.abs(translationYOffset) > 0
+                        ? Main.layoutManager.primaryMonitor.height -
+                          Math.abs(translationYOffset)
+                        : 0
+                    : translationYOffset);
+            if (Math.abs(to - from) > 1) {
+                log(`from ${from} to ${to} prev ${prev}`);
+
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    from
+                ].msWorkspaceActor.translation_y =
+                    (prev > from ? 1 : -1) *
+                    Math.abs(prev - from) *
+                    Main.layoutManager.primaryMonitor.height;
             }
+            this.primaryContainer.ease({
+                translation_y:
+                    -1 * to * Main.layoutManager.primaryMonitor.height,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+                onComplete: () => {
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        from
+                    ].msWorkspaceActor.translation_y = 0;
+                    this.onTransitionCompleted();
+                },
+            }); */
         }
 
         onTransitionCompleted() {
             /*             this.remove_child(this.translationAnimator);
              */
+            this.onMsWorkspacesChanged();
             const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             activeMsWorkspace.refreshFocus();
-            Me.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
-                msWorkspace.msWorkspaceActor.visible =
-                    msWorkspace.monitor != Main.layoutManager.primaryMonitor ||
-                    msWorkspace === activeMsWorkspace;
-            });
         }
 
         add_child(actor) {
@@ -221,6 +258,14 @@ var PrimaryMonitorContainer = GObject.registerClass(
     class PrimaryMonitorContainer extends St.Widget {
         _init(params) {
             super._init(params);
+            this.translationAnimator = new TranslationAnimator(true);
+            this.translationAnimator.connect('transition-completed', () => {
+                this.get_children().forEach((child) => {
+                    if (child != this.panel && child != this.msWorkspaceActor) {
+                        this.remove_child(child);
+                    }
+                });
+            });
         }
 
         setPanel(actor) {
@@ -228,9 +273,50 @@ var PrimaryMonitorContainer = GObject.registerClass(
             this.add_child(actor);
         }
 
-        setPrimaryContainer(actor) {
-            this.primaryContainer = actor;
+        setTranslation(prevActor, nextActor) {
+            if (!this.translationAnimator.get_parent()) {
+                this.add_child(this.translationAnimator);
+                /* this.set_child_below_sibling(
+                    this.translationAnimator,
+                    this.panel
+                ); */
+            }
+            let indexOfPrevActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
+                (msWorkspace) => {
+                    return msWorkspace.msWorkspaceActor === prevActor;
+                }
+            );
+            let indexOfNextActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
+                (msWorkspace) => {
+                    return msWorkspace.msWorkspaceActor === nextActor;
+                }
+            );
+            log('setTranslation');
+            prevActor.width = nextActor.width =
+                this.width - (this.panel ? this.panel.width : 0);
+            prevActor.height = nextActor.height = this.height;
+            this.translationAnimator.setTranslation(
+                prevActor,
+                nextActor,
+                indexOfNextActor > indexOfPrevActor ? 1 : -1
+            );
+        }
+
+        setMsWorkspaceActor(actor) {
+            if (actor === this.msWorkspaceActor) return;
+            let prevActor;
+            if (this.msWorkspaceActor) {
+                prevActor = this.msWorkspaceActor;
+                //this.remove_child(this.msWorkspaceActor);
+            }
+            this.msWorkspaceActor = actor;
             this.add_child(actor);
+            if (this.panel) {
+                this.set_child_below_sibling(actor, this.panel);
+            }
+            if (prevActor) {
+                this.setTranslation(prevActor, this.msWorkspaceActor);
+            }
         }
 
         vfunc_allocate(box, flags) {
@@ -245,15 +331,17 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 panelBox.y2 = this.panel.get_preferred_height(-1)[1];
                 this.panel.allocate(panelBox, flags);
             }
-            if (this.primaryContainer) {
-                let primaryContainerBox = new Clutter.ActorBox();
-                primaryContainerBox.x1 =
-                    this.panel && this.panel.visible ? panelBox.x2 : box.x1;
-                primaryContainerBox.x2 = box.x2;
-                primaryContainerBox.y1 = box.y1;
-                primaryContainerBox.y2 = box.y2;
-                this.primaryContainer.allocate(primaryContainerBox, flags);
-            }
+
+            let msWorkspaceActorBox = new Clutter.ActorBox();
+            msWorkspaceActorBox.x1 =
+                this.panel && this.panel.visible ? panelBox.x2 : box.x1;
+            msWorkspaceActorBox.x2 = box.x2;
+            msWorkspaceActorBox.y1 = box.y1;
+            msWorkspaceActorBox.y2 = box.y2;
+            this.get_children().forEach((child) => {
+                if (child === this.panel) return;
+                child.allocate(msWorkspaceActorBox, flags);
+            });
         }
     }
 );
@@ -262,40 +350,30 @@ var PrimaryContainer = GObject.registerClass(
     {
         GTypeName: 'PrimaryContainer',
     },
-    class PrimaryContainer extends St.Widget {
+    class PrimaryContainer extends Clutter.Actor {
         _init(params) {
             super._init(params);
         }
 
         vfunc_allocate(box, flags) {
+            log('allocate primary container');
             this.set_allocation(box, flags);
-            let themeNode = this.get_theme_node();
-            box = themeNode.get_content_box(box);
-            this.get_children().forEach((actor, index) => {
+            let contentBox = new Clutter.ActorBox();
+            contentBox.x2 = box.get_width();
+            contentBox.y2 = box.get_height();
+            this.get_children().forEach((actor) => {
+                let index = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
+                    (msWorkspace) => {
+                        return actor === msWorkspace.msWorkspaceActor;
+                    }
+                );
                 let actorBox = new Clutter.ActorBox();
-                actorBox.x1 = box.x1;
-                actorBox.x2 = box.x2;
-                actorBox.y1 = index * box.get_height();
-                actorBox.y2 = actorBox.y1 + box.get_height();
+                actorBox.x1 = contentBox.x1;
+                actorBox.x2 = contentBox.x2;
+                actorBox.y1 = index * contentBox.get_height();
+                actorBox.y2 = actorBox.y1 + contentBox.get_height();
                 actor.allocate(actorBox, flags);
             });
-            /* let panelBox = new Clutter.ActorBox();
-            if (this.panel) {
-                panelBox.x1 = box.x1;
-                panelBox.x2 = this.panel.get_preferred_width(-1)[1];
-                panelBox.y1 = box.y1;
-                panelBox.y2 = this.panel.get_preferred_height(-1)[1];
-                this.panel.allocate(panelBox, flags);
-            }
-            if (this.primaryContainer) {
-                let primaryContainerBox = new Clutter.ActorBox();
-                primaryContainerBox.x1 =
-                    this.panel && this.panel.visible ? panelBox.x2 : box.x1;
-                primaryContainerBox.x2 = box.x2;
-                primaryContainerBox.y1 = box.y1;
-                primaryContainerBox.y2 = box.y2;
-                this.primaryContainer.allocate(primaryContainerBox, flags);
-            } */
         }
     }
 );

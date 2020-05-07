@@ -12,10 +12,10 @@ var MsStatusArea = GObject.registerClass(
     {
         GTypeName: 'MsStatusArea',
     },
-    class MsStatusArea extends St.BoxLayout {
+    class MsStatusArea extends Clutter.Actor {
         _init() {
             super._init({
-                vertical: true,
+                layout_manager: new Clutter.BoxLayout({ vertical: true }),
             });
             this.gnomeShellPanel = Main.panel;
             this.leftBoxActors = [];
@@ -43,10 +43,7 @@ var MsStatusArea = GObject.registerClass(
             this.dateMenu._clock.time_only = true;
             this.dateMenu.set_x_expand(false);
             this.dateMenu.set_y_expand(false);
-            this.indicatorPad = (ShellVersionMatch('3.32')
-                ? this.dateMenu.actor
-                : this.dateMenu
-            )
+            this.indicatorPad = this.dateMenu
                 .get_child_at_index(0)
                 .get_child_at_index(0);
             this.indicatorPad.hide();
