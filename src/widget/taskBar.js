@@ -35,11 +35,13 @@ var TaskBar = GObject.registerClass(
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceSignals = [
                 msWorkspace.connect('tileableList-changed', () => {
+                    log('tileableList-changed');
                     this.onTileableListChange();
                 }),
                 msWorkspace.connect(
                     'tileable-focus-changed',
                     (_, tileable, oldTileable) => {
+                        log('tileable-focus-changed');
                         this.onFocusChanged(tileable, oldTileable);
                     }
                 ),
@@ -80,6 +82,7 @@ var TaskBar = GObject.registerClass(
             if (!nextItem) return;
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
+            log('on new allocate');
             this._animateActiveIndicator();
             nextItem.actorContainer.add_style_class_name('active');
         }
@@ -287,6 +290,7 @@ var TaskBar = GObject.registerClass(
             this.taskBarItemSignal = {
                 from: taskBarItem,
                 id: taskBarItem.connect('notify::width', () => {
+                    log('notify::width');
                     this._animateActiveIndicator();
                 }),
             };
@@ -310,9 +314,11 @@ var TaskBar = GObject.registerClass(
             });
         }
         vfunc_allocate(box, flags) {
+            log('allocate taskbar', box.x1, box.x2, box.y1, box.y2);
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
+            log('allocate taskButtonContainer', box.x1, box.x2, box.y1, box.y2);
             this.taskButtonContainer.allocate(box, flags);
 
             let taskActiveIndicatorBox = new Clutter.ActorBox();
@@ -324,6 +330,14 @@ var TaskBar = GObject.registerClass(
                 contentBox.y2 -
                 this.taskActiveIndicator.get_preferred_height(-1)[0];
             taskActiveIndicatorBox.y2 = contentBox.y2;
+            log(
+                'allocate taskButtonContainer',
+                taskActiveIndicatorBox.x1,
+                taskActiveIndicatorBox.x2,
+                taskActiveIndicatorBox.y1,
+                taskActiveIndicatorBox.y1
+            );
+
             this.taskActiveIndicator.allocate(taskActiveIndicatorBox, flags);
         }
 

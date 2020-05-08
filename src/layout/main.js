@@ -260,11 +260,14 @@ var PrimaryMonitorContainer = GObject.registerClass(
             super._init(params);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {
-                this.get_children().forEach((child) => {
-                    if (child != this.panel && child != this.msWorkspaceActor) {
-                        this.remove_child(child);
-                    }
-                });
+                this.remove_child(this.translationAnimator);
+                this.add_child(this.msWorkspaceActor);
+                if (this.panel) {
+                    this.set_child_below_sibling(
+                        this.msWorkspaceActor,
+                        this.panel
+                    );
+                }
             });
         }
 
@@ -276,10 +279,10 @@ var PrimaryMonitorContainer = GObject.registerClass(
         setTranslation(prevActor, nextActor) {
             if (!this.translationAnimator.get_parent()) {
                 this.add_child(this.translationAnimator);
-                /* this.set_child_below_sibling(
+                this.set_child_below_sibling(
                     this.translationAnimator,
                     this.panel
-                ); */
+                );
             }
             let indexOfPrevActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
                 (msWorkspace) => {
@@ -292,8 +295,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 }
             );
             log('setTranslation');
-            prevActor.width = nextActor.width =
-                this.width - (this.panel ? this.panel.width : 0);
+            prevActor.width = nextActor.width = 200;
             prevActor.height = nextActor.height = this.height;
             this.translationAnimator.setTranslation(
                 prevActor,
@@ -307,15 +309,20 @@ var PrimaryMonitorContainer = GObject.registerClass(
             let prevActor;
             if (this.msWorkspaceActor) {
                 prevActor = this.msWorkspaceActor;
-                //this.remove_child(this.msWorkspaceActor);
+                if (this.msWorkspaceActor.get_parent() === this)
+                    this.remove_child(this.msWorkspaceActor);
             }
             this.msWorkspaceActor = actor;
-            this.add_child(actor);
-            if (this.panel) {
-                this.set_child_below_sibling(actor, this.panel);
-            }
             if (prevActor) {
                 this.setTranslation(prevActor, this.msWorkspaceActor);
+            } else {
+                this.add_child(this.msWorkspaceActor);
+                if (this.panel) {
+                    this.set_child_below_sibling(
+                        this.msWorkspaceActor,
+                        this.panel
+                    );
+                }
             }
         }
 

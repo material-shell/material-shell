@@ -41,6 +41,11 @@ var MsWorkspace = class MsWorkspace {
 
         this.tileableList.push(this.appLauncher);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
+        this.msWorkspaceActor.connect('notify::mapped', () => {
+            if (this.msWorkspaceActor.mapped) {
+                this.tilingLayout.onTile();
+            }
+        });
         this.msWorkspaceActor.tileableContainer.add_child(this.appLauncher);
         this.loadedSignalId = Me.connect(
             'extension-loaded',
@@ -364,6 +369,7 @@ var MsWorkspaceActor = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
+            log('allocate msWorkspaceActor', box.x1, box.x2, box.y1, box.y2);
             this.set_allocation(box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();

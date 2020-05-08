@@ -54,7 +54,10 @@ var TopPanel = GObject.registerClass(
             const contentBox = themeNode.get_content_box(box);
             let taskBarBox = new Clutter.ActorBox();
             taskBarBox.x1 = contentBox.x1;
-            taskBarBox.x2 = contentBox.x2 - this.tilingButton.width;
+            taskBarBox.x2 = Math.max(
+                contentBox.x2 - this.tilingButton.width,
+                0
+            );
             taskBarBox.y1 = contentBox.y1;
             taskBarBox.y2 = contentBox.y2;
             this.taskBar.allocate(taskBarBox, flags);
