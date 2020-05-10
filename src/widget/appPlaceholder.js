@@ -27,15 +27,8 @@ var AppPlaceholder = GObject.registerClass(
 
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
-            this._spinner = new Animation.Spinner(16);
-            let spinnerActor;
-            if (ShellVersionMatch('3.34')) {
-                spinnerActor = this._spinner.actor;
-            } else {
-                spinnerActor = this._spinner;
-            }
+
             this.spinnerContainer = new Clutter.Actor({});
-            this.spinnerContainer.add_child(spinnerActor);
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),
@@ -66,7 +59,7 @@ var AppPlaceholder = GObject.registerClass(
 
             this.add_style_class_name('surface-darker');
             this.add_child(this.identityContainer);
-            this.clickableContainer = new RippleBackground();
+            this.clickableContainer = new RippleBackground(this);
             this.clickableContainer.x_expand = true;
             this.clickableContainer.y_expand = true;
             this.add_child(this.clickableContainer);
@@ -91,6 +84,14 @@ var AppPlaceholder = GObject.registerClass(
                         this.emit('clicked', event.get_button());
                         this.pressed = false;
                         this.clickableContainer.reactive = false;
+                        this._spinner = new Animation.Spinner(16);
+                        let spinnerActor;
+                        if (ShellVersionMatch('3.34')) {
+                            spinnerActor = this._spinner.actor;
+                        } else {
+                            spinnerActor = this._spinner;
+                        }
+                        this.spinnerContainer.add_child(spinnerActor);
                         this._spinner.play();
                         this.spinnerContainer.set_opacity(255);
                     }
@@ -102,7 +103,9 @@ var AppPlaceholder = GObject.registerClass(
 
         reset() {
             this.clickableContainer.reactive = true;
-            this._spinner.stop();
+            if (this._spinner) {
+                this._spinner.destroy();
+            }
             this.spinnerContainer.set_opacity(0);
             delete this.waitForReset;
         }

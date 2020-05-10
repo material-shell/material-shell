@@ -48,13 +48,12 @@ let RippleWave = GObject.registerClass(
 /* exported RippleBackground */
 var RippleBackground = GObject.registerClass(
     class RippleBackground extends St.Widget {
-        _init() {
+        _init(eventListener) {
             super._init({
-                reactive: true,
                 clip_to_allocation: true,
             });
 
-            this.connect('event', (actor, event) => {
+            eventListener.connect('event', (actor, event) => {
                 let eventType = event.type();
                 if (
                     [

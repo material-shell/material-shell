@@ -70,9 +70,10 @@ subtitle-1 {
   color: rgba(255, 255, 255, 0.6); }
 
 .dark-theme .mat-panel-button {
-  height: 48px;
+  min-height: 48px;
   width: 48px; }
   .dark-theme .mat-panel-button .mat-panel-button-icon {
+    padding: 12px;
     icon-size: 24px; }
 
 .dark-theme WorkspaceButton,
@@ -89,22 +90,20 @@ subtitle-1 {
   border-radius: 10000px;
   background: rgba(255, 255, 255, 0.12); }
 
-.dark-theme .mat-button .mat-button-container {
+.dark-theme .mat-button {
   color: rgba(255, 255, 255, 0.87); }
-
-.dark-theme .mat-button:hover .mat-button-container, .dark-theme .mat-button.highlighted .mat-button-container {
-  background: rgba(255, 255, 255, 0.04); }
-
-.dark-theme .mat-button.primary {
-  background: #3f51b5; }
-  .light-primary.dark-theme .mat-button.primary .mat-button-container {
-    color: rgba(0, 0, 0, 0.87); }
-  .dark-primary.dark-theme .mat-button.primary .mat-button-container {
-    color: rgba(255, 255, 255, 0.87); }
-  .light-primary.dark-theme .mat-button.primary:hover .mat-button-container, .dark-theme .mat-button.primary.highlighted .mat-button-container {
-    background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.dark-theme .mat-button.primary:hover .mat-button-container, .dark-theme .mat-button.primary.highlighted .mat-button-container {
+  .dark-theme .mat-button:hover, .dark-theme .mat-button.highlighted {
     background: rgba(255, 255, 255, 0.04); }
+  .dark-theme .mat-button.primary {
+    background: #3f51b5; }
+    .light-primary.dark-theme .mat-button.primary {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.dark-theme .mat-button.primary {
+      color: rgba(255, 255, 255, 0.87); }
+    .light-primary.dark-theme .mat-button.primary:hover, .dark-theme .mat-button.primary.highlighted {
+      background: #2c397f; }
+    .dark-primary.dark-theme .mat-button.primary:hover, .dark-theme .mat-button.primary.highlighted {
+      background: #707ecd; }
 
 .dark-theme .mat-button .mat-panel-button {
   color: rgba(255, 255, 255, 0.6); }
@@ -260,9 +259,6 @@ subtitle-1 {
   background: #191919;
   border-radius: 48px; }
 
-.dark-theme .backdrop-container {
-  background: rgba(0, 0, 0, 0.5); }
-
 .dark-theme .surface {
   background: #191919; }
 
@@ -279,9 +275,10 @@ subtitle-1 {
   color: rgba(0, 0, 0, 0.6); }
 
 .light-theme .mat-panel-button {
-  height: 48px;
+  min-height: 48px;
   width: 48px; }
   .light-theme .mat-panel-button .mat-panel-button-icon {
+    padding: 12px;
     icon-size: 24px; }
 
 .light-theme WorkspaceButton,
@@ -298,22 +295,20 @@ subtitle-1 {
   border-radius: 10000px;
   background: rgba(0, 0, 0, 0.12); }
 
-.light-theme .mat-button .mat-button-container {
+.light-theme .mat-button {
   color: rgba(0, 0, 0, 0.87); }
-
-.light-theme .mat-button:hover .mat-button-container, .light-theme .mat-button.highlighted .mat-button-container {
-  background: rgba(0, 0, 0, 0.04); }
-
-.light-theme .mat-button.primary {
-  background: #3f51b5; }
-  .light-primary.light-theme .mat-button.primary .mat-button-container {
-    color: rgba(0, 0, 0, 0.87); }
-  .dark-primary.light-theme .mat-button.primary .mat-button-container {
-    color: rgba(255, 255, 255, 0.87); }
-  .light-primary.light-theme .mat-button.primary:hover .mat-button-container, .light-theme .mat-button.primary.highlighted .mat-button-container {
+  .light-theme .mat-button:hover, .light-theme .mat-button.highlighted {
     background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.light-theme .mat-button.primary:hover .mat-button-container, .light-theme .mat-button.primary.highlighted .mat-button-container {
-    background: rgba(255, 255, 255, 0.04); }
+  .light-theme .mat-button.primary {
+    background: #3f51b5; }
+    .light-primary.light-theme .mat-button.primary {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.light-theme .mat-button.primary {
+      color: rgba(255, 255, 255, 0.87); }
+    .light-primary.light-theme .mat-button.primary:hover, .light-theme .mat-button.primary.highlighted {
+      background: #2c397f; }
+    .dark-primary.light-theme .mat-button.primary:hover, .light-theme .mat-button.primary.highlighted {
+      background: #707ecd; }
 
 .light-theme .mat-button .mat-panel-button {
   color: rgba(0, 0, 0, 0.6); }
@@ -469,9 +464,6 @@ subtitle-1 {
   background: white;
   border-radius: 48px; }
 
-.light-theme .backdrop-container {
-  background: rgba(0, 0, 0, 0.5); }
-
 .light-theme .surface {
   background: white; }
 
@@ -491,9 +483,10 @@ subtitle-1 {
   color: rgba(255, 255, 255, 0.6); }
 
 .primary-theme .mat-panel-button {
-  height: 48px;
+  min-height: 48px;
   width: 48px; }
   .primary-theme .mat-panel-button .mat-panel-button-icon {
+    padding: 12px;
     icon-size: 24px; }
 
 .primary-theme WorkspaceButton,
@@ -516,28 +509,28 @@ subtitle-1 {
   .dark-primary.primary-theme .ripple-wave {
     background: rgba(255, 255, 255, 0.12); }
 
-.light-primary.primary-theme .mat-button .mat-button-container {
+.light-primary.primary-theme .mat-button {
   color: rgba(0, 0, 0, 0.87); }
 
-.dark-primary.primary-theme .mat-button .mat-button-container {
+.dark-primary.primary-theme .mat-button {
   color: rgba(255, 255, 255, 0.87); }
 
-.light-primary.primary-theme .mat-button:hover .mat-button-container, .primary-theme .mat-button.highlighted .mat-button-container {
-  background: rgba(0, 0, 0, 0.04); }
+.light-primary.primary-theme .mat-button:hover, .primary-theme .mat-button.highlighted {
+  background: #2c397f; }
 
-.dark-primary.primary-theme .mat-button:hover .mat-button-container, .primary-theme .mat-button.highlighted .mat-button-container {
-  background: rgba(255, 255, 255, 0.04); }
+.dark-primary.primary-theme .mat-button:hover, .primary-theme .mat-button.highlighted {
+  background: #707ecd; }
 
 .primary-theme .mat-button.primary {
   background: #3f51b5; }
-  .light-primary.primary-theme .mat-button.primary .mat-button-container {
+  .light-primary.primary-theme .mat-button.primary {
     color: rgba(0, 0, 0, 0.87); }
-  .dark-primary.primary-theme .mat-button.primary .mat-button-container {
+  .dark-primary.primary-theme .mat-button.primary {
     color: rgba(255, 255, 255, 0.87); }
-  .light-primary.primary-theme .mat-button.primary:hover .mat-button-container, .primary-theme .mat-button.primary.highlighted .mat-button-container {
-    background: rgba(0, 0, 0, 0.04); }
-  .dark-primary.primary-theme .mat-button.primary:hover .mat-button-container, .primary-theme .mat-button.primary.highlighted .mat-button-container {
-    background: rgba(255, 255, 255, 0.04); }
+  .light-primary.primary-theme .mat-button.primary:hover, .primary-theme .mat-button.primary.highlighted {
+    background: #2c397f; }
+  .dark-primary.primary-theme .mat-button.primary:hover, .primary-theme .mat-button.primary.highlighted {
+    background: #707ecd; }
 
 .light-primary.primary-theme .mat-button .mat-panel-button {
   color: rgba(0, 0, 0, 0.6); }
@@ -603,15 +596,15 @@ subtitle-1 {
       margin-left: 4px;
       margin-right: 4px; }
     .light-primary.primary-theme #msPanel .panel-button:hover {
-      background: rgba(0, 0, 0, 0.04); }
+      background: #2c397f; }
     .dark-primary.primary-theme #msPanel .panel-button:hover {
-      background: rgba(255, 255, 255, 0.04); }
+      background: #707ecd; }
     .primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
       box-shadow: inset 3px 0 0px #3f51b5; }
       .light-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
-        background: rgba(0, 0, 0, 0.04); }
+        background: #2c397f; }
       .dark-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
-        background: rgba(255, 255, 255, 0.04); }
+        background: #707ecd; }
       .light-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
         color: rgba(0, 0, 0, 0.87); }
       .dark-primary.primary-theme #msPanel .panel-button:active, .primary-theme #msPanel .panel-button:overview, .primary-theme #msPanel .panel-button:focus, .primary-theme #msPanel .panel-button:checked {
@@ -727,9 +720,6 @@ subtitle-1 {
 .primary-theme .search-entry {
   background: #3f51b5;
   border-radius: 48px; }
-
-.primary-theme .backdrop-container {
-  background: rgba(0, 0, 0, 0.5); }
 
 .primary-theme .surface {
   background: #3f51b5; }

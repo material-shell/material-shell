@@ -83,11 +83,11 @@ $panel-size: 48px;
 
     @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
-            background: rgba(0, 0, 0, 0.04);
+            @include background-darker($theme);
         }
 
         @at-root .dark-primary#{&} {
-            background: rgba(255, 255, 255, 0.04);
+            @include background-lighter($theme);
         }
     }
 }
@@ -142,11 +142,12 @@ $panel-size: 48px;
     }
 
     .mat-panel-button {
-        height: $panel-size;
+        min-height: $panel-size;
         width: $panel-size;
 
         .mat-panel-button-icon {
-            icon-size: 24px;
+            padding: $panel-size / 4;
+            icon-size: $panel-size / 2;
         }
     }
 
@@ -174,29 +175,21 @@ $panel-size: 48px;
     }
 
     .mat-button {
-        .mat-button-container {
-            @include foreground-high-emphasis($theme);
-        }
+        @include foreground-high-emphasis($theme);
 
         &:hover,
         &.highlighted {
-            .mat-button-container {
-                @include hover($theme);
-            }
+            @include hover($theme);
         }
 
         &.primary {
             @include background('primary');
 
-            .mat-button-container {
-                @include foreground-high-emphasis('primary');
-            }
+            @include foreground-high-emphasis('primary');
 
             &:hover,
             &.highlighted {
-                .mat-button-container {
-                    @include hover('primary');
-                }
+                @include hover('primary');
             }
         }
     }

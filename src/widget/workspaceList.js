@@ -235,17 +235,11 @@ var WorkspaceList = GObject.registerClass(
 
         activeButtonForIndex(index) {
             if (this.buttonActive) {
-                if (
-                    this.buttonActive.actorContainer.has_style_class_name(
-                        'active'
-                    )
-                ) {
-                    this.buttonActive.actorContainer.remove_style_class_name(
-                        'active'
-                    );
+                if (this.buttonActive.has_style_class_name('active')) {
+                    this.buttonActive.remove_style_class_name('active');
                 }
                 this.buttonActive = this.buttonList.get_child_at_index(index);
-                this.buttonActive.actorContainer.add_style_class_name('active');
+                this.buttonActive.add_style_class_name('active');
             }
 
             this.workspaceActiveIndicator.ease({

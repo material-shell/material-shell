@@ -15,7 +15,10 @@ var MsStatusArea = GObject.registerClass(
     class MsStatusArea extends Clutter.Actor {
         _init() {
             super._init({
-                layout_manager: new Clutter.BoxLayout({ vertical: true }),
+                layout_manager: new Clutter.BoxLayout({
+                    vertical: true,
+                    pack_start: true,
+                }),
             });
             this.gnomeShellPanel = Main.panel;
             this.leftBoxActors = [];
@@ -24,14 +27,7 @@ var MsStatusArea = GObject.registerClass(
             this.dateMenu = this.gnomeShellPanel.statusArea.dateMenu;
             this.verticaliseDateMenuButton();
             this.stealPanelActors();
-            this.remove_child(this.dateMenu.container);
-            this.add_child(this.dateMenu.container);
             this.overridePanelMenuSide();
-
-            /* THIS HACK IS TO FIX THE STRANGE HEIGHT OF THE AGGREGATED MENU BUTTON
-             * The behavior is defirent between 3.34.2 and more recent version
-             */
-            this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(false);
 
             this.disableConnect = Me.connect(
                 'extension-disable',
@@ -95,43 +91,48 @@ var MsStatusArea = GObject.registerClass(
                 })
                 .forEach((actor) => {
                     this.leftBoxActors.push(actor);
-                    this.recursivelySetVertical(actor, true);
-                    reparentActor(actor, this);
+
+                    this.stealActor(actor);
                 });
             this.leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
                 'actor-added',
                 (_, actor) => {
                     this.leftBoxActors.push(actor);
-                    this.recursivelySetVertical(actor, true);
-                    reparentActor(actor, this);
+                    this.stealActor(actor);
                 }
             );
             this.gnomeShellPanel._centerBox.get_children().forEach((actor) => {
                 this.centerBoxActors.push(actor);
-                this.recursivelySetVertical(actor, true);
-                reparentActor(actor, this);
+                this.stealActor(actor);
             });
             this.centerBoxActorAddedSignal = this.gnomeShellPanel._centerBox.connect(
                 'actor-added',
                 (_, actor) => {
                     this.centerBoxActors.push(actor);
-                    this.recursivelySetVertical(actor, true);
-                    reparentActor(actor, this);
+                    this.stealActor(actor);
                 }
             );
-            this.gnomeShellPanel._rightBox.get_children().forEach((actor) => {
-                this.rightBoxActors.push(actor);
-                this.recursivelySetVertical(actor, true);
-                reparentActor(actor, this);
-            });
+            this.gnomeShellPanel._rightBox
+                .get_children()
+                .reverse()
+                .forEach((actor) => {
+                    this.rightBoxActors.push(actor);
+                    this.stealActor(actor);
+                });
             this.rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
                 'actor-added',
                 (_, actor) => {
                     this.rightBoxActors.push(actor);
-                    this.recursivelySetVertical(actor, true);
-                    reparentActor(actor, this);
+                    this.stealActor(actor);
                 }
             );
+        }
+
+        stealActor(actor) {
+            actor.y_expand = false;
+            actor.x_expand = true;
+            this.recursivelySetVertical(actor, true);
+            reparentActor(actor, this);
         }
 
         restorePanelActors() {
@@ -166,6 +167,12 @@ var MsStatusArea = GObject.registerClass(
                 actor.has_style_class_name('popup-menu-arrow')
             ) {
                 actor.visible = !value;
+            }
+            if (
+                actor.has_style_class_name &&
+                actor.has_style_class_name('panel-button')
+            ) {
+                actor.y_expand = !value;
             }
 
             actor.get_children().forEach((child) => {

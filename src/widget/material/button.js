@@ -14,23 +14,24 @@ var MatButton = GObject.registerClass(
     },
     class MatButton extends St.Widget {
         _init(params = {}) {
-            this.rippleBackground = new RippleBackground();
             const isPrimary = params.primary;
             delete params.primary;
-            this.actorContainer = new St.Bin(params);
-            this.actorContainer.add_style_class_name('mat-button-container');
-            super._init({
+            const child = params.child;
+            delete params.child;
+            Object.assign(params, {
                 reactive: true,
                 track_hover: true,
                 clip_to_allocation: true,
             });
+            super._init(params);
+            this.set_child(child);
+            this.rippleBackground = new RippleBackground(this);
 
-            this.add_child(this.rippleBackground);
-            this.add_child(this.actorContainer);
             this.add_style_class_name('mat-button');
             if (isPrimary) {
                 this.add_style_class_name('primary');
             }
+
             this.connect('event', (actor, event) => {
                 let eventType = event.type();
                 if (
@@ -53,35 +54,49 @@ var MatButton = GObject.registerClass(
                 } else if (eventType === Clutter.EventType.LEAVE) {
                     this.pressed = false;
                     global.display.set_cursor(Meta.Cursor.DEFAULT);
+                    this.remove_child(this.rippleBackground);
                 } else if (eventType === Clutter.EventType.ENTER) {
                     global.display.set_cursor(Meta.Cursor.POINTING_HAND);
+                    this.add_child(this.rippleBackground);
                 }
             });
         }
+
         /**
-         * Just the child width but taking into account the slided out part
+         * Just the child width
          */
         vfunc_get_preferred_width(forHeight) {
-            return this.actorContainer.vfunc_get_preferred_width(forHeight);
+            if (!this.child) return super.vfunc_get_preferred_width(forHeight);
+            return this.child.vfunc_get_preferred_width(forHeight);
         }
 
         /**
-         * Just the child height but taking into account the slided out part
+         * Just the child height
          */
         vfunc_get_preferred_height(forWidth) {
-            return this.actorContainer.vfunc_get_preferred_height(forWidth);
-        }
-
-        set_child(child) {
-            this.actorContainer.set_child(child);
+            if (!this.child) return super.vfunc_get_preferred_height(forWidth);
+            return this.child.vfunc_get_preferred_height(forWidth);
         }
 
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
-            this.actorContainer.allocate(contentBox, flags);
-            this.rippleBackground.allocate(contentBox, flags);
+            if (this.child) {
+                this.child.allocate(contentBox, flags);
+            }
+            if (this.rippleBackground.get_parent()) {
+                this.rippleBackground.allocate(contentBox, flags);
+            }
+        }
+
+        set_child(child) {
+            if (!child) return;
+            if (this.child) {
+                this.remove_child(this.child);
+            }
+            this.child = child;
+            this.add_child(child);
         }
     }
 );
