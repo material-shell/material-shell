@@ -1,7 +1,6 @@
 const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 const Params = imports.misc.params;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Row } = Me.imports.src.widget.layout;
 /* exported MatCard */
 var MatCard = GObject.registerClass(
     class MatCard extends St.Bin {
@@ -14,8 +13,12 @@ var MatCard = GObject.registerClass(
 
 /* exported MatCardTitle */
 var MatCardTitle = GObject.registerClass(
-    class MatCardTitle extends Row {
-        _init(params = {}) {
+    class MatCardTitle extends Clutter.Actor {
+        _init(
+            params = {
+                layout_manager: new Clutter.BoxLayout(),
+            }
+        ) {
             this.icon = params.icon;
             delete params.icon;
             this.label = params.label;

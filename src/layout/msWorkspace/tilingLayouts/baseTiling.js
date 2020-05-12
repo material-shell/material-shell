@@ -16,7 +16,6 @@ var BaseTilingLayout = class BaseTilingLayout {
         this.msWorkspace = msWorkspace;
         this.monitor = msWorkspace.monitor;
         this.themeSettings = getSettings('theme');
-
         this.signals = [];
         this.registerToSignals();
         this.msWorkspace.tileableList.forEach((tileable) => {

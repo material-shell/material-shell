@@ -130,96 +130,10 @@ var MsMain = GObject.registerClass(
                     );
                 }
             });
-            /*             Me.msWorkspaceManager.msWorkspaceList.forEach((msWorkspace) => {
-                let parent = msWorkspace.msWorkspaceActor.get_parent();
-                if (
-                    Me.msWorkspaceManager.primaryMsWorkspaces.includes(
-                        msWorkspace
-                    )
-                ) {
-                    if (msWorkspace != activeMsWorkspace) {
-                        if (parent)
-                            parent.remove_child(msWorkspace.msWorkspaceActor);
-                    } else {
-                        if (!parent) {
-                            this.primaryContainer.add_child(
-                                msWorkspace.msWorkspaceActor
-                            );
-                        }
-                    }
-
-                } else if (
-                    parent !== this.monitorsContainer[msWorkspace.monitor.index]
-                ) {
-                    this.monitorsContainer[msWorkspace.monitor.index].set_child(
-                        msWorkspace.msWorkspaceActor
-                    );
-                }
-            });
-            this.primaryContainer.translation_y =
-                -1 *
-                global.workspace_manager.get_active_workspace_index() *
-                Main.layoutManager.primaryMonitor.height; */
         }
 
         onSwitchWorkspace(from, to) {
             this.onMsWorkspacesChanged();
-
-            /* Me.msWorkspaceManager.primaryMsWorkspaces.forEach(
-                (msWorkspace, index) => {
-                    let actor = msWorkspace.msWorkspaceActor;
-                    let parent = actor.get_parent();
-                    if (index === from || index === to) {
-                        if (!parent) {
-                            this.primaryContainer.add_child(actor);
-                            msWorkspace.tilingLayout.onTile();
-                        }
-                    } else {
-                        if (parent) {
-                            this.primaryContainer.remove_child(actor);
-                        }
-                    }
-                    if (actor.translation_y) {
-                        actor.translation_y = 0;
-                    }
-                }
-            );
-            let prev = to > from ? to - 1 : to + 1;
-            let translationYOffset =
-                this.primaryContainer.translation_y %
-                Main.layoutManager.primaryMonitor.height;
-            log('translationYOffset', translationYOffset);
-            this.primaryContainer.remove_all_transitions();
-            this.primaryContainer.translation_y =
-                -1 * prev * Main.layoutManager.primaryMonitor.height +
-                (to < from
-                    ? Math.abs(translationYOffset) > 0
-                        ? Main.layoutManager.primaryMonitor.height -
-                          Math.abs(translationYOffset)
-                        : 0
-                    : translationYOffset);
-            if (Math.abs(to - from) > 1) {
-                log(`from ${from} to ${to} prev ${prev}`);
-
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    from
-                ].msWorkspaceActor.translation_y =
-                    (prev > from ? 1 : -1) *
-                    Math.abs(prev - from) *
-                    Main.layoutManager.primaryMonitor.height;
-            }
-            this.primaryContainer.ease({
-                translation_y:
-                    -1 * to * Main.layoutManager.primaryMonitor.height,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-                onComplete: () => {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        from
-                    ].msWorkspaceActor.translation_y = 0;
-                    this.onTransitionCompleted();
-                },
-            }); */
         }
 
         onTransitionCompleted() {

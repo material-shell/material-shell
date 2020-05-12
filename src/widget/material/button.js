@@ -1,7 +1,6 @@
 const { Clutter, GObject, St, Meta } = imports.gi;
 const Params = imports.misc.params;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Stack } = Me.imports.src.widget.layout;
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
 /* exported MatButton */
 var MatButton = GObject.registerClass(

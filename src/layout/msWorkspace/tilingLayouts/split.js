@@ -5,7 +5,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { Column, Row } = Me.imports.src.widget.layout;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { reparentActor } = Me.imports.src.utils.index;
 const { log } = Me.imports.src.utils.debug;

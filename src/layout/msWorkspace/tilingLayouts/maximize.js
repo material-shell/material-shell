@@ -76,6 +76,20 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
             }
         } */
 
+        tileableList.forEach((actor, index) => {
+            if (index !== this.msWorkspace.focusedIndex) {
+                if (!actor.dragged && actor.get_parent()) {
+                    actor.get_parent().remove_child(actor);
+                }
+            } else {
+                if (!actor.get_parent()) {
+                    this.msWorkspace.msWorkspaceActor.tileableContainer.add_child(
+                        actor
+                    );
+                }
+            }
+        });
+
         super.onTileableListChanged(tileableList, oldTileableList);
 
         // if a window has been removed animate the transition (either to the "next" if there is one or the "previous" if the window removed was the last)
@@ -109,12 +123,9 @@ var MaximizeLayout = class MaximizeLayout extends BaseTilingLayout {
                 this.animateSetSize(actor, workArea.width, workArea.height);
             }
             if (index !== this.msWorkspace.focusedIndex && !actor.dragged) {
-                actor.hide();
                 if (actor.get_parent()) {
                     actor.get_parent().remove_child(actor);
                 }
-            } else {
-                actor.show();
             }
             this.msWorkspace.msWorkspaceActor.tileableContainer.translation_x =
                 -this.msWorkspace.focusedIndex * workArea.width;

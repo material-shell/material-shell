@@ -68,6 +68,12 @@ var MsWindow = GObject.registerClass(
                     this.updateMetaWindowPositionAndSize();
                 }
             });
+            this.connect('notify::visible', () => {
+                this.updateMetaWindowVisibility();
+            });
+            this.connect('notify::mapped', () => {
+                this.updateMetaWindowVisibility();
+            });
             this.msContent.connect('notify::position', () => {
                 log('msContent notify::position');
                 if (!this.followMetaWindow) {
@@ -766,20 +772,6 @@ var MsWindow = GObject.registerClass(
                 this.get_parent().set_child_above_sibling(this, null);
         }
 
-        show() {
-            super.show();
-            if (this.metaWindow && this.metaWindow.minimized) {
-                this.metaWindow.unminimize();
-            }
-        }
-
-        hide() {
-            super.hide();
-            if (this.metaWindow && !this.metaWindow.minimized) {
-                this.metaWindow.minimize();
-            }
-        }
-
         kill() {
             let promise = new Promise((resolve) => {
                 if (this.metaWindow) {
@@ -819,14 +811,15 @@ var MsWindow = GObject.registerClass(
             });
         }
 
-        freeze() {
-            /*             if (this.metaWindow) return;
-            let actorContent = Shell.util_get_content_for_window_actor(
-                this.metaWindow.get_,
-                oldFrameRect
-              );
-              let actorClone = new St.Widget({ content: actorContent });
-              actorClone.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS); */
+        updateMetaWindowVisibility() {
+            if (this.metaWindow) {
+                let shouldBeHidden = !this.visible || !this.mapped;
+                if (shouldBeHidden) {
+                    this.metaWindow.minimize();
+                } else {
+                    this.metaWindow.unminimize();
+                }
+            }
         }
 
         _onDestroy() {

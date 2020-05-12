@@ -15,8 +15,6 @@ const WindowUtils = Me.imports.src.utils.windows;
 
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 
-const { Stack } = Me.imports.src.widget.layout;
-
 const EMIT_DEBOUNCE_DELAY = 100;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;

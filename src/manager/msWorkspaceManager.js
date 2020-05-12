@@ -105,30 +105,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             log(
                 `State contain ${previousState.primaryWorkspaceList.length} to restore and we currently have ${this.workspaceManager.n_workspaces} workspaces`
             );
-            /* if (
-                this.workspaceManager.n_workspaces >
-                previousState.primaryWorkspaceList.length
-            ) {
-                for (
-                    let i = 0;
-                    i <=
-                    this.workspaceManager.n_workspaces -
-                        previousState.primaryWorkspaceList.length;
-                    i++
-                ) {
-                    log(
-                        'deleting workspace',
-                        this.workspaceManager.n_workspaces
-                    );
-                    this.workspaceManager.remove_workspace(
-                        this.workspaceManager.get_workspace_by_index(
-                            this.workspaceManager.n_workspaces - i
-                        ),
-                        global.get_current_time()
-                    );
-                    log('after ', this.workspaceManager.n_workspaces);
-                }
-            } */
+
             if (
                 this.workspaceManager.n_workspaces <
                 previousState.primaryWorkspaceList.length
@@ -374,17 +351,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
             msWorkspaceToMove
         );
+        let active = this.getActiveMsWorkspace();
+
         this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
 
-        let msWorkspaceRelativeIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceRelative
-        );
-        this.msWorkspaceList.splice(
-            msWorkspaceRelativeIndex,
-            0,
-            msWorkspaceToMove
-        );
-
+        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
+        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
+        this.workspaceManager
+            .get_workspace_by_index(this.primaryMsWorkspaces.indexOf(active))
+            .activate(global.get_current_time());
         this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
     }
@@ -393,16 +368,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
             msWorkspaceToMove
         );
+        let active = this.getActiveMsWorkspace();
+
         this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
 
-        let msWorkspaceRelativeIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceRelative
-        );
-        this.msWorkspaceList.splice(
-            msWorkspaceRelativeIndex + 1,
-            0,
-            msWorkspaceToMove
-        );
+        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative) + 1;
+        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
+        this.workspaceManager
+            .get_workspace_by_index(this.primaryMsWorkspaces.indexOf(active))
+            .activate(global.get_current_time());
         this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
     }

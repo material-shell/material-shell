@@ -3,7 +3,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
-const { Column } = Me.imports.src.widget.layout;
 const Animation = imports.ui.animation;
 
 /* exported AppPlaceholder */
@@ -44,18 +43,22 @@ var AppPlaceholder = GObject.registerClass(
                 style: 'margin-top:32px;margin-bottom:16px;',
             });
 
-            this.identityContainer = new Column({
+            this.identityContainer = new Clutter.Actor({
+                layout_manager: new Clutter.BoxLayout({
+                    vertical: true,
+                }),
                 x_align: Clutter.ActorAlign.CENTER,
                 y_align: Clutter.ActorAlign.CENTER,
                 x_expand: true,
                 y_expand: true,
-                children: [
-                    this.icon,
-                    this.appTitle,
-                    this.callToAction,
-                    this.spinnerContainer,
-                ],
             });
+
+            [
+                this.icon,
+                this.appTitle,
+                this.callToAction,
+                this.spinnerContainer,
+            ].forEach((actor) => this.identityContainer.add_child(actor));
 
             this.add_style_class_name('surface-darker');
             this.add_child(this.identityContainer);

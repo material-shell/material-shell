@@ -1,6 +1,6 @@
 const { GLib } = imports.gi;
 
-const DEBUG = false;
+const DEBUG = true;
 let indent = 0;
 var AddLogToFunctions = function (object) {
     if (!DEBUG) return;

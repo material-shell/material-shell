@@ -331,7 +331,8 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const noUImode = Me.msWorkspaceManager.noUImode;
                 Me.msWorkspaceManager.noUImode = !noUImode;
-
+                Me.layout.visible = noUImode;
+                /* 
                 if (!this.testInProgress) {
                     this.testInProgress = true;
                     Main.uiGroup.add_child(this.testContainer);
@@ -339,7 +340,7 @@ var HotKeysModule = class HotKeysModule {
                 } else {
                     this.testInProgress = false;
                     Main.uiGroup.remove_child(this.testContainer);
-                }
+                } */
                 /* Main.panel.get_parent().visible = noUImode;
                 Main.panel.visible = noUImode;
                 Main.panel.get_parent().set_width(!noUImode ? 0 : -1);
