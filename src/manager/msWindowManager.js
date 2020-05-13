@@ -153,10 +153,32 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 'metaWindow.firstFrameDrawn',
                 waitingMetaWindow.metaWindow.firstFrameDrawn
             );
+
+            // If window is dialog try ti find his parent
             if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
+                // The best way to find it's parent it with the root ancestor.
                 let root = waitingMetaWindow.metaWindow.find_root_ancestor();
-                if (root.msWindow) {
+                log('search for root', root);
+                if (root != waitingMetaWindow.metaWindow && root.msWindow) {
                     msWindowFound = root.msWindow;
+                } else {
+                    // But sometime the we failed to found one.
+                    // So we try to find a regular window with the same app
+                    let sameAppMsWindowList = this.msWindowList.filter(
+                        (msWindow) => {
+                            return msWindow.app.get_id() === app.get_id();
+                        }
+                    );
+                    //We take the msWindow focused the last
+                    sameAppMsWindowList.forEach((msWindow) => {
+                        if (
+                            !msWindowFound ||
+                            msWindowFound.get_user_time() <
+                                msWindow.metaWindow.get_user_time()
+                        ) {
+                            msWindowFound = msWindow;
+                        }
+                    });
                 }
             }
 

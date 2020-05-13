@@ -297,6 +297,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.checkWorkspaces();
             this.saveCurrentState();
             this.stateChangedTriggered = false;
+            return GLib.SOURCE_REMOVE;
         });
     }
 
@@ -352,9 +353,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             msWorkspaceToMove
         );
         let active = this.getActiveMsWorkspace();
-
         this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
-
         let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
         this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager
@@ -493,6 +492,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     metaWindowEnteredWorkspace(metaWindow, workspace) {
         if (
             !metaWindow.handledByMaterialShell ||
+            !metaWindow.msWindow ||
             metaWindow.on_all_workspaces ||
             !metaWindow.get_compositor_private()
         ) {

@@ -67,6 +67,7 @@ function logTick() {
         if (doLogTick) {
             logTick();
         }
+        return GLib.SOURCE_REMOVE;
     });
 }
 /* exported stopLogTick */

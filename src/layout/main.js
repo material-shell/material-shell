@@ -126,7 +126,7 @@ var MsMain = GObject.registerClass(
                     container.set_child(
                         Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             index
-                        )[0]
+                        )[0].msWorkspaceActor
                     );
                 }
             });
@@ -182,6 +182,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                         this.panel
                     );
                 }
+                this.msWorkspaceActor.msWorkspace.refreshFocus();
             });
         }
 

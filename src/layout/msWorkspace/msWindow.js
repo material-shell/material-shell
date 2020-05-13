@@ -405,6 +405,7 @@ var MsWindow = GObject.registerClass(
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     log('step 2 delay');
                     resolve();
+                    return GLib.SOURCE_REMOVE;
                 });
             })
                 .then(() => {
@@ -554,13 +555,13 @@ var MsWindow = GObject.registerClass(
                                 resizeTo.width,
                                 resizeTo.height
                             );
+                            log('step 5 delete promise');
+                            delete this.metaWindowUpdateInProgressPromise;
                             return Promise.all(promises);
                         }
                     );
                 })
                 .then(() => {
-                    log('step 5 delete promise');
-                    delete this.metaWindowUpdateInProgressPromise;
                     this.resizeDialogs();
                 });
 
@@ -710,6 +711,23 @@ var MsWindow = GObject.registerClass(
             });
         }
 
+        async whenIsMapped() {
+            return new Promise((resolve) => {
+                if (this.mapped) {
+                    return resolve();
+                } else {
+                    let connectId = this.connect('notify::mapped', () => {
+                        if (this.mapped) {
+                            this.disconnect(connectId);
+                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                return resolve();
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
         async setWindow(metaWindow) {
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow
@@ -726,6 +744,9 @@ var MsWindow = GObject.registerClass(
                     metaWindow.change_workspace(workspace);
                 }
             }
+            log('isMapped', this.mapped, this.width, this.height);
+            await this.whenIsMapped();
+            log('isMapped', this.mapped, this.width, this.height);
 
             await this.onMetaWindowActorExist(this.metaWindow);
             await this.onMetaWindowFirstFrameDrawn();
@@ -813,7 +834,10 @@ var MsWindow = GObject.registerClass(
 
         updateMetaWindowVisibility() {
             if (this.metaWindow) {
-                let shouldBeHidden = !this.visible || !this.mapped;
+                let shouldBeHidden =
+                    (!this.visible || !this.mapped) &&
+                    !Me.msWorkspaceManager.noUImode;
+
                 if (shouldBeHidden) {
                     this.metaWindow.minimize();
                 } else {

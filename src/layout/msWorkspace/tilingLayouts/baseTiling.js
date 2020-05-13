@@ -114,6 +114,7 @@ var BaseTilingLayout = class BaseTilingLayout {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 log('IDLE_ADD');
                 this.msWorkspace.appLauncher.animateIn();
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             this.msWorkspace.appLauncher.animateOut();

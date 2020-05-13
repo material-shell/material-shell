@@ -29,6 +29,7 @@ let RippleWave = GObject.registerClass(
                     duration: (this.fullSize / 800) * 1000,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
+                return GLib.SOURCE_REMOVE;
             });
         }
 

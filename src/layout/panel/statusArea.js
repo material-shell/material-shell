@@ -39,10 +39,13 @@ var MsStatusArea = GObject.registerClass(
             this.dateMenu._clock.time_only = true;
             this.dateMenu.set_x_expand(false);
             this.dateMenu.set_y_expand(false);
-            this.indicatorPad = this.dateMenu
-                .get_child_at_index(0)
-                .get_child_at_index(0);
-            this.indicatorPad.hide();
+            this.dateMenu.box = this.dateMenu.indicatorPad = this.dateMenu.get_child_at_index(
+                0
+            );
+            this.dateMenu.indicatorPad = this.dateMenu.box.get_child_at_index(
+                0
+            );
+            this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
             let update = () => {
                 /**
                  * Format clock display to fit into the vertical panel
@@ -72,7 +75,10 @@ var MsStatusArea = GObject.registerClass(
             this.dateMenu._clock.time_only = false;
             this.dateMenu._clock.disconnect(this.dateMenuSignal);
             this.dateMenu._clockDisplay.text = this.dateMenu._clock.clock;
-            this.indicatorPad.show();
+            this.dateMenu.box.insert_child_at_index(
+                this.dateMenu.indicatorPad,
+                0
+            );
         }
 
         stealPanelActors() {

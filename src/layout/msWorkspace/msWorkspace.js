@@ -167,6 +167,7 @@ var MsWorkspace = class MsWorkspace {
                 this.tileableList,
                 oldTileableList
             );
+            return GLib.SOURCE_REMOVE;
         });
     }
 
@@ -287,6 +288,7 @@ var MsWorkspace = class MsWorkspace {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     log('IDLE_ADD');
                     this.emit('windows-changed', newWindows, oldWindows);
+                    return GLib.SOURCE_REMOVE;
                 });
             } else {
                 this.emit('windows-changed', newWindows, oldWindows);

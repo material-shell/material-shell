@@ -23,6 +23,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
                 log('IDLE_ADD');
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                 tileable.mimicMetaWindowPositionAndSize();
+                return GLib.SOURCE_REMOVE;
             });
         }
     }
@@ -32,6 +33,7 @@ var FloatLayout = class FloatLayout extends BaseTilingLayout {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 log('IDLE_ADD');
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+                return GLib.SOURCE_REMOVE;
             });
         }
     }

@@ -64,8 +64,9 @@ function enable() {
     originalCount = countActors();
     logActorRoutine();
     // Show a splashscreen while we are updating the UI layout and theme
-    Me.showSplashScreens();
-
+    if (Main.layoutManager._startingUp) {
+        Me.showSplashScreens();
+    }
     Me.loaded = false;
     Me.stateManager = new StateManager();
 
@@ -83,7 +84,10 @@ function enable() {
             Me.msWorkspaceManager = new MsWorkspaceManager();
 
             modules = [...modules, new HotKeysModule(), new ThemeModule()];
-
+            Me.msWorkspaceManager.setupInitialState();
+            Me.layout = new MsMain();
+            Main.uiGroup.add_style_class_name(`dark-theme`);
+            Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
                     'startup-complete',
@@ -104,15 +108,13 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
-    Main.uiGroup.add_style_class_name(`dark-theme`);
-    Me.msWorkspaceManager.setupInitialState();
-    Me.layout = new MsMain();
-    Me.msWindowManager.handleExistingMetaWindow();
+
     /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
     Me.emit('extension-loaded');
     // When monitors changed we reload the extension completely by disabling and reenabling it
     monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
+        log('here');
         Me.showSplashScreens();
         disable();
         enable();
