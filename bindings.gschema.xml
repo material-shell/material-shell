@@ -28,6 +28,55 @@
         Focus the next workspace 
       </description>
     </key>
+    <key name="go-workspace-1" type="as">
+      <default><![CDATA[['<Super>1']]]></default>
+      <summary>Navigate to workspace 1</summary>
+      <description>
+        Navigate to workspace 1
+      </description>
+    </key>
+    <key name="go-workspace-2" type="as">
+      <default><![CDATA[['<Super>2']]]></default>
+      <summary>Navigate to workspace 2</summary>
+      <description>
+        Navigate to workspace 2
+      </description>
+    </key>
+    <key name="go-workspace-3" type="as">
+      <default><![CDATA[['<Super>3']]]></default>
+      <summary>Navigate to workspace 3</summary>
+      <description>
+        Navigate to workspace 3
+      </description>
+    </key>
+    <key name="go-workspace-4" type="as">
+      <default><![CDATA[['<Super>4']]]></default>
+      <summary>Navigate to workspace 4</summary>
+      <description>
+        Navigate to workspace 4
+      </description>
+    </key>
+    <key name="go-workspace-5" type="as">
+      <default><![CDATA[['<Super>5']]]></default>
+      <summary>Navigate to workspace 5</summary>
+      <description>
+        Navigate to workspace 5
+      </description>
+    </key>
+    <key name="go-workspace-6" type="as">
+      <default><![CDATA[['<Super>6']]]></default>
+      <summary>Navigate to workspace 6</summary>
+      <description>
+        Navigate to workspace 6
+      </description>
+    </key>
+    <key name="go-workspace-7" type="as">
+      <default><![CDATA[['<Super>7']]]></default>
+      <summary>Navigate to workspace 7</summary>
+      <description>
+        Navigate to workspace 7
+      </description>
+    </key>
     <key name="kill-focused-window" type="as">
       <default><![CDATA[['<Super>q']]]></default>
       <summary>Kill the current window</summary>
@@ -61,6 +110,55 @@
       <summary>Move the current window to lower workspace</summary>
       <description>
         Move the current window to lower workspace
+      </description>
+    </key>
+    <key name="move-window-workspace-1" type="as">
+      <default><![CDATA[['<Shift><Super>1']]]></default>
+      <summary>Move the current window to the workspace 1</summary>
+      <description>
+        Move the current window to the workspace 1
+      </description>
+    </key>
+    <key name="move-window-workspace-2" type="as">
+      <default><![CDATA[['<Shift><Super>2']]]></default>
+      <summary>Move the current window to the workspace 2</summary>
+      <description>
+        Move the current window to the workspace 2
+      </description>
+    </key>
+    <key name="move-window-workspace-3" type="as">
+      <default><![CDATA[['<Shift><Super>3']]]></default>
+      <summary>Move the current window to the workspace 3</summary>
+      <description>
+        Move the current window to the workspace 3
+      </description>
+    </key>
+    <key name="move-window-workspace-4" type="as">
+      <default><![CDATA[['<Shift><Super>4']]]></default>
+      <summary>Move the current window to the workspace 4</summary>
+      <description>
+        Move the current window to the workspace 4
+      </description>
+    </key>
+    <key name="move-window-workspace-5" type="as">
+      <default><![CDATA[['<Shift><Super>5']]]></default>
+      <summary>Move the current window to the workspace 5</summary>
+      <description>
+        Move the current window to the workspace 5
+      </description>
+    </key>
+    <key name="move-window-workspace-6" type="as">
+      <default><![CDATA[['<Shift><Super>6']]]></default>
+      <summary>Move the current window to the workspace 6</summary>
+      <description>
+        Move the current window to the workspace 6
+      </description>
+    </key>
+    <key name="move-window-workspace-7" type="as">
+      <default><![CDATA[['<Shift><Super>7']]]></default>
+      <summary>Move the current window to the workspace 7</summary>
+      <description>
+        Move the current window to the workspace 7
       </description>
     </key>
     <key name="cycle-tiling-layout" type="as">

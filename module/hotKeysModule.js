@@ -77,6 +77,90 @@ var HotKeysModule = class HotKeysModule {
         );
 
         Main.wm.addKeybinding(
+            'go-workspace-1',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(0)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-2',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(1)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-3',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(2)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-4',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(3)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-5',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(4)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-6',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(5)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'go-workspace-7',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                this.workspaceManager
+                    .get_workspace_by_index(6)
+                    .activate(global.get_current_time());
+            }
+        );
+
+        Main.wm.addKeybinding(
             'kill-focused-window',
             settings,
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
@@ -167,6 +251,104 @@ var HotKeysModule = class HotKeysModule {
                 let newWorkspace = global.workspace_manager.get_workspace_by_index(
                     global.display.focus_window.get_workspace().index() + 1
                 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-1',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 0 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-2',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 1 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-3',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 2 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-4',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 3 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-5',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 4 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-6',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 5 );
+                if (newWorkspace) {
+                    global.display.focus_window.change_workspace(newWorkspace);
+                    newWorkspace.activate(global.get_current_time());
+                }
+            }
+        );
+
+        Main.wm.addKeybinding(
+            'move-window-workspace-7',
+            settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            () => {
+                let newWorkspace = global.workspace_manager.get_workspace_by_index( 6 );
                 if (newWorkspace) {
                     global.display.focus_window.change_workspace(newWorkspace);
                     newWorkspace.activate(global.get_current_time());
