@@ -69,42 +69,6 @@ var MsApplicationLauncher = GObject.registerClass(
             containerBox.y2 = contentBox.y2 - 0.1 * minSize;
             this.appListContainer.allocate(containerBox, flags);
         }
-
-        animateOut() {
-            this.ease({
-                scale_x: 0.8,
-                scale_y: 0.8,
-                translation_x: this.width * 0.1,
-                translation_y: this.height * 0.1,
-                opacity: 0,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this.set_scale(1, 1);
-                    this.translation_x = 0;
-                    this.translation_y = 0;
-                    this.opacity = 255;
-                    this.visible = false;
-                },
-            });
-        }
-
-        animateIn() {
-            this.visible = true;
-            this.set_scale(0.8, 0.8);
-            this.translation_x = this.width * 0.1;
-            this.translation_y = this.height * 0.1;
-            this.opacity = 0;
-            this.ease({
-                scale_x: 1,
-                scale_y: 1,
-                translation_x: 0,
-                translation_y: 0,
-                opacity: 255,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            });
-        }
     }
 );
 

@@ -25,8 +25,6 @@ var MsWindow = GObject.registerClass(
             AddLogToFunctions(this);
             super._init({
                 reactive: true,
-                width: 200,
-                height: 200,
             });
             this.destroyId = this.connect(
                 'destroy',
@@ -62,11 +60,17 @@ var MsWindow = GObject.registerClass(
                 width: 0,
                 height: 0,
             };
-            this.connect('notify::position', () => {
+            this.connect('notify::allocation', () => {
                 if (this.propagate && !this.dragged && !this.followMetaWindow) {
-                    log('this notify::position');
-                    this.updateMetaWindowPositionAndSize();
+                    /* logFocus(
+                        'updateMetaWindowPositionAndSize notify::allocation'
+                    ); */
+                    //this.updateMetaWindowPositionAndSize();
                 }
+            });
+            this.connect('parent-set', () => {
+                //logFocus('updateMetaWindowPositionAndSize parent-set');
+                //this.updateMetaWindowPositionAndSize();
             });
             this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
@@ -74,19 +78,7 @@ var MsWindow = GObject.registerClass(
             this.connect('notify::mapped', () => {
                 this.updateMetaWindowVisibility();
             });
-            this.msContent.connect('notify::position', () => {
-                log('msContent notify::position');
-                if (!this.followMetaWindow) {
-                    this.updateMetaWindowPositionAndSize();
-                }
-            });
-            this.msContent.connect('notify::size', () => {
-                log('msContent notify::size');
 
-                if (this.propagate && !this.followMetaWindow) {
-                    this.updateMetaWindowPositionAndSize();
-                }
-            });
             this.add_child(this.msContent);
             if (metaWindow) {
                 this.setWindow(metaWindow);
@@ -143,9 +135,7 @@ var MsWindow = GObject.registerClass(
                                     this.metaWindow
                                         .get_compositor_private()
                                         .show();
-                                    this.updateMetaWindowPositionAndSize();
                                 }
-
                                 this.emit('dragged-changed', this.dragged);
                             }
                             global.stage.disconnect(stageMotionEventId);
@@ -375,7 +365,7 @@ var MsWindow = GObject.registerClass(
         }
 
         getRelativeMetaWindowPosition(metaWindow) {
-            let contentBox = this.msContent.get_allocation_box();
+            let contentBox = this.msContent.allocation;
             let x = this.x + contentBox.x1;
             let y = this.y + contentBox.y1;
             let currentFrameRect = metaWindow.get_frame_rect();
@@ -391,181 +381,87 @@ var MsWindow = GObject.registerClass(
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
-        async updateMetaWindowPositionAndSize() {
-            if (!this.metaWindow || this.followMetaWindow)
-                return Promise.resolve();
-            //If an update is already in progress discard all incoming call
-            if (this.metaWindowUpdateInProgressPromise) {
-                log('update already in progress');
-                return this.metaWindowUpdateInProgressPromise;
+        updateMetaWindowPositionAndSize() {
+            if (!this.metaWindow || this.followMetaWindow) {
+                /* logFocus(
+                    'Early return',
+                    !this.metaWindow,
+                    this.followMetaWindow,
+                    this.get_parent() !=
+                        this.msWorkspace.msWorkspaceActor.tileableContainer
+                ); */
+                return;
             }
-            log('step 1 call');
-            //Wait for the WindowActor to be available
-            this.metaWindowUpdateInProgressPromise = new Promise((resolve) => {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('step 2 delay');
-                    resolve();
-                    return GLib.SOURCE_REMOVE;
-                });
-            })
-                .then(() => {
-                    return this.onMetaWindowActorExist(this.metaWindow).then(
-                        () => {
-                            if (!this.metaWindow) return;
-                            log('step 3 actor exist');
-                            const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                                this.msWorkspace.monitor.index
-                            );
-                            let contentBox = this.msContent.get_allocation_box();
 
-                            //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
-                            const isMaximized =
-                                this.x === workArea.x &&
-                                this.y === workArea.y &&
-                                this.width === workArea.width &&
-                                this.height === workArea.height;
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.msWorkspace.monitor.index
+            );
+            let contentBox = this.msContent.allocation;
 
-                            if (isMaximized) {
-                                if (this.metaWindow.maximized) return;
-                                return this.metaWindow.maximize(
-                                    Meta.MaximizeFlags.BOTH
-                                );
-                            }
-                            //Or remove the maximized if it's not
-                            if (this.metaWindow.maximized_horizontally) {
-                                this.metaWindow.unmaximize(
-                                    Meta.MaximizeFlags.BOTH
-                                );
-                            }
-                            let currentFrameRect = this.metaWindow.get_frame_rect();
-                            let moveTo, resizeTo;
-                            if (this.metaWindow.resizeable) {
-                                //Set the metaWindow maximized if it's the case
-                                moveTo = this.getRelativeMetaWindowPosition(
-                                    this.metaWindow
-                                );
-                                resizeTo = {
-                                    width: contentBox.get_width(),
-                                    height: contentBox.get_height(),
-                                };
-                            } else {
-                                let relativePosition = this.getRelativeMetaWindowPosition(
-                                    this.metaWindow
-                                );
-                                moveTo = {
-                                    x:
-                                        relativePosition.x +
-                                        (contentBox.get_width() -
-                                            currentFrameRect.width) /
-                                            2,
-                                    y:
-                                        relativePosition.y +
-                                        (contentBox.get_height() -
-                                            currentFrameRect.height) /
-                                            2,
-                                };
-                                resizeTo = {
-                                    width: currentFrameRect.width,
-                                    height: currentFrameRect.height,
-                                };
-                            }
-                            //Set the size accordingly
-                            log(
-                                'resize metaWindow to ',
-                                moveTo.x,
-                                moveTo.y,
-                                resizeTo.width,
-                                resizeTo.height,
-                                ' from: ',
-                                currentFrameRect.x,
-                                currentFrameRect.y,
-                                currentFrameRect.width,
-                                currentFrameRect.height
-                            );
-                            //return new Promise((resolve, reject) => {});
+            //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
+            const isMaximized =
+                this.x === workArea.x &&
+                this.y === workArea.y &&
+                this.width === workArea.width &&
+                this.height === workArea.height;
 
-                            let willMove =
-                                currentFrameRect.x != moveTo.x ||
-                                currentFrameRect.y != moveTo.y;
+            if (isMaximized) {
+                if (this.metaWindow.maximized) return;
+                return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+            }
+            //Or remove the maximized if it's not
+            if (this.metaWindow.maximized_horizontally) {
+                this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+            }
+            let currentFrameRect = this.metaWindow.get_frame_rect();
+            let moveTo, resizeTo;
+            if (this.metaWindow.resizeable) {
+                //Set the metaWindow maximized if it's the case
+                moveTo = this.getRelativeMetaWindowPosition(this.metaWindow);
+                resizeTo = {
+                    width: this.width,
+                    height: this.height,
+                };
+            } else {
+                let relativePosition = this.getRelativeMetaWindowPosition(
+                    this.metaWindow
+                );
+                moveTo = {
+                    x:
+                        relativePosition.x +
+                        (contentBox.get_width() - currentFrameRect.width) / 2,
+                    y:
+                        relativePosition.y +
+                        (contentBox.get_height() - currentFrameRect.height) / 2,
+                };
+                resizeTo = {
+                    width: currentFrameRect.width,
+                    height: currentFrameRect.height,
+                };
+            }
 
-                            let willResize =
-                                currentFrameRect.width !== resizeTo.width ||
-                                currentFrameRect.height !== resizeTo.height;
+            //Set the size accordingly
+            logFocus(
+                'resize metaWindow to ',
+                moveTo.x,
+                moveTo.y,
+                resizeTo.width,
+                resizeTo.height,
+                ' from: ',
+                currentFrameRect.x,
+                currentFrameRect.y,
+                currentFrameRect.width,
+                currentFrameRect.height
+            );
 
-                            log('WILL RESIZE:', willResize);
-
-                            if (!willMove && !willResize) {
-                                return;
-                            }
-                            let promises = [];
-                            if (willMove) {
-                                promises.push(
-                                    new Promise((resolve) => {
-                                        let connectId = this.metaWindow.connect(
-                                            'position-changed',
-                                            () => {
-                                                log('did move');
-                                                this.metaWindow.disconnect(
-                                                    connectId
-                                                );
-                                                resolve();
-                                            }
-                                        );
-                                    })
-                                );
-                            }
-                            if (willResize) {
-                                this.previousResize = resizeTo;
-                                promises.push(
-                                    new Promise((resolve) => {
-                                        let connectId = this.metaWindow.connect(
-                                            'size-changed',
-                                            () => {
-                                                log('did resize');
-                                                this.previousRealSize = {
-                                                    width: this.metaWindow.get_frame_rect()
-                                                        .width,
-                                                    height: this.metaWindow.get_frame_rect()
-                                                        .height,
-                                                };
-                                                this.metaWindow.disconnect(
-                                                    connectId
-                                                );
-                                                resolve();
-                                            }
-                                        );
-                                        // Gnome-terminal decide his own size so in some case the size-changed it's not called
-                                        GLib.timeout_add(
-                                            GLib.PRIORITY_DEFAULT,
-                                            100,
-                                            () => {
-                                                log('did resize fake');
-                                                resolve();
-                                            }
-                                        );
-                                    })
-                                );
-                            }
-                            log('step 4 call resize');
-
-                            this.metaWindow.move_resize_frame(
-                                true,
-                                moveTo.x,
-                                moveTo.y,
-                                resizeTo.width,
-                                resizeTo.height
-                            );
-                            log('step 5 delete promise');
-                            delete this.metaWindowUpdateInProgressPromise;
-                            return Promise.all(promises);
-                        }
-                    );
-                })
-                .then(() => {
-                    this.resizeDialogs();
-                });
-
-            return this.metaWindowUpdateInProgressPromise;
+            this.metaWindow.move_resize_frame(
+                true,
+                moveTo.x,
+                moveTo.y,
+                resizeTo.width,
+                resizeTo.height
+            );
+            this.resizeDialogs();
         }
 
         set_position(x, y) {
@@ -626,6 +522,12 @@ var MsWindow = GObject.registerClass(
                                 wantedPosition.y !=
                                     this.metaWindow.get_frame_rect().y
                             ) {
+                                logFocus(
+                                    'updateMetaWindowPositionAndSize position-changed',
+                                    this.get_parent() ===
+                                        this.msWorkspace.msWorkspaceActor
+                                            .tileableContainer
+                                );
                                 this.updateMetaWindowPositionAndSize();
                             }
                         }
@@ -645,6 +547,9 @@ var MsWindow = GObject.registerClass(
                         this.metaWindow.get_frame_rect().height !=
                             this.previousRealSize.height
                     ) {
+                        logFocus(
+                            'updateMetaWindowPositionAndSize size-changed'
+                        );
                         this.updateMetaWindowPositionAndSize();
                     }
                 }),
@@ -692,9 +597,15 @@ var MsWindow = GObject.registerClass(
                 if (metaWindow.resizeable) {
                     log('resizeDialog');
                     let frame = metaWindow.get_frame_rect();
-                    let minWidth = Math.min(frame.width, this.width);
+                    let minWidth = Math.min(
+                        Math.max(frame.width, this.width * 0.8),
+                        this.width
+                    );
                     log('minWidth', frame.width, this.width, minWidth);
-                    let minHeight = Math.min(frame.height, this.height);
+                    let minHeight = Math.min(
+                        Math.max(frame.height, this.height * 0.8),
+                        this.height
+                    );
                     log('minHeight', frame.height, this.height, minHeight);
 
                     const workArea = Main.layoutManager.getWorkAreaForMonitor(
@@ -717,9 +628,11 @@ var MsWindow = GObject.registerClass(
                     return resolve();
                 } else {
                     let connectId = this.connect('notify::mapped', () => {
+                        log('notify::mapped');
                         if (this.mapped) {
                             this.disconnect(connectId);
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                if (!Me.loaded) return;
                                 return resolve();
                             });
                         }
@@ -744,9 +657,6 @@ var MsWindow = GObject.registerClass(
                     metaWindow.change_workspace(workspace);
                 }
             }
-            log('isMapped', this.mapped, this.width, this.height);
-            await this.whenIsMapped();
-            log('isMapped', this.mapped, this.width, this.height);
 
             await this.onMetaWindowActorExist(this.metaWindow);
             await this.onMetaWindowFirstFrameDrawn();
@@ -755,9 +665,10 @@ var MsWindow = GObject.registerClass(
             if (!this.metaWindow.resizeable) {
                 this.msContent.add_style_class_name('surface-darker');
             }
-            await (this.followMetaWindow
-                ? Promise.resolve(this.mimicMetaWindowPositionAndSize())
-                : this.updateMetaWindowPositionAndSize());
+            logFocus('updateMetaWindowPositionAndSize setWindow');
+            this.followMetaWindow
+                ? this.mimicMetaWindowPositionAndSize()
+                : this.updateMetaWindowPositionAndSize();
 
             if (this.placeholder.get_parent()) {
                 this.fadeOutPlaceholder();
@@ -789,13 +700,12 @@ var MsWindow = GObject.registerClass(
             } else {
                 this.grab_key_focus();
             }
-            if (this.get_parent())
-                this.get_parent().set_child_above_sibling(this, null);
         }
 
         kill() {
             let promise = new Promise((resolve) => {
                 if (this.metaWindow) {
+                    delete this.metaWindow.msWindow;
                     this.metaWindow.connect('unmanaged', (_) => {
                         resolve();
                     });
@@ -807,6 +717,7 @@ var MsWindow = GObject.registerClass(
             promise.then(() => {
                 delete this.metaWindow;
                 this._onDestroy();
+                logFocus('just before');
                 this.msWorkspace.removeMsWindow(this);
                 this.disconnect(this.destroyId);
                 this.destroy();
@@ -830,6 +741,16 @@ var MsWindow = GObject.registerClass(
                 mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
                 onComplete,
             });
+        }
+
+        freezeAllocation() {
+            this.set_width(this.allocation.get_width());
+            this.set_height(this.allocation.get_height());
+        }
+
+        unFreezeAllocation() {
+            this.set_width(-1);
+            this.set_height(-1);
         }
 
         updateMetaWindowVisibility() {

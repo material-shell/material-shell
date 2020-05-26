@@ -6,7 +6,7 @@ const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
-
+const { WorkspaceTracker } = imports.ui.windowManager;
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     constructor() {
@@ -18,6 +18,89 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.noUImode = false;
         this.metaWindowFocused = null;
+
+        this.workspaceTracker = Main.wm._workspaceTracker;
+        WorkspaceTracker.prototype._oldCheckWorkspaces =
+            WorkspaceTracker.prototype._checkWorkspaces;
+        WorkspaceTracker.prototype._checkWorkspaces = function () {
+            logFocus('_checkWorkspaces', this);
+            let workspaceManager = global.workspace_manager;
+            let i;
+            let emptyWorkspaces = [];
+
+            if (!Meta.prefs_get_dynamic_workspaces()) {
+                this._checkWorkspacesId = 0;
+                return false;
+            }
+
+            // Update workspaces only if Dynamic Workspace Management has not been paused by some other function
+            if (this._pauseWorkspaceCheck) return true;
+
+            for (i = 0; i < this._workspaces.length; i++) {
+                let lastRemoved = this._workspaces[i]._lastRemovedWindow;
+                if (
+                    (lastRemoved &&
+                        (lastRemoved.get_window_type() ==
+                            Meta.WindowType.SPLASHSCREEN ||
+                            lastRemoved.get_window_type() ==
+                                Meta.WindowType.DIALOG ||
+                            lastRemoved.get_window_type() ==
+                                Meta.WindowType.MODAL_DIALOG)) ||
+                    this._workspaces[i]._keepAliveId
+                )
+                    emptyWorkspaces[i] = false;
+                else emptyWorkspaces[i] = true;
+            }
+
+            let sequences = Shell.WindowTracker.get_default().get_startup_sequences();
+            for (i = 0; i < sequences.length; i++) {
+                let index = sequences[i].get_workspace();
+                if (index >= 0 && index <= workspaceManager.n_workspaces)
+                    emptyWorkspaces[index] = false;
+            }
+
+            let msWindowList = global.ms.msWindowManager.msWindowList;
+            for (i = 0; i < msWindowList.length; i++) {
+                let msWindow = msWindowList[i];
+
+                if (
+                    msWindow.msWorkspace.monitor !=
+                    Main.layoutManager.primaryMonitor
+                )
+                    continue;
+                let workspaceIndex = global.ms.msWorkspaceManager
+                    .getWorkspaceOfMsWorkspace(msWindow.msWorkspace)
+                    .index();
+                emptyWorkspaces[workspaceIndex] = false;
+            }
+
+            // If we don't have an empty workspace at the end, add one
+            if (!emptyWorkspaces[emptyWorkspaces.length - 1]) {
+                workspaceManager.append_new_workspace(
+                    false,
+                    global.get_current_time()
+                );
+                emptyWorkspaces.push(true);
+            }
+
+            let lastIndex = emptyWorkspaces.length - 1;
+            let lastEmptyIndex = emptyWorkspaces.lastIndexOf(false) + 1;
+            let activeWorkspaceIndex = workspaceManager.get_active_workspace_index();
+            emptyWorkspaces[activeWorkspaceIndex] = false;
+
+            // Delete empty workspaces except for the last one; do it from the end
+            // to avoid index changes
+            for (i = lastIndex; i >= 0; i--) {
+                if (emptyWorkspaces[i] && i != lastEmptyIndex)
+                    workspaceManager.remove_workspace(
+                        this._workspaces[i],
+                        global.get_current_time()
+                    );
+            }
+
+            this._checkWorkspacesId = 0;
+            return false;
+        };
 
         this.observe(Me.msWindowManager, 'ms-window-focused', (_, msWindow) => {
             if (msWindow && !msWindow.isDialog && msWindow.msWorkspace) {
@@ -74,9 +157,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             global.window_manager,
             'switch-workspace',
             (_, from, to) => {
-                this.checkWorkspaces();
-                if (!this.restoringState)
+                if (!this.restoringState) {
                     this.emit('switch-workspace', from, to);
+                    this.stateChanged();
+                }
             }
         );
     }
@@ -87,6 +171,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     destroy() {
         super.destroy();
+        WorkspaceTracker.prototype._checkWorkspaces =
+            WorkspaceTracker.prototype._oldCheckWorkspaces;
+        delete WorkspaceTracker.prototype._oldCheckWorkspaces;
         for (var i = 0; i < this.workspaceManager.n_workspaces; i++) {
             let workspace = this.workspaceManager.get_workspace_by_index(i);
             delete workspace._keepAliveId;
@@ -97,23 +184,23 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     setupInitialState() {
-        let previousState = Me.stateManager.getState('workspaces-state');
+        this.currentState = Me.stateManager.getState('workspaces-state');
         this.restoringState = true;
         this.removeEmptyWorkspaces();
 
-        if (previousState && previousState.primaryWorkspaceList) {
+        if (this.currentState && this.currentState.primaryWorkspaceList) {
             log(
-                `State contain ${previousState.primaryWorkspaceList.length} to restore and we currently have ${this.workspaceManager.n_workspaces} workspaces`
+                `State contain ${this.currentState.primaryWorkspaceList.length} to restore and we currently have ${this.workspaceManager.n_workspaces} workspaces`
             );
 
             if (
                 this.workspaceManager.n_workspaces <
-                previousState.primaryWorkspaceList.length
+                this.currentState.primaryWorkspaceList.length
             ) {
                 for (
                     let i = 0;
                     i <=
-                    previousState.primaryWorkspaceList.length -
+                    this.currentState.primaryWorkspaceList.length -
                         this.workspaceManager.n_workspaces;
                     i++
                 ) {
@@ -122,7 +209,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                         this.workspaceManager.n_workspaces
                     );
                     this.workspaceManager.append_new_workspace(
-                        false,
+                        this.currentState.primaryWorkspaceActiveIndex ===
+                            this.workspaceManager.n_workspaces,
                         global.get_current_time()
                     );
                     log('after ', this.workspaceManager.n_workspaces);
@@ -140,9 +228,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             if (Main.layoutManager.primaryIndex === monitor.index) {
                 for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
                     const initialState =
-                        previousState &&
-                        previousState.primaryWorkspaceList &&
-                        previousState.primaryWorkspaceList[i];
+                        this.currentState &&
+                        this.currentState.primaryWorkspaceList &&
+                        this.currentState.primaryWorkspaceList[i];
                     this.setupNewWorkspace(
                         this.workspaceManager.get_workspace_by_index(i),
                         initialState
@@ -156,9 +244,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     .indexOf(monitor);
                 this.createNewMsWorkspace(
                     monitor,
-                    previousState &&
-                        previousState.externalWorkspaces &&
-                        previousState.externalWorkspaces[externalIndex]
+                    this.currentState &&
+                        this.currentState.externalWorkspaces &&
+                        this.currentState.externalWorkspaces[externalIndex]
                 );
             }
         }
@@ -294,57 +382,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             log('IDLE_ADD');
             this.refreshWorkspaceWindows();
-            this.checkWorkspaces();
+            this.workspaceTracker._checkWorkspaces();
             this.saveCurrentState();
             this.stateChangedTriggered = false;
             return GLib.SOURCE_REMOVE;
-        });
-    }
-
-    checkWorkspaces() {
-        log('checkWorkspaces', this.primaryMsWorkspaces.length);
-        if (
-            this.primaryMsWorkspaces[this.primaryMsWorkspaces.length - 1] &&
-            this.primaryMsWorkspaces[this.primaryMsWorkspaces.length - 1]
-                .msWindowList.length != 0
-        ) {
-            this.workspaceManager.append_new_workspace(
-                false,
-                global.get_current_time()
-            );
-        }
-        let workspacesToRemove = [];
-        this.primaryMsWorkspaces.forEach((msWorkspace, index) => {
-            let msWorkspaceIsEmpty = msWorkspace.msWindowList.length === 0;
-            let msWorkspaceIsActive =
-                msWorkspace === this.getActiveMsWorkspace();
-            let msWorkspaceIsLast =
-                index === this.primaryMsWorkspaces.length - 1;
-            let previousMsWorkspace = this.primaryMsWorkspaces[index - 1];
-            if (
-                (msWorkspaceIsEmpty &&
-                    !msWorkspaceIsActive &&
-                    !msWorkspaceIsLast) ||
-                (msWorkspaceIsLast &&
-                    previousMsWorkspace &&
-                    previousMsWorkspace.msWindowList.length === 0)
-            ) {
-                log(
-                    'SHOULD REMOVE WORKSPACE AT ',
-                    index,
-                    this.primaryMsWorkspaces.length,
-                    msWorkspace.msWindowList.length
-                );
-                workspacesToRemove.push(
-                    this.workspaceManager.get_workspace_by_index(index)
-                );
-            }
-        });
-        workspacesToRemove.forEach((workspace) => {
-            this.workspaceManager.remove_workspace(
-                workspace,
-                global.get_current_time()
-            );
         });
     }
 
@@ -383,6 +424,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     saveCurrentState() {
         const workspacesState = {
             externalWorkspaces: [],
+            primaryWorkspaceList: [],
+            primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),
         };
         for (let monitor of Main.layoutManager.monitors) {
             if (Main.layoutManager.primaryIndex === monitor.index) {
@@ -401,6 +444,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 );
             }
         }
+        this.currentState = workspacesState;
         Me.stateManager.setState('workspaces-state', workspacesState);
     }
 

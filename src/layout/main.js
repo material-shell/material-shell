@@ -11,9 +11,10 @@ var MsMain = GObject.registerClass(
     {
         GTypeName: 'MsMain',
     },
-    class MsMain extends Clutter.Actor {
+    class MsMain extends St.Widget {
         _init() {
             super._init({});
+
             Main.uiGroup.insert_child_above(this, global.window_group);
             this.monitorsContainer = [];
             this.monitorPanelSpacerList = [];
@@ -27,27 +28,34 @@ var MsMain = GObject.registerClass(
             ].setMsWorkspaceActor(
                 Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
             );
-            this.panel = new MsPanel();
-            this.monitorsContainer[Main.layoutManager.primaryIndex].setPanel(
-                this.panel
-            );
+
+            this.panel = this.monitorsContainer[
+                Main.layoutManager.primaryIndex
+            ].panel;
+
             this.registerToSignals();
             this.onMsWorkspacesChanged();
         }
 
         buildMonitorsLayout() {
             for (let monitor of Main.layoutManager.monitors) {
-                let topBarSpacer = new St.Widget({ name: 'topBarSpacer' });
-                topBarSpacer.set_position(monitor.x, monitor.y);
-                topBarSpacer.set_width(monitor.width);
-                Main.layoutManager.addChrome(topBarSpacer, {
+                let topBarSpacer = new St.Widget({
+                    x: monitor.x,
+                    y: monitor.y,
+                    width: monitor.width,
+                    height: Me.msThemeManager.getPanelSize(monitor.index),
+                });
+                Me.msThemeManager.connect('panel-size-changed', () => {
+                    topBarSpacer.set_height(
+                        Me.msThemeManager.getPanelSize(monitor.index)
+                    );
+                });
+                this.add_child(topBarSpacer);
+                Main.layoutManager._trackActor(topBarSpacer, {
                     affectsStruts: true,
                     trackFullscreen: true,
                 });
-                Main.layoutManager.uiGroup.set_child_below_sibling(
-                    topBarSpacer,
-                    this
-                );
+
                 this.monitorPanelSpacerList.push(topBarSpacer);
                 if (monitor === Main.layoutManager.primaryMonitor) {
                     this.monitorsContainer[
@@ -172,6 +180,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
     class PrimaryMonitorContainer extends St.Widget {
         _init(params) {
             super._init(params);
+            this.panel = new MsPanel();
+            this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {
                 this.remove_child(this.translationAnimator);
@@ -186,18 +196,15 @@ var PrimaryMonitorContainer = GObject.registerClass(
             });
         }
 
-        setPanel(actor) {
-            this.panel = actor;
-            this.add_child(actor);
-        }
-
         setTranslation(prevActor, nextActor) {
             if (!this.translationAnimator.get_parent()) {
                 this.add_child(this.translationAnimator);
-                this.set_child_below_sibling(
-                    this.translationAnimator,
-                    this.panel
-                );
+                if (this.panel) {
+                    this.set_child_below_sibling(
+                        this.translationAnimator,
+                        this.panel
+                    );
+                }
             }
             let indexOfPrevActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
                 (msWorkspace) => {
@@ -210,11 +217,11 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 }
             );
             log('setTranslation');
-            prevActor.width = nextActor.width = 200;
+            /* prevActor.width = nextActor.width = 200; */
             prevActor.height = nextActor.height = this.height;
             this.translationAnimator.setTranslation(
-                prevActor,
-                nextActor,
+                [prevActor],
+                [nextActor],
                 indexOfNextActor > indexOfPrevActor ? 1 : -1
             );
         }

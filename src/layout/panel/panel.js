@@ -1,6 +1,8 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsStatusArea } = Me.imports.src.layout.panel.statusArea;
+const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
+
 const { Shell, Meta, St, GLib, GObject, Clutter, Gio } = imports.gi;
 const Main = imports.ui.main;
 const { reparentActor } = Me.imports.src.utils.index;
@@ -37,13 +39,16 @@ var MsPanel = GObject.registerClass(
                     `${Me.path}/assets/icons/magnify-symbolic.svg`
                 ),
                 style_class: 'mat-panel-button-icon',
+                icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
 
-            this.searchButton = new MatButton({
-                child: icon,
-                style_class: 'mat-panel-button',
-                primary: true,
-            });
+            this.searchButton = new MatPanelButton(
+                {
+                    child: icon,
+                    primary: true,
+                },
+                Main.layoutManager.primaryMonitor
+            );
 
             this.searchButton.connect('clicked', () => {
                 if (!Main.overview._shown) {
@@ -65,12 +70,19 @@ var MsPanel = GObject.registerClass(
                 Me.disconnect(this.disableConnect);
                 this.gnomeShellPanel.show();
             });
+
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                icon.set_icon_size(
+                    Me.msThemeManager.getPanelSizeNotScaled() / 2
+                );
+                this.queue_relayout();
+            });
         }
 
         vfunc_get_preferred_width(_forHeight) {
             return [
-                super.vfunc_get_preferred_width(_forHeight)[0],
-                super.vfunc_get_preferred_width(_forHeight)[0],
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
             ];
         }
 

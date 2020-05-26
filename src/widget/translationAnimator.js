@@ -26,7 +26,8 @@ var TranslationAnimator = GObject.registerClass(
             this.add_actor(this.transitionContainer);
         }
 
-        setTranslation(previousActor, nextActor, direction) {
+        setTranslation(initialActors, enteringActors, direction) {
+            logFocus('direction', direction);
             if (this.animationInProgress) {
                 this.transitionContainer.remove_all_transitions();
                 this.animationInProgress = false;
@@ -36,15 +37,15 @@ var TranslationAnimator = GObject.registerClass(
                     x1: Math.abs(this.transitionContainer.translation_x),
                     x2:
                         Math.abs(this.transitionContainer.translation_x) +
-                        this.width,
+                        this.allocation.get_width(),
                     y1: Math.abs(this.transitionContainer.translation_y),
                     y2:
                         Math.abs(this.transitionContainer.translation_y) +
-                        this.height,
+                        this.allocation.get_height(),
                 };
                 // Fo reach child check if it's in visible bound
                 this.transitionContainer.get_children().forEach((actor) => {
-                    let allocationBox = actor.get_allocation_box();
+                    let allocationBox = actor.allocation;
                     if (this.vertical) {
                         if (allocationBox.y2 < visibleArea.y1) {
                             this.transitionContainer.remove_actor(actor);
@@ -60,38 +61,51 @@ var TranslationAnimator = GObject.registerClass(
                             this.transitionContainer.remove_actor(actor);
                             this.transitionContainer.translation_x =
                                 this.transitionContainer.translation_x +
-                                allocationBox.get_height();
+                                allocationBox.get_width();
                         }
                         if (allocationBox.x1 > visibleArea.x2) {
                             this.transitionContainer.remove_actor(actor);
                         }
                     }
                 });
-            } else {
-                this.transitionContainer.add_child(previousActor);
+            } else if (initialActors) {
+                initialActors.forEach((actors) => {
+                    this.transitionContainer.add_child(actors);
+                });
             }
 
-            // check if the next actor are already in transition
-            let nextActorFound = this.transitionContainer
-                .get_children()
-                .find((actor) => {
-                    return actor === nextActor;
-                });
+            enteringActors.forEach((actor, index) => {
+                // check if the next actor are already in transition
+                let nextActorFound = this.transitionContainer
+                    .get_children()
+                    .find((existingActor) => {
+                        return existingActor === actor;
+                    });
+                //insert nextActor Clone at the top pile if direction is positive or at the end if negative
+                if (!nextActorFound) {
+                    this.transitionContainer.add_child(actor);
 
-            //insert nextActor Clone at the top pile if direction is positive or at the end if negative
-            if (!nextActorFound) {
-                this.transitionContainer.add_child(nextActor);
-                if (direction < 0) {
-                    this.transitionContainer.set_child_at_index(nextActor, 0);
-                    if (this.vertical) {
-                        this.transitionContainer.translation_y -=
-                            nextActor.height;
-                    } else {
-                        this.transitionContainer.translation_x -=
-                            nextActor.width;
+                    if (direction < 0) {
+                        this.transitionContainer.set_child_at_index(
+                            actor,
+                            index
+                        );
+                        if (this.vertical) {
+                            this.transitionContainer.translation_y -=
+                                actor.height;
+                        } else {
+                            this.transitionContainer.translation_x -=
+                                actor.width;
+                        }
                     }
                 }
-            }
+            });
+            //This seem uncessary but it's help to the this.width calculation when the next actor is a placeholder
+            this.transitionContainer.set_child_at_index(
+                this.transitionContainer.get_child_at_index(0),
+                0
+            );
+
             let transitionConfig = {
                 duration: 250,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -99,33 +113,31 @@ var TranslationAnimator = GObject.registerClass(
                     this.endTransition();
                 },
             };
-            let target = 0;
-            log(
-                'index',
-                this.transitionContainer.get_children().indexOf(nextActor),
+            logFocus(
+                'children length',
                 this.transitionContainer.get_children().length
             );
-            for (
-                let i = 0;
-                i < this.transitionContainer.get_children().indexOf(nextActor);
-                i++
-            ) {
-                let child = this.transitionContainer.get_child_at_index(i);
-                target += this.vertical ? child.height : child.width;
+            logFocus(
+                `height ${this.height} ${this.allocation.get_height()} ${
+                    this.transitionContainer.height
+                } ${this.transitionContainer.allocation.get_height()}`
+            );
+            let target = 0;
+            if (direction > 0) {
+                target = this.vertical
+                    ? this.transitionContainer.height -
+                      this.allocation.get_height()
+                    : this.transitionContainer.width -
+                      this.allocation.get_width();
             }
+            logFocus(`Target ${target}`);
+
             if (this.vertical) {
                 transitionConfig.translation_y = -target;
             } else {
                 transitionConfig.translation_x = -target;
             }
             this.animationInProgress = true;
-            log(
-                'translation_y',
-                this.transitionContainer.translation_y,
-                transitionConfig.translation_y
-            );
-            log('translation_x', transitionConfig.translation_x, target);
-
             this.transitionContainer.ease(transitionConfig);
         }
 

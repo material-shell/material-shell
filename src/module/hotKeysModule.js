@@ -3,6 +3,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 let LogAllocateActor = GObject.registerClass(
     {
@@ -332,6 +333,11 @@ var HotKeysModule = class HotKeysModule {
                 const noUImode = Me.msWorkspaceManager.noUImode;
                 Me.msWorkspaceManager.noUImode = !noUImode;
                 Me.layout.visible = noUImode;
+                logFocus('');
+                logFocus('');
+                logFocus('');
+                logFocus('');
+                logFocus('');
                 /* 
                 if (!this.testInProgress) {
                     this.testInProgress = true;

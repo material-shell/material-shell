@@ -1,5 +1,8 @@
 const { GLib } = imports.gi;
 const Main = imports.ui.main;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported range */
 var range = (to) =>
@@ -29,6 +32,7 @@ var debounce = (fun, delay) => {
 };
 
 var reparentActor = (actor, parent) => {
+    logFocus('reparent');
     if (!actor || !parent) return;
     const isFocused = actor.has_key_focus();
     const currentParent = actor.get_parent();

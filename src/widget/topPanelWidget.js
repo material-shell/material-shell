@@ -3,6 +3,7 @@ const { GObject, St, Clutter, Gio } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
+const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
 
 const { TaskBar } = Me.imports.src.widget.taskBar;
 
@@ -19,16 +20,19 @@ var TopPanel = GObject.registerClass(
             this.taskBar = new TaskBar(msWorkspace);
 
             this.tilingIcon = new St.Icon({
-                gicon: msWorkspace.tilingLayout.icon,
                 style_class: 'mat-panel-button-icon',
+                icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
 
-            this.tilingButton = new MatButton({
-                child: this.tilingIcon,
-                style_class: 'mat-panel-button',
-                can_focus: true,
-                track_hover: true,
-            });
+            this.tilingButton = new MatPanelButton(
+                {
+                    child: this.tilingIcon,
+                    style_class: 'mat-panel-button',
+                    can_focus: true,
+                    track_hover: true,
+                },
+                this.msWorkspace.monitor
+            );
 
             this.tilingButton.connect('clicked', (actor, button) => {
                 // Go in reverse direction on right click (button: 3)
@@ -37,6 +41,13 @@ var TopPanel = GObject.registerClass(
 
             this.add_child(this.taskBar);
             this.add_child(this.tilingButton);
+
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.tilingIcon.set_icon_size(
+                    Me.msThemeManager.getPanelSizeNotScaled() / 2
+                );
+                this.queue_relayout();
+            });
         }
 
         handleDragOver() {
@@ -46,6 +57,13 @@ var TopPanel = GObject.registerClass(
         acceptDrop() {
             this.taskBar.reparentDragItem();
             return true;
+        }
+
+        vfunc_get_preferred_height(_forWidth) {
+            let height = Me.msThemeManager.getPanelSize(
+                this.msWorkspace.monitor.index
+            );
+            return [height, height];
         }
 
         vfunc_allocate(box, flags) {

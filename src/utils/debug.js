@@ -1,6 +1,7 @@
 const { GLib } = imports.gi;
 
 const DEBUG = true;
+const FOCUS_ONLY = true;
 let indent = 0;
 var AddLogToFunctions = function (object) {
     if (!DEBUG) return;
@@ -38,7 +39,7 @@ var AddLogToFunctions = function (object) {
 };
 
 var log = function (...args) {
-    if (!DEBUG) return;
+    if (!DEBUG || FOCUS_ONLY) return;
     let fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
     let domain = 'Material Shell';
 

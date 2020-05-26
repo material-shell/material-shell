@@ -8,7 +8,10 @@ var updateTitleBarVisibility = function (metaWindow) {
         metaWindow.msWindow.msWorkspace.tilingLayout.constructor.key ===
         'float';
     let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
-    if (metaWindow.titleBarVisible !== shouldTitleBarBeVisible) {
+    if (
+        !metaWindow.titleBarVisible ||
+        metaWindow.titleBarVisible !== shouldTitleBarBeVisible
+    ) {
         setTitleBarVisibility(metaWindow, shouldTitleBarBeVisible);
     }
 };

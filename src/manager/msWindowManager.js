@@ -90,6 +90,8 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             /* msWindow.msWorkspace.removeMsWindow(this);
             msWindow.destroy(); */
             msWindow.unsetWindow();
+            logFocus('onMetaWindowUnManaged kill');
+
             msWindow.kill();
         }
     }

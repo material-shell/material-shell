@@ -10,10 +10,10 @@
       <summary>Primary UI color</summary>
       <description>Primary color for UI elements. Is used for most elements.</description>
     </key>
-    <key name="show-settings-button-on-panel" type="b">
-      <default>true</default>
-      <summary>Show settings button</summary>
-      <description>Shows a quick shortcut to the Settings dialog in the left panel.</description>
+    <key name="panel-size" type="i">
+      <default>48</default>
+      <summary>Panels size</summary>
+      <description>Width of the left panel and heigh of the top panels.</description>
     </key>
   </schema>
 </schemalist>

@@ -371,21 +371,18 @@ function GlobalSettingsTab(notebook) {
         let hexString = cssHexString(css);
         settings.set_string('primary-color', hexString);
     });
-
-    const showSettingsButtonOnLeftPanel = new Gtk.Switch({
-        valign: Gtk.Align.CENTER,
-    });
+    const panelSize = Gtk.SpinButton.new_with_range(0, 1000, 1);
     itemRows.push(
         makeItemRow(
-            'Show settings button on left panel',
-            'Shows a quick shortcut to the Settings dialog in the left panel.',
-            showSettingsButtonOnLeftPanel
+            'Panels Size',
+            'Width of the left panel and heigh of the top panels.',
+            panelSize
         )
     );
     settings.bind(
-        'show-settings-button-on-panel',
-        showSettingsButtonOnLeftPanel,
-        'active',
+        'panel-size',
+        panelSize.get_adjustment(),
+        'value',
         Gio.SettingsBindFlags.DEFAULT
     );
 

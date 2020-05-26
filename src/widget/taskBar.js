@@ -94,9 +94,12 @@ var TaskBar = GObject.registerClass(
                             this.msWorkspace.focusTileable(tileable);
                         });
                         item.connect('right-clicked', (_) => {
+                            logFocus('right clicked');
+
                             tileable.kill();
                         });
                         item.connect('close-clicked', (_) => {
+                            logFocus('Close clicked');
                             tileable.kill();
                         });
 
@@ -291,17 +294,21 @@ var TaskBar = GObject.registerClass(
                 }),
             };
             if (!this.mapped) return;
-
-            this.taskActiveIndicator.ease({
-                translation_x: taskBarItem.x,
-                scale_x: taskBarItem.width / this.taskActiveIndicator.width,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this.taskActiveIndicator.scale_x = 1;
-                    this.taskActiveIndicator.width = taskBarItem.width;
-                },
-            });
+            if (!this.taskActiveIndicator.width) {
+                this.taskActiveIndicator.scale_x = 1;
+                this.taskActiveIndicator.width = taskBarItem.width;
+            } else {
+                this.taskActiveIndicator.ease({
+                    translation_x: taskBarItem.x,
+                    scale_x: taskBarItem.width / this.taskActiveIndicator.width,
+                    duration: 250,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this.taskActiveIndicator.scale_x = 1;
+                        this.taskActiveIndicator.width = taskBarItem.width;
+                    },
+                });
+            }
         }
 
         getTaskBarItemOfTileable(tileable) {
@@ -706,6 +713,12 @@ let IconTaskBarItem = GObject.registerClass(
                 style_class: 'app-icon',
             });
             this.container.set_child(this.icon);
+        }
+        /**
+         * Just the panel width
+         */
+        vfunc_get_preferred_width(_forHeight) {
+            return [_forHeight, _forHeight];
         }
     }
 );

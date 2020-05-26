@@ -8,6 +8,7 @@ const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const Main = imports.ui.main;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
@@ -40,6 +41,18 @@ var WorkspaceList = GObject.registerClass(
 
             this.workspaceActiveIndicator = new St.Widget({
                 style_class: 'workspace-active-indicator',
+                height: Me.msThemeManager.getPanelSize(
+                    Main.layoutManager.primaryIndex
+                ),
+            });
+
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.workspaceActiveIndicator.set_height(
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    )
+                );
+                this.queue_relayout();
             });
 
             this.workspaceActiveIndicator.add_style_class_name('primary-bg');
@@ -255,6 +268,16 @@ var WorkspaceList = GObject.registerClass(
             });
         }
 
+        /**
+         * Just the parent width
+         */
+        vfunc_get_preferred_width(_forHeight) {
+            return [
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            ];
+        }
+
         _onDestroy() {
             log('workspaceList to its own destroy');
             global.workspace_manager.disconnect(this.workspaceSignal);
@@ -281,7 +304,9 @@ var WorkspaceButton = GObject.registerClass(
                 child: this.workspaceButtonIcon,
             });
             this._delegate = this;
-
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.queue_relayout();
+            });
             this.connect('clicked', (_, button) => {
                 if (button === 2) {
                     if (
@@ -402,6 +427,26 @@ var WorkspaceButton = GObject.registerClass(
             }
             this.emit('drag-dropped');
             return true;
+        }
+
+        /**
+         * Just the parent width
+         */
+        vfunc_get_preferred_width(forHeight) {
+            return [
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            ];
+        }
+
+        /**
+         * Just the child height
+         */
+        vfunc_get_preferred_height(forWidth) {
+            return [
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            ];
         }
     }
 );

@@ -5,6 +5,7 @@ const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
 /* exported MatButton */
 var MatButton = GObject.registerClass(
     {
+        GTypeName: 'MatButton',
         Signals: {
             clicked: {
                 param_types: [GObject.TYPE_INT],
@@ -53,10 +54,14 @@ var MatButton = GObject.registerClass(
                 } else if (eventType === Clutter.EventType.LEAVE) {
                     this.pressed = false;
                     global.display.set_cursor(Meta.Cursor.DEFAULT);
-                    this.remove_child(this.rippleBackground);
+                    if (this.rippleBackground.get_parent()) {
+                        this.remove_child(this.rippleBackground);
+                    }
                 } else if (eventType === Clutter.EventType.ENTER) {
                     global.display.set_cursor(Meta.Cursor.POINTING_HAND);
-                    this.add_child(this.rippleBackground);
+                    if (!this.rippleBackground.get_parent()) {
+                        this.add_child(this.rippleBackground);
+                    }
                 }
             });
         }

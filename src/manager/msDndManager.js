@@ -58,15 +58,16 @@ var MsDndManager = class MsDndManager {
         this.dragInProgress = true;
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
+        msWindow.freezeAllocation();
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
     }
 
     endDrag() {
+        this.msWindowDragged.unFreezeAllocation();
         reparentActor(this.msWindowDragged, this.originalParent);
         this.dragInProgress = false;
         delete this.originalParent;
-        this.msWindowDragged.msWorkspace.tilingLayout.onTile();
         delete this.msWindowDragged;
     }
 

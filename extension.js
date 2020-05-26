@@ -11,24 +11,13 @@ const { OverrideModule } = Me.imports.src.module.overrideModule;
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
 var { TilingManager } = Me.imports.src.manager.tilingManager;
-const { ThemeModule } = Me.imports.src.module.themeModule;
 
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
+const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
+
 const { MsMain } = Me.imports.src.layout.main;
-
-const { loadInterfaceXML } = imports.misc.fileUtils;
-const SystemdLoginManagerIface = loadInterfaceXML(
-    'org.freedesktop.login1.Manager'
-);
-const LoginManager = imports.misc.loginManager;
-
-const SystemdLoginManager = Gio.DBusProxy.makeProxyWrapper(
-    SystemdLoginManagerIface
-);
-
-const GnomeSession = imports.misc.gnomeSession;
 
 let disableIncompatibleExtensionsModule,
     modules,
@@ -71,7 +60,7 @@ function enable() {
     Me.stateManager = new StateManager();
 
     //Delay to wait for others extensions to load first;
-    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+    GLib.idle_add(GLib.PRIORITY_LOW, () => {
         log('IDLE_ADD');
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
@@ -82,11 +71,12 @@ function enable() {
             Me.tilingManager = new TilingManager();
             Me.msWindowManager = new MsWindowManager();
             Me.msWorkspaceManager = new MsWorkspaceManager();
-
-            modules = [...modules, new HotKeysModule(), new ThemeModule()];
+            modules = [...modules, new HotKeysModule()];
+            Me.msThemeManager = new MsThemeManager();
             Me.msWorkspaceManager.setupInitialState();
+            log('Before MsMain');
             Me.layout = new MsMain();
-            Main.uiGroup.add_style_class_name(`dark-theme`);
+            log('After MsMain');
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
@@ -122,6 +112,9 @@ function loaded(disconnect) {
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
     });
+    log('----------------');
+    log('END EXTENSION LOADED');
+    log('----------------');
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -144,7 +137,7 @@ function disable() {
     Me.msWindowManager.destroy();
 
     Me.layout.destroy();
-    Main.uiGroup.remove_style_class_name(`dark-theme`);
+    Me.msThemeManager.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
     log('END DISABLE EXTENSION');
