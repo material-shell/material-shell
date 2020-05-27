@@ -365,13 +365,14 @@ var MsWindow = GObject.registerClass(
         }
 
         getRelativeMetaWindowPosition(metaWindow) {
-            let contentBox = this.msContent.allocation;
-            let x = this.x + contentBox.x1;
-            let y = this.y + contentBox.y1;
+            let x = this.x;
+            let y = this.y;
+
             let currentFrameRect = metaWindow.get_frame_rect();
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
             );
+
             return {
                 x: this.dragged ? currentFrameRect.x : workArea.x + x,
                 y: this.dragged ? currentFrameRect.y : workArea.y + y,
@@ -382,7 +383,12 @@ var MsWindow = GObject.registerClass(
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
         updateMetaWindowPositionAndSize() {
-            if (!this.metaWindow || this.followMetaWindow) {
+            if (
+                !this.metaWindow ||
+                this.followMetaWindow ||
+                this.width === 0 ||
+                this.height === 0
+            ) {
                 /* logFocus(
                     'Early return',
                     !this.metaWindow,
@@ -426,6 +432,7 @@ var MsWindow = GObject.registerClass(
                 let relativePosition = this.getRelativeMetaWindowPosition(
                     this.metaWindow
                 );
+
                 moveTo = {
                     x:
                         relativePosition.x +
@@ -512,6 +519,7 @@ var MsWindow = GObject.registerClass(
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
                     } else {
+                        return;
                         if (!this.dragged) {
                             let wantedPosition = this.getRelativeMetaWindowPosition(
                                 this.metaWindow
@@ -547,6 +555,7 @@ var MsWindow = GObject.registerClass(
                         this.metaWindow.get_frame_rect().height !=
                             this.previousRealSize.height
                     ) {
+                        return;
                         logFocus(
                             'updateMetaWindowPositionAndSize size-changed'
                         );
@@ -641,6 +650,17 @@ var MsWindow = GObject.registerClass(
             });
         }
 
+        setMsWorkspace(msWorkspace) {
+            this.msWorkspace = msWorkspace;
+            if (this.metaWindow) {
+                WindowUtils.updateTitleBarVisibility(this.metaWindow);
+            }
+            logFocus('updateMetaWindowPositionAndSize setMsWorkspace');
+
+            this.followMetaWindow
+                ? this.mimicMetaWindowPositionAndSize()
+                : this.updateMetaWindowPositionAndSize();
+        }
         async setWindow(metaWindow) {
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow

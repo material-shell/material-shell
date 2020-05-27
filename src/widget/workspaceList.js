@@ -509,7 +509,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
 
                 sortedByInstanceAppList.forEach((app) => {
                     const icon = app.create_icon_texture(
-                        this.get_preferred_width(-1)[1] / 2
+                        Me.msThemeManager.getPanelSizeNotScaled() / 2
                     );
                     this.appIconList.push(icon);
                     this.add_child(icon);
@@ -519,7 +519,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/plus-symbolic.svg`
                     ),
-                    icon_size: this.get_preferred_width(-1)[1] / 2,
+                    icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
                 });
                 this.appIconList.push(icon);
                 this.add_child(icon);

@@ -106,10 +106,7 @@ var MsWorkspace = class MsWorkspace {
         if (!msWindow) return;
         if (msWindow.msWorkspace === this) return;
 
-        msWindow.msWorkspace = this;
-        if (msWindow.metaWindow) {
-            WindowUtils.updateTitleBarVisibility(msWindow.metaWindow);
-        }
+        msWindow.setMsWorkspace(this);
 
         if (!msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
@@ -145,8 +142,9 @@ var MsWorkspace = class MsWorkspace {
         }
         await this.emitTileableListChangedOnce(oldTileableList);
         // If there's no more focused msWindow on this workspace focus the last one
+        logFocus('tileableIsFocused', tileableIsFocused);
         if (tileableIsFocused) {
-            this.focusTileable(this.tileableList[this.focusedIndex]);
+            this.focusTileable(this.tileableList[this.focusedIndex], true);
         }
         this.refreshFocus();
     }
@@ -193,8 +191,8 @@ var MsWorkspace = class MsWorkspace {
         this.focusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    focusTileable(tileable) {
-        if (tileable === this.tileableFocused) {
+    focusTileable(tileable, forced) {
+        if (tileable === this.tileableFocused && !forced) {
             return;
         }
         const oldTileableFocused = this.tileableFocused;
@@ -365,7 +363,13 @@ var MsWorkspaceActor = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            log('allocate msWorkspaceActor', box.x1, box.x2, box.y1, box.y2);
+            logFocus(
+                'allocate msWorkspaceActor',
+                box.x1,
+                box.x2,
+                box.y1,
+                box.y2
+            );
             this.set_allocation(box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();

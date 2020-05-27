@@ -188,6 +188,8 @@ var SplitLayout = GObject.registerClass(
          */
         startTransition(previousTileableList, nextTileableList) {
             if (!this.translationAnimator.get_parent()) {
+                this.translationAnimator.width = this.tileableContainer.allocation.get_width();
+                this.translationAnimator.height = this.tileableContainer.allocation.get_height();
                 this.tileableContainer.add_child(this.translationAnimator);
             }
             let lastLeavingIndex = this.msWorkspace.tileableList.indexOf(

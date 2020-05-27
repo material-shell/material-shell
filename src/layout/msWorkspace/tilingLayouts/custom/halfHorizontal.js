@@ -1,3 +1,5 @@
+const { GObject } = imports.gi;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
@@ -6,11 +8,12 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.half;
 
 /* exported HalfHorizontalLayout */
-var HalfHorizontalLayout = class HalfHorizontalLayout extends HalfLayout {
-    onTileRegulars(windows) {
-        super.onTileRegulars(windows, true);
-        super.onTileHorizontal(windows);
+var HalfHorizontalLayout = GObject.registerClass(
+    class HalfHorizontalLayout extends HalfLayout {
+        tileTileable(tileable, box, index, siblingLength) {
+            this.tileTileableHorizontal(tileable, box, index, siblingLength);
+        }
     }
-};
+);
 
 HalfHorizontalLayout.key = 'half-horizontal';

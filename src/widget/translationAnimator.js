@@ -27,7 +27,6 @@ var TranslationAnimator = GObject.registerClass(
         }
 
         setTranslation(initialActors, enteringActors, direction) {
-            logFocus('direction', direction);
             if (this.animationInProgress) {
                 this.transitionContainer.remove_all_transitions();
                 this.animationInProgress = false;
@@ -37,11 +36,11 @@ var TranslationAnimator = GObject.registerClass(
                     x1: Math.abs(this.transitionContainer.translation_x),
                     x2:
                         Math.abs(this.transitionContainer.translation_x) +
-                        this.allocation.get_width(),
+                        this.width,
                     y1: Math.abs(this.transitionContainer.translation_y),
                     y2:
                         Math.abs(this.transitionContainer.translation_y) +
-                        this.allocation.get_height(),
+                        this.height,
                 };
                 // Fo reach child check if it's in visible bound
                 this.transitionContainer.get_children().forEach((actor) => {
@@ -118,17 +117,14 @@ var TranslationAnimator = GObject.registerClass(
                 this.transitionContainer.get_children().length
             );
             logFocus(
-                `height ${this.height} ${this.allocation.get_height()} ${
-                    this.transitionContainer.height
-                } ${this.transitionContainer.allocation.get_height()}`
+                `height ${this.height}  ${this.transitionContainer.height} `
             );
+            logFocus(`width ${this.width} ${this.transitionContainer.width}`);
             let target = 0;
             if (direction > 0) {
                 target = this.vertical
-                    ? this.transitionContainer.height -
-                      this.allocation.get_height()
-                    : this.transitionContainer.width -
-                      this.allocation.get_width();
+                    ? this.transitionContainer.height - this.height
+                    : this.transitionContainer.width - this.width;
             }
             logFocus(`Target ${target}`);
 

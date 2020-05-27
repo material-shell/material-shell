@@ -12,6 +12,7 @@ const { log, logFocus } = Me.imports.src.utils.debug;
 var MaximizeLayout = GObject.registerClass(
     class MaximizeLayout extends BaseTilingLayout {
         _init(msWorkspace) {
+            logFocus(' INIT MAXIMIZE LAYOUT');
             super._init(msWorkspace);
             this.translationAnimator = new TranslationAnimator();
             this.translationAnimator.connect('transition-completed', () => {
@@ -57,16 +58,6 @@ var MaximizeLayout = GObject.registerClass(
         onFocusChanged(windowFocused, oldWindowFocused) {
             super.onFocusChanged();
             if (!windowFocused.isDialog) {
-                if (this.currentDisplayedActor) {
-                    if (
-                        this.currentDisplayedActor.get_parent() ===
-                        this.tileableContainer
-                    ) {
-                        this.tileableContainer.remove_child(
-                            this.currentDisplayedActor
-                        );
-                    }
-                }
                 this.startTransition(windowFocused, oldWindowFocused);
             }
         }
@@ -99,6 +90,8 @@ var MaximizeLayout = GObject.registerClass(
          */
         startTransition(nextActor, prevActor) {
             if (!this.translationAnimator.get_parent()) {
+                this.translationAnimator.width = this.tileableContainer.allocation.get_width();
+                this.translationAnimator.height = this.tileableContainer.allocation.get_height();
                 this.tileableContainer.add_child(this.translationAnimator);
             }
             let indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
@@ -119,8 +112,12 @@ var MaximizeLayout = GObject.registerClass(
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
                     );
+                    if (actor.get_parent() === this.tileableContainer) {
+                        actor.get_parent().remove_child(actor);
+                    }
                 }
             });
+
             this.translationAnimator.setTranslation(
                 [prevActor],
                 [nextActor],

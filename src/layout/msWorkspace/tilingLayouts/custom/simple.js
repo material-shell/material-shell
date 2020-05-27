@@ -1,3 +1,5 @@
+const { GObject } = imports.gi;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
@@ -6,53 +8,47 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported SimpleLayout */
-var SimpleLayout = class SimpleLayout extends BaseTilingLayout {
-    onTileRegulars(windows, skip) {
-        super.onTileRegulars(windows);
-        if (!windows.length || skip) return;
+var SimpleLayout = GObject.registerClass(
+    class SimpleLayout extends BaseTilingLayout {
+        tileTileable(tileable, box, index, siblingLength) {
+            if (box.get_width() > box.get_height()) {
+                this.tileTileableHorizontal(
+                    tileable,
+                    box,
+                    index,
+                    siblingLength
+                );
+            } else {
+                this.tileTileableVertical(tileable, box, index, siblingLength);
+            }
+        }
 
-        const workArea = this.getWorkspaceBounds();
+        tileTileableHorizontal(tileable, box, index, siblingLength) {
+            let { x, y, width, height } = this.applyGaps(
+                box.x1 + (index * box.get_width()) / siblingLength,
+                box.y1,
+                box.get_width() / siblingLength,
+                box.get_height()
+            );
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
+        }
 
-        if (workArea.width > workArea.height) {
-            this.onTileHorizontal(windows);
-        } else {
-            this.onTileVertical(windows);
+        tileTileableVertical(tileable, box, index, siblingLength) {
+            let { x, y, width, height } = this.applyGaps(
+                box.x1,
+                (index * box.get_height()) / siblingLength,
+                box.get_width(),
+                box.get_height() / siblingLength
+            );
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
     }
-
-    onTileHorizontal(windows) {
-        if (!windows.length) return;
-
-        const workArea = this.getWorkspaceBounds();
-
-        windows.forEach((window, index) => {
-            this.moveAndResizeActor(
-                window,
-                (index * workArea.width) / windows.length,
-                0,
-                workArea.width / windows.length,
-                workArea.height,
-                true
-            );
-        });
-    }
-
-    onTileVertical(windows) {
-        if (!windows.length) return;
-
-        const workArea = this.getWorkspaceBounds();
-
-        windows.forEach((window, index) => {
-            this.moveAndResizeActor(
-                window,
-                0,
-                (index * workArea.height) / windows.length,
-                workArea.width,
-                workArea.height / windows.length,
-                true
-            );
-        });
-    }
-};
+);
 
 SimpleLayout.key = 'simple';

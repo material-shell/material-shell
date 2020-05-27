@@ -1,3 +1,4 @@
+const { GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
@@ -6,11 +7,12 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.simple;
 
 /* exported SimpleVerticalLayout */
-var SimpleVerticalLayout = class SimpleVerticalLayout extends SimpleLayout {
-    onTileRegulars(windows) {
-        super.onTileRegulars(windows, true);
-        super.onTileVertical(windows);
+var SimpleVerticalLayout = GObject.registerClass(
+    class SimpleVerticalLayout extends SimpleLayout {
+        tileTileable(tileable, box, index, siblingLength) {
+            this.tileTileableVertical(tileable, box, index, siblingLength);
+        }
     }
-};
+);
 
 SimpleVerticalLayout.key = 'simple-vertical';

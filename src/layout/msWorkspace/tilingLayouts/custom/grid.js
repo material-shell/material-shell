@@ -13,36 +13,25 @@ var GridLayout = GObject.registerClass(
     class GridLayout extends BaseTilingLayout {
         tileTileable(tileable, box, index, siblingLength) {
             const columns = Math.ceil(Math.sqrt(siblingLength));
+            logFocus(columns);
             const rows = Math.ceil(siblingLength / columns);
-            const width = box.get_width() / columns;
-            const height = box.get_height() / rows;
-            const columnIndex = index;
-        }
-        onTileRegulars(windows) {
-            super.onTileRegulars(windows);
-            if (!windows.length) return;
-            log(windows.length);
-            const workArea = this.getWorkspaceBounds();
+            const portionWidth = box.get_width() / columns;
+            const portionHeight = box.get_height() / rows;
+            const columnIndex = Math.floor(index / rows);
+            const rowIndex = index - columnIndex * rows;
 
-            range(columns).forEach((i) => {
-                range(rows).forEach((j) => {
-                    const index = j + i * rows;
-                    const window = windows[index];
-                    if (!window) return;
-
-                    this.moveAndResizeActor(
-                        window,
-                        i * width,
-                        j * height,
-                        width,
-                        index == windows.length - 1
-                            ? // If last window fill remaining space
-                              height * (columns * rows - index)
-                            : height,
-                        true
-                    );
-                });
-            });
+            let { x, y, width, height } = this.applyGaps(
+                columnIndex * portionWidth,
+                rowIndex * portionHeight,
+                portionWidth,
+                index === siblingLength - 1
+                    ? portionHeight * (columns * rows - index)
+                    : portionHeight
+            );
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
     }
 );

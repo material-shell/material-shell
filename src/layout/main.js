@@ -6,6 +6,8 @@ const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+
 /* exported MsMain */
 var MsMain = GObject.registerClass(
     {
@@ -198,6 +200,13 @@ var PrimaryMonitorContainer = GObject.registerClass(
 
         setTranslation(prevActor, nextActor) {
             if (!this.translationAnimator.get_parent()) {
+                logFocus(
+                    'SET TRANSLATION',
+                    Main.layoutManager.primaryMonitor.height
+                );
+                this.translationAnimator.width = this.width;
+                this.translationAnimator.height =
+                    Main.layoutManager.primaryMonitor.height;
                 this.add_child(this.translationAnimator);
                 if (this.panel) {
                     this.set_child_below_sibling(
@@ -216,7 +225,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                     return msWorkspace.msWorkspaceActor === nextActor;
                 }
             );
-            log('setTranslation');
+            logFocus('setTranslation', this.translationAnimator.height);
             /* prevActor.width = nextActor.width = 200; */
             prevActor.height = nextActor.height = this.height;
             this.translationAnimator.setTranslation(

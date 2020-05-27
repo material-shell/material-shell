@@ -160,7 +160,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                 // The best way to find it's parent it with the root ancestor.
                 let root = waitingMetaWindow.metaWindow.find_root_ancestor();
-                log('search for root', root);
+                logFocus('search for root', root);
                 if (root != waitingMetaWindow.metaWindow && root.msWindow) {
                     msWindowFound = root.msWindow;
                 } else {
@@ -175,7 +175,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     sameAppMsWindowList.forEach((msWindow) => {
                         if (
                             !msWindowFound ||
-                            msWindowFound.get_user_time() <
+                            msWindowFound.metaWindow.get_user_time() <
                                 msWindow.metaWindow.get_user_time()
                         ) {
                             msWindowFound = msWindow;

@@ -32,10 +32,21 @@ var BaseTilingLayout = GObject.registerClass(
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.alterTileable(tileable);
             });
+            this.tileAll();
         }
 
         get tileableContainer() {
             return this.msWorkspace.msWorkspaceActor.tileableContainer;
+        }
+
+        get tileableListVisible() {
+            return this.msWorkspace.tileableList.filter((tileable) => {
+                if (tileable === this.msWorkspace.appLauncher) {
+                    return tileable === this.msWorkspace.tileableFocused;
+                } else {
+                    return tileable.visible;
+                }
+            });
         }
 
         registerToSignals() {
@@ -73,15 +84,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         alterTileable(tileable) {
-            this.tileTileable(
-                tileable,
-                this.tileableContainer.allocation,
-                this.msWorkspace.tileableList.indexOf(tileable),
-                this.msWorkspace.tileableList.length
-            );
-            if (tileable instanceof MsWindow) {
-                tileable.updateMetaWindowPositionAndSize();
-            }
             /*
              * Function called automatically at the layout init or when a new window enter
              */
@@ -97,6 +99,21 @@ var BaseTilingLayout = GObject.registerClass(
             /*
              * Function called automatically size of the container change
              */
+        }
+
+        tileAll(box) {
+            logFocus('tileaAll', this.tileableListVisible.length);
+            this.msWorkspace.tileableList.forEach((tileable) => {
+                this.tileTileable(
+                    tileable,
+                    box || this.tileableContainer.allocation,
+                    this.tileableListVisible.indexOf(tileable),
+                    this.tileableListVisible.length
+                );
+                if (tileable instanceof MsWindow) {
+                    tileable.updateMetaWindowPositionAndSize();
+                }
+            });
         }
 
         showAppLauncher() {
@@ -155,6 +172,8 @@ var BaseTilingLayout = GObject.registerClass(
                 this.restoreTileable(tileable);
             });
 
+            this.tileAll();
+
             this.layout_changed();
         }
 
@@ -164,32 +183,25 @@ var BaseTilingLayout = GObject.registerClass(
             );
         }
 
-        onFocusChanged() {
-            if (
-                this.msWorkspace.tileableFocused ===
-                this.msWorkspace.appLauncher
-            ) {
+        onFocusChanged(tileable, oldTileable) {
+            if (tileable === this.msWorkspace.appLauncher) {
+                this.tileAll();
+
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     log('IDLE_ADD');
                     this.showAppLauncher();
                     return GLib.SOURCE_REMOVE;
                 });
-            } else {
-                this.hideAppLauncher(); /* this.msWorkspace.tileableList.splice(
+            } else if (oldTileable === this.msWorkspace.appLauncher) {
+                this.hideAppLauncher();
+                this.tileAll();
+                /* this.msWorkspace.tileableList.splice(
                     this.msWorkspace.tileableList.indexOf(
                         this.msWorkspace.appLauncher
                     ),
                     1
                 ); */
             }
-        }
-
-        getSizeToTile(actor, index, length) {
-            return actor.get_size();
-        }
-
-        onTileRegulars(tileableList) {
-            // Define windows sizes and positions
         }
 
         animateSetPosition(actor, x, y) {
@@ -301,7 +313,7 @@ var BaseTilingLayout = GObject.registerClass(
             } else {
                 height -= halfGap;
             }
-
+            logFocus('b', x, y, width, height);
             return { x, y, width, height };
         }
 
@@ -314,26 +326,12 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         vfunc_allocate(container, box, flags) {
+            this.tileAll(box);
             container.get_children().forEach((actor) => {
                 if (this.msWorkspace.tileableList.includes(actor)) {
-                    this.tileTileable(
-                        actor,
-                        box,
-                        this.msWorkspace.tileableList.indexOf(actor),
-                        this.msWorkspace.tileableList.length
-                    );
                     actor.allocate_preferred_size(flags);
-                    if (actor instanceof MsWindow) {
-                        actor.updateMetaWindowPositionAndSize();
-                    }
                 } else {
-                    actor.allocate_available_size(
-                        box.x1,
-                        box.y1,
-                        box.get_width(),
-                        box.get_height(),
-                        flags
-                    );
+                    actor.allocate(box, flags);
                 }
             });
         }
