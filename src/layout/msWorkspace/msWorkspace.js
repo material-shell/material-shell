@@ -350,11 +350,11 @@ var MsWorkspaceActor = GObject.registerClass(
             super._init({
                 clip_to_allocation: true,
                 x_expand: true,
-                background_color: new Clutter.Color({ red: 120, alpha: 255 }),
+                //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
             });
             this.msWorkspace = msWorkspace;
             this.tileableContainer = new Clutter.Actor({
-                background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
+                //background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
             });
 
             this.panel = new TopPanel(msWorkspace);
