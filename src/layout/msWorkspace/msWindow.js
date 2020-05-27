@@ -414,11 +414,11 @@ var MsWindow = GObject.registerClass(
             /*  if (isMaximized) {
                 if (this.metaWindow.maximized) return;
                 return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-            }
+            }*/
             //Or remove the maximized if it's not
             if (this.metaWindow.maximized_horizontally) {
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
-            } */
+            }
             let currentFrameRect = this.metaWindow.get_frame_rect();
             let moveTo, resizeTo;
             if (this.metaWindow.resizeable) {
