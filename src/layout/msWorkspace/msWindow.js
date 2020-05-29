@@ -320,16 +320,22 @@ var MsWindow = GObject.registerClass(
         }
 
         async onMetaWindowFirstFrameDrawn() {
+            logFocus('onMetaWindowFirstFrameDrawn');
             return new Promise((resolve) => {
                 if (!this.metaWindow) {
+                    logFocus('resolve !this.metaWindow');
+
                     return resolve();
                 }
                 if (this.metaWindow.firstFrameDrawn) {
+                    logFocus('resolve this.metaWindow.firstFrameDrawn');
+
                     resolve();
                 } else {
                     this.metaWindow
                         .get_compositor_private()
                         .connect('first-frame', () => {
+                            logFocus('resolve connect(first-frame');
                             resolve();
                         });
                 }
@@ -387,7 +393,8 @@ var MsWindow = GObject.registerClass(
                 !this.metaWindow ||
                 this.followMetaWindow ||
                 this.width === 0 ||
-                this.height === 0
+                this.height === 0 ||
+                !this.metaWindow.firstFrameDrawn
             ) {
                 /* logFocus(
                     'Early return',
@@ -416,10 +423,20 @@ var MsWindow = GObject.registerClass(
                 return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
             }*/
             //Or remove the maximized if it's not
+            let currentFrameRect = this.metaWindow.get_frame_rect();
+            logFocus(
+                'currentFrameRect',
+                currentFrameRect.x,
+                currentFrameRect.y,
+                currentFrameRect.width,
+                currentFrameRect.height
+            );
+            logFocus('firstFrameDrawn', this.metaWindow.firstFrameDrawn);
+            logFocus('minimized', this.metaWindow.minimized);
+
             if (this.metaWindow.maximized_horizontally) {
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
-            let currentFrameRect = this.metaWindow.get_frame_rect();
             let moveTo, resizeTo;
             if (this.metaWindow.resizeable) {
                 //Set the metaWindow maximized if it's the case
@@ -662,6 +679,8 @@ var MsWindow = GObject.registerClass(
                 : this.updateMetaWindowPositionAndSize();
         }
         async setWindow(metaWindow) {
+            logFocus('setWindow', this);
+
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow
             );
@@ -697,6 +716,8 @@ var MsWindow = GObject.registerClass(
         }
 
         unsetWindow() {
+            logFocus('unsetWindow', this);
+
             this.unregisterOnMetaWindowSignals();
             this.reactive = true;
             delete this.metaWindow;
@@ -723,8 +744,12 @@ var MsWindow = GObject.registerClass(
         }
 
         kill() {
+            logFocus('kill', this);
             let promise = new Promise((resolve) => {
-                if (this.metaWindow) {
+                if (
+                    this.metaWindow &&
+                    this.metaWindow.get_compositor_private()
+                ) {
                     delete this.metaWindow.msWindow;
                     this.metaWindow.connect('unmanaged', (_) => {
                         resolve();
