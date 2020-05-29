@@ -760,6 +760,8 @@ var MsWindow = GObject.registerClass(
                 }
             });
             promise.then(() => {
+                logFocus('in then');
+
                 delete this.metaWindow;
                 this._onDestroy();
                 logFocus('just before');
@@ -813,9 +815,14 @@ var MsWindow = GObject.registerClass(
         }
 
         _onDestroy() {
-            log('msWindow to its own destroy');
+            logFocus('msWindow to its own destroy');
             this.unregisterOnMetaWindowSignals();
-            this.Keymap.disconnect(this.superConnectId);
+            logFocus('before keymap disconnect', this.Keymap);
+            if (this.Keymap) {
+                this.Keymap.disconnect(this.superConnectId);
+            }
+            logFocus('before global disconnect');
+
             global.display.disconnect(this.grabEndSignal);
             //Me.disconnect(this.superConnectId);
         }
