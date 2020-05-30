@@ -12,12 +12,6 @@ const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 /* exported FloatLayout */
 var FloatLayout = GObject.registerClass(
     class FloatLayout extends BaseTilingLayout {
-        constructor(msWorkspace) {
-            super(msWorkspace);
-            /* msWorkspace.msWorkspaceActor.tileableContainer.hide();
-        msWorkspace.msWorkspaceActor.tileableContainer.hide(); */
-        }
-
         alterTileable(tileable) {
             if (tileable.metaWindow) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -27,6 +21,13 @@ var FloatLayout = GObject.registerClass(
                     return GLib.SOURCE_REMOVE;
                 });
             }
+            if (tileable === this.tileableFocused) {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
+                    tileable,
+                    null
+                );
+            }
+            super.alterTileable(tileable);
         }
 
         restoreTileable(tileable) {
@@ -39,17 +40,36 @@ var FloatLayout = GObject.registerClass(
             }
         }
 
-        onFocusChanged(tileableFocused) {
-            this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
-                tileableFocused,
-                null
-            );
+        showAppLauncher() {
+            logFocus('showAppLauncherFloat');
+            let actor = this.msWorkspace.appLauncher;
+            actor.x = 0;
+            actor.y = 0;
+            actor.width = this.tileableContainer.allocation.get_width();
+            actor.height = this.tileableContainer.allocation.get_height();
+            super.showAppLauncher();
         }
 
-        onDestroy() {
-            super.onDestroy();
-            /* this.msWorkspace.msWorkspaceActor.tileableContainer.show();
-        this.msWorkspace.msWorkspaceActor.tileableContainer.show(); */
+        onFocusChanged(tileableFocused, oldTileable) {
+            if (
+                tileableFocused != this.msWorkspace.appLauncher &&
+                this.msWorkspace.appLauncher.visible
+            ) {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_below_sibling(
+                    tileableFocused,
+                    this.msWorkspace.appLauncher
+                );
+            } else {
+                this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
+                    tileableFocused,
+                    null
+                );
+            }
+            super.onFocusChanged(tileableFocused, oldTileable);
+        }
+
+        tileAll() {
+            //No tile all
         }
     }
 );

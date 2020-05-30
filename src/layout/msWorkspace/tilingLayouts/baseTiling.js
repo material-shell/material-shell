@@ -84,6 +84,12 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         alterTileable(tileable) {
+            if (
+                tileable === this.msWorkspace.appLauncher &&
+                tileable !== this.msWorkspace.tileableFocused
+            ) {
+                this.hideAppLauncher();
+            }
             /*
              * Function called automatically at the layout init or when a new window enter
              */
@@ -103,6 +109,9 @@ var BaseTilingLayout = GObject.registerClass(
 
         tileAll(box) {
             logFocus('tileaAll', this.tileableListVisible.length);
+            box = box || this.tileableContainer.allocation;
+            box.x1 = 0;
+            box.y1 = 0;
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.tileTileable(
                     tileable,
@@ -186,9 +195,8 @@ var BaseTilingLayout = GObject.registerClass(
         onFocusChanged(tileable, oldTileable) {
             if (tileable === this.msWorkspace.appLauncher) {
                 this.tileAll();
-
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('IDLE_ADD');
+                    logFocus('IDLE_ADD');
                     this.showAppLauncher();
                     return GLib.SOURCE_REMOVE;
                 });

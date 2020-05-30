@@ -34,14 +34,7 @@ var MsWindow = GObject.registerClass(
             this.dialogs = [];
             this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
-            /* this.windowClone.set_background_color(
-                new Clutter.Color({
-                    red: Math.random() * 255,
-                    blue: Math.random() * 255,
-                    green: Math.random() * 255,
-                    alpha: 255,
-                })
-            ); */
+
             this.placeholder = new AppPlaceholder(this.app);
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
@@ -52,26 +45,6 @@ var MsWindow = GObject.registerClass(
                 this.placeholder,
                 this.windowClone
             );
-            this.previousResize = {
-                width: 0,
-                height: 0,
-            };
-            this.previousRealSize = {
-                width: 0,
-                height: 0,
-            };
-            this.connect('notify::allocation', () => {
-                if (this.propagate && !this.dragged && !this.followMetaWindow) {
-                    /* logFocus(
-                        'updateMetaWindowPositionAndSize notify::allocation'
-                    ); */
-                    //this.updateMetaWindowPositionAndSize();
-                }
-            });
-            this.connect('parent-set', () => {
-                //logFocus('updateMetaWindowPositionAndSize parent-set');
-                //this.updateMetaWindowPositionAndSize();
-            });
             this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
             });
@@ -320,22 +293,16 @@ var MsWindow = GObject.registerClass(
         }
 
         async onMetaWindowFirstFrameDrawn() {
-            logFocus('onMetaWindowFirstFrameDrawn');
             return new Promise((resolve) => {
                 if (!this.metaWindow) {
-                    logFocus('resolve !this.metaWindow');
-
                     return resolve();
                 }
                 if (this.metaWindow.firstFrameDrawn) {
-                    logFocus('resolve this.metaWindow.firstFrameDrawn');
-
                     resolve();
                 } else {
                     this.metaWindow
                         .get_compositor_private()
                         .connect('first-frame', () => {
-                            logFocus('resolve connect(first-frame');
                             resolve();
                         });
                 }
@@ -396,13 +363,6 @@ var MsWindow = GObject.registerClass(
                 this.height === 0 ||
                 !this.metaWindow.firstFrameDrawn
             ) {
-                /* logFocus(
-                    'Early return',
-                    !this.metaWindow,
-                    this.followMetaWindow,
-                    this.get_parent() !=
-                        this.msWorkspace.msWorkspaceActor.tileableContainer
-                ); */
                 return;
             }
 
@@ -424,15 +384,6 @@ var MsWindow = GObject.registerClass(
             }*/
             //Or remove the maximized if it's not
             let currentFrameRect = this.metaWindow.get_frame_rect();
-            logFocus(
-                'currentFrameRect',
-                currentFrameRect.x,
-                currentFrameRect.y,
-                currentFrameRect.width,
-                currentFrameRect.height
-            );
-            logFocus('firstFrameDrawn', this.metaWindow.firstFrameDrawn);
-            logFocus('minimized', this.metaWindow.minimized);
 
             if (this.metaWindow.maximized_horizontally) {
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
@@ -535,27 +486,6 @@ var MsWindow = GObject.registerClass(
                 this.metaWindow.connect('position-changed', () => {
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
-                    } else {
-                        return;
-                        if (!this.dragged) {
-                            let wantedPosition = this.getRelativeMetaWindowPosition(
-                                this.metaWindow
-                            );
-                            if (
-                                wantedPosition.x !=
-                                    this.metaWindow.get_frame_rect().x ||
-                                wantedPosition.y !=
-                                    this.metaWindow.get_frame_rect().y
-                            ) {
-                                logFocus(
-                                    'updateMetaWindowPositionAndSize position-changed',
-                                    this.get_parent() ===
-                                        this.msWorkspace.msWorkspaceActor
-                                            .tileableContainer
-                                );
-                                this.updateMetaWindowPositionAndSize();
-                            }
-                        }
                     }
                 }),
                 this.metaWindow.connect('size-changed', () => {
@@ -566,17 +496,6 @@ var MsWindow = GObject.registerClass(
                     );
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
-                    } else if (
-                        this.metaWindow.get_frame_rect().width !=
-                            this.previousRealSize.width ||
-                        this.metaWindow.get_frame_rect().height !=
-                            this.previousRealSize.height
-                    ) {
-                        return;
-                        logFocus(
-                            'updateMetaWindowPositionAndSize size-changed'
-                        );
-                        this.updateMetaWindowPositionAndSize();
                     }
                 }),
                 this.metaWindow.connect('notify::fullscreen', () => {

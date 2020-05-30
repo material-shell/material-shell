@@ -129,7 +129,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             'window-entered-monitor',
             (display, monitorIndex, window) => {
                 //Ignore unHandle window and window on primary screens
-                this.windowEnteredMonitor(window, monitorIndex);
+                //this.windowEnteredMonitor(window, monitorIndex);
             }
         );
 
