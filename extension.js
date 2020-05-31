@@ -64,7 +64,6 @@ function enable() {
         log('IDLE_ADD');
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
-
         //Load persistent data
         Me.stateManager.loadRegistry(() => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
@@ -98,7 +97,9 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
-
+    GLib.idle_add(GLib.PRIORITY_LOW, () => {
+        Me.msThemeManager.regenerateStylesheet();
+    });
     /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
     Me.emit('extension-loaded');
