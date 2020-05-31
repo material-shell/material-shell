@@ -122,6 +122,8 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         await this.buildThemeStylesheetToFile(this.themeFile);
         this.unloadStylesheet();
         this.theme.load_stylesheet(this.themeFile);
+        this.themeContext.set_theme(new St.Theme());
+        this.themeContext.set_theme(this.theme);
     }
 
     unloadStylesheet() {
