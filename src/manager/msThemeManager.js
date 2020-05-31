@@ -27,7 +27,7 @@ var MsThemeManager = class MsThemeManager extends MsManager {
             this.emit('panel-size-changed');
         });
 
-        this.regenerateStylesheet();
+        //this.regenerateStylesheet();
     }
 
     getPanelSize(monitorIndex) {
@@ -120,12 +120,16 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     async regenerateStylesheet() {
         await this.buildThemeStylesheetToFile(this.themeFile);
-        this.theme.unload_stylesheet(this.themeFile);
+        this.unloadStylesheet();
         this.theme.load_stylesheet(this.themeFile);
+    }
+
+    unloadStylesheet() {
+        this.theme.unload_stylesheet(this.themeFile);
     }
 
     destroy() {
         super.destroy();
-        this.theme.unload_stylesheet(this.themeFile);
+        this.unloadStylesheet();
     }
 };
