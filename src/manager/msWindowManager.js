@@ -209,6 +209,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                         }
                     );
                 }
+                if (!app) {
+                    return;
+                }
 
                 if (!msWindowFound) {
                     //Then check among empty msWindows
