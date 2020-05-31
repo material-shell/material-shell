@@ -494,9 +494,15 @@ let TileableItem = GObject.registerClass(
             super._init(this.container, true);
             this.tileable = tileable;
             this.app = tileable.app;
-            this.iconContainer = new St.Bin({
-                y_align: Clutter.ActorAlign.CENTER,
-            });
+            if (ShellVersionMatch('3.34')) {
+                this.iconContainer = new St.Bin({
+                    y_align: 1,
+                });
+            } else {
+                this.iconContainer = new St.Bin({
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+            }
 
             // TITLE
             this.title = new St.Label({
