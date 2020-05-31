@@ -17,7 +17,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
         this.signals = [];
-        this.metaWindowWaitingForAppList = [];
+        this.metaWindowWaitingForAssignationList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {
             this.onNewMetaWindow(metaWindow);
         });
@@ -118,11 +118,8 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         return msWindow;
     }
 
-    //Sometime metaWindow don't have the app at start so we try to wait a bit to assign correctly the window.
     setMetaWindowAsWaitingForAssignation(metaWindow) {
-        log('add to wait for app list');
-
-        this.metaWindowWaitingForAppList.push({
+        this.metaWindowWaitingForAssignationList.push({
             timestamp: Date.now(),
             metaWindow,
         });
@@ -143,131 +140,144 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     checkWindowsForAssignations() {
         const timestamp = Date.now();
         log('checkWindowsForAssignations', timestamp, Date.now());
-        this.metaWindowWaitingForAppList.forEach((waitingMetaWindow) => {
-            let app = this.windowTracker.get_window_app(
-                waitingMetaWindow.metaWindow
-            );
 
-            let msWindowFound = null;
-            log('window_type', waitingMetaWindow.metaWindow.window_type);
-            log('window_class', waitingMetaWindow.metaWindow.get_wm_class());
-            log(
-                'metaWindow.firstFrameDrawn',
-                waitingMetaWindow.metaWindow.firstFrameDrawn
-            );
-
-            // If window is dialog try ti find his parent
-            if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
-                // The best way to find it's parent it with the root ancestor.
-                let root = waitingMetaWindow.metaWindow.find_root_ancestor();
-                logFocus('search for root', root);
-                if (root != waitingMetaWindow.metaWindow && root.msWindow) {
-                    msWindowFound = root.msWindow;
-                } else {
-                    // But sometime the we failed to found one.
-                    // So we try to find a regular window with the same app
-                    let sameAppMsWindowList = this.msWindowList.filter(
-                        (msWindow) => {
-                            return msWindow.app.get_id() === app.get_id();
-                        }
-                    );
-                    //We take the msWindow focused the last
-                    sameAppMsWindowList.forEach((msWindow) => {
-                        if (
-                            !msWindowFound ||
-                            msWindowFound.metaWindow.get_user_time() <
-                                msWindow.metaWindow.get_user_time()
-                        ) {
-                            msWindowFound = msWindow;
-                        }
-                    });
-                }
-            }
-
-            if (!msWindowFound) {
-                // First check among the msWindow waiting for an App to be opened
-                this.msWindowWaitingForMetaWindowList.forEach(
-                    (waitingMsWindow) => {
-                        waitingMsWindow.checked = true;
-                        if (
-                            !msWindowFound &&
-                            waitingMsWindow.msWindow.app.get_id() ===
-                                app.get_id()
-                        ) {
-                            msWindowFound = waitingMsWindow.msWindow;
-                            this.msWindowWaitingForMetaWindowList.splice(
-                                this.msWindowWaitingForMetaWindowList.indexOf(
-                                    waitingMsWindow
-                                ),
-                                1
-                            );
-                        }
-                    }
-                );
-            }
-
-            if (!msWindowFound) {
-                //Then check among empty msWindows
-                const emptyMsWindowListOfApp = this.msWindowList.filter(
-                    (msWindow) => {
-                        return (
-                            !msWindow.metaWindow &&
-                            msWindow.app.get_id() === app.get_id()
-                        );
-                    }
-                );
-                if (emptyMsWindowListOfApp.length) {
-                    const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                    msWindowFound = emptyMsWindowListOfApp.filter(
-                        (msWindow) => {
-                            return msWindow.msWorkspace === activeMsWorkspace;
-                        }
-                    )[0];
-                    if (!msWindowFound) {
-                        msWindowFound = emptyMsWindowListOfApp[0];
-                    }
-                }
-            }
-
-            if (msWindowFound) {
-                if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
-                    msWindowFound.addDialog(waitingMetaWindow.metaWindow);
-                } else {
-                    msWindowFound.setWindow(waitingMetaWindow.metaWindow);
-                }
-            } else {
+        // For every waiting Window we do
+        this.metaWindowWaitingForAssignationList.forEach(
+            (waitingMetaWindow) => {
                 let app = this.windowTracker.get_window_app(
                     waitingMetaWindow.metaWindow
                 );
+
+                let msWindowFound = null;
+                log('window_type', waitingMetaWindow.metaWindow.window_type);
                 log(
-                    'metaWindow waiting since',
-                    timestamp - waitingMetaWindow.timestamp,
-                    app.is_window_backed()
+                    'window_class',
+                    waitingMetaWindow.metaWindow.get_wm_class()
                 );
-                if (
-                    (waitingMetaWindow.metaWindow.firstFrameDrawn &&
-                        !app.is_window_backed()) ||
-                    timestamp - waitingMetaWindow.timestamp > 2000
-                ) {
-                    const msWindow = this.createNewMsWindow(
-                        app.get_id(),
-                        this.buildMetaWindowIdentifier(
-                            waitingMetaWindow.metaWindow
-                        ),
-                        waitingMetaWindow.metaWindow
-                    );
-                    Me.msWorkspaceManager.addWindowToAppropriateMsWorkspace(
-                        msWindow
+                log(
+                    'metaWindow.firstFrameDrawn',
+                    waitingMetaWindow.metaWindow.firstFrameDrawn
+                );
+
+                // If window is dialog try ti find his parent
+                if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
+                    // The best way to find it's parent it with the root ancestor.
+                    let root = waitingMetaWindow.metaWindow.find_root_ancestor();
+                    logFocus('search for root', root);
+                    if (root != waitingMetaWindow.metaWindow && root.msWindow) {
+                        msWindowFound = root.msWindow;
+                    } else if (app) {
+                        // But sometime the we failed to found one.
+                        // So we try to find a regular window with the same app
+                        let sameAppMsWindowList = this.msWindowList.filter(
+                            (msWindow) => {
+                                return msWindow.app.get_id() === app.get_id();
+                            }
+                        );
+                        //We take the msWindow focused the last
+                        sameAppMsWindowList.forEach((msWindow) => {
+                            if (
+                                !msWindowFound ||
+                                msWindowFound.metaWindow.get_user_time() <
+                                    msWindow.metaWindow.get_user_time()
+                            ) {
+                                msWindowFound = msWindow;
+                            }
+                        });
+                    }
+                }
+
+                if (!msWindowFound) {
+                    // First check among the msWindow waiting for an App to be opened
+                    this.msWindowWaitingForMetaWindowList.some(
+                        (waitingMsWindow) => {
+                            waitingMsWindow.checked = true;
+                            if (
+                                app &&
+                                waitingMsWindow.msWindow.app.get_id() ===
+                                    app.get_id()
+                            ) {
+                                msWindowFound = waitingMsWindow.msWindow;
+                                this.msWindowWaitingForMetaWindowList.splice(
+                                    this.msWindowWaitingForMetaWindowList.indexOf(
+                                        waitingMsWindow
+                                    ),
+                                    1
+                                );
+                            }
+                            return msWindowFound;
+                        }
                     );
                 }
+
+                if (!msWindowFound) {
+                    //Then check among empty msWindows
+                    const emptyMsWindowListOfApp = this.msWindowList.filter(
+                        (msWindow) => {
+                            return (
+                                !msWindow.metaWindow &&
+                                msWindow.app.get_id() === app.get_id()
+                            );
+                        }
+                    );
+                    if (emptyMsWindowListOfApp.length) {
+                        const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                        msWindowFound = emptyMsWindowListOfApp.filter(
+                            (msWindow) => {
+                                return (
+                                    msWindow.msWorkspace === activeMsWorkspace
+                                );
+                            }
+                        )[0];
+                        if (!msWindowFound) {
+                            msWindowFound = emptyMsWindowListOfApp[0];
+                        }
+                    }
+                }
+
+                if (msWindowFound) {
+                    if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
+                        msWindowFound.addDialog(waitingMetaWindow.metaWindow);
+                    } else {
+                        msWindowFound.setWindow(waitingMetaWindow.metaWindow);
+                    }
+                } else {
+                    let app = this.windowTracker.get_window_app(
+                        waitingMetaWindow.metaWindow
+                    );
+                    log(
+                        'metaWindow waiting since',
+                        timestamp - waitingMetaWindow.timestamp,
+                        app.is_window_backed()
+                    );
+                    if (
+                        (waitingMetaWindow.metaWindow.firstFrameDrawn &&
+                            !app.is_window_backed()) ||
+                        timestamp - waitingMetaWindow.timestamp > 2000
+                    ) {
+                        const msWindow = this.createNewMsWindow(
+                            app.get_id(),
+                            this.buildMetaWindowIdentifier(
+                                waitingMetaWindow.metaWindow
+                            ),
+                            waitingMetaWindow.metaWindow
+                        );
+                        Me.msWorkspaceManager.addWindowToAppropriateMsWorkspace(
+                            msWindow
+                        );
+                    }
+                }
             }
-        });
-        this.metaWindowWaitingForAppList = this.metaWindowWaitingForAppList.filter(
+        );
+
+        // Remove assigned window for the waiting for assignation list
+        this.metaWindowWaitingForAssignationList = this.metaWindowWaitingForAssignationList.filter(
             (waitingMetaWindow) => {
                 return !waitingMetaWindow.metaWindow.msWindow;
             }
         );
 
+        // Remove MsWindow waiting for too much time. We probably missed the window awaited.
         this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
             log(
                 'msWindow waiting since',
@@ -288,8 +298,10 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 );
             }
         });
+
+        // Reschedule the next assignation check
         if (
-            this.metaWindowWaitingForAppList.length ||
+            this.metaWindowWaitingForAssignationList.length ||
             this.msWindowWaitingForMetaWindowList.length
         ) {
             if (this.checkInProgress) return;

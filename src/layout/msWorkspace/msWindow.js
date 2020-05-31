@@ -415,6 +415,28 @@ var MsWindow = GObject.registerClass(
                 };
             }
 
+            // Secure the futur metaWindow Position to ensure it's not outside the current monitor
+            if (!this.dragged) {
+                moveTo.x = Math.max(
+                    Math.min(
+                        moveTo.x,
+                        this.msWorkspace.monitor.x +
+                            this.msWorkspace.monitor.width -
+                            resizeTo.width
+                    ),
+                    this.msWorkspace.monitor.x
+                );
+                moveTo.y = Math.max(
+                    Math.min(
+                        moveTo.y,
+                        this.msWorkspace.monitor.y +
+                            this.msWorkspace.monitor.height -
+                            resizeTo.height
+                    ),
+                    this.msWorkspace.monitor.y
+                );
+            }
+
             //Set the size accordingly
             logFocus(
                 'resize metaWindow to ',
