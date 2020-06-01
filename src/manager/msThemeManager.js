@@ -132,6 +132,9 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     destroy() {
         super.destroy();
-        this.unloadStylesheet();
+        // Do not remove the stylesheet in during locking disable
+        if (!Me.locked) {
+            this.unloadStylesheet();
+        }
     }
 };

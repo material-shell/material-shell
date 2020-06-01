@@ -45,6 +45,9 @@ var MsWindow = GObject.registerClass(
                 this.placeholder,
                 this.windowClone
             );
+            this.connect('parent-set', () => {
+                this.msContent.style_changed();
+            });
             this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
             });

@@ -219,9 +219,6 @@ subtitle-1 {
 .surface-darker {
   background: #b3b3b3; }
 
-MsWindow {
-  background-color: red; }
-
 /* .dark-theme {
     @include buildTheme('dark');
 }

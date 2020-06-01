@@ -107,6 +107,11 @@ var AppPlaceholder = GObject.registerClass(
         reset() {
             this.clickableContainer.reactive = true;
             if (this._spinner) {
+                if (ShellVersionMatch('3.34')) {
+                    this._spinner.actor.destroy();
+                } else {
+                    this._spinner.destroy();
+                }
                 this._spinner.destroy();
             }
             this.spinnerContainer.set_opacity(0);

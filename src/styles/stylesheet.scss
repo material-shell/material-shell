@@ -403,10 +403,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
     @include background-darker($theme);
 }
 
-MsWindow {
-    background-color: red;
-}
-
 /* .dark-theme {
     @include buildTheme('dark');
 }

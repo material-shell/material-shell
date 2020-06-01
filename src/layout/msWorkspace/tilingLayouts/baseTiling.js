@@ -349,9 +349,11 @@ var BaseTilingLayout = GObject.registerClass(
             this.signals.forEach((signal) => {
                 signal.from.disconnect(signal.id);
             });
-            this.msWorkspace.tileableList.forEach((tileable) => {
-                this.restoreTileable(tileable);
-            });
+            if (!Me.disableInProgress) {
+                this.msWorkspace.tileableList.forEach((tileable) => {
+                    this.restoreTileable(tileable);
+                });
+            }
         }
     }
 );

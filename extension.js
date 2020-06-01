@@ -37,6 +37,7 @@ function init() {
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
+    Me.locked = false;
     //St.set_slow_down_factor(10);
     global.display.connect('closing', () => {
         log('CLOSING');
@@ -72,6 +73,9 @@ function enable() {
             Me.msWorkspaceManager = new MsWorkspaceManager();
             modules = [...modules, new HotKeysModule()];
             Me.msThemeManager = new MsThemeManager();
+            if (!Me.locked) {
+                Me.msThemeManager.regenerateStylesheet();
+            }
             Me.msWorkspaceManager.setupInitialState();
             log('Before MsMain');
             Me.layout = new MsMain();
@@ -97,11 +101,9 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
-    GLib.idle_add(GLib.PRIORITY_LOW, () => {
-        Me.msThemeManager.regenerateStylesheet();
-    });
     /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
+    Me.locked = false;
     Me.emit('extension-loaded');
     // When monitors changed we reload the extension completely by disabling and reenabling it
     monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
@@ -123,6 +125,10 @@ function disable() {
     log('----------------');
     log('DISABLE EXTENSION');
     log('----------------');
+    log('Main.sessionMode.currentMode', Main.sessionMode.currentMode);
+    if (Main.sessionMode.currentMode === 'unlock-dialog') {
+        Me.locked = true;
+    }
     Me.disableInProgress = true;
     if (!modules) return;
     Me.emit('extension-disable');
