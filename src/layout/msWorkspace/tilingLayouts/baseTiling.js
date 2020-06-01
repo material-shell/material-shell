@@ -50,7 +50,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         registerToSignals() {
-            logFocus('registerToSignals');
             this.signals.push(
                 {
                     from: this.msWorkspace,
@@ -108,7 +107,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         tileAll(box) {
-            logFocus('tileaAll', this.tileableListVisible.length);
             box = box || this.tileableContainer.allocation;
             box.x1 = 0;
             box.y1 = 0;
@@ -196,7 +194,6 @@ var BaseTilingLayout = GObject.registerClass(
             if (tileable === this.msWorkspace.appLauncher) {
                 this.tileAll();
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    logFocus('IDLE_ADD');
                     this.showAppLauncher();
                     return GLib.SOURCE_REMOVE;
                 });
@@ -321,7 +318,6 @@ var BaseTilingLayout = GObject.registerClass(
             } else {
                 height -= halfGap;
             }
-            logFocus('b', x, y, width, height);
             return { x, y, width, height };
         }
 

@@ -200,10 +200,6 @@ var PrimaryMonitorContainer = GObject.registerClass(
 
         setTranslation(prevActor, nextActor) {
             if (!this.translationAnimator.get_parent()) {
-                logFocus(
-                    'SET TRANSLATION',
-                    Main.layoutManager.primaryMonitor.height
-                );
                 this.translationAnimator.width = this.width;
                 this.translationAnimator.height =
                     Main.layoutManager.primaryMonitor.height;
@@ -225,8 +221,6 @@ var PrimaryMonitorContainer = GObject.registerClass(
                     return msWorkspace.msWorkspaceActor === nextActor;
                 }
             );
-            logFocus('setTranslation', this.translationAnimator.height);
-            /* prevActor.width = nextActor.width = 200; */
             prevActor.height = nextActor.height = this.height;
             this.translationAnimator.setTranslation(
                 [prevActor],

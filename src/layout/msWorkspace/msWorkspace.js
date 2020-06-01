@@ -363,13 +363,6 @@ var MsWorkspaceActor = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            logFocus(
-                'allocate msWorkspaceActor',
-                box.x1,
-                box.x2,
-                box.y1,
-                box.y2
-            );
             this.set_allocation(box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();

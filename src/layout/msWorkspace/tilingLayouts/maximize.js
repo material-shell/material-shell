@@ -44,6 +44,7 @@ var MaximizeLayout = GObject.registerClass(
             if (!this.currentDisplayedActor.get_parent()) {
                 this.tileableContainer.add_child(this.currentDisplayedActor);
             }
+            this.msWorkspace.refreshFocus();
         }
 
         showAppLauncher() {

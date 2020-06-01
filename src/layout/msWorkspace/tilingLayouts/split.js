@@ -58,6 +58,7 @@ var SplitLayout = GObject.registerClass(
                     this.tileableContainer.remove_child(tileable);
                 }
             });
+            this.msWorkspace.refreshFocus();
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {

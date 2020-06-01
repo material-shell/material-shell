@@ -4,6 +4,7 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
 const Animation = imports.ui.animation;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported AppPlaceholder */
 var AppPlaceholder = GObject.registerClass(
@@ -23,45 +24,48 @@ var AppPlaceholder = GObject.registerClass(
                 layout_manager: new Clutter.BinLayout(),
                 reactive: true,
             });
-
+            this.vertical = this.width < this.height;
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
-
+            this.icon.set_style('padding:24px');
             this.spinnerContainer = new Clutter.Actor({});
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),
-                x_align: Clutter.ActorAlign.CENTER,
                 style_class: 'headline-4',
-                style: 'margin-top:48px',
             });
 
             this.callToAction = new St.Label({
                 text: 'Click anywhere to launch',
-                x_align: Clutter.ActorAlign.CENTER,
                 style_class: 'headline-5 text-medium-emphasis',
-                style: 'margin-top:32px;margin-bottom:16px;',
+                style: 'margin-top:32px;',
             });
 
-            this.identityContainer = new Clutter.Actor({
-                layout_manager: new Clutter.BoxLayout({
-                    vertical: true,
-                }),
-                x_align: Clutter.ActorAlign.CENTER,
+            this.identityContainer = new St.BoxLayout({
+                vertical: true,
+                x_align: Clutter.ActorAlign.START,
                 y_align: Clutter.ActorAlign.CENTER,
                 x_expand: true,
                 y_expand: true,
+                style: 'padding:24px; text-align:start;',
             });
 
             [
-                this.icon,
                 this.appTitle,
                 this.callToAction,
                 this.spinnerContainer,
             ].forEach((actor) => this.identityContainer.add_child(actor));
 
+            this.box = new St.BoxLayout({
+                vertical: false,
+                style: 'padding:48px; border-radius:48px',
+            });
+
+            this.box.add_child(this.icon);
+            this.box.add_child(this.identityContainer);
+
             this.add_style_class_name('surface-darker');
-            this.add_child(this.identityContainer);
+            this.add_child(this.box);
             this.clickableContainer = new RippleBackground(this);
             this.clickableContainer.x_expand = true;
             this.clickableContainer.y_expand = true;
@@ -84,24 +88,81 @@ var AppPlaceholder = GObject.registerClass(
                 ) {
                     if (this.pressed && !this.waitForReset) {
                         this.waitForReset = true;
-                        this.emit('clicked', event.get_button());
+                        this.activate(event.get_button());
                         this.pressed = false;
-                        this.clickableContainer.reactive = false;
-                        this._spinner = new Animation.Spinner(16);
-                        let spinnerActor;
-                        if (ShellVersionMatch('3.34')) {
-                            spinnerActor = this._spinner.actor;
-                        } else {
-                            spinnerActor = this._spinner;
-                        }
-                        this.spinnerContainer.add_child(spinnerActor);
-                        this._spinner.play();
-                        this.spinnerContainer.set_opacity(255);
                     }
                 } else if (eventType === Clutter.EventType.LEAVE) {
                     this.pressed = false;
                 }
             });
+
+            this.connect('key-press-event', (entry, event) => {
+                let symbol = event.get_key_symbol();
+                logFocus('symbol', symbol);
+                if (ShellVersionMatch('3.34')) {
+                    switch (symbol) {
+                        case Clutter.Return:
+                        case Clutter.KP_Enter:
+                            this.activate(0);
+                            return Clutter.EVENT_STOP;
+                    }
+                } else {
+                    switch (symbol) {
+                        case Clutter.KEY_Return:
+                        case Clutter.KEY_KP_Enter:
+                            this.activate(0);
+                            return Clutter.EVENT_STOP;
+                    }
+                }
+
+                return Clutter.EVENT_PROPAGATE;
+            });
+
+            this.connect('key-focus-in', () => {
+                this.box.add_style_class_name('surface');
+                logFocus('placeholder grab key-focus');
+            });
+            this.connect('key-focus-out', () => {
+                this.box.remove_style_class_name('surface');
+
+                logFocus('placeholder lost key-focus');
+            });
+        }
+
+        setOrientation(width, height) {
+            let vertical = width < height;
+            if (vertical === this.vertical) return;
+            this.vertical = vertical;
+            this.box.vertical = this.vertical;
+            this.identityContainer.x_align = this.vertical
+                ? Clutter.ActorAlign.CENTER
+                : Clutter.ActorAlign.START;
+            this.appTitle.x_align = this.vertical
+                ? Clutter.ActorAlign.CENTER
+                : Clutter.ActorAlign.START;
+            this.callToAction.x_align = this.vertical
+                ? Clutter.ActorAlign.CENTER
+                : Clutter.ActorAlign.START;
+        }
+
+        vfunc_allocate(box, flags) {
+            this.setOrientation(box.get_width(), box.get_height());
+            super.vfunc_allocate(box, flags);
+        }
+
+        activate(button) {
+            this.emit('clicked', button);
+            this.clickableContainer.reactive = false;
+            this._spinner = new Animation.Spinner(16);
+            let spinnerActor;
+            if (ShellVersionMatch('3.34')) {
+                spinnerActor = this._spinner.actor;
+            } else {
+                spinnerActor = this._spinner;
+            }
+            this.spinnerContainer.add_child(spinnerActor);
+            this._spinner.play();
+            this.spinnerContainer.set_opacity(255);
         }
 
         reset() {

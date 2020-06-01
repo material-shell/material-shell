@@ -441,19 +441,6 @@ var MsWindow = GObject.registerClass(
             }
 
             //Set the size accordingly
-            logFocus(
-                'resize metaWindow to ',
-                moveTo.x,
-                moveTo.y,
-                resizeTo.width,
-                resizeTo.height,
-                ' from: ',
-                currentFrameRect.x,
-                currentFrameRect.y,
-                currentFrameRect.width,
-                currentFrameRect.height
-            );
-
             this.metaWindow.move_resize_frame(
                 true,
                 moveTo.x,
@@ -514,17 +501,11 @@ var MsWindow = GObject.registerClass(
                     }
                 }),
                 this.metaWindow.connect('size-changed', () => {
-                    log(
-                        'meta window size changed',
-                        this.metaWindow.get_frame_rect().width,
-                        this.metaWindow.get_frame_rect().height
-                    );
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
                     }
                 }),
                 this.metaWindow.connect('notify::fullscreen', () => {
-                    log('NOTIFY FULLSCREEN !!!!', this.followMetaWindow);
                     if (this.followMetaWindow) {
                         this.mimicMetaWindowPositionAndSize();
                     }
@@ -616,15 +597,12 @@ var MsWindow = GObject.registerClass(
             if (this.metaWindow) {
                 WindowUtils.updateTitleBarVisibility(this.metaWindow);
             }
-            logFocus('updateMetaWindowPositionAndSize setMsWorkspace');
 
             this.followMetaWindow
                 ? this.mimicMetaWindowPositionAndSize()
                 : this.updateMetaWindowPositionAndSize();
         }
         async setWindow(metaWindow) {
-            logFocus('setWindow', this);
-
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
                 metaWindow
             );
@@ -648,7 +626,6 @@ var MsWindow = GObject.registerClass(
             if (!this.metaWindow.resizeable) {
                 this.msContent.add_style_class_name('surface-darker');
             }
-            logFocus('updateMetaWindowPositionAndSize setWindow');
             this.followMetaWindow
                 ? this.mimicMetaWindowPositionAndSize()
                 : this.updateMetaWindowPositionAndSize();
@@ -660,8 +637,6 @@ var MsWindow = GObject.registerClass(
         }
 
         unsetWindow() {
-            logFocus('unsetWindow', this);
-
             this.unregisterOnMetaWindowSignals();
             this.reactive = true;
             delete this.metaWindow;
@@ -683,12 +658,11 @@ var MsWindow = GObject.registerClass(
             } else if (this.metaWindow) {
                 this.metaWindow.activate(global.get_current_time());
             } else {
-                this.grab_key_focus();
+                this.placeholder.grab_key_focus();
             }
         }
 
         kill() {
-            logFocus('kill', this);
             let promise = new Promise((resolve) => {
                 if (
                     this.metaWindow &&
@@ -704,11 +678,8 @@ var MsWindow = GObject.registerClass(
                 }
             });
             promise.then(() => {
-                logFocus('in then');
-
                 delete this.metaWindow;
                 this._onDestroy();
-                logFocus('just before');
                 this.msWorkspace.removeMsWindow(this);
                 this.disconnect(this.destroyId);
                 this.destroy();
@@ -759,14 +730,10 @@ var MsWindow = GObject.registerClass(
         }
 
         _onDestroy() {
-            logFocus('msWindow to its own destroy');
             this.unregisterOnMetaWindowSignals();
-            logFocus('before keymap disconnect', this.Keymap);
             if (this.Keymap) {
                 this.Keymap.disconnect(this.superConnectId);
             }
-            logFocus('before global disconnect');
-
             global.display.disconnect(this.grabEndSignal);
             //Me.disconnect(this.superConnectId);
         }

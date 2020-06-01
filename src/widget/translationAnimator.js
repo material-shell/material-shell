@@ -112,22 +112,13 @@ var TranslationAnimator = GObject.registerClass(
                     this.endTransition();
                 },
             };
-            logFocus(
-                'children length',
-                this.transitionContainer.get_children().length
-            );
-            logFocus(
-                `height ${this.height}  ${this.transitionContainer.height} `
-            );
-            logFocus(`width ${this.width} ${this.transitionContainer.width}`);
+
             let target = 0;
             if (direction > 0) {
                 target = this.vertical
                     ? this.transitionContainer.height - this.height
                     : this.transitionContainer.width - this.width;
             }
-            logFocus(`Target ${target}`);
-
             if (this.vertical) {
                 transitionConfig.translation_y = -target;
             } else {
