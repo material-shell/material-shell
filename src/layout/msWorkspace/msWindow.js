@@ -362,6 +362,7 @@ var MsWindow = GObject.registerClass(
             if (
                 !this.metaWindow ||
                 this.followMetaWindow ||
+                !this.mapped ||
                 this.width === 0 ||
                 this.height === 0 ||
                 !this.metaWindow.firstFrameDrawn
