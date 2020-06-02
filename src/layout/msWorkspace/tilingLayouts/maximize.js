@@ -113,9 +113,6 @@ var MaximizeLayout = GObject.registerClass(
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
                     );
-                    if (actor.get_parent() === this.tileableContainer) {
-                        actor.get_parent().remove_child(actor);
-                    }
                 }
             });
 

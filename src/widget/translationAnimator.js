@@ -68,8 +68,8 @@ var TranslationAnimator = GObject.registerClass(
                     }
                 });
             } else if (initialActors) {
-                initialActors.forEach((actors) => {
-                    this.transitionContainer.add_child(actors);
+                initialActors.forEach((actor) => {
+                    reparentActor(actor, this.transitionContainer);
                 });
             }
 
@@ -82,8 +82,7 @@ var TranslationAnimator = GObject.registerClass(
                     });
                 //insert nextActor Clone at the top pile if direction is positive or at the end if negative
                 if (!nextActorFound) {
-                    this.transitionContainer.add_child(actor);
-
+                    reparentActor(actor, this.transitionContainer);
                     if (direction < 0) {
                         this.transitionContainer.set_child_at_index(
                             actor,

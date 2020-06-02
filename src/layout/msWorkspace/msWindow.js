@@ -596,11 +596,10 @@ var MsWindow = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             if (this.metaWindow) {
                 WindowUtils.updateTitleBarVisibility(this.metaWindow);
+                this.followMetaWindow
+                    ? this.mimicMetaWindowPositionAndSize()
+                    : this.updateMetaWindowPositionAndSize();
             }
-
-            this.followMetaWindow
-                ? this.mimicMetaWindowPositionAndSize()
-                : this.updateMetaWindowPositionAndSize();
         }
         async setWindow(metaWindow) {
             this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
@@ -727,6 +726,14 @@ var MsWindow = GObject.registerClass(
                     this.metaWindow.unminimize();
                 }
             }
+        }
+
+        toString() {
+            let string = super.toString();
+            return `${string.slice(
+                0,
+                string.length - 1
+            )} ${this.app.get_name()}]`;
         }
 
         _onDestroy() {

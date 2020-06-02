@@ -596,7 +596,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
         }
 
-        newMsWorkspace.addMsWindow(msWindow);
+        newMsWorkspace.addMsWindow(msWindow, true);
         this.stateChanged();
     }
 

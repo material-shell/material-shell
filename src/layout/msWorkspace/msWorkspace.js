@@ -1,21 +1,10 @@
 const { Clutter, GLib, St, Shell, GObject } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
-const Background = imports.ui.background;
-
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    MaximizeLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
-const { debounce } = Me.imports.src.utils.index;
-const WindowUtils = Me.imports.src.utils.windows;
-
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
-
-const EMIT_DEBOUNCE_DELAY = 100;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
@@ -28,27 +17,19 @@ var MsWorkspace = class MsWorkspace {
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
         this.uiVisible = true;
-        this.focusedIndex = 0;
 
+        // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
-        //this.appLauncher = new Clutter.Actor();
-
         this.tileableList.push(this.appLauncher);
-        this.msWorkspaceActor = new MsWorkspaceActor(this);
-        const Layout = Me.tilingManager.getLayoutByKey(
-            initialState ? initialState.tilingLayout : 'maximized'
-        );
-        this.tilingLayout = new Layout(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(
-            this.tilingLayout
-        );
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
 
+        this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         if (initialState) {
-            log(
+            logFocus(
                 'IN MSWORKSPACE CREATION',
                 initialState,
-                initialState.msWindowList.length
+                initialState.msWindowList.map(
+                    (windowState) => windowState.appId
+                )
             );
             initialState.msWindowList.forEach((msWindowData) => {
                 this.addMsWindow(
@@ -59,6 +40,18 @@ var MsWorkspace = class MsWorkspace {
                 );
             });
         }
+        logFocus('after', this.tileableList);
+
+        logFocus('tileableList length', this.tileableList.length);
+        this.msWorkspaceActor = new MsWorkspaceActor(this);
+        const Layout = Me.tilingManager.getLayoutByKey(
+            initialState ? initialState.tilingLayout : 'maximized'
+        );
+        this.tilingLayout = new Layout(this);
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(
+            this.tilingLayout
+        );
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
     }
 
     destroy() {
@@ -101,22 +94,23 @@ var MsWorkspace = class MsWorkspace {
         });
     }
 
-    async addMsWindow(msWindow) {
-        logFocus('addMsWindow');
-        if (!msWindow) return;
-        if (msWindow.msWorkspace === this) return;
+    async addMsWindow(msWindow, focus = false) {
+        logFocus('addMsWindow', msWindow);
+        if (!msWindow || msWindow.msWorkspace === this) return;
 
         msWindow.setMsWorkspace(this);
-
-        if (!msWindow.dragged) {
+        if (this.msWorkspaceActor && !msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }
+        logFocus('after reparent');
 
         const oldTileableList = [...this.tileableList];
         this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
-
+        logFocus('added to tileableList');
+        if (focus) {
+            this.focusTileable(msWindow);
+        }
         await this.emitTileableListChangedOnce(oldTileableList);
-        this.focusTileable(msWindow);
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
         if (window.grabbed || !this.windowFocused) {
@@ -124,8 +118,6 @@ var MsWorkspace = class MsWorkspace {
     }
 
     async removeMsWindow(msWindow) {
-        logFocus('removeMsWindow');
-
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
@@ -208,6 +200,9 @@ var MsWorkspace = class MsWorkspace {
     }
 
     refreshFocus() {
+        if (this.msWorkspaceManager.getActiveMsWorkspace() !== this) {
+            return;
+        }
         if (this.tileableFocused instanceof MsWindow) {
             this.tileableFocused.takeFocus();
         } else {
@@ -335,6 +330,7 @@ var MsWorkspace = class MsWorkspace {
                         metaWindowIdentifier: msWindow.metaWindowIdentifier,
                     };
                 }),
+            focusedIndex: this.focusedIndex,
         };
     }
 };
