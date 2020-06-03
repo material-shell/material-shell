@@ -168,8 +168,10 @@ var TaskBar = GObject.registerClass(
 
                         item.connect('drag-dropped', this.reparentDragItem);
                         item.connect('notify::width', () => {
-                            log('notify::width');
-                            this._animateActiveIndicator();
+                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                this._animateActiveIndicator();
+                                return GLib.SOURCE_REMOVE;
+                            });
                         });
                         this.taskButtonContainer.add_child(item);
                         return item;

@@ -571,7 +571,8 @@ var MsWindow = GObject.registerClass(
                             this.disconnect(connectId);
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                                 if (!Me.loaded) return;
-                                return resolve();
+                                resolve();
+                                return GLib.SOURCE_REMOVE;
                             });
                         }
                     });
@@ -634,6 +635,9 @@ var MsWindow = GObject.registerClass(
                 this.msContent.add_child(this.placeholder);
             }
             this.emit('title-changed', this.title);
+            if (this.msWorkspace.tileableFocused === this) {
+                this.takeFocus();
+            }
         }
 
         takeFocus() {
