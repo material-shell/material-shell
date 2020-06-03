@@ -1,9 +1,11 @@
-var WindowManager = imports.ui.windowManager;
+const { WindowManager } = imports.ui.windowManager;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported OverrideModule */
 var OverrideModule = class OverrideModule {
     constructor() {
-        this.overrideWindowManagerFunctions();
+        this.overrideWindowManagerFunctions('toto');
     }
 
     destroy() {
@@ -11,14 +13,49 @@ var OverrideModule = class OverrideModule {
     }
 
     overrideWindowManagerFunctions() {
-        this.original_shouldAnimate =
-            WindowManager.WindowManager.prototype._shouldAnimate;
-        WindowManager.WindowManager.prototype._shouldAnimate = function () {
+        this.windowManagersFunctionToRestore = [];
+        let _shouldAnimate = WindowManager.prototype._shouldAnimate;
+        WindowManager.prototype._shouldAnimate = function (actor, types) {
             return false;
         };
+        this.windowManagersFunctionToRestore.push([
+            WindowManager.prototype._shouldAnimate,
+            _shouldAnimate,
+        ]);
+
+        const _shouldAnimateActor = WindowManager.prototype._shouldAnimateActor;
+        WindowManager.prototype._shouldAnimateActor = function () {
+            let actor = arguments[0];
+            if (actor.resizeHandledByMs) {
+                logFocus('SHOULDANIMATEACTOR INTTERUPTED');
+                actor.completeIsRequested = true;
+                return true;
+            }
+            return _shouldAnimateActor.apply(this, arguments);
+        };
+        this.windowManagersFunctionToRestore.push([
+            WindowManager.prototype._shouldAnimateActor,
+            _shouldAnimateActor,
+        ]);
+
+        const _prepareAnimationInfo =
+            WindowManager.prototype._prepareAnimationInfo;
+        WindowManager.prototype._prepareAnimationInfo = function () {
+            let actor = arguments[1];
+            if (actor.resizeHandledByMs) {
+                return;
+            }
+            return _prepareAnimationInfo.apply(this, arguments);
+        };
+        this.windowManagersFunctionToRestore.push([
+            WindowManager.prototype._prepareAnimationInfo,
+            _prepareAnimationInfo,
+        ]);
     }
 
     restoreWindowManagersFunctions() {
-        WindowManager.WindowManager.prototype._shouldAnimate = this.original_shouldAnimate;
+        this.windowManagersFunctionToRestore.forEach((functions) => {
+            functions[0] = functions[1];
+        });
     }
 };

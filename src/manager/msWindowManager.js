@@ -1,11 +1,11 @@
 const { Shell, Meta, St, GLib } = imports.gi;
-const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Signals = imports.signals;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {
     constructor() {

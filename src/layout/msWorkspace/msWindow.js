@@ -360,7 +360,8 @@ var MsWindow = GObject.registerClass(
                 this.msWorkspace.monitor.index
             );
             let contentBox = this.msContent.allocation;
-
+            let windowActor = this.metaWindow.get_compositor_private();
+            windowActor.resizeHandledByMs = true;
             //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
             const isMaximized =
                 this.x === workArea.x &&
@@ -375,6 +376,7 @@ var MsWindow = GObject.registerClass(
             //Or remove the maximized if it's not
             let currentFrameRect = this.metaWindow.get_frame_rect();
 
+            logFocus('firstFrameDrawn', this.metaWindow.firstFrameDrawn);
             if (this.metaWindow.maximized_horizontally) {
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
@@ -435,6 +437,25 @@ var MsWindow = GObject.registerClass(
                 resizeTo.width,
                 resizeTo.height
             );
+
+            /**
+             * Hack start to prevent unmaximize crash
+             * Check overrideModule.js to know more about this hack
+             */
+            if (windowActor.completeIsRequested) {
+                logFocus('firstResize', this.firstResize);
+
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    Main.wm._shellwm.completed_size_change(windowActor);
+                    delete windowActor.completeIsRequested;
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+            this.firstResize = false;
+            /**
+             * Hack end
+             */
+            delete windowActor.resizeHandledByMs;
             this.resizeDialogs();
         }
 
@@ -594,6 +615,7 @@ var MsWindow = GObject.registerClass(
                 metaWindow
             );
             this.metaWindow = metaWindow;
+            this.firstResize = true;
             metaWindow.msWindow = this;
             this.reactive = false;
             this.registerOnMetaWindowSignals();

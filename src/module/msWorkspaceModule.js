@@ -41,8 +41,6 @@ var MsWorkspaceModule = class MsWorkspaceModule {
             this.myPanelGhost,
             this.legacyPanelGhostIndex
         );
-
-        this.overrideWindowManagerFunctions();
     }
 
     destroy() {
@@ -55,17 +53,5 @@ var MsWorkspaceModule = class MsWorkspaceModule {
         );
 
         this.restoreWindowManagersFunctions();
-    }
-
-    overrideWindowManagerFunctions() {
-        this.original_shouldAnimate =
-            WindowManager.WindowManager.prototype._shouldAnimate;
-        WindowManager.WindowManager.prototype._shouldAnimate = function () {
-            return false;
-        };
-    }
-
-    restoreWindowManagersFunctions() {
-        WindowManager.WindowManager.prototype._shouldAnimate = this.original_shouldAnimate;
     }
 };
