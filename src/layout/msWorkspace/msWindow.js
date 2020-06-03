@@ -2,7 +2,6 @@ const { St, Meta, GLib, Clutter, GObject, Gio } = imports.gi;
 const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 /* exported MsWindow */
@@ -21,29 +20,15 @@ var MsWindow = GObject.registerClass(
         },
     },
     class MsWindow extends Clutter.Actor {
-        _init(app, metaWindowIdentifier, metaWindow) {
+        _init(app, metaWindowIdentifier, metaWindow, persistent) {
             AddLogToFunctions(this);
             super._init({
                 reactive: true,
             });
+
             this.destroyId = this.connect(
                 'destroy',
                 this._onDestroy.bind(this)
-            );
-            this.app = app;
-            this.dialogs = [];
-            this.metaWindowIdentifier = metaWindowIdentifier;
-            this.windowClone = new Clutter.Clone();
-
-            this.placeholder = new AppPlaceholder(this.app);
-            this.placeholder.connect('clicked', (_) => {
-                this.emit('request-new-meta-window');
-            });
-            this.metaWindowSignals = [];
-            this.dragged = false;
-            this.msContent = new MsWindowContent(
-                this.placeholder,
-                this.windowClone
             );
             this.connect('parent-set', () => {
                 this.msContent.style_changed();
@@ -55,16 +40,27 @@ var MsWindow = GObject.registerClass(
                 this.updateMetaWindowVisibility();
             });
 
+            this.app = app;
+            this._persistent = persistent;
+            logFocus('_persistent', this._persistent);
+            this.dialogs = [];
+            this.metaWindowIdentifier = metaWindowIdentifier;
+            this.windowClone = new Clutter.Clone();
+            this.placeholder = new AppPlaceholder(this.app);
+            this.placeholder.connect('clicked', (_) => {
+                this.emit('request-new-meta-window');
+            });
+            this.metaWindowSignals = [];
+            this.dragged = false;
+            this.msContent = new MsWindowContent(
+                this.placeholder,
+                this.windowClone
+            );
             this.add_child(this.msContent);
             if (metaWindow) {
                 this.setWindow(metaWindow);
             }
-
             this.registerToEvents();
-        }
-
-        get propagate() {
-            return true;
         }
 
         get title() {
@@ -77,6 +73,11 @@ var MsWindow = GObject.registerClass(
         get isDialog() {
             if (!this.metaWindow) return false;
             return Me.msWindowManager.isMetaWindowDialog(this.metaWindow);
+        }
+
+        set persistent(boolean) {
+            this._persistent = boolean;
+            Me.msWorkspaceManager.stateChanged();
         }
 
         registerToEvents() {
@@ -184,8 +185,6 @@ var MsWindow = GObject.registerClass(
                         }
                         break;
                 }
-
-                //log('EVENT', this.title, event.type());
             });
             this.Keymap = imports.gi.Gdk.Keymap.get_default();
             if (this.Keymap) {
@@ -202,19 +201,6 @@ var MsWindow = GObject.registerClass(
                     }
                 );
             }
-
-            this.grabEndSignal = global.display.connect('grab-op-end', () => {
-                if (this.metaWindow) {
-                    log('grab-open-end');
-                    //this.updateMetaWindowPositionAndSize();
-                }
-            });
-            /* this.superConnectId = Me.connect(
-                'super-pressed-change',
-                (_, pressed) => {
-                    
-                }
-            ); */
         }
 
         delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
@@ -678,11 +664,15 @@ var MsWindow = GObject.registerClass(
                 }
             });
             promise.then(() => {
-                delete this.metaWindow;
-                this._onDestroy();
-                this.msWorkspace.removeMsWindow(this);
-                this.disconnect(this.destroyId);
-                this.destroy();
+                if (this._persistent) {
+                    this.unsetWindow();
+                } else {
+                    delete this.metaWindow;
+                    this._onDestroy();
+                    this.msWorkspace.removeMsWindow(this);
+                    this.disconnect(this.destroyId);
+                    this.destroy();
+                }
             });
 
             return promise;

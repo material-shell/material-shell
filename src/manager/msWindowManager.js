@@ -96,7 +96,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         }
     }
 
-    createNewMsWindow(appId, description, metaWindow) {
+    createNewMsWindow(appId, description, metaWindow, persistent) {
         let appSys = Shell.AppSystem.get_default();
         const app =
             appSys.lookup_app(appId) ||
@@ -105,7 +105,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             log('unable to get app from id:', appId);
             return;
         }
-        let msWindow = new MsWindow(app, description, metaWindow);
+        let msWindow = new MsWindow(app, description, metaWindow, persistent);
         msWindow.connect('request-new-meta-window', () => {
             this.openAppForMsWindow(msWindow);
         });

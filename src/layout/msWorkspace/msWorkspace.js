@@ -24,25 +24,18 @@ var MsWorkspace = class MsWorkspace {
 
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         if (initialState) {
-            logFocus(
-                'IN MSWORKSPACE CREATION',
-                initialState,
-                initialState.msWindowList.map(
-                    (windowState) => windowState.appId
-                )
-            );
             initialState.msWindowList.forEach((msWindowData) => {
                 this.addMsWindow(
                     Me.msWindowManager.createNewMsWindow(
                         msWindowData.appId,
-                        msWindowData.metaWindowIdentifier
+                        msWindowData.metaWindowIdentifier,
+                        null,
+                        msWindowData.persistent
                     )
                 );
             });
         }
-        logFocus('after', this.tileableList);
 
-        logFocus('tileableList length', this.tileableList.length);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         const Layout = Me.tilingManager.getLayoutByKey(
             initialState ? initialState.tilingLayout : 'maximized'
@@ -328,6 +321,7 @@ var MsWorkspace = class MsWorkspace {
                     return {
                         appId: msWindow.app.get_id(),
                         metaWindowIdentifier: msWindow.metaWindowIdentifier,
+                        persistent: msWindow._persistent,
                     };
                 }),
             focusedIndex: this.focusedIndex,

@@ -4,22 +4,32 @@ $color-primary: #3f51b5;
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 
+@function getForegroundColor($bgColor, $opacity) {
+    @if ($bgColor== 'light') {
+        @return rgba(0, 0, 0, $opacity);
+    }
+
+    @if ($bgColor== 'dark') {
+        @return rgba(255, 255, 255, $opacity);
+    }
+}
+
 @mixin foreground($theme, $opacity) {
     @if ($theme== 'light') {
-        color: rgba(0, 0, 0, $opacity);
+        color: getForegroundColor('light', $opacity);
     }
 
     @if ($theme== 'dark') {
-        color: rgba(255, 255, 255, $opacity);
+        color: getForegroundColor('dark', $opacity);
     }
 
     @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
-            color: rgba(0, 0, 0, $opacity);
+            color: getForegroundColor('light', $opacity);
         }
 
         @at-root .dark-primary#{&} {
-            color: rgba(255, 255, 255, $opacity);
+            color: getForegroundColor('dark', $opacity);
         }
     }
 }
@@ -325,11 +335,10 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
             border-radius: 20px;
             width: 24px;
             height: 20px;
-
-            .task-close-icon {
-                icon-size: 18px;
-                @include foreground-medium-emphasis($theme);
-            }
+        }
+        .task-small-icon {
+            icon-size: 18px;
+            @include foreground-medium-emphasis($theme);
         }
     }
 }

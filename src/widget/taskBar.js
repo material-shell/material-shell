@@ -10,6 +10,8 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
+const PopupMenu = imports.ui.popupMenu;
+const Main = imports.ui.main;
 
 let dragData = null;
 
@@ -50,6 +52,7 @@ var TaskBar = GObject.registerClass(
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -89,11 +92,11 @@ var TaskBar = GObject.registerClass(
                 (tileable, index) => {
                     if (tileable instanceof MsWindow) {
                         const item = new TileableItem(tileable);
-
+                        this.menuManager.addMenu(item.menu);
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
                         });
-                        item.connect('right-clicked', (_) => {
+                        item.connect('middle-clicked', (_) => {
                             logFocus('right clicked');
 
                             tileable.kill();
@@ -164,6 +167,10 @@ var TaskBar = GObject.registerClass(
                         });
 
                         item.connect('drag-dropped', this.reparentDragItem);
+                        item.connect('notify::width', () => {
+                            log('notify::width');
+                            this._animateActiveIndicator();
+                        });
                         this.taskButtonContainer.add_child(item);
                         return item;
                     } else {
@@ -286,13 +293,7 @@ var TaskBar = GObject.registerClass(
             if (!taskBarItem) {
                 return;
             }
-            this.taskBarItemSignal = {
-                from: taskBarItem,
-                id: taskBarItem.connect('notify::width', () => {
-                    log('notify::width');
-                    this._animateActiveIndicator();
-                }),
-            };
+
             if (!this.mapped) return;
             if (!this.taskActiveIndicator.width) {
                 this.taskActiveIndicator.scale_x = 1;
@@ -361,7 +362,7 @@ let TaskBarItem = GObject.registerClass(
                 param_types: [GObject.TYPE_BOOLEAN],
             },
             'left-clicked': {},
-            'right-clicked': {},
+            'middle-clicked': {},
         },
     },
     class TaskBarItemClass extends MatButton {
@@ -424,7 +425,11 @@ let TaskBarItem = GObject.registerClass(
                                 break;
 
                             case 2:
-                                this.emit('right-clicked');
+                                this.emit('middle-clicked');
+                                break;
+
+                            case 3:
+                                this.menu.toggle();
                                 break;
                         }
                         break;
@@ -495,15 +500,76 @@ let TileableItem = GObject.registerClass(
             this.tileable = tileable;
             this.app = tileable.app;
             if (ShellVersionMatch('3.34')) {
-                this.iconContainer = new St.Bin({
+                this.startIconContainer = new St.Bin({
                     y_align: 1,
                 });
             } else {
-                this.iconContainer = new St.Bin({
+                this.startIconContainer = new St.Bin({
                     y_align: Clutter.ActorAlign.CENTER,
                 });
             }
+            if (ShellVersionMatch('3.34')) {
+                this.endIconContainer = new St.Bin({
+                    y_align: 1,
+                });
+            } else {
+                this.endIconContainer = new St.Bin({
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+            }
+            this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            /* this.menu.addMenuItem(
+                new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
+            ); */
+            this.makePersistentAction = this.menu.addAction(
+                `Make this fully persistent`,
+                () => {
+                    this.tileable.persistent = true;
+                    this.endIconContainer.set_child(this.peristentIcon);
+                    this.makePersistentAction.hide();
+                    this.unmakePersistentAction.show();
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/pin-symbolic.svg`
+                )
+            );
 
+            this.unmakePersistentAction = this.menu.addAction(
+                `Unmake this fully persistent`,
+                () => {
+                    this.tileable.persistent = false;
+                    this.endIconContainer.set_child(this.closeButton);
+                    this.makePersistentAction.show();
+                    this.unmakePersistentAction.hide();
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/pin-off-symbolic.svg`
+                )
+            );
+            if (this.tileable._persistent) {
+                this.makePersistentAction.hide();
+            } else {
+                this.unmakePersistentAction.hide();
+            }
+            this.menu.addAction(
+                `Close`,
+                () => {
+                    this.emit('close-clicked');
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/close-symbolic.svg`
+                )
+            );
+
+            /* let item = new PopupMenu.PopupBaseMenuItem({ activate: true });
+            item.add_child(
+                new St.Label({
+                    text: 'Make window persistent',
+                })
+            );
+            this.menu.box.add_child(item); */
+            Main.uiGroup.add_actor(this.menu.actor);
+            this.menu.actor.hide();
             // TITLE
             this.title = new St.Label({
                 style_class: 'task-bar-item-title',
@@ -522,7 +588,7 @@ let TileableItem = GObject.registerClass(
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
                 child: new St.Icon({
-                    style_class: 'task-close-icon',
+                    style_class: 'task-small-icon',
                     gicon: Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/close-symbolic.svg`
                     ),
@@ -533,10 +599,21 @@ let TileableItem = GObject.registerClass(
                 this.emit('close-clicked');
             });
 
+            this.peristentIcon = new St.Icon({
+                style_class: 'task-small-icon',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/pin-symbolic.svg`
+                ),
+            });
+            if (this.tileable._persistent) {
+                this.endIconContainer.set_child(this.peristentIcon);
+            } else {
+                this.endIconContainer.set_child(this.closeButton);
+            }
             // LAYOUT CONTAINER
-            this.container.add_child(this.iconContainer);
+            this.container.add_child(this.startIconContainer);
             this.container.add_child(this.title);
-            this.container.add_child(this.closeButton);
+            this.container.add_child(this.endIconContainer);
         }
 
         buildIcon(height) {
@@ -545,7 +622,7 @@ let TileableItem = GObject.registerClass(
             this.icon = this.app.create_icon_texture(this.iconSize / 2);
             this.icon.style_class = 'app-icon';
             this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
-            this.iconContainer.set_child(this.icon);
+            this.startIconContainer.set_child(this.icon);
             this.queue_relayout();
         }
 
@@ -564,6 +641,7 @@ let TileableItem = GObject.registerClass(
             if (this.connectSignal) {
                 this.tileable.disconnect(this.connectSignal);
             }
+            this.menu.destroy();
         }
     }
 ); /* 

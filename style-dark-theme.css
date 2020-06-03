@@ -176,9 +176,9 @@ subtitle-1 {
       border-radius: 20px;
       width: 24px;
       height: 20px; }
-      .task-bar-item .task-bar-item-content .task-close-button .task-close-icon {
-        icon-size: 18px;
-        color: rgba(255, 255, 255, 0.6); }
+    .task-bar-item .task-bar-item-content .task-small-icon {
+      icon-size: 18px;
+      color: rgba(255, 255, 255, 0.6); }
 
 .system-status-icon {
   height: 24px;
