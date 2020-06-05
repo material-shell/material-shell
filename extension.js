@@ -59,7 +59,6 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
-
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         log('IDLE_ADD');

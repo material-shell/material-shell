@@ -95,11 +95,9 @@ var MsWorkspace = class MsWorkspace {
         if (this.msWorkspaceActor && !msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }
-        logFocus('after reparent');
 
         const oldTileableList = [...this.tileableList];
         this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
-        logFocus('added to tileableList');
         if (focus) {
             this.focusTileable(msWindow);
         }
@@ -162,6 +160,32 @@ var MsWorkspace = class MsWorkspace {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
+    swapTileableLeft(tileable) {
+        const index = this.tileableList.indexOf(tileable);
+        if (index === -1) return;
+        if (index > 0 && tileable != this.appLauncher) {
+            let previousTileable = this.tileableList[index - 1];
+            this.swapTileable(tileable, previousTileable);
+            this.focusPreviousTileable();
+        }
+    }
+
+    swapTileableRight(tileable) {
+        const index = this.tileableList.indexOf(tileable);
+        if (index === -1) return;
+        if (
+            index < this.tileableList.length - 1 &&
+            tileable != this.appLauncher
+        ) {
+            let nextTileable = this.tileableList[index + 1];
+            if (nextTileable === this.appLauncher) {
+                return;
+            }
+            this.swapTileable(tileable, nextTileable);
+            this.focusNextTileable();
+        }
+    }
+
     focusNextTileable() {
         if (this.focusedIndex === this.tileableList.length - 1) {
             return;
@@ -173,6 +197,7 @@ var MsWorkspace = class MsWorkspace {
         if (this.focusedIndex === 0) {
             return;
         }
+
         this.focusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 

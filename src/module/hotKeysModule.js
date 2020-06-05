@@ -94,7 +94,11 @@ var HotKeysModule = class HotKeysModule {
                         : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                msWorkspace.focusPreviousTileable();
+                if (Me.msWindowManager.msDndManager.dragInProgress) {
+                    msWorkspace.swapTileableLeft(msWorkspace.tileableFocused);
+                } else {
+                    msWorkspace.focusPreviousTileable();
+                }
             }
         );
 
@@ -111,7 +115,11 @@ var HotKeysModule = class HotKeysModule {
                         : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-                msWorkspace.focusNextTileable();
+                if (Me.msWindowManager.msDndManager.dragInProgress) {
+                    msWorkspace.swapTileableRight(msWorkspace.tileableFocused);
+                } else {
+                    msWorkspace.focusNextTileable();
+                }
             }
         );
 
@@ -178,19 +186,7 @@ var HotKeysModule = class HotKeysModule {
                         : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                               currentMonitorIndex
                           )[0];
-
-                if (
-                    msWorkspace.focusedIndex > 0 &&
-                    msWorkspace.tileableFocused != msWorkspace.appLauncher
-                ) {
-                    let previousTileable =
-                        msWorkspace.tileableList[msWorkspace.focusedIndex - 1];
-                    msWorkspace.swapTileable(
-                        msWorkspace.tileableFocused,
-                        previousTileable
-                    );
-                    msWorkspace.focusPreviousTileable();
-                }
+                msWorkspace.swapTileableLeft(msWorkspace.tileableFocused);
             }
         );
 
@@ -208,21 +204,7 @@ var HotKeysModule = class HotKeysModule {
                               currentMonitorIndex
                           )[0];
 
-                if (
-                    msWorkspace.focusedIndex <
-                    msWorkspace.tileableList.length - 1
-                ) {
-                    let nextTileable =
-                        msWorkspace.tileableList[msWorkspace.focusedIndex + 1];
-                    if (nextTileable === msWorkspace.appLauncher) {
-                        return;
-                    }
-                    msWorkspace.swapTileable(
-                        msWorkspace.tileableFocused,
-                        nextTileable
-                    );
-                    msWorkspace.focusNextTileable();
-                }
+                msWorkspace.swapTileableRight(msWorkspace.tileableFocused);
             }
         );
 

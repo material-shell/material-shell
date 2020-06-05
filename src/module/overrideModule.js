@@ -23,6 +23,12 @@ var OverrideModule = class OverrideModule {
             _shouldAnimate,
         ]);
 
+        /**
+         * The two following overrides are meant to prevent a shell crash when unmaximizing a window at the window creation time.
+         * eg. Discord or Vscode
+         * The crash occur when Main.wm._shellwm.completed_size_change is called from _sizeChangeWindow
+         * To prevent this we make Main.wm believe that the window will animate then don't animate it then call Main.wm._shellwm.completed_size_change ourselve from the MsWindow.updateMetaWindowPositionAndSize
+         */
         const _shouldAnimateActor = WindowManager.prototype._shouldAnimateActor;
         WindowManager.prototype._shouldAnimateActor = function () {
             let actor = arguments[0];

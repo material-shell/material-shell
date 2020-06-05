@@ -51,7 +51,6 @@ var MsWindow = GObject.registerClass(
                 this.emit('request-new-meta-window');
             });
             this.metaWindowSignals = [];
-            this.dragged = false;
             this.msContent = new MsWindowContent(
                 this.placeholder,
                 this.windowClone
@@ -60,7 +59,6 @@ var MsWindow = GObject.registerClass(
             if (metaWindow) {
                 this.setWindow(metaWindow);
             }
-            this.registerToEvents();
         }
 
         get title() {
@@ -78,129 +76,6 @@ var MsWindow = GObject.registerClass(
         set persistent(boolean) {
             this._persistent = boolean;
             Me.msWorkspaceManager.stateChanged();
-        }
-
-        registerToEvents() {
-            let buttonPressed = false;
-            let originPointerAnchor = null;
-            let originPointerCoords = null;
-            let stageMotionEventId = null;
-            this.wmPreferenceSettings = new Gio.Settings({
-                schema_id: 'org.gnome.desktop.wm.preferences',
-            });
-            const listenToStageEvent = () => {
-                stageMotionEventId = global.stage.connect(
-                    'captured-event',
-                    (_, event) => {
-                        const [currentX, currentY] = event.get_coords();
-
-                        this.set_position(
-                            Math.round(
-                                currentX - this.width * originPointerAnchor[0]
-                            ),
-                            Math.round(
-                                currentY - this.height * originPointerAnchor[1]
-                            )
-                        );
-
-                        if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
-                            buttonPressed = false;
-                            if (this.dragged) {
-                                this.dragged = false;
-                                if (this.metaWindow) {
-                                    this.metaWindow.unminimize();
-                                    this.metaWindow
-                                        .get_compositor_private()
-                                        .show();
-                                }
-                                this.emit('dragged-changed', this.dragged);
-                            }
-                            global.stage.disconnect(stageMotionEventId);
-                            stageMotionEventId = null;
-                        }
-
-                        return Clutter.EVENT_PROPAGATE;
-                    }
-                );
-            };
-            this.connect('event', (_, event) => {
-                const focusOnHover =
-                    this.wmPreferenceSettings.get_enum('focus-mode') > 0;
-                switch (event.type()) {
-                    case Clutter.EventType.BUTTON_PRESS:
-                        buttonPressed = true;
-                        originPointerCoords = event.get_coords();
-                        let [stageX, stageY] = event.get_coords();
-                        let [
-                            _,
-                            relativeX,
-                            relativeY,
-                        ] = this.transform_stage_point(stageX, stageY);
-                        log('relative', relativeX, relativeY);
-                        originPointerAnchor = [
-                            relativeX / this.width,
-                            relativeY / this.height,
-                        ];
-                        log(originPointerAnchor);
-                        if (!focusOnHover) {
-                            this.takeFocus();
-                        }
-                        break;
-
-                    case Clutter.EventType.BUTTON_RELEASE:
-                        buttonPressed = false;
-                        break;
-
-                    case Clutter.EventType.ENTER:
-                        if (focusOnHover) {
-                            this.takeFocus();
-                        }
-                        break;
-
-                    case Clutter.EventType.MOTION:
-                        if (
-                            this.dragged ||
-                            (this.metaWindow && this.metaWindow.fullscreen)
-                        )
-                            return;
-                        if (buttonPressed) {
-                            const [originX, originY] = originPointerCoords;
-                            const [currentX, currentY] = event.get_coords();
-                            const distance = Math.max(
-                                Math.abs(originX - currentX),
-                                Math.abs(originY - currentY)
-                            );
-                            if (distance > 48) {
-                                this.dragged = true;
-                                if (this.metaWindow) {
-                                    this.metaWindow.minimize();
-                                    this.metaWindow
-                                        .get_compositor_private()
-                                        .hide();
-                                }
-
-                                listenToStageEvent();
-                                this.emit('dragged-changed', this.dragged);
-                            }
-                        }
-                        break;
-                }
-            });
-            this.Keymap = imports.gi.Gdk.Keymap.get_default();
-            if (this.Keymap) {
-                this.superConnectId = this.Keymap.connect(
-                    'state_changed',
-                    (_) => {
-                        if (!this.msWorkspace) log(this.title);
-                        let isSuperPressed =
-                            this.Keymap.get_modifier_state() === 64;
-                        this.reactive =
-                            (!this.metaWindow || isSuperPressed) &&
-                            this.msWorkspace.tilingLayout.constructor.key !==
-                                'float';
-                    }
-                );
-            }
         }
 
         delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
@@ -226,7 +101,9 @@ var MsWindow = GObject.registerClass(
                 reject();
             }
         }
-
+        get dragged() {
+            return Me.msWindowManager.msDndManager.msWindowDragged === this;
+        }
         get followMetaWindow() {
             if (!this.msWorkspace) return false;
             return (
@@ -376,7 +253,6 @@ var MsWindow = GObject.registerClass(
             //Or remove the maximized if it's not
             let currentFrameRect = this.metaWindow.get_frame_rect();
 
-            logFocus('firstFrameDrawn', this.metaWindow.firstFrameDrawn);
             if (this.metaWindow.maximized_horizontally) {
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
@@ -663,6 +539,7 @@ var MsWindow = GObject.registerClass(
         }
 
         takeFocus() {
+            if (Me.msWindowManager.msDndManager.dragInProgress) return;
             if (this.dialogs.length) {
                 this.dialogs[this.dialogs.length - 1].metaWindow.activate(
                     global.get_current_time()
@@ -734,7 +611,9 @@ var MsWindow = GObject.registerClass(
         updateMetaWindowVisibility() {
             if (this.metaWindow) {
                 let shouldBeHidden =
-                    (!this.visible || !this.mapped) &&
+                    (!this.visible ||
+                        !this.mapped ||
+                        Me.msWindowManager.msDndManager.dragInProgress) &&
                     !Me.msWorkspaceManager.noUImode;
 
                 if (shouldBeHidden) {

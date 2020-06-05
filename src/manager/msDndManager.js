@@ -1,8 +1,8 @@
-const { GLib } = imports.gi;
+const { GLib, Meta, Clutter } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
-const { reparentActor } = Me.imports.src.utils.index;
+const { reparentActor, throttle } = Me.imports.src.utils.index;
 const Main = imports.ui.main;
 
 /* exported MsDndManager */
@@ -12,9 +12,9 @@ var MsDndManager = class MsDndManager {
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.msWindowManager.connect('ms-window-created', () => {
-            this.listenForMsWindowsDragSignal();
+            this.listenForMsWindowsSignal();
         });
-        this.listenForMsWindowsDragSignal();
+        this.listenForMsWindowsSignal();
         this.workspaceSignal = global.workspace_manager.connect(
             'active-workspace-changed',
             () => {
@@ -37,18 +37,71 @@ var MsDndManager = class MsDndManager {
                 }
             }
         );
+        global.display.connect(
+            'grab-op-begin',
+            (_, display, metaWindow, op) => {
+                if (op === Meta.GrabOp.MOVING) {
+                    if (metaWindow.msWindow) {
+                        global.display.end_grab_op(global.get_current_time());
+                        this.startDrag(metaWindow.msWindow);
+                    }
+                }
+            }
+        );
+
+        global.stage.connect('captured-event', (_, event) => {
+            if (this.dragInProgress) {
+                let [stageX, stageY] = event.get_coords();
+                switch (event.type()) {
+                    case Clutter.EventType.MOTION:
+                        this.msWindowDragged.set_position(
+                            Math.round(
+                                stageX -
+                                    this.msWindowDragged.width *
+                                        this.originPointerAnchor[0]
+                            ),
+                            Math.round(
+                                stageY -
+                                    this.msWindowDragged.height *
+                                        this.originPointerAnchor[1]
+                            )
+                        );
+                        this.throttledCheckUnderPointer();
+                        break;
+                    case Clutter.EventType.BUTTON_RELEASE:
+                        this.endDrag();
+                        break;
+                }
+            }
+        });
+
+        this.throttledCheckUnderPointer = throttle(
+            this.checkUnderThePointer,
+            50,
+            { trailing: false }
+        );
     }
 
-    listenForMsWindowsDragSignal() {
+    listenForMsWindowsSignal() {
         this.msWindowManager.msWindowList.forEach((msWindow) => {
             if (!this.signalMap.has(msWindow)) {
-                const id = msWindow.connect('dragged-changed', (_, dragged) => {
+                const id = msWindow.connect('event', (_, event) => {
+                    if (this.dragInProgress) return;
+                    switch (event.type()) {
+                        case Clutter.EventType.MOTION:
+                            if (event.get_state() === 320) {
+                                this.startDrag(msWindow);
+                            }
+                            break;
+                    }
+                });
+                /* const id = msWindow.connect('dragged-changed', (_, dragged) => {
                     if (dragged) {
                         this.startDrag(msWindow);
                     } else {
                         this.endDrag();
                     }
-                });
+                }); */
                 this.signalMap.set(msWindow, id);
             }
         });
@@ -59,20 +112,53 @@ var MsDndManager = class MsDndManager {
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
         msWindow.freezeAllocation();
+        this.msWindowManager.msWindowList.forEach((aMsWindow) => {
+            aMsWindow.updateMetaWindowVisibility();
+        });
+        let [globalX, globalY] = global.get_pointer();
+        let [_, relativeX, relativeY] = msWindow.transform_stage_point(
+            globalX,
+            globalY
+        );
+        this.originPointerAnchor = [
+            relativeX / msWindow.width,
+            relativeY / msWindow.height,
+        ];
+
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
+        msWindow.set_position(
+            Math.round(globalX - msWindow.width * this.originPointerAnchor[0]),
+            Math.round(globalY - msWindow.height * this.originPointerAnchor[1])
+        );
+        global.stage.grab_key_focus();
+        global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
         this.msWindowDragged.unFreezeAllocation();
         reparentActor(this.msWindowDragged, this.originalParent);
         this.dragInProgress = false;
+        delete this.originPointerAnchor;
         delete this.originalParent;
         delete this.msWindowDragged;
+        this.msWindowManager.msWindowList.forEach((aMsWindow) => {
+            aMsWindow.updateMetaWindowVisibility();
+        });
+        global.display.set_cursor(Meta.Cursor.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {
         if (!this.dragInProgress) return;
+        this.throttledCheckUnderPointer();
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this.checkUnderThePointerRoutine();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    /**  */
+    checkUnderThePointer() {
         let [x, y] = global.get_pointer();
 
         let monitor = Main.layoutManager.monitors.find((monitor) => {
@@ -110,7 +196,6 @@ var MsDndManager = class MsDndManager {
         );
         let relativeX = x - workArea.x;
         let relativeY = y - workArea.y;
-        log('check under', x, y, relativeX, relativeY);
 
         msWorkspace.tileableList
             .filter(
@@ -130,9 +215,5 @@ var MsDndManager = class MsDndManager {
                     msWorkspace.swapTileable(this.msWindowDragged, tileable);
                 }
             });
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
-            this.checkUnderThePointerRoutine();
-            return GLib.SOURCE_REMOVE;
-        });
     }
 };

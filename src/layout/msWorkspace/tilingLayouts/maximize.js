@@ -22,7 +22,11 @@ var MaximizeLayout = GObject.registerClass(
 
         displayTileable(actor) {
             if (this.currentDisplayedActor) {
-                if (this.currentDisplayedActor.get_parent()) {
+                if (
+                    this.tileableContainer
+                        .get_children()
+                        .includes(this.currentDisplayedActor)
+                ) {
                     this.tileableContainer.remove_child(
                         this.currentDisplayedActor
                     );
@@ -59,13 +63,17 @@ var MaximizeLayout = GObject.registerClass(
         onFocusChanged(windowFocused, oldWindowFocused) {
             super.onFocusChanged();
             if (!windowFocused.isDialog) {
-                this.startTransition(windowFocused, oldWindowFocused);
+                if (windowFocused.dragged) {
+                    this.displayTileable(windowFocused);
+                } else {
+                    this.startTransition(windowFocused, oldWindowFocused);
+                }
             }
         }
 
         alterTileable(tileable) {
             super.alterTileable(tileable);
-            if (tileable.get_parent()) {
+            if (this.tileableContainer.get_children().includes(tileable)) {
                 this.tileableContainer.remove_child(tileable);
             }
             if (tileable === this.msWorkspace.tileableFocused) {
