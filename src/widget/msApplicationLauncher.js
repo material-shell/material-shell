@@ -4,6 +4,7 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const Main = imports.ui.main;
 const { AppsManager } = Me.imports.src.manager.appsManager;
 const { MatButton } = Me.imports.src.widget.material.button;
+const { log, logFocus } = Me.imports.src.utils.debug;
 
 const BUTTON_SIZE = 124;
 /* exported MsApplicationLauncher */
@@ -111,6 +112,29 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         case Clutter.ISO_Left_Tab:
                             this.highlightPreviousButton();
                             return Clutter.EVENT_STOP;
+                        case Clutter.Down:
+                            this.highlightButtonBelow();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.Up:
+                            this.highlightButtonAbove();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.Right:
+                            if (this._text.cursor_position === -1) {
+                                this.highlightNextButton();
+                                return Clutter.EVENT_STOP;
+                            } else {
+                                return Clutter.EVENT_PROPAGATE;
+                            }
+                        case Clutter.Left:
+                            if (
+                                this.currentButtonFocused !=
+                                this.filteredAppButtonList[0]
+                            ) {
+                                this.highlightPreviousButton();
+                                return Clutter.EVENT_STOP;
+                            } else {
+                                return Clutter.EVENT_PROPAGATE;
+                            }
                         case Clutter.Return:
                         case Clutter.KP_Enter:
                             this.currentButtonFocused.emit('clicked', 0);
@@ -126,6 +150,29 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         case Clutter.KEY_ISO_Left_Tab:
                             this.highlightPreviousButton();
                             return Clutter.EVENT_STOP;
+                        case Clutter.KEY_Down:
+                            this.highlightButtonBelow();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.KEY_Up:
+                            this.highlightButtonAbove();
+                            return Clutter.EVENT_STOP;
+                        case Clutter.KEY_Right:
+                            if (this._text.cursor_position === -1) {
+                                this.highlightNextButton();
+                                return Clutter.EVENT_STOP;
+                            } else {
+                                return Clutter.EVENT_PROPAGATE;
+                            }
+                        case Clutter.KEY_Left:
+                            if (
+                                this.currentButtonFocused !=
+                                this.filteredAppButtonList[0]
+                            ) {
+                                this.highlightPreviousButton();
+                                return Clutter.EVENT_STOP;
+                            } else {
+                                return Clutter.EVENT_PROPAGATE;
+                            }
                         case Clutter.KEY_Return:
                         case Clutter.KEY_KP_Enter:
                             this.currentButtonFocused.emit('clicked', 0);
@@ -141,7 +188,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.container.add_style_class_name('surface');
             this.container.set_style('border-radius:16px;');
             this.add_child(this.container);
-            this.expandButton = new MatButton({
+            /* this.expandButton = new MatButton({
                 x_align: Clutter.ActorAlign.CENTER,
                 y_align: Clutter.ActorAlign.CENTER,
                 child: new St.Label({
@@ -152,7 +199,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.expandButton.add_style_class_name('surface-lighter');
             this.expandButton.set_style('border-radius: 0,0 ,16px, 16px;');
 
-            this.add_child(this.expandButton);
+            this.add_child(this.expandButton); */
         }
         reset() {
             this.inputContainer.set_text('');
@@ -195,6 +242,32 @@ var MsApplicationButtonContainer = GObject.registerClass(
             }
         }
 
+        highlightButtonAbove() {
+            let currentIndex = this.filteredAppButtonList.indexOf(
+                this.currentButtonFocused
+            );
+            const nextButton = this.filteredAppButtonList[
+                currentIndex - this.numberOfColumn
+            ];
+            if (nextButton) {
+                this.highlightButton(nextButton);
+            }
+        }
+
+        highlightButtonBelow() {
+            let currentIndex = this.filteredAppButtonList.indexOf(
+                this.currentButtonFocused
+            );
+            const nextButton = this.filteredAppButtonList[
+                currentIndex + this.numberOfColumn
+            ];
+            logFocus('highlightButtonBelow', nextButton);
+
+            if (nextButton) {
+                this.highlightButton(nextButton);
+            }
+        }
+
         highlightButton(button) {
             if (this.currentButtonFocused) {
                 this.currentButtonFocused.remove_style_class_name(
@@ -217,11 +290,12 @@ var MsApplicationButtonContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerPadding = 16;
-            let expandButtonHeight = 48;
+            let expandButtonHeight = 0;
             const searchHeight = 48;
             const searchMargin = 24;
             const availableWidth =
                 contentBox.get_width() - containerPadding * 2;
+
             const availableHeight =
                 contentBox.get_height() -
                 containerPadding * 2 -
@@ -229,22 +303,23 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 searchHeight -
                 searchMargin;
             const numberOfButtons = this.filteredAppButtonList.length;
-            const numberOfColumn = Math.floor(availableWidth / BUTTON_SIZE);
+            this.numberOfColumn = Math.floor(availableWidth / BUTTON_SIZE);
             const maxNumberOfRow = Math.floor(availableHeight / BUTTON_SIZE);
             const numberOfRowNeeded = Math.ceil(
-                numberOfButtons / numberOfColumn
+                numberOfButtons / this.numberOfColumn
             );
-            const numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
+            this.numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
             expandButtonHeight =
-                numberOfRow === numberOfRowNeeded ? 0 : expandButtonHeight;
+                this.numberOfRow === numberOfRowNeeded ? 0 : expandButtonHeight;
 
             const horizontalOffset =
                 (contentBox.get_width() -
-                    (BUTTON_SIZE * numberOfColumn + containerPadding * 2)) /
+                    (BUTTON_SIZE * this.numberOfColumn +
+                        containerPadding * 2)) /
                 2;
             const verticalOffset =
                 (contentBox.get_height() -
-                    (BUTTON_SIZE * numberOfRow +
+                    (BUTTON_SIZE * this.numberOfRow +
                         containerPadding * 2 +
                         expandButtonHeight +
                         searchHeight +
@@ -265,9 +340,9 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.container.allocate(containerBox, flags);
 
             let index;
-            for (let y = 0; y < numberOfRow; y++) {
-                for (let x = 0; x < numberOfColumn; x++) {
-                    index = x + numberOfColumn * y;
+            for (let y = 0; y < this.numberOfRow; y++) {
+                for (let x = 0; x < this.numberOfColumn; x++) {
+                    index = x + this.numberOfColumn * y;
                     if (index < this.filteredAppButtonList.length) {
                         let button = this.filteredAppButtonList[index];
                         const buttonBox = new Clutter.ActorBox();
@@ -294,15 +369,15 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 ) {
                     this.filteredAppButtonList[index].visible = false;
                 }
-                this.expandButton.visible = true;
+                //this.expandButton.visible = true;
                 const expandButtonBox = new Clutter.ActorBox();
                 expandButtonBox.x1 = containerBox.x1;
                 expandButtonBox.x2 = containerBox.x2;
                 expandButtonBox.y1 = containerBox.y2 - expandButtonHeight;
                 expandButtonBox.y2 = containerBox.y2;
-                this.expandButton.allocate(expandButtonBox, flags);
+                //this.expandButton.allocate(expandButtonBox, flags);
             } else {
-                this.expandButton.visible = false;
+                //this.expandButton.visible = false;
             }
 
             //hide other buttons
