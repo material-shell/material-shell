@@ -62,8 +62,6 @@ var SplitLayout = GObject.registerClass(
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
-            if (tileableFocused.isDialog || oldTileableFocused.isDialog) return;
-
             if (this.activeTileableList.includes(tileableFocused)) {
                 return;
             }

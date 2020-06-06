@@ -103,7 +103,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         };
 
         this.observe(Me.msWindowManager, 'ms-window-focused', (_, msWindow) => {
-            if (msWindow && !msWindow.isDialog && msWindow.msWorkspace) {
+            if (msWindow && msWindow.msWorkspace) {
                 msWindow.msWorkspace.focusTileable(msWindow);
             }
         });
@@ -514,11 +514,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     addWindowToAppropriateMsWorkspace(msWindow) {
-        let msWindowToSearchMsWorkspace = msWindow.isDialog
-            ? msWindow.metaWindow.find_root_ancestor().msWindow
-            : msWindow;
-        const windowMonitorIndex = msWindowToSearchMsWorkspace.metaWindow.get_monitor();
-        const currentWindowWorkspace = msWindowToSearchMsWorkspace.metaWindow.get_workspace();
+        const windowMonitorIndex = msWindow.metaWindow.get_monitor();
+        const currentWindowWorkspace = msWindow.metaWindow.get_workspace();
         let msWorkspace;
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             msWorkspace = this.getMsWorkspacesOfMonitorIndex(

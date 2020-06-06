@@ -62,12 +62,10 @@ var MaximizeLayout = GObject.registerClass(
 
         onFocusChanged(windowFocused, oldWindowFocused) {
             super.onFocusChanged();
-            if (!windowFocused.isDialog) {
-                if (windowFocused.dragged) {
-                    this.displayTileable(windowFocused);
-                } else {
-                    this.startTransition(windowFocused, oldWindowFocused);
-                }
+            if (windowFocused.dragged) {
+                this.displayTileable(windowFocused);
+            } else {
+                this.startTransition(windowFocused, oldWindowFocused);
             }
         }
 
