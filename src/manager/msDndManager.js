@@ -41,9 +41,10 @@ var MsDndManager = class MsDndManager {
             'grab-op-begin',
             (_, display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
-                    if (metaWindow.msWindow) {
+                    let msWindow = metaWindow.msWindow;
+                    if (msWindow && !msWindow.followMetaWindow) {
                         global.display.end_grab_op(global.get_current_time());
-                        this.startDrag(metaWindow.msWindow);
+                        this.startDrag(msWindow);
                     }
                 }
             }
