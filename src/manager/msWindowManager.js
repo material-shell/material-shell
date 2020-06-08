@@ -25,16 +25,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(global.display, 'notify::focus-window', (_) => {
             this.onFocusMetaWindow(global.display.focus_window);
         });
-
-        /* this.observe(this.windowTracker, 'tracked-windows-changed', () => {
-            this.metaWindowWaitingForAppList.forEach((metaWindow, index) => {
-                let app = this.windowTracker.get_window_app(metaWindow);
-                if (app && !app.is_window_backed()) {
-                    this.metaWindowWaitingForAppList.splice(index, 1);
-                    this.onNewMetaWindow(metaWindow);
-                }
-            });
-        }); */
     }
 
     handleExistingMetaWindow() {
@@ -235,10 +225,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 }
 
                 if (msWindowFound) {
-                    logFocus(
-                        'isDialog',
-                        this.isMetaWindowDialog(waitingMetaWindow.metaWindow)
-                    );
                     if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                         msWindowFound.addDialog(waitingMetaWindow.metaWindow);
                     } else {
@@ -247,11 +233,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 } else {
                     let app = this.windowTracker.get_window_app(
                         waitingMetaWindow.metaWindow
-                    );
-                    logFocus(
-                        'metaWindow waiting since',
-                        timestamp - waitingMetaWindow.timestamp,
-                        app.is_window_backed()
                     );
                     if (
                         (waitingMetaWindow.metaWindow.firstFrameDrawn &&
@@ -282,11 +263,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
         // Remove MsWindow waiting for too much time. We probably missed the window awaited.
         this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
-            log(
-                'msWindow waiting since',
-                timestamp - waitingMsWindow.timestamp
-            );
-
             if (
                 (waitingMsWindow.checked &&
                     timestamp - waitingMsWindow.timestamp > 2000) ||

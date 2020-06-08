@@ -556,33 +556,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         if (!msWorkspace) {
             return;
         }
-
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
     setWindowToMsWorkspace(msWindow, newMsWorkspace) {
-        /* if (msWindow.metaWindow) {
-            if (
-                newMsWorkspace.monitor.index !=
-                msWindow.metaWindow.get_monitor()
-            ) {
-                log('move to monitor');
-                return msWindow.metaWindow.move_to_monitor(
-                    newMsWorkspace.monitor
-                );
-            }
-            if (
-                newMsWorkspace.monitor.index === Main.layoutManager.primaryIndex
-            ) {
-                const newWorkspace = this.getWorkspaceOfMsWorkspace(
-                    newMsWorkspace
-                );
-                if (msWindow.metaWindow.get_workspace() != newWorkspace) {
-                    log('move to workspace');
-                    return msWindow.metaWindow.change_workspace(newWorkspace);
-                }
-            }
-        } */
         let oldMsWorkspace = msWindow.msWorkspace;
 
         if (oldMsWorkspace) {

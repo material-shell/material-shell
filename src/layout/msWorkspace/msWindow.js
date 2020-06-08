@@ -533,6 +533,15 @@ var MsWindow = GObject.registerClass(
         }
 
         kill() {
+            let dialogPromises = this.dialogs.map((dialog) => {
+                return new Promise((resolve) => {
+                    delete dialog.metaWindow.msWindow;
+                    dialog.metaWindow.connect('unmanaged', (_) => {
+                        resolve();
+                    });
+                    dialog.metaWindow.delete(global.get_current_time());
+                });
+            });
             let promise = new Promise((resolve) => {
                 if (
                     this.metaWindow &&
@@ -547,7 +556,7 @@ var MsWindow = GObject.registerClass(
                     resolve();
                 }
             });
-            promise.then(() => {
+            Promise.all([...dialogPromises, promise]).then(() => {
                 if (this._persistent) {
                     this.unsetWindow();
                 } else {
@@ -615,11 +624,6 @@ var MsWindow = GObject.registerClass(
 
         _onDestroy() {
             this.unregisterOnMetaWindowSignals();
-            if (this.Keymap) {
-                this.Keymap.disconnect(this.superConnectId);
-            }
-            global.display.disconnect(this.grabEndSignal);
-            //Me.disconnect(this.superConnectId);
         }
     }
 );
