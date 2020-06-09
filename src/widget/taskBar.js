@@ -190,10 +190,10 @@ var TaskBar = GObject.registerClass(
                     }
                 }
             );
-
-            this.items[this.msWorkspace.focusedIndex].add_style_class_name(
-                'active'
-            );
+            if (this.items[this.msWorkspace.focusedIndex])
+                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
+                    'active'
+                );
         }
 
         updateCurrentTaskBar() {

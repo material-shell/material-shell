@@ -465,7 +465,7 @@ var MsWindow = GObject.registerClass(
                 // the primary monitor
                 if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
                     this.metaWindow.move_to_monitor(
-                        this.this.msWorkspace.monitor.index
+                        this.msWorkspace.monitor.index
                     );
 
                 let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
