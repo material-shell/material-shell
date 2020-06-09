@@ -280,7 +280,14 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                Me.msWorkspaceManager.getActiveMsWorkspace().nextTiling(1);
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const msWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                msWorkspace.nextTiling(1);
             }
         );
         Main.wm.addKeybinding(
@@ -289,7 +296,14 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                Me.msWorkspaceManager.getActiveMsWorkspace().nextTiling(-1);
+                const currentMonitorIndex = global.display.get_current_monitor();
+                const msWorkspace =
+                    currentMonitorIndex === Main.layoutManager.primaryIndex
+                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                              currentMonitorIndex
+                          )[0];
+                msWorkspace.nextTiling(-1);
             }
         );
 
