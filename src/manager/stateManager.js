@@ -8,19 +8,21 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
+const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
+    Me.uuid
+}-state-next.json`;
 
 var StateManager = class StateManager {
     constructor() {
         this.state = {};
+        this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
     loadRegistry(callback) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
 
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
-            let file = Gio.file_new_for_path(REGISTRY_PATH);
-
-            file.load_contents_async(null, (obj, res) => {
+            this.stateFile.load_contents_async(null, (obj, res) => {
                 let [success, contents] = obj.load_contents_finish(res);
                 if (success) {
                     this.state = JSON.parse(
@@ -39,7 +41,7 @@ var StateManager = class StateManager {
         let contents = new GLib.Bytes(json);
 
         // Write contents to file asynchronously
-        let file = Gio.file_new_for_path(REGISTRY_PATH);
+        let file = Gio.file_new_for_path(REGISTRY_NEXT_PATH);
         file.replace_async(
             null,
             false,
@@ -56,6 +58,14 @@ var StateManager = class StateManager {
                     (w_obj, w_res) => {
                         w_obj.write_bytes_finish(w_res);
                         stream.close(null);
+                        file.move(
+                            this.stateFile,
+                            1,
+                            null,
+                            (test, test2, test3) => {
+                                log('move', test, test2, test3);
+                            }
+                        );
                     }
                 );
             }
