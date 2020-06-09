@@ -4,18 +4,22 @@ const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor, throttle } = Me.imports.src.utils.index;
 const Main = imports.ui.main;
+const { MsManager } = Me.imports.src.manager.msManager;
 
 /* exported MsDndManager */
-var MsDndManager = class MsDndManager {
+var MsDndManager = class MsDndManager extends MsManager {
     constructor(msWindowManager) {
+        super();
         AddLogToFunctions(this);
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
-        this.msWindowManager.connect('ms-window-created', () => {
+        this.observe(this.msWindowManager, 'ms-window-created', () => {
             this.listenForMsWindowsSignal();
         });
         this.listenForMsWindowsSignal();
-        this.workspaceSignal = global.workspace_manager.connect(
+
+        this.observe(
+            global.workspace_manager,
             'active-workspace-changed',
             () => {
                 if (this.dragInProgress) {
@@ -37,7 +41,8 @@ var MsDndManager = class MsDndManager {
                 }
             }
         );
-        global.display.connect(
+        this.observe(
+            global.display,
             'grab-op-begin',
             (_, display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
@@ -50,7 +55,7 @@ var MsDndManager = class MsDndManager {
             }
         );
 
-        global.stage.connect('captured-event', (_, event) => {
+        this.observe(global.stage, 'captured-event', (_, event) => {
             if (this.dragInProgress) {
                 let [stageX, stageY] = event.get_coords();
                 switch (event.type()) {

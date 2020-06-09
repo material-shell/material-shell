@@ -317,9 +317,7 @@ var WorkspaceButton = GObject.registerClass(
                     )
                         msWorkspace.close();
                 } else {
-                    this.msWorkspaceManager
-                        .getWorkspaceOfMsWorkspace(this.msWorkspace)
-                        .activate(global.get_current_time());
+                    this.msWorkspace.activate();
                 }
             });
 

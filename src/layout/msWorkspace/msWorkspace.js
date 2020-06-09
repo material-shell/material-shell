@@ -68,6 +68,11 @@ var MsWorkspace = class MsWorkspace {
         });
     }
 
+    get workspace() {
+        if (!this.monitorIsPrimary) return null;
+        return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
+    }
+
     updateUI() {
         if (this.msWorkspaceActor) {
             //this.msWorkspaceActor.visible = this.uiVisible;
@@ -202,6 +207,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusTileable(tileable, forced) {
+        logFocus('focusTileable', tileable, forced);
         if (tileable === this.tileableFocused && !forced) {
             return;
         }
@@ -314,10 +320,27 @@ var MsWorkspace = class MsWorkspace {
     }
 
     isDisplayed() {
-        if (this.monitor.index !== Main.layoutManager.primaryIndex) {
+        if (!this.monitorIsPrimary) {
             return true;
         } else {
             return this === this.msWorkspaceManager.getActiveMsWorkspace();
+        }
+    }
+
+    activate() {
+        if (!this.monitorIsPrimary) {
+            return;
+        }
+        if (
+            this.tileableFocused instanceof MsWindow &&
+            this.tileableFocused.metaWindow
+        ) {
+            this.workspace.activate_with_focus(
+                this.tileableFocused.metaWindow,
+                global.get_current_time()
+            );
+        } else {
+            this.workspace.activate(global.get_current_time());
         }
     }
 

@@ -25,12 +25,30 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(global.display, 'notify::focus-window', (_) => {
             this.onFocusMetaWindow(global.display.focus_window);
         });
+
+        this.observe(
+            global.display,
+            'window-demands-attention',
+            (_, metaWindow) => {
+                logFocus('window-demands-attention', metaWindow);
+            }
+        );
+
+        this.observe(
+            global.display,
+            'window-marked-urgent',
+            (_, metaWindow) => {
+                logFocus('window-marked-urgent', metaWindow);
+            }
+        );
     }
 
     handleExistingMetaWindow() {
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow = windowActor.metaWindow;
             metaWindow.firstFrameDrawn = true;
+            metaWindow.createdAt = metaWindow.user_time;
+
             log(metaWindow.get_title());
             if (this._handleWindow(metaWindow)) {
                 let msWindow = this.msWindowList.find((msWindow) => {
@@ -50,7 +68,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     onNewMetaWindow(metaWindow) {
         if (Me.disableInProgress) return;
-
+        metaWindow.createdAt = metaWindow.user_time;
         metaWindow.get_compositor_private().connect('first-frame', (params) => {
             metaWindow.firstFrameDrawn = true;
         });
@@ -293,6 +311,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onFocusMetaWindow(metaWindow) {
+        logFocus('onFocusMetaWindow', metaWindow);
         if (Me.disableInProgress || Me.closing) return;
         /*
              If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
@@ -302,15 +321,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             this.metaWindowFocused &&
             !this.metaWindowFocused.get_compositor_private()
         ) {
+            this.metaWindowFocused = global.display.focus_window;
             return;
         }
 
         if (!metaWindow) return;
 
-        if (metaWindow.is_attached_dialog()) {
-            metaWindow = metaWindow.get_transient_for();
-        }
-        this.metaWindowFocused = metaWindow;
+        logFocus(metaWindow.msWindow);
         if (metaWindow.msWindow) {
             this.emit('ms-window-focused', metaWindow.msWindow);
         }
@@ -350,6 +367,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     destroy() {
         super.destroy();
+        this.msDndManager.destroy();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow = windowActor.metaWindow;
             if (metaWindow.handledByMaterialShell)

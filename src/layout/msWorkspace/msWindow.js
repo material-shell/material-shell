@@ -385,9 +385,12 @@ var MsWindow = GObject.registerClass(
         }
 
         resizeMetaWindows() {
-            this.followMetaWindow
-                ? this.mimicMetaWindowPositionAndSize()
-                : this.updateMetaWindowPositionAndSize();
+            if (this._metaWindow) {
+                this.followMetaWindow
+                    ? this.mimicMetaWindowPositionAndSize()
+                    : this.updateMetaWindowPositionAndSize();
+            }
+
             this.resizeDialogs();
         }
 
@@ -425,10 +428,16 @@ var MsWindow = GObject.registerClass(
 
         setMsWorkspace(msWorkspace) {
             this.msWorkspace = msWorkspace;
-            if (this.metaWindow) {
-                WindowUtils.updateTitleBarVisibility(this.metaWindow);
-                this.resizeMetaWindows();
-            }
+            [
+                ...this.dialogs.map((dialog) => dialog.metaWindow),
+                this.metaWindow,
+            ].forEach((metaWindow) => {
+                if (metaWindow) {
+                    WindowUtils.updateTitleBarVisibility(metaWindow);
+                    this.updateWorkspaceAndMonitor(metaWindow);
+                }
+            });
+            this.resizeMetaWindows();
         }
 
         async setWindow(metaWindow) {
@@ -436,14 +445,7 @@ var MsWindow = GObject.registerClass(
             metaWindow.msWindow = this;
 
             this.registerOnMetaWindowSignals();
-            if (this.msWorkspace) {
-                let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
-                    this.msWorkspace
-                );
-                if (workspace && metaWindow.get_workspace() != workspace) {
-                    metaWindow.change_workspace(workspace);
-                }
-            }
+            this.updateWorkspaceAndMonitor(metaWindow);
             this.windowClone.set_source(metaWindow.get_compositor_private());
             await this.onMetaWindowsChanged();
         }
@@ -456,10 +458,27 @@ var MsWindow = GObject.registerClass(
             this.onMetaWindowsChanged();
         }
 
-        addDialog(metaWindow) {
-            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index) {
-                metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
+        updateWorkspaceAndMonitor(metaWindow) {
+            if (metaWindow && this.msWorkspace) {
+                // We need to move the window before changing the workspace, because
+                // the move itself could cause a workspace change if the window enters
+                // the primary monitor
+                if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
+                    this.metaWindow.move_to_monitor(
+                        this.this.msWorkspace.monitor.index
+                    );
+
+                let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
+                    this.msWorkspace
+                );
+                if (workspace && metaWindow.get_workspace() != workspace) {
+                    metaWindow.change_workspace(workspace);
+                }
             }
+        }
+
+        addDialog(metaWindow) {
+            this.updateWorkspaceAndMonitor(metaWindow);
             let clone = new Clutter.Clone({
                 source: metaWindow.get_compositor_private(),
             });

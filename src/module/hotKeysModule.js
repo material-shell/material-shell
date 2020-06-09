@@ -131,9 +131,9 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 let currentIndex = this.workspaceManager.get_active_workspace_index();
                 if (currentIndex > 0) {
-                    this.workspaceManager
-                        .get_workspace_by_index(currentIndex - 1)
-                        .activate(global.get_current_time());
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        currentIndex - 1
+                    ].activate();
                 }
             }
         );
@@ -146,9 +146,9 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 let currentIndex = this.workspaceManager.get_active_workspace_index();
                 if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                    this.workspaceManager
-                        .get_workspace_by_index(currentIndex + 1)
-                        .activate(global.get_current_time());
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        currentIndex + 1
+                    ].activate();
                 }
             }
         );
@@ -223,26 +223,20 @@ var HotKeysModule = class HotKeysModule {
                 ) {
                     return;
                 }
-                const newMsWorkspaceIndex =
-                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                        activeMsWorkspace
-                    ) - 1;
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        currentMsWorkspaceIndex - 1
+                    ];
+
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
                     activeMsWorkspace.tileableFocused,
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        newMsWorkspaceIndex
-                    ]
+                    nextMsWorkspace
                 );
-                global.workspace_manager
-                    .get_workspace_by_index(newMsWorkspaceIndex)
-                    .activate(global.get_current_time());
-                /*                 let newWorkspace = global.workspace_manager.get_workspace_by_index(
-                    global.display.focus_window.get_workspace().index() - 1
-                );
-                if (newWorkspace) {
-                    global.display.focus_window.change_workspace(newWorkspace);
-                    newWorkspace.activate(global.get_current_time());
-                } */
+                nextMsWorkspace.activate();
             }
         );
 
@@ -264,26 +258,19 @@ var HotKeysModule = class HotKeysModule {
                 ) {
                     return;
                 }
-                const newMsWorkspaceIndex =
-                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                        activeMsWorkspace
-                    ) + 1;
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        currentMsWorkspaceIndex + 1
+                    ];
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
                     activeMsWorkspace.tileableFocused,
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        newMsWorkspaceIndex
-                    ]
+                    nextMsWorkspace
                 );
-                global.workspace_manager
-                    .get_workspace_by_index(newMsWorkspaceIndex)
-                    .activate(global.get_current_time());
-                /* let newWorkspace = global.workspace_manager.get_workspace_by_index(
-                    global.display.focus_window.get_workspace().index() + 1
-                );
-                if (newWorkspace) {
-                    global.display.focus_window.change_workspace(newWorkspace);
-                    newWorkspace.activate();
-                } */
+                nextMsWorkspace.activate();
             }
         );
 
