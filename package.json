@@ -1,0 +1,29 @@
+{
+  "name": "material-shell",
+  "version": "1.0.0",
+  "description": "A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.",
+  "main": "extension.js",
+  "dependencies": {
+    "eslint": "^7.2.0",
+    "node-sass": "^4.14.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PapyElGringo/material-shell.git"
+  },
+  "keywords": [
+    "Gnome-shell",
+    "extension",
+    "tiling"
+  ],
+  "author": "PapyElGringo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PapyElGringo/material-shell/issues"
+  },
+  "homepage": "https://github.com/PapyElGringo/material-shell#readme"
+}
