@@ -1,7 +1,7 @@
 const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.utils.settings;
+const { getSettings } = Me.imports.src.utils.settings;
 
 // eslint-disable-next-line no-unused-vars
 function init() {}
@@ -12,7 +12,7 @@ const makePage = (title, content) => {
     const tabLabel = new Gtk.Label({
         label: title,
         halign: Gtk.Align.START,
-        use_markup: false
+        use_markup: false,
     });
     return [tabWindow, tabLabel];
 };
@@ -38,14 +38,14 @@ const makeItemRow = (name, description, item) => {
     return listRow;
 };
 
-const makeItemList = rows => {
+const makeItemList = (rows) => {
     const listBox = new Gtk.ListBox({
-        valign: Gtk.Align.START
+        valign: Gtk.Align.START,
     });
     const listWrapper = new Gtk.VBox({
-        border_width: 10
+        border_width: 10,
     });
-    rows.forEach(row => listBox.add(row));
+    rows.forEach((row) => listBox.add(row));
     listWrapper.add(listBox);
     return listWrapper;
 };
@@ -65,7 +65,7 @@ const hotKeysLabels = {
     'reverse-cycle-tiling-layout':
         'Cycle around in reverse order the tiling layout on the current workspace',
     'toggle-material-shell-ui':
-        'Toggle the material-shell UI to simulate fullscreen'
+        'Toggle the material-shell UI to simulate fullscreen',
 };
 
 const layouts = {
@@ -79,7 +79,7 @@ const layouts = {
     grid: 'Tile windows according to a regular grid',
     simple: 'Split screen unidirectionally according to screen ratio',
     'simple-horizontal': 'Split screen horizontally',
-    'simple-vertical': 'Split screen vertically'
+    'simple-vertical': 'Split screen vertically',
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -91,7 +91,7 @@ function buildPrefsWidget() {
     layoutsSettingsTab(notebook);
 
     let mainVBox = new Gtk.Box({
-        orientation: Gtk.Orientation.VERTICAL
+        orientation: Gtk.Orientation.VERTICAL,
     });
     mainVBox.pack_start(notebook, true, true, 0);
     mainVBox.show_all();
@@ -106,7 +106,7 @@ function accelTab(notebook) {
         GObject.TYPE_STRING,
         GObject.TYPE_STRING,
         GObject.TYPE_INT,
-        GObject.TYPE_INT
+        GObject.TYPE_INT,
     ]);
 
     Object.entries(hotKeysLabels).forEach(([key, label]) => {
@@ -120,14 +120,14 @@ function accelTab(notebook) {
     const cellTextRenderer = new Gtk.CellRendererText();
     const actionColumn = new Gtk.TreeViewColumn({
         title: 'Action',
-        expand: true
+        expand: true,
     });
     actionColumn.pack_start(cellTextRenderer, true);
     actionColumn.add_attribute(cellTextRenderer, 'text', 1);
 
     const cellAccelRenderer = new Gtk.CellRendererAccel({
         editable: true,
-        'accel-mode': Gtk.CellRendererAccelMode.GTK
+        'accel-mode': Gtk.CellRendererAccelMode.GTK,
     });
     cellAccelRenderer.connect('accel-cleared', (rend, strIter) => {
         const [success, iter] = model.get_iter_from_string(strIter);
@@ -152,7 +152,7 @@ function accelTab(notebook) {
     });
 
     const hotkeyColumn = new Gtk.TreeViewColumn({
-        title: 'hotkeys'
+        title: 'hotkeys',
     });
     hotkeyColumn.pack_end(cellAccelRenderer, false);
     hotkeyColumn.add_attribute(cellAccelRenderer, 'accel-mods', 2);
@@ -160,7 +160,7 @@ function accelTab(notebook) {
 
     const treeview = new Gtk.TreeView({
         expand: true,
-        model: model
+        model: model,
     });
     treeview.append_column(actionColumn);
     treeview.append_column(hotkeyColumn);
@@ -169,7 +169,7 @@ function accelTab(notebook) {
         column_spacing: 10,
         margin: 24,
         orientation: Gtk.Orientation.VERTICAL,
-        row_spacing: 10
+        row_spacing: 10,
     });
     accelGrid.add(
         new Gtk.Label({
@@ -177,7 +177,7 @@ function accelTab(notebook) {
             halign: Gtk.Align.START,
             justify: Gtk.Justification.LEFT,
             use_markup: false,
-            wrap: true
+            wrap: true,
         })
     );
     accelGrid.add(treeview);
@@ -190,7 +190,7 @@ function layoutsTab(notebook) {
     const layoutItemCreator = (rows, [layout, description]) => {
         const name = layout
             .replace('-', ' ')
-            .replace(/^\w/g, c => c.toUpperCase());
+            .replace(/^\w/g, (c) => c.toUpperCase());
         const item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
         rows.push(makeItemRow(name, description, item));
@@ -338,11 +338,9 @@ function GlobalSettingsTab(notebook) {
     model.set(model.append(), [0, 1], ['light', 'Light']);
     model.set(model.append(), [0, 1], ['primary', 'Primary']);
     let shit = ['dark', 'light', 'primary'];
-    log('toto');
-    log(settings.get_string('theme'));
     cbox.set_active(shit.indexOf(settings.get_string('theme'))); // set value
 
-    cbox.connect('changed', entry => {
+    cbox.connect('changed', (entry) => {
         let [success, iter] = cbox.get_active_iter();
         if (!success) return;
         let themeValue = model.get_value(iter, 0); // get value
@@ -367,40 +365,24 @@ function GlobalSettingsTab(notebook) {
             primaryColor
         )
     );
-    primaryColor.connect('notify::color', button => {
+    primaryColor.connect('notify::color', (button) => {
         let rgba = button.get_rgba();
         let css = rgba.to_string();
         let hexString = cssHexString(css);
         settings.set_string('primary-color', hexString);
     });
-
-    const doDialogBackdrop = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    const panelSize = Gtk.SpinButton.new_with_range(0, 1000, 1);
     itemRows.push(
         makeItemRow(
-            'Show dialog backdrop',
-            'Shows a semi-transparent overlay over other windows when a dialog is open.',
-            doDialogBackdrop
+            'Panels Size',
+            'Width of the left panel and heigh of the top panels.',
+            panelSize
         )
     );
     settings.bind(
-        'do-dialog-backdrop',
-        doDialogBackdrop,
-        'active',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-
-    const showSettingsButtonOnLeftPanel = new Gtk.Switch({ valign: Gtk.Align.CENTER });
-    itemRows.push(
-        makeItemRow(
-            'Show settings button on left panel',
-            'Shows a quick shortcut to the Settings dialog in the left panel.',
-            showSettingsButtonOnLeftPanel
-        )
-    );
-    settings.bind(
-        'show-settings-button-on-panel',
-        showSettingsButtonOnLeftPanel,
-        'active',
+        'panel-size',
+        panelSize.get_adjustment(),
+        'value',
         Gio.SettingsBindFlags.DEFAULT
     );
 
