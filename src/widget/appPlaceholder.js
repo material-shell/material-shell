@@ -24,7 +24,6 @@ var AppPlaceholder = GObject.registerClass(
                 layout_manager: new Clutter.BinLayout(),
                 reactive: true,
             });
-            this.vertical = this.width < this.height;
             this.app = app;
             this.icon = this.app.create_icon_texture(248);
             this.icon.set_style('padding:24px');
@@ -70,7 +69,6 @@ var AppPlaceholder = GObject.registerClass(
             this.clickableContainer.x_expand = true;
             this.clickableContainer.y_expand = true;
             this.add_child(this.clickableContainer);
-
             this.connect('event', (actor, event) => {
                 let eventType = event.type();
                 if (

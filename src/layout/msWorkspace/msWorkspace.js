@@ -30,7 +30,7 @@ var MsWorkspace = class MsWorkspace {
                         msWindowData.appId,
                         msWindowData.metaWindowIdentifier,
                         null,
-                        msWindowData.persistent
+                        msWindowData.persistent ? msWindowData.persistent : null
                     )
                 );
             });
@@ -94,7 +94,11 @@ var MsWorkspace = class MsWorkspace {
 
     async addMsWindow(msWindow, focus = false) {
         logFocus('addMsWindow', msWindow);
-        if (!msWindow || msWindow.msWorkspace === this) return;
+        if (
+            !msWindow ||
+            (msWindow.msWorkspace && msWindow.msWorkspace === this)
+        )
+            return;
 
         msWindow.setMsWorkspace(this);
         if (this.msWorkspaceActor && !msWindow.dragged) {

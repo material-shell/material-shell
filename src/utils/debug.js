@@ -1,6 +1,6 @@
 const { GLib } = imports.gi;
 
-const DEBUG = true;
+const DEBUG = false;
 const FOCUS_ONLY = false;
 let indent = 0;
 var AddLogToFunctions = function (object) {
@@ -12,10 +12,6 @@ var AddLogToFunctions = function (object) {
         if (typeof value === 'function') {
             object[key] = function () {
                 // Before
-                let indentString = '  '.repeat(indent);
-                /* for (var i = 0; 0 < indent; i++) {
-                        indentString = indentString + '-';
-                    } */
                 log(
                     `${prototype.constructor.name}.${key} (${Array.from(
                         arguments

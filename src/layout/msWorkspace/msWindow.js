@@ -47,6 +47,7 @@ var MsWindow = GObject.registerClass(
             this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
             this.placeholder = new AppPlaceholder(this.app);
+            logFocus('after placeholder creation');
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
             });
@@ -352,8 +353,6 @@ var MsWindow = GObject.registerClass(
         }
 
         resizeDialogs() {
-            logFocus('resizeDialogs');
-
             this.dialogs.forEach((dialog) => {
                 let { metaWindow } = dialog;
                 let frame = metaWindow.get_frame_rect();
@@ -361,11 +360,8 @@ var MsWindow = GObject.registerClass(
                     this.msWorkspace.monitor.index
                 );
                 if (metaWindow.resizeable) {
-                    logFocus('resizeDialog');
                     let minWidth = Math.min(frame.width, this.width);
-                    logFocus('minWidth', frame.width, this.width, minWidth);
                     let minHeight = Math.min(frame.height, this.height);
-                    logFocus('minHeight', frame.height, this.height, minHeight);
 
                     metaWindow.move_resize_frame(
                         true,

@@ -25,8 +25,6 @@ let disableIncompatibleExtensionsModule,
     monitorChangedId;
 let splashscreens = [];
 
-let originalCount, currentCount;
-originalCount = currentCount = 0;
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
@@ -40,10 +38,8 @@ function init() {
     Me.locked = false;
     //St.set_slow_down_factor(10);
     global.display.connect('closing', () => {
-        log('CLOSING');
         Me.closing = true;
     });
-    Me.sumChild = sumChild;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -51,8 +47,6 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
-    originalCount = countActors();
-    logActorRoutine();
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {
         Me.showSplashScreens();
@@ -61,7 +55,6 @@ function enable() {
     Me.stateManager = new StateManager();
     //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
-        log('IDLE_ADD');
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         //Load persistent data
@@ -76,9 +69,7 @@ function enable() {
                 Me.msThemeManager.regenerateStylesheet();
             }
             Me.msWorkspaceManager.setupInitialState();
-            log('Before MsMain');
             Me.layout = new MsMain();
-            log('After MsMain');
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
@@ -106,7 +97,6 @@ function loaded(disconnect) {
     Me.emit('extension-loaded');
     // When monitors changed we reload the extension completely by disabling and reenabling it
     monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
-        log('here');
         Me.showSplashScreens();
         disable();
         enable();
@@ -124,7 +114,6 @@ function disable() {
     log('----------------');
     log('DISABLE EXTENSION');
     log('----------------');
-    log('Main.sessionMode.currentMode', Main.sessionMode.currentMode);
     if (Main.sessionMode.currentMode === 'unlock-dialog') {
         Me.locked = true;
     }
@@ -133,13 +122,10 @@ function disable() {
     Me.emit('extension-disable');
     Main.layoutManager.disconnect(monitorChangedId);
     modules.reverse().forEach((module) => {
-        log('Destroy', module);
         module.destroy();
     });
     Me.tilingManager.destroy();
-    log('destroy msWorkspaceManager');
     Me.msWorkspaceManager.destroy();
-    log('destroy msWindowManager');
     Me.msWindowManager.destroy();
 
     Me.layout.destroy();
@@ -191,35 +177,4 @@ function hideSplashScreens() {
         });
     });
     splashscreens = [];
-}
-
-function logActorRoutine() {
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
-        currentCount = countActors();
-        log(
-            `ACTORS from ${originalCount.val} to ${currentCount.val} and visible from ${originalCount.visible} to ${currentCount.visible} and mapped from ${originalCount.mapped} to ${currentCount.mapped}`
-        );
-        //logActorRoutine();
-    });
-}
-
-function countActors() {
-    let count = { val: 0, visible: 0, mapped: 0 };
-    sumChild(global.stage, count);
-    return count;
-}
-
-function sumChild(actor, count) {
-    count = count || { val: 0, visible: 0, mapped: 0 };
-    count.val += 1;
-    if (actor.visible) {
-        count.visible += 1;
-    }
-    if (actor.mapped) {
-        count.mapped += 1;
-    }
-    actor.get_children().forEach((child) => {
-        sumChild(child, count);
-    });
-    return count;
 }

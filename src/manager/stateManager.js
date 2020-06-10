@@ -58,14 +58,9 @@ var StateManager = class StateManager {
                     (w_obj, w_res) => {
                         w_obj.write_bytes_finish(w_res);
                         stream.close(null);
-                        file.move(
-                            this.stateFile,
-                            1,
-                            null,
-                            (test, test2, test3) => {
-                                log('move', test, test2, test3);
-                            }
-                        );
+                        file.move(this.stateFile, 1, null, () => {
+                            //Progress callback
+                        });
                     }
                 );
             }
