@@ -495,6 +495,9 @@ var MsWindow = GObject.registerClass(
             this.add_child(clone);
             this.resizeDialogs();
             this.onMetaWindowsChanged();
+            if (this.msWorkspace.tileableFocused === this) {
+                this.takeFocus();
+            }
         }
 
         async onMetaWindowsChanged() {
@@ -533,9 +536,6 @@ var MsWindow = GObject.registerClass(
                 }
             }
             this.emit('title-changed', this.title);
-            if (this.msWorkspace.tileableFocused === this) {
-                this.takeFocus();
-            }
         }
 
         takeFocus() {
