@@ -574,10 +574,12 @@ var MsWindow = GObject.registerClass(
             let dialogPromises = this.dialogs.map((dialog) => {
                 return new Promise((resolve) => {
                     delete dialog.metaWindow.msWindow;
-                    dialog.metaWindow.connect('unmanaged', (_) => {
-                        resolve();
-                    });
-                    dialog.metaWindow.delete(global.get_current_time());
+                    if (dialog.metaWindow.get_compositor_private()) {
+                        dialog.metaWindow.connect('unmanaged', (_) => {
+                            resolve();
+                        });
+                        dialog.metaWindow.delete(global.get_current_time());
+                    }
                 });
             });
             let promise = new Promise((resolve) => {
