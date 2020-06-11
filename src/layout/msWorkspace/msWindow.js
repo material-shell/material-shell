@@ -174,12 +174,21 @@ var MsWindow = GObject.registerClass(
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
             );
+            const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+                this.msWorkspace.monitor.index
+            );
+            let offsetX = monitorInFullScreen
+                ? this.msWorkspace.monitor.x
+                : workArea.x;
+            let offsetY = monitorInFullScreen
+                ? this.msWorkspace.monitor.y
+                : workArea.y;
             this.dialogs.forEach((dialog) => {
                 let dialogBox = new Clutter.ActorBox();
                 let dialogFrame = dialog.metaWindow.get_buffer_rect();
-                dialogBox.x1 = dialogFrame.x - box.x1 - workArea.x;
+                dialogBox.x1 = dialogFrame.x - box.x1 - offsetX;
                 dialogBox.x2 = dialogBox.x1 + dialogFrame.width;
-                dialogBox.y1 = dialogFrame.y - box.y1 - workArea.y;
+                dialogBox.y1 = dialogFrame.y - box.y1 - offsetY;
                 dialogBox.y2 = dialogBox.y1 + dialogFrame.height;
                 dialog.clone.allocate(dialogBox, flags);
             });
@@ -359,22 +368,31 @@ var MsWindow = GObject.registerClass(
                 const workArea = Main.layoutManager.getWorkAreaForMonitor(
                     this.msWorkspace.monitor.index
                 );
+                const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+                    this.msWorkspace.monitor.index
+                );
+                let offsetX = monitorInFullScreen
+                    ? this.msWorkspace.monitor.x
+                    : workArea.x;
+                let offsetY = monitorInFullScreen
+                    ? this.msWorkspace.monitor.y
+                    : workArea.y;
                 if (metaWindow.resizeable) {
                     let minWidth = Math.min(frame.width, this.width);
                     let minHeight = Math.min(frame.height, this.height);
 
                     metaWindow.move_resize_frame(
                         true,
-                        workArea.x + this.x + (this.width - minWidth) / 2,
-                        workArea.y + this.y + (this.height - minHeight) / 2,
+                        offsetX + this.x + (this.width - minWidth) / 2,
+                        offsetY + this.y + (this.height - minHeight) / 2,
                         minWidth,
                         minHeight
                     );
-                } else {
+                } else if (metaWindow.allows_move()) {
                     metaWindow.move_frame(
                         true,
-                        workArea.x + this.x + (this.width - frame.width) / 2,
-                        workArea.y + this.y + (this.height - frame.height) / 2
+                        offsetX + this.x + (this.width - frame.width) / 2,
+                        offsetY + this.y + (this.height - frame.height) / 2
                     );
                 }
             });
