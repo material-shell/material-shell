@@ -225,11 +225,12 @@ var MsWindow = GObject.registerClass(
         updateMetaWindowPositionAndSize() {
             if (
                 !this._metaWindow ||
-                this.followMetaWindow ||
+                !this._metaWindow.get_compositor_private() ||
                 !this.mapped ||
                 this.width === 0 ||
                 this.height === 0 ||
-                !this.metaWindow.firstFrameDrawn
+                !this._metaWindow.firstFrameDrawn ||
+                this.followMetaWindow
             ) {
                 return;
             }
@@ -239,7 +240,6 @@ var MsWindow = GObject.registerClass(
             );
             let contentBox = this.msContent.allocation;
             let windowActor = this.metaWindow.get_compositor_private();
-            windowActor.resizeHandledByMs = true;
 
             //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
             const isMaximized =
@@ -256,6 +256,7 @@ var MsWindow = GObject.registerClass(
             let currentFrameRect = this.metaWindow.get_frame_rect();
 
             if (this.metaWindow.maximized_horizontally) {
+                windowActor.unmaximizedByMs = true;
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
             let moveTo, resizeTo;
@@ -285,6 +286,14 @@ var MsWindow = GObject.registerClass(
                 };
             }
 
+            if (
+                currentFrameRect.x === moveTo.x &&
+                currentFrameRect.y === moveTo.y &&
+                currentFrameRect.width === resizeTo.width &&
+                currentFrameRect.height === resizeTo.height
+            ) {
+                return;
+            }
             // Secure the futur metaWindow Position to ensure it's not outside the current monitor
             if (!this.dragged) {
                 moveTo.x = Math.max(
@@ -306,7 +315,6 @@ var MsWindow = GObject.registerClass(
                     this.msWorkspace.monitor.y
                 );
             }
-
             //Set the size accordingly
             this.metaWindow.move_resize_frame(
                 true,
@@ -330,7 +338,6 @@ var MsWindow = GObject.registerClass(
             /**
              * Hack end
              */
-            delete windowActor.resizeHandledByMs;
         }
 
         mimicMetaWindowPositionAndSize() {
@@ -478,9 +485,7 @@ var MsWindow = GObject.registerClass(
                 // the move itself could cause a workspace change if the window enters
                 // the primary monitor
                 if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
-                    this.metaWindow.move_to_monitor(
-                        this.msWorkspace.monitor.index
-                    );
+                    metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
 
                 let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
                     this.msWorkspace
@@ -639,9 +644,9 @@ var MsWindow = GObject.registerClass(
                         Me.msWindowManager.msDndManager.dragInProgress) &&
                     !Me.msWorkspaceManager.noUImode;
 
-                if (shouldBeHidden) {
+                if (shouldBeHidden && !this.metaWindow.minimized) {
                     this.metaWindow.minimize();
-                } else {
+                } else if (this.metaWindow.minimized) {
                     this.metaWindow.unminimize();
                 }
             }

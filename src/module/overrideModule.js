@@ -32,8 +32,7 @@ var OverrideModule = class OverrideModule {
         const _shouldAnimateActor = WindowManager.prototype._shouldAnimateActor;
         WindowManager.prototype._shouldAnimateActor = function () {
             let actor = arguments[0];
-            if (actor.resizeHandledByMs) {
-                logFocus('SHOULDANIMATEACTOR INTTERUPTED');
+            if (actor.unmaximizedByMs && !actor.completeIsRequested) {
                 actor.completeIsRequested = true;
                 return true;
             }
@@ -48,7 +47,8 @@ var OverrideModule = class OverrideModule {
             WindowManager.prototype._prepareAnimationInfo;
         WindowManager.prototype._prepareAnimationInfo = function () {
             let actor = arguments[1];
-            if (actor.resizeHandledByMs) {
+            if (actor.unmaximizedByMs) {
+                delete actor.unmaximizedByMs;
                 return;
             }
             return _prepareAnimationInfo.apply(this, arguments);

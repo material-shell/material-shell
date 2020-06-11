@@ -244,7 +244,7 @@ var BaseTilingLayout = GObject.registerClass(
             });
         }
 
-        moveAndResizeActor(
+        /* moveAndResizeActor(
             actor,
             x,
             y,
@@ -264,7 +264,7 @@ var BaseTilingLayout = GObject.registerClass(
                 actor.set_position(x, y);
                 actor.set_size(width, height);
             }
-        }
+        } */
 
         getWorkspaceBounds() {
             const box = this.msWorkspace.msWorkspaceActor.tileableContainer
