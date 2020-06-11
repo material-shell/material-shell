@@ -89,6 +89,9 @@ var BaseTilingLayout = GObject.registerClass(
             ) {
                 this.hideAppLauncher();
             }
+            if (!tileable.get_parent()) {
+                this.tileableContainer.add_child(tileable);
+            }
             /*
              * Function called automatically at the layout init or when a new window enter
              */
