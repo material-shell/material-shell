@@ -24,7 +24,6 @@ var MsMain = GObject.registerClass(
             this.add_child(this.aboveContainer);
             this.buildMonitorsLayout();
 
-            //this.primaryContainer = new PrimaryContainer();
             this.monitorsContainer[
                 Main.layoutManager.primaryIndex
             ].setMsWorkspaceActor(
@@ -66,10 +65,10 @@ var MsMain = GObject.registerClass(
                         clip_to_allocation: true,
                     });
                 } else {
-                    this.monitorsContainer[monitor.index] = new St.Bin({
+                    this.monitorsContainer[
+                        monitor.index
+                    ] = new MonitorContainer({
                         clip_to_allocation: true,
-                        x_fill: true,
-                        y_fill: true,
                     });
                 }
 
@@ -123,6 +122,20 @@ var MsMain = GObject.registerClass(
                     });
                 }),
             });
+
+            this.signals.push({
+                from: global.display,
+                id: global.display.connect('in-fullscreen-changed', () => {
+                    for (let monitor of Main.layoutManager.monitors) {
+                        const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+                            monitor.index
+                        );
+                        this.monitorsContainer[monitor.index].setFullscreen(
+                            monitorInFullScreen
+                        );
+                    }
+                }),
+            });
         }
 
         onMsWorkspacesChanged() {
@@ -133,7 +146,7 @@ var MsMain = GObject.registerClass(
                             .msWorkspaceActor
                     );
                 } else {
-                    container.set_child(
+                    container.setMsWorkspaceActor(
                         Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             index
                         )[0].msWorkspaceActor
@@ -174,12 +187,53 @@ var MsMain = GObject.registerClass(
     }
 );
 
+/* exported MonitorContainer */
+var MonitorContainer = GObject.registerClass(
+    {
+        GTypeName: 'MonitorContainer',
+    },
+    class MonitorContainer extends St.Widget {
+        _init(params) {
+            super._init(params);
+        }
+
+        setFullscreen(monitorIsFullscreen) {
+            if (this.msWorkspaceActor) {
+                this.msWorkspaceActor.updateUI();
+            }
+        }
+
+        setMsWorkspaceActor(actor) {
+            if (actor === this.msWorkspaceActor) return;
+            if (this.msWorkspaceActor) {
+                this.remove_child(this.msWorkspaceActor);
+            }
+            this.msWorkspaceActor = actor;
+            this.add_child(this.msWorkspaceActor);
+        }
+
+        vfunc_allocate(box, flags) {
+            this.set_allocation(box, flags);
+            let themeNode = this.get_theme_node();
+            box = themeNode.get_content_box(box);
+            if (this.msWorkspaceActor) {
+                let msWorkspaceActorBox = new Clutter.ActorBox();
+                msWorkspaceActorBox.x1 = box.x1;
+                msWorkspaceActorBox.x2 = box.x2;
+                msWorkspaceActorBox.y1 = box.y1;
+                msWorkspaceActorBox.y2 = box.y2;
+                this.msWorkspaceActor.allocate(msWorkspaceActorBox, flags);
+            }
+        }
+    }
+);
+
 /* exported PrimaryMonitorContainer */
 var PrimaryMonitorContainer = GObject.registerClass(
     {
         GTypeName: 'PrimaryMonitorContainer',
     },
-    class PrimaryMonitorContainer extends St.Widget {
+    class PrimaryMonitorContainer extends MonitorContainer {
         _init(params) {
             super._init(params);
             this.panel = new MsPanel();
@@ -196,6 +250,11 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 }
                 this.msWorkspaceActor.msWorkspace.refreshFocus();
             });
+        }
+
+        setFullscreen(monitorIsFullscreen) {
+            this.panel.visible = !monitorIsFullscreen;
+            super.setFullscreen(monitorIsFullscreen);
         }
 
         setTranslation(prevActor, nextActor) {
@@ -273,38 +332,6 @@ var PrimaryMonitorContainer = GObject.registerClass(
             this.get_children().forEach((child) => {
                 if (child === this.panel) return;
                 child.allocate(msWorkspaceActorBox, flags);
-            });
-        }
-    }
-);
-
-var PrimaryContainer = GObject.registerClass(
-    {
-        GTypeName: 'PrimaryContainer',
-    },
-    class PrimaryContainer extends Clutter.Actor {
-        _init(params) {
-            super._init(params);
-        }
-
-        vfunc_allocate(box, flags) {
-            log('allocate primary container');
-            this.set_allocation(box, flags);
-            let contentBox = new Clutter.ActorBox();
-            contentBox.x2 = box.get_width();
-            contentBox.y2 = box.get_height();
-            this.get_children().forEach((actor) => {
-                let index = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
-                    (msWorkspace) => {
-                        return actor === msWorkspace.msWorkspaceActor;
-                    }
-                );
-                let actorBox = new Clutter.ActorBox();
-                actorBox.x1 = contentBox.x1;
-                actorBox.x2 = contentBox.x2;
-                actorBox.y1 = index * contentBox.get_height();
-                actorBox.y2 = actorBox.y1 + contentBox.get_height();
-                actor.allocate(actorBox, flags);
             });
         }
     }

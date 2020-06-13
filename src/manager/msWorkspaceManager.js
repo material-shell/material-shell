@@ -108,22 +108,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
         });
 
-        this.observe(global.display, 'in-fullscreen-changed', () => {
-            Main.layoutManager.monitors.forEach((monitor) => {
-                let msWorkspace;
-                if (Main.layoutManager.primaryIndex === monitor.index) {
-                    msWorkspace = this.getActiveMsWorkspace();
-                } else {
-                    msWorkspace = this.getMsWorkspacesOfMonitorIndex(
-                        monitor.index
-                    )[0];
-                }
-                if (msWorkspace) {
-                    msWorkspace.updateUI();
-                }
-            });
-        });
-
         this.observe(
             global.display,
             'window-entered-monitor',
@@ -456,10 +440,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 msWorkspace === activeMsWorkspace
             ) {
                 activeMsWorkspace.uiVisible = true;
-                activeMsWorkspace.updateUI();
+                activeMsWorkspace.msWorkspaceActor.updateUI();
             } else {
                 msWorkspace.uiVisible = false;
-                msWorkspace.updateUI();
+                msWorkspace.msWorkspaceActor.updateUI();
             }
         });
     }

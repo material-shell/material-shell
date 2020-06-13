@@ -73,15 +73,6 @@ var MsWorkspace = class MsWorkspace {
         return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
     }
 
-    updateUI() {
-        if (this.msWorkspaceActor) {
-            //this.msWorkspaceActor.visible = this.uiVisible;
-        }
-        if (this.msWorkspaceActor.panel) {
-            this.msWorkspaceActor.panel.visible = this.shouldPanelBeVisible();
-        }
-    }
-
     close() {
         Promise.all(
             this.msWindowList.map((msWindow) => {
@@ -402,6 +393,16 @@ var MsWorkspaceActor = GObject.registerClass(
             this.panel = new TopPanel(msWorkspace);
             this.add_child(this.tileableContainer);
             this.add_child(this.panel);
+        }
+
+        updateUI() {
+            const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+                this.msWorkspace.monitor.index
+            );
+            if (this.panel) {
+                this.panel.visible = this.msWorkspace.shouldPanelBeVisible();
+            }
+            this.tileableContainer.visible = !monitorInFullScreen;
         }
 
         vfunc_allocate(box, flags) {

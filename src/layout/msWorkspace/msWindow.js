@@ -32,11 +32,9 @@ var MsWindow = GObject.registerClass(
             );
             this.connect('parent-set', () => {
                 this.msContent.style_changed();
-            });
-            this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
             });
-            this.connect('notify::mapped', () => {
+            this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
             });
 
@@ -640,12 +638,17 @@ var MsWindow = GObject.registerClass(
 
         updateMetaWindowVisibility() {
             if (this.metaWindow) {
+                logFocus(
+                    this.visible,
+                    this.get_parent(),
+                    Me.msWindowManager.msDndManager.dragInProgress
+                );
                 let shouldBeHidden =
                     (!this.visible ||
-                        !this.mapped ||
+                        this.get_parent() === null ||
                         Me.msWindowManager.msDndManager.dragInProgress) &&
                     !Me.msWorkspaceManager.noUImode;
-
+                logFocus(`shouldBeHiddn`, this, shouldBeHidden);
                 if (shouldBeHidden && !this.metaWindow.minimized) {
                     this.metaWindow.minimize();
                 } else if (this.metaWindow.minimized) {

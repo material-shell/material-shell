@@ -346,7 +346,7 @@ var HotKeysModule = class HotKeysModule {
                         )[0];
                     }
                     Main.layoutManager._queueUpdateRegions();
-                    msWorkspace.updateUI();
+                    msWorkspace.msWorkspaceActor.updateUI();
                     msWorkspace.panel.set_height(!noUImode ? 0 : -1);
                     msWorkspace.tilingLayout.onTile();
                 }); */

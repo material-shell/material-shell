@@ -13,6 +13,7 @@ var MsDndManager = class MsDndManager extends MsManager {
         AddLogToFunctions(this);
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
+        this.dragInProgress = false;
         this.observe(this.msWindowManager, 'ms-window-created', () => {
             this.listenForMsWindowsSignal();
         });
