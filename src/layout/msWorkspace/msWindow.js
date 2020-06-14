@@ -164,6 +164,10 @@ var MsWindow = GObject.registerClass(
                 box.get_width(),
                 box.get_height()
             );
+            box.x1 = Math.round(box.x1);
+            box.y1 = Math.round(box.y1);
+            box.x2 = Math.round(box.x2);
+            box.y2 = Math.round(box.y2);
             this.set_allocation(box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();
