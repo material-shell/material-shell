@@ -19,7 +19,7 @@ Get notified about updates and join me at [https://discord.gg/vBb7D9a](https://d
 ### From source
 1) Clone the project to the gnome-shell extensions folder:
 ```bash
-git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
+git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
 2) Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
