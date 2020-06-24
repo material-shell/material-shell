@@ -26,7 +26,7 @@ git clone https://github.com/material-shell/material-shell.git ~/.local/share/gn
   + On Wayland: Log out and back in
 3) Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
 ```bash
-gnome-shell-extension-tool -e material-shell@papyelgringo
+gnome-extensions enable material-shell@papyelgringo
 ```
 
 ### Arch Linux
