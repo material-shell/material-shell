@@ -1,0 +1,283 @@
+.headline-1 {
+  font-family: "Roboto", sans-serif;
+  font-size: 96px;
+  font-weight: 300;
+  letter-spacing: -1.5px; }
+
+.headline-2 {
+  font-family: "Roboto", sans-serif;
+  font-size: 60px;
+  font-weight: 300;
+  letter-spacing: -0.5px; }
+
+.headline-3 {
+  font-family: "Roboto", sans-serif;
+  font-size: 48px; }
+
+.headline-4 {
+  font-family: "Roboto", sans-serif;
+  font-size: 34px;
+  letter-spacing: 0.25px; }
+
+.headline-5 {
+  font-family: "Roboto", sans-serif;
+  font-size: 24px; }
+
+.headline-6 {
+  font-family: "Roboto", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.15px; }
+
+subtitle-1 {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.15px; }
+
+.subtitle-2 {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px; }
+
+.subtitle-2-bis {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px; }
+
+.body-1 {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.5px; }
+
+.body-2 {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.25px; }
+
+.caption {
+  font-family: "Roboto", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.4px; }
+
+.overline {
+  font-family: "Roboto", sans-serif;
+  font-size: 10px;
+  letter-spacing: 1.5px; }
+
+.light-primary.text-medium-emphasis {
+  color: rgba(0, 0, 0, 0.6); }
+
+.dark-primary.text-medium-emphasis {
+  color: rgba(255, 255, 255, 0.6); }
+
+.workspace-active-indicator {
+  width: 3px; }
+  .light-primary.workspace-active-indicator {
+    background: rgba(0, 0, 0, 0.87); }
+  .dark-primary.workspace-active-indicator {
+    background: rgba(255, 255, 255, 0.87); }
+
+.ripple-wave {
+  border-radius: 10000px; }
+  .light-primary.ripple-wave {
+    background: rgba(0, 0, 0, 0.12); }
+  .dark-primary.ripple-wave {
+    background: rgba(255, 255, 255, 0.12); }
+
+.light-primary.mat-button {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary.mat-button {
+  color: rgba(255, 255, 255, 0.87); }
+
+.light-primary.mat-button:hover, .mat-button.highlighted {
+  background: #2c397f; }
+
+.dark-primary.mat-button:hover, .mat-button.highlighted {
+  background: #707ecd; }
+
+.mat-button.primary {
+  background: #3f51b5; }
+  .light-primary.mat-button.primary {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary.mat-button.primary {
+    color: rgba(255, 255, 255, 0.87); }
+  .light-primary.mat-button.primary:hover, .mat-button.primary.highlighted {
+    background: #2c397f; }
+  .dark-primary.mat-button.primary:hover, .mat-button.primary.highlighted {
+    background: #707ecd; }
+
+.light-primary.mat-button .mat-panel-button {
+  color: rgba(0, 0, 0, 0.6); }
+
+.dark-primary.mat-button .mat-panel-button {
+  color: rgba(255, 255, 255, 0.6); }
+
+.light-primary.mat-button .mat-panel-button.active {
+  background: rgba(0, 0, 0, 0.12); }
+
+.dark-primary.mat-button .mat-panel-button.active {
+  background: rgba(255, 255, 255, 0.12); }
+
+.light-primary.mat-button .mat-panel-button.active {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary.mat-button .mat-panel-button.active {
+  color: rgba(255, 255, 255, 0.87); }
+
+#msPanel {
+  background: #3f51b5;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
+  #msPanel .panel-button {
+    text-align: center;
+    font-weight: bold;
+    -natural-hpadding: 0px;
+    -minimum-hpadding: 0px; }
+    .light-primary#msPanel .panel-button {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary#msPanel .panel-button {
+      color: rgba(255, 255, 255, 0.6); }
+    #msPanel .panel-button .app-menu-icon {
+      -st-icon-style: symbolic;
+      margin-left: 4px;
+      margin-right: 4px; }
+    .light-primary#msPanel .panel-button:hover {
+      background: #2c397f; }
+    .dark-primary#msPanel .panel-button:hover {
+      background: #707ecd; }
+    #msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
+      box-shadow: inset 3px 0 0px #3f51b5; }
+      .light-primary#msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
+        background: #2c397f; }
+      .dark-primary#msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
+        background: #707ecd; }
+      .light-primary#msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
+        color: rgba(0, 0, 0, 0.87); }
+      .dark-primary#msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
+        color: rgba(255, 255, 255, 0.87); }
+    #msPanel .panel-button .system-status-icon {
+      icon-size: 1.09em; }
+    .light-primary.unlock-screen #msPanel .panel-button, .login-screen #msPanel .panel-button, .lock-screen #msPanel .panel-button {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary.unlock-screen #msPanel .panel-button, .login-screen #msPanel .panel-button, .lock-screen #msPanel .panel-button {
+      color: rgba(255, 255, 255, 0.6); }
+    .light-primary.unlock-screen #msPanel .panel-button:focus, .unlock-screen #msPanel .panel-button:hover, .unlock-screen #msPanel .panel-button:active, .login-screen #msPanel .panel-button:focus, .login-screen #msPanel .panel-button:hover, .login-screen #msPanel .panel-button:active, .lock-screen #msPanel .panel-button:focus, .lock-screen #msPanel .panel-button:hover, .lock-screen #msPanel .panel-button:active {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.unlock-screen #msPanel .panel-button:focus, .unlock-screen #msPanel .panel-button:hover, .unlock-screen #msPanel .panel-button:active, .login-screen #msPanel .panel-button:focus, .login-screen #msPanel .panel-button:hover, .login-screen #msPanel .panel-button:active, .lock-screen #msPanel .panel-button:focus, .lock-screen #msPanel .panel-button:hover, .lock-screen #msPanel .panel-button:active {
+      color: rgba(255, 255, 255, 0.87); }
+  #msPanel .panel-status-indicators-box {
+    min-height: 24px;
+    vertical-align: middle;
+    text-align: center; }
+  #msPanel .panel-status-indicators-box,
+  #msPanel .panel-status-menu-box {
+    spacing: 2px; }
+
+#topPanel {
+  background: white;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
+  #topPanel .task-active-indicator {
+    background: #3f51b5;
+    height: 2px; }
+  #topPanel .mat-panel-button .mat-panel-button-icon {
+    color: rgba(0, 0, 0, 0.6); }
+  #topPanel .mat-panel-button.active {
+    background: rgba(0, 0, 0, 0.12); }
+    #topPanel .mat-panel-button.active .mat-panel-button-icon {
+      color: rgba(0, 0, 0, 0.87); }
+
+.task-bar-item {
+  font-size: 14px; }
+  .light-primary.task-bar-item.active .task-bar-item-content, .task-bar-item.active .task-bar-icon-container {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary.task-bar-item.active .task-bar-item-content, .task-bar-item.active .task-bar-icon-container {
+    color: rgba(255, 255, 255, 0.87); }
+  .light-primary.task-bar-item .task-bar-icon-container {
+    color: rgba(0, 0, 0, 0.6); }
+  .dark-primary.task-bar-item .task-bar-icon-container {
+    color: rgba(255, 255, 255, 0.6); }
+  .task-bar-item .app-icon {
+    icon-size: 24px;
+    width: 24px;
+    height: 24px; }
+  .task-bar-item .task-bar-item-content {
+    padding: 0px 12px; }
+    .light-primary.task-bar-item .task-bar-item-content {
+      color: rgba(0, 0, 0, 0.6); }
+    .dark-primary.task-bar-item .task-bar-item-content {
+      color: rgba(255, 255, 255, 0.6); }
+    .task-bar-item .task-bar-item-content .task-bar-item-title {
+      max-width: 248px;
+      margin-left: 8px;
+      margin-right: 8px;
+      font-weight: 600;
+      font-size: 14px; }
+    .task-bar-item .task-bar-item-content .task-close-button {
+      border-radius: 20px;
+      width: 24px;
+      height: 20px; }
+    .task-bar-item .task-bar-item-content .task-small-icon {
+      icon-size: 18px; }
+      .light-primary.task-bar-item .task-bar-item-content .task-small-icon {
+        color: rgba(0, 0, 0, 0.6); }
+      .dark-primary.task-bar-item .task-bar-item-content .task-small-icon {
+        color: rgba(255, 255, 255, 0.6); }
+
+.system-status-icon {
+  height: 24px;
+  width: 24px;
+  padding: 0px; }
+
+.clock-display * {
+  padding: 4px 0px !important; }
+
+.mat-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
+  .mat-card .mat-card-title {
+    background: #3f51b5;
+    height: 72px;
+    padding: 0px 24px; }
+    .light-primary.mat-card .mat-card-title {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.mat-card .mat-card-title {
+      color: rgba(255, 255, 255, 0.87); }
+    .mat-card .mat-card-title .mat-card-title-icon {
+      icon-size: 40px;
+      margin-right: 16px; }
+    .mat-card .mat-card-title .mat-card-title-label {
+      font-size: 24px; }
+  .mat-card .mat-card-content {
+    padding: 24px; }
+    .light-primary.mat-card .mat-card-content {
+      color: rgba(0, 0, 0, 0.87); }
+    .dark-primary.mat-card .mat-card-content {
+      color: rgba(255, 255, 255, 0.87); }
+
+.search-entry {
+  background: #3f51b5;
+  border-radius: 48px; }
+
+.surface {
+  background: #3f51b5; }
+
+.surface-lighter {
+  background: #707ecd; }
+
+.surface-darker {
+  background: #2c397f; }
+
+/* .dark-theme {
+    @include buildTheme('dark');
+}
+
+.light-theme {
+    @include buildTheme('light');
+}
+
+.primary-theme {
+    @include buildTheme('primary');
+} */

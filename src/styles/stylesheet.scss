@@ -1,0 +1,425 @@
+@import 'typography';
+$theme: 'dark' !default;
+$color-primary: #3f51b5;
+$ripple: rgba(255, 255, 255, 0.12);
+$shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+
+@function getForegroundColor($bgColor, $opacity) {
+    @if ($bgColor== 'light') {
+        @return rgba(0, 0, 0, $opacity);
+    }
+
+    @if ($bgColor== 'dark') {
+        @return rgba(255, 255, 255, $opacity);
+    }
+}
+
+@mixin foreground($theme, $opacity) {
+    @if ($theme== 'light') {
+        color: getForegroundColor('light', $opacity);
+    }
+
+    @if ($theme== 'dark') {
+        color: getForegroundColor('dark', $opacity);
+    }
+
+    @if ($theme== 'primary') {
+        @at-root .light-primary#{&} {
+            color: getForegroundColor('light', $opacity);
+        }
+
+        @at-root .dark-primary#{&} {
+            color: getForegroundColor('dark', $opacity);
+        }
+    }
+}
+
+@function getBackgroundColor($theme) {
+    @if ($theme== 'light') {
+        @return rgba(255, 255, 255, 1);
+    }
+
+    @if ($theme== 'dark') {
+        @return rgba(25, 25, 25, 1);
+    }
+
+    @if ($theme== 'primary') {
+        @return $color-primary;
+    }
+}
+
+@mixin background($theme) {
+    background: getBackgroundColor($theme);
+}
+
+@mixin background-darker($theme) {
+    $color: getBackgroundColor($theme);
+    background: hsl(hue($color), saturation($color), lightness($color) * 0.7);
+}
+
+@mixin background-lighter($theme) {
+    $color: getBackgroundColor($theme);
+    background: hsl(hue($color), saturation($color), lightness($color) * 1.3);
+}
+
+@mixin foreground-as-background($theme, $opacity) {
+    @if ($theme== 'light') {
+        background: rgba(0, 0, 0, $opacity);
+    }
+
+    @if ($theme== 'dark') {
+        background: rgba(255, 255, 255, $opacity);
+    }
+
+    @if ($theme== 'primary') {
+        @at-root .light-primary#{&} {
+            background: rgba(0, 0, 0, $opacity);
+        }
+
+        @at-root .dark-primary#{&} {
+            background: rgba(255, 255, 255, $opacity);
+        }
+    }
+}
+
+@mixin hover($theme) {
+    @if ($theme== 'light') {
+        background: rgba(0, 0, 0, 0.04);
+    }
+
+    @if ($theme== 'dark') {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    @if ($theme== 'primary') {
+        @at-root .light-primary#{&} {
+            @include background-darker($theme);
+        }
+
+        @at-root .dark-primary#{&} {
+            @include background-lighter($theme);
+        }
+    }
+}
+
+@mixin active($theme) {
+    @if ($theme== 'light') {
+        background: rgba(0, 0, 0, 0.12);
+    }
+
+    @if ($theme== 'dark') {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    @if ($theme== 'primary') {
+        @at-root .light-primary#{&} {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        @at-root .dark-primary#{&} {
+            background: rgba(255, 255, 255, 0.12);
+        }
+    }
+}
+
+@mixin foreground-high-emphasis($theme) {
+    @include foreground($theme, 0.87);
+}
+
+@mixin foreground-medium-emphasis($theme) {
+    @include foreground($theme, 0.6);
+}
+
+@mixin foreground-disabled($theme) {
+    @include foreground($theme, 0.38);
+}
+
+@mixin foreground-as-background-high-emphasis($theme) {
+    @include foreground-as-background($theme, 0.87);
+}
+
+@mixin foreground-as-background-medium-emphasis($theme) {
+    @include foreground-as-background($theme, 0.6);
+}
+
+@mixin foreground-as-background-disabled($theme) {
+    @include foreground-as-background($theme, 0.38);
+}
+
+.text-medium-emphasis {
+    @include foreground-medium-emphasis($theme);
+}
+
+.workspace-active-indicator {
+    @if ($theme== 'primary') {
+        @include foreground-as-background-high-emphasis('primary');
+    } @else {
+        @include background('primary');
+    }
+
+    width: 3px;
+}
+
+.ripple-wave {
+    //This is a hack because percentage is not handled yet
+    border-radius: 10000px;
+    @include active($theme);
+}
+
+.mat-button {
+    @include foreground-high-emphasis($theme);
+
+    &:hover,
+    &.highlighted {
+        @include hover($theme);
+    }
+
+    &.primary {
+        @include background('primary');
+
+        @include foreground-high-emphasis('primary');
+
+        &:hover,
+        &.highlighted {
+            @include hover('primary');
+        }
+    }
+}
+
+.mat-button {
+    .mat-panel-button {
+        @include foreground-medium-emphasis($theme);
+
+        &.active {
+            @include active($theme);
+
+            @if ($theme== 'light') {
+                color: $color-primary;
+            } @else {
+                @include foreground-high-emphasis($theme);
+            }
+        }
+    }
+}
+
+#msPanel {
+    @include background($theme);
+    box-shadow: $shadow;
+
+    .panel-button {
+        @include foreground-medium-emphasis($theme);
+        text-align: center;
+        font-weight: bold;
+        -natural-hpadding: 0px;
+        -minimum-hpadding: 0px;
+        .app-menu-icon {
+            -st-icon-style: symbolic;
+            margin-left: 4px;
+            margin-right: 4px;
+            //dimensions of the icon are hardcoded
+        }
+
+        &:hover {
+            @include hover($theme);
+        }
+
+        &:active,
+        &:overview,
+        &:focus,
+        &:checked {
+            // Trick due to St limitations. It needs a background to draw
+            // a box-shadow
+            //background-color: rgba(0, 0, 0, 0.01);
+            @include hover($theme);
+            box-shadow: inset 3px 0 0px $color-primary;
+            @include foreground-high-emphasis($theme);
+        }
+
+        .system-status-icon {
+            icon-size: 1.09em;
+        }
+        .unlock-screen &,
+        .login-screen &,
+        .lock-screen & {
+            @include foreground-medium-emphasis($theme);
+            &:focus,
+            &:hover,
+            &:active {
+                @include foreground-high-emphasis($theme);
+            }
+        }
+    }
+
+    .panel-status-indicators-box {
+        min-height: 24px;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .panel-status-indicators-box,
+    .panel-status-menu-box {
+        spacing: 2px;
+    }
+}
+
+#topPanel {
+    $topPanelTheme: $theme;
+
+    @if ($theme== 'primary') {
+        $topPanelTheme: 'light';
+    }
+
+    @include background($topPanelTheme);
+    box-shadow: $shadow;
+
+    .task-active-indicator {
+        @if ($topPanelTheme== 'dark') {
+            @include background('light');
+        } @else {
+            @include background('primary');
+        }
+
+        height: 2px;
+    }
+
+    .mat-panel-button {
+        .mat-panel-button-icon {
+            @include foreground-medium-emphasis($topPanelTheme);
+        }
+
+        &.active {
+            @include active($topPanelTheme);
+
+            .mat-panel-button-icon {
+                @include foreground-high-emphasis($topPanelTheme);
+            }
+        }
+    }
+}
+
+.task-bar-item {
+    font-size: 14px;
+
+    &.active {
+        .task-bar-item-content,
+        .task-bar-icon-container {
+            @if ($theme== 'light') {
+                color: $color-primary;
+            } @else {
+                @include foreground-high-emphasis($theme);
+            }
+        }
+    }
+    .task-bar-icon-container {
+        @include foreground-medium-emphasis($theme);
+    }
+    .app-icon {
+        icon-size: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+    .task-bar-item-content {
+        padding: 0px 12px;
+        @include foreground-medium-emphasis($theme);
+
+        .task-bar-item-title {
+            max-width: 248px;
+            margin-left: 8px;
+            margin-right: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .task-close-button {
+            border-radius: 20px;
+            width: 24px;
+            height: 20px;
+        }
+        .task-small-icon {
+            icon-size: 18px;
+            @include foreground-medium-emphasis($theme);
+        }
+    }
+}
+
+.system-status-icon {
+    height: 24px;
+    width: 24px;
+    padding: 0px;
+}
+
+.clock-display {
+    * {
+        padding: 4px 0px !important;
+    }
+}
+
+.mat-card {
+    @if ($theme== 'primary') {
+        @include background('light');
+    } @else {
+        @include background($theme);
+    }
+
+    border-radius: 6px;
+    box-shadow: $shadow;
+
+    .mat-card-title {
+        @if ($theme== 'primary') {
+            @include background($theme);
+        } @else {
+            @include hover($theme);
+        }
+
+        @if ($theme== 'light') {
+            color: $color-primary;
+        } @else {
+            @include foreground-high-emphasis($theme);
+        }
+
+        height: 72px;
+        padding: 0px 24px;
+
+        .mat-card-title-icon {
+            icon-size: 40px;
+            margin-right: 16px;
+        }
+
+        .mat-card-title-label {
+            font-size: 24px;
+        }
+    }
+
+    .mat-card-content {
+        padding: 24px;
+        @include foreground-high-emphasis($theme);
+    }
+}
+
+.search-entry {
+    @include background($theme);
+    border-radius: 48px;
+}
+
+.surface {
+    @include background($theme);
+}
+.surface-lighter {
+    @include background-lighter($theme);
+}
+.surface-darker {
+    @include background-darker($theme);
+}
+
+/* .dark-theme {
+    @include buildTheme('dark');
+}
+
+.light-theme {
+    @include buildTheme('light');
+}
+
+.primary-theme {
+    @include buildTheme('primary');
+} */

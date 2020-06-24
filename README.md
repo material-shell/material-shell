@@ -13,20 +13,20 @@ Made by following the **[Material Design guidelines](https://material.io)** - a 
 Get notified about updates and join me at [https://discord.gg/vBb7D9a](https://discord.gg/vBb7D9a)
 #
 #### STATUS: BETA (expect bugs!)
-#### REQUIRES: gnome-shell >=3.32.0
+#### REQUIRES: gnome-shell >=3.34.0
 
 ## Installation
 ### From source
 1) Clone the project to the gnome-shell extensions folder:
 ```bash
-git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
+git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
 2) Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
   + On Wayland: Log out and back in
 3) Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
 ```bash
-gnome-shell-extension-tool -e material-shell@papyelgringo
+gnome-extensions enable material-shell@papyelgringo
 ```
 
 ### Arch Linux
