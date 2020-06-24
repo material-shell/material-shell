@@ -3,9 +3,10 @@ Please make sure you are on the latest version before submitting any issues.
 Before clicking submit, run `git pull` and restart GNOME Shell. If the issue persists, please follow these steps:
 
 **Please include:**
-+ [ ] Output from `git show`.
++ [ ] Current commit information: output from `git rev-parse --short HEAD`.
+  + Please wrap it in backticks (\`)
++ [ ] GNOME log data: output from `journalctl /usr/bin/gnome-shell`
   + Please wrap it in three backticks (\`\`\`)
-+ [ ] Output from `journalctl /usr/bin/gnome-shell`
   + Please include as much output as possible. If necessary, create a Gist and link to it.
 + [ ] Are you using Wayland or X.org?
 + [ ] A detailed explanation of the bug.
