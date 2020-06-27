@@ -386,6 +386,17 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
+    // const activateApplicationManager = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    // itemRows.push(
+    //     makeItemRow(
+    //         'Application manager',
+    //         'Activate application manager',
+    //         activateApplicationManager
+    //     )
+    // );
+    // activateApplicationManager.connect('activate' , () => {
+
+    // })
     notebook.append_page(
         ...makePage('Global settings', makeItemList(itemRows))
     );

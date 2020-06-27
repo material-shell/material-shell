@@ -20,7 +20,7 @@ var MsWorkspace = class MsWorkspace {
 
         // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
-        this.tileableList.push(this.appLauncher);
+        //this.tileableList.push(this.appLauncher);
 
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         if (initialState) {
