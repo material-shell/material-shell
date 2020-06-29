@@ -7,6 +7,7 @@ const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
+const { getSettings } = Me.imports.src.utils.settings;
 
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
@@ -37,9 +38,18 @@ var MsWorkspace = class MsWorkspace {
         }
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
-        const Layout = Me.tilingManager.getLayoutByKey(
-            initialState ? initialState.tilingLayout : 'maximized'
-        );
+        let defaultLayout = getSettings('layouts').get_string('defaultlayout');
+        let Layout;
+        if (defaultLayout !== '' && !initialState) {
+            Layout = Me.tilingManager.getLayoutByKey(
+                defaultLayout
+            );
+        } else {
+            Layout = Me.tilingManager.getLayoutByKey(
+                initialState ? initialState.tilingLayout : 'maximized'
+            );
+        }
+
         this.tilingLayout = new Layout(this);
         this.msWorkspaceActor.tileableContainer.set_layout_manager(
             this.tilingLayout

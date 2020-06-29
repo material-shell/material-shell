@@ -4,7 +4,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 
 // eslint-disable-next-line no-unused-vars
-function init() {}
+function init() { }
 
 const makePage = (title, content) => {
     const tabWindow = new Gtk.ScrolledWindow({ vexpand: true });
@@ -12,8 +12,9 @@ const makePage = (title, content) => {
     const tabLabel = new Gtk.Label({
         label: title,
         halign: Gtk.Align.START,
-        use_markup: false,
+        use_markup: false
     });
+    tabWindow.set_name(title);
     return [tabWindow, tabLabel];
 };
 
@@ -45,7 +46,9 @@ const makeItemList = (rows) => {
     const listWrapper = new Gtk.VBox({
         border_width: 10,
     });
-    rows.forEach((row) => listBox.add(row));
+    rows.forEach((row) => {
+        listBox.add(row);
+    });
     listWrapper.add(listBox);
     return listWrapper;
 };
@@ -89,7 +92,6 @@ function buildPrefsWidget() {
     accelTab(notebook);
     layoutsTab(notebook);
     layoutsSettingsTab(notebook);
-
     let mainVBox = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
     });
@@ -184,17 +186,57 @@ function accelTab(notebook) {
 
     notebook.append_page(...makePage('Shortcuts', accelGrid));
 }
+function getDefaultLayoutCheckbox() {
+    const settings = getSettings('layouts');
+
+    let activeLayouts = Object.keys(layouts).filter(entry => {
+        return settings.get_boolean(entry.toString()) === true;
+    });
+    let model = new Gtk.ListStore();
+    model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
+    activeLayouts.forEach(layout => {
+        model.set(model.append(), [0, 1], [layout, layout]);
+    });
+    let cbox = new Gtk.ComboBox({ model: model });
+    let renderer = new Gtk.CellRendererText();
+    cbox.pack_start(renderer, true);
+    cbox.add_attribute(renderer, 'text', 1);
+    let defaultLayout = settings.get_string('defaultlayout');
+    if (defaultLayout !== '') {
+        cbox.set_active(activeLayouts.indexOf(defaultLayout));
+    }
+    cbox.connect('changed', (entry) => {
+        let [success, iter] = cbox.get_active_iter();
+        if (!success) return;
+        let value = model.get_value(iter, 0);
+        settings.set_string('defaultlayout', value);
+    });
+    return cbox;
+
+
+}
 
 function layoutsTab(notebook) {
     const settings = getSettings('layouts');
+    let setDefaultLayoutAdded = false;
     const layoutItemCreator = (rows, [layout, description]) => {
+        if (!setDefaultLayoutAdded) {
+            let cbox = getDefaultLayoutCheckbox();
+            rows.push(
+                makeItemRow(
+                    'Default layout',
+                    'Determines the default layout for Material Shell',
+                    cbox
+                )
+            );
+            setDefaultLayoutAdded = true;
+        }
         const name = layout
             .replace('-', ' ')
             .replace(/^\w/g, (c) => c.toUpperCase());
         const item = new Gtk.Switch({ valign: Gtk.Align.CENTER });
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
         rows.push(makeItemRow(name, description, item));
-
         if (layout === 'ratio') {
             const ratio = Gtk.SpinButton.new_with_range(0, 1, 0.01);
             settings.bind(
@@ -221,6 +263,8 @@ function layoutsTab(notebook) {
         )
     );
 }
+
+
 
 function layoutsSettingsTab(notebook) {
     const settings = getSettings('layouts');
@@ -314,7 +358,7 @@ function cssHexString(css) {
             }
         }
         xx = parseInt(css.slice(start, end)).toString(16);
-        if (xx.length == 1) xx = '0' + xx;
+        if (xx.length == 1) xx = `0${xx}`;
         rrggbb += xx;
         css = css.slice(end);
     }
