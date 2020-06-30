@@ -273,7 +273,7 @@ var MsWorkspace = class MsWorkspace {
         return (
             !containFullscreenWindow &&
             this.msWorkspaceManager &&
-            !this.msWorkspaceManager.noUImode
+            Me.layout.panelsVisible
         );
     }
 

@@ -648,11 +648,9 @@ var MsWindow = GObject.registerClass(
                     Me.msWindowManager.msDndManager.dragInProgress
                 );
                 let shouldBeHidden =
-                    (!this.visible ||
-                        this.get_parent() === null ||
-                        Me.msWindowManager.msDndManager.dragInProgress) &&
-                    !Me.msWorkspaceManager.noUImode;
-                logFocus(`shouldBeHiddn`, this, shouldBeHidden);
+                    !this.visible ||
+                    this.get_parent() === null ||
+                    Me.msWindowManager.msDndManager.dragInProgress;
                 if (shouldBeHidden && !this.metaWindow.minimized) {
                     this.metaWindow.minimize();
                 } else if (this.metaWindow.minimized) {

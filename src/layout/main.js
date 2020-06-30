@@ -16,7 +16,7 @@ var MsMain = GObject.registerClass(
     class MsMain extends St.Widget {
         _init() {
             super._init({});
-
+            this.panelsVisible = true;
             Main.uiGroup.insert_child_above(this, global.window_group);
             this.monitorsContainer = [];
             this.monitorPanelSpacerList = [];
@@ -24,9 +24,7 @@ var MsMain = GObject.registerClass(
             this.add_child(this.aboveContainer);
             this.buildMonitorsLayout();
 
-            this.monitorsContainer[
-                Main.layoutManager.primaryIndex
-            ].setMsWorkspaceActor(
+            this.primaryMonitorContainer.setMsWorkspaceActor(
                 Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
             );
 
@@ -155,6 +153,9 @@ var MsMain = GObject.registerClass(
             });
         }
 
+        get primaryMonitorContainer() {
+            return this.monitorsContainer[Main.layoutManager.primaryIndex];
+        }
         onSwitchWorkspace(from, to) {
             this.onMsWorkspacesChanged();
         }
@@ -165,6 +166,12 @@ var MsMain = GObject.registerClass(
             this.onMsWorkspacesChanged();
             const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             activeMsWorkspace.refreshFocus();
+        }
+
+        togglePanelsVisibilities() {
+            this.panelsVisible = !this.panelsVisible;
+            this.primaryMonitorContainer.panel.visible = this.panelsVisible;
+            Me.msWorkspaceManager.refreshVisiblePrimaryMsWorkspace();
         }
 
         add_child(actor) {
@@ -253,7 +260,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
         }
 
         setFullscreen(monitorIsFullscreen) {
-            this.panel.visible = !monitorIsFullscreen;
+            this.panel.visible =
+                Me.layout.panelsVisible && !monitorIsFullscreen;
             super.setFullscreen(monitorIsFullscreen);
         }
 

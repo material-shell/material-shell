@@ -16,7 +16,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
         this.categoryList = Me.stateManager.getState('categoryList') || [];
-        this.noUImode = false;
         this.metaWindowFocused = null;
 
         this.workspaceTracker = Main.wm._workspaceTracker;

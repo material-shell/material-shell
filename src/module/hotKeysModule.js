@@ -313,9 +313,8 @@ var HotKeysModule = class HotKeysModule {
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
             () => {
-                const noUImode = Me.msWorkspaceManager.noUImode;
-                Me.msWorkspaceManager.noUImode = !noUImode;
-                Me.layout.visible = noUImode;
+                Me.layout.togglePanelsVisibilities();
+
                 logFocus('');
                 logFocus('');
                 logFocus('');
