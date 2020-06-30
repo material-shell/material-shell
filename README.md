@@ -10,42 +10,30 @@ Made by following the **[Material Design guidelines](https://material.io)** - a 
 ![Demo GIF](demo.gif)
 
 ### Discord
-Get notified about updates and join me at [https://discord.gg/vBb7D9a](https://discord.gg/vBb7D9a)
+Get notified about updates and join me on [the Material Shell Discord](https://discord.gg/vBb7D9a)!
 #
 #### STATUS: BETA (expect bugs!)
-#### REQUIRES: gnome-shell >=3.32.0
+#### REQUIRES: gnome-shell >= 3.34.0
 
 ## Installation
-### From source
-1) Clone the project to the gnome-shell extensions folder:
-```bash
-git clone https://github.com/PapyElGringo/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
-```
-2) Reload GNOME Shell:
+
+1. Download the extension. Depending on your distribution, there are several ways to acquire it:
+
+| Distribution | Install via | Command |
+| :----------- | :---------- | :------ |
+| Arch Linux   | AUR         | `yay -S gnome-shell-extension-material-shell-git` |
+| Fedora       | DNF         | `sudo dnf install gnome-shell-extension-material-shell` |
+| Others       | source      | `git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` |
+
+(We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
+
+2. Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
   + On Wayland: Log out and back in
-3) Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
+3. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
 ```bash
-gnome-shell-extension-tool -e material-shell@papyelgringo
+gnome-extensions enable material-shell@papyelgringo
 ```
-
-### Arch Linux
-1) You can install [Material Shell from the AUR](https://aur.archlinux.org/packages/gnome-shell-extension-material-shell-git/). \
-Assuming you're using yay:
-```
-yay -S gnome-shell-extension-material-shell-git
-```
-2) Reload GNOME Shell:
-  + On X.org: Hit `Alt+F2` and type the command `r`
-  + On Wayland: Log out and back in
-3) Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
-```bash
-gnome-shell-extension-tool -e material-shell@papyelgringo
-```
-
-### Other Distributions
-- Fedora: `sudo dnf install gnome-shell-extension-material-shell`
-And more to come...
 
 ## Workflow Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
