@@ -328,7 +328,8 @@ var MsWorkspace = class MsWorkspace {
         }
         if (
             this.tileableFocused instanceof MsWindow &&
-            this.tileableFocused.metaWindow
+            this.tileableFocused.metaWindow &&
+            !this.tileableFocused.dragged
         ) {
             this.workspace.activate_with_focus(
                 this.tileableFocused.metaWindow,

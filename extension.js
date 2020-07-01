@@ -63,7 +63,7 @@ function enable() {
             Me.tilingManager = new TilingManager();
             Me.msWindowManager = new MsWindowManager();
             Me.msWorkspaceManager = new MsWorkspaceManager();
-            modules = [...modules, new HotKeysModule()];
+            modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();

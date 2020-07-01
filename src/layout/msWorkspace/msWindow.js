@@ -653,7 +653,7 @@ var MsWindow = GObject.registerClass(
                     Me.msWindowManager.msDndManager.dragInProgress;
                 if (shouldBeHidden && !this.metaWindow.minimized) {
                     this.metaWindow.minimize();
-                } else if (this.metaWindow.minimized) {
+                } else if (!shouldBeHidden && this.metaWindow.minimized) {
                     this.metaWindow.unminimize();
                 }
             }

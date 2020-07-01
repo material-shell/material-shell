@@ -1,10 +1,11 @@
-const { GLib, Meta, Clutter } = imports.gi;
+const { GLib, Meta, Clutter, GObject } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor, throttle } = Me.imports.src.utils.index;
 const Main = imports.ui.main;
 const { MsManager } = Me.imports.src.manager.msManager;
+const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 
 /* exported MsDndManager */
 var MsDndManager = class MsDndManager extends MsManager {
@@ -14,6 +15,7 @@ var MsDndManager = class MsDndManager extends MsManager {
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.dragInProgress = false;
+        this.inputGrabber = new InputGrabber();
         this.observe(this.msWindowManager, 'ms-window-created', () => {
             this.listenForMsWindowsSignal();
         });
@@ -42,6 +44,7 @@ var MsDndManager = class MsDndManager extends MsManager {
                 }
             }
         );
+
         this.observe(
             global.display,
             'grab-op-begin',
@@ -89,6 +92,9 @@ var MsDndManager = class MsDndManager extends MsManager {
         );
     }
 
+    /**
+     * Handle drag and drop for placeholders
+     */
     listenForMsWindowsSignal() {
         this.msWindowManager.msWindowList.forEach((msWindow) => {
             if (!this.signalMap.has(msWindow)) {
@@ -102,19 +108,13 @@ var MsDndManager = class MsDndManager extends MsManager {
                             break;
                     }
                 });
-                /* const id = msWindow.connect('dragged-changed', (_, dragged) => {
-                    if (dragged) {
-                        this.startDrag(msWindow);
-                    } else {
-                        this.endDrag();
-                    }
-                }); */
                 this.signalMap.set(msWindow, id);
             }
         });
     }
 
     startDrag(msWindow) {
+        global.stage.add_child(this.inputGrabber);
         this.dragInProgress = true;
         this.msWindowDragged = msWindow;
         this.originalParent = msWindow.get_parent();
@@ -138,11 +138,13 @@ var MsDndManager = class MsDndManager extends MsManager {
             Math.round(globalX - msWindow.width * this.originPointerAnchor[0]),
             Math.round(globalY - msWindow.height * this.originPointerAnchor[1])
         );
-        global.stage.grab_key_focus();
+        Main.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
+        Main.popModal(this.inputGrabber);
+        global.stage.remove_child(this.inputGrabber);
         this.msWindowDragged.unFreezeAllocation();
         reparentActor(this.msWindowDragged, this.originalParent);
         this.dragInProgress = false;
@@ -224,3 +226,54 @@ var MsDndManager = class MsDndManager extends MsManager {
             });
     }
 };
+
+/* exported InputGrabber */
+var InputGrabber = GObject.registerClass(
+    class InputGrabber extends Clutter.Actor {
+        _init() {
+            super._init({
+                name: 'InputGrabber',
+                reactive: true,
+            });
+            this.add_constraint(
+                new Clutter.BindConstraint({
+                    source: global.stage,
+                    coordinate: Clutter.BindCoordinate.ALL,
+                })
+            );
+        }
+        vfunc_key_press_event(keyEvent) {
+            let actionId = global.display.get_keybinding_action(
+                keyEvent.hardware_keycode,
+                keyEvent.modifier_state
+            );
+            if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
+                const actionName = Me.hotKeysModule.actionIdToNameMap.get(
+                    actionId
+                );
+                switch (actionName) {
+                    case KeyBindingAction.PREVIOUS_WINDOW:
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_LEFT
+                        )();
+                        break;
+                    case KeyBindingAction.NEXT_WINDOW:
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_RIGHT
+                        )();
+                        break;
+                    case KeyBindingAction.PREVIOUS_WORKSPACE:
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_TOP
+                        )();
+                        break;
+                    case KeyBindingAction.NEXT_WORKSPACE:
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_BOTTOM
+                        )();
+                        break;
+                }
+            }
+        }
+    }
+);

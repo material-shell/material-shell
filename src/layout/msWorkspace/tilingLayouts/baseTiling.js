@@ -114,6 +114,7 @@ var BaseTilingLayout = GObject.registerClass(
             box.x1 = 0;
             box.y1 = 0;
             this.msWorkspace.tileableList.forEach((tileable) => {
+                if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
                     box || this.tileableContainer.allocation,
