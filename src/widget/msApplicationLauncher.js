@@ -18,7 +18,9 @@ var MsApplicationLauncher = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             this.add_style_class_name('surface-darker');
 
-            this.appListContainer = new MsApplicationButtonContainer();
+            this.appListContainer = new MsApplicationButtonContainer(
+                msWorkspace.monitor
+            );
             this.add_child(this.appListContainer);
             AppsManager.getApps().forEach((app) => {
                 const button = new MsApplicationButton(app);
@@ -75,8 +77,9 @@ var MsApplicationLauncher = GObject.registerClass(
 
 var MsApplicationButtonContainer = GObject.registerClass(
     class MsApplicationButtonContainer extends St.Widget {
-        _init() {
+        _init(monitor) {
             super._init({});
+            this.monitor = monitor;
             this.appButtonList = [];
             this.currentButtonFocused = null;
             this.inputLayout = new St.BoxLayout({});
@@ -201,6 +204,13 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             this.add_child(this.expandButton); */
         }
+
+        get buttonSize() {
+            return (
+                BUTTON_SIZE *
+                global.display.get_monitor_scale(this.monitor.index)
+            );
+        }
         reset() {
             this.inputContainer.set_text('');
         }
@@ -289,10 +299,13 @@ var MsApplicationButtonContainer = GObject.registerClass(
             if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
-            const containerPadding = 16;
+            const containerPadding =
+                16 * global.display.get_monitor_scale(this.monitor.index);
             let expandButtonHeight = 0;
-            const searchHeight = 48;
-            const searchMargin = 24;
+            const searchHeight =
+                48 * global.display.get_monitor_scale(this.monitor.index);
+            const searchMargin =
+                24 * global.display.get_monitor_scale(this.monitor.index);
             const availableWidth =
                 contentBox.get_width() - containerPadding * 2;
 
@@ -303,8 +316,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 searchHeight -
                 searchMargin;
             const numberOfButtons = this.filteredAppButtonList.length;
-            this.numberOfColumn = Math.floor(availableWidth / BUTTON_SIZE);
-            const maxNumberOfRow = Math.floor(availableHeight / BUTTON_SIZE);
+            this.numberOfColumn = Math.floor(availableWidth / this.buttonSize);
+            const maxNumberOfRow = Math.floor(
+                availableHeight / this.buttonSize
+            );
             const numberOfRowNeeded = Math.ceil(
                 numberOfButtons / this.numberOfColumn
             );
@@ -314,12 +329,12 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             const horizontalOffset =
                 (contentBox.get_width() -
-                    (BUTTON_SIZE * this.numberOfColumn +
+                    (this.buttonSize * this.numberOfColumn +
                         containerPadding * 2)) /
                 2;
             const verticalOffset =
                 (contentBox.get_height() -
-                    (BUTTON_SIZE * this.numberOfRow +
+                    (this.buttonSize * this.numberOfRow +
                         containerPadding * 2 +
                         expandButtonHeight +
                         searchHeight +
@@ -348,14 +363,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         const buttonBox = new Clutter.ActorBox();
                         buttonBox.x1 =
                             containerBox.x1 +
-                            BUTTON_SIZE * x +
+                            this.buttonSize * x +
                             containerPadding;
-                        buttonBox.x2 = buttonBox.x1 + BUTTON_SIZE;
+                        buttonBox.x2 = buttonBox.x1 + this.buttonSize;
                         buttonBox.y1 =
                             containerBox.y1 +
-                            BUTTON_SIZE * y +
+                            this.buttonSize * y +
                             containerPadding;
-                        buttonBox.y2 = buttonBox.y1 + BUTTON_SIZE;
+                        buttonBox.y2 = buttonBox.y1 + this.buttonSize;
                         button.visible = true;
                         button.allocate(buttonBox, flags);
                     }
