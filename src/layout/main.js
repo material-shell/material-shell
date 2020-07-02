@@ -52,7 +52,6 @@ var MsMain = GObject.registerClass(
                 this.add_child(topBarSpacer);
                 Main.layoutManager._trackActor(topBarSpacer, {
                     affectsStruts: true,
-                    trackFullscreen: true,
                 });
 
                 this.monitorPanelSpacerList.push(topBarSpacer);
@@ -170,7 +169,19 @@ var MsMain = GObject.registerClass(
 
         togglePanelsVisibilities() {
             this.panelsVisible = !this.panelsVisible;
-            this.primaryMonitorContainer.panel.visible = this.panelsVisible;
+            [
+                this.primaryMonitorContainer.panel,
+                ...this.monitorPanelSpacerList,
+            ].forEach((actor) => {
+                actor.visible = this.panelsVisible;
+                if (this.panelsVisible) {
+                    Main.layoutManager._trackActor(actor, {
+                        affectsStruts: true,
+                    });
+                } else {
+                    Main.layoutManager._untrackActor(actor);
+                }
+            });
             Me.msWorkspaceManager.refreshVisiblePrimaryMsWorkspace();
         }
 
