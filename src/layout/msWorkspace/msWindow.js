@@ -642,11 +642,6 @@ var MsWindow = GObject.registerClass(
 
         updateMetaWindowVisibility() {
             if (this.metaWindow) {
-                logFocus(
-                    this.visible,
-                    this.get_parent(),
-                    Me.msWindowManager.msDndManager.dragInProgress
-                );
                 let shouldBeHidden =
                     !this.visible ||
                     this.get_parent() === null ||
