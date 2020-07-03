@@ -1,7 +1,9 @@
 # Material Shell
 A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
 
-Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface.
+Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
+
+The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
 #### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
 
@@ -59,4 +61,14 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
-The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
+## Uninstallation 😢
+We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
+
+1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using 
+```bash
+gnome-extensions disable material-shell@papyelgringo
+```
+2. Delete the extension directory.
+```bash
+rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
+```
