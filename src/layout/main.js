@@ -16,7 +16,11 @@ var MsMain = GObject.registerClass(
     class MsMain extends St.Widget {
         _init() {
             super._init({});
-            this.panelsVisible = true;
+            Me.layout = this;
+            this.panelsVisible = Me.stateManager.getState('panels-visible');
+            this.panelsVisible =
+                this.panelsVisible === undefined ? true : this.panelsVisible;
+
             Main.uiGroup.insert_child_above(this, global.window_group);
             this.monitorsContainer = [];
             this.monitorPanelSpacerList = [];
@@ -31,9 +35,9 @@ var MsMain = GObject.registerClass(
             this.panel = this.monitorsContainer[
                 Main.layoutManager.primaryIndex
             ].panel;
-
             this.registerToSignals();
             this.onMsWorkspacesChanged();
+            this.updatePanelVisibilities();
         }
 
         buildMonitorsLayout() {
@@ -50,9 +54,6 @@ var MsMain = GObject.registerClass(
                     );
                 });
                 this.add_child(topBarSpacer);
-                Main.layoutManager._trackActor(topBarSpacer, {
-                    affectsStruts: true,
-                });
 
                 this.monitorPanelSpacerList.push(topBarSpacer);
                 if (monitor === Main.layoutManager.primaryMonitor) {
@@ -169,6 +170,11 @@ var MsMain = GObject.registerClass(
 
         togglePanelsVisibilities() {
             this.panelsVisible = !this.panelsVisible;
+            Me.stateManager.setState('panels-visible', this.panelsVisible);
+            this.updatePanelVisibilities();
+        }
+
+        updatePanelVisibilities() {
             [
                 this.primaryMonitorContainer.panel,
                 ...this.monitorPanelSpacerList,
@@ -182,7 +188,7 @@ var MsMain = GObject.registerClass(
                     Main.layoutManager._untrackActor(actor);
                 }
             });
-            Me.msWorkspaceManager.refreshVisiblePrimaryMsWorkspace();
+            Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
 
         add_child(actor) {

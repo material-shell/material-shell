@@ -16,8 +16,6 @@ var MsWorkspace = class MsWorkspace {
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
-        this.uiVisible = true;
-
         // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
         this.tileableList.push(this.appLauncher);

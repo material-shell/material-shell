@@ -149,7 +149,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     init() {
-        this.refreshVisiblePrimaryMsWorkspace();
+        this.refreshMsWorkspaceUI();
     }
 
     destroy() {
@@ -431,19 +431,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         Me.stateManager.setState('workspaces-state', workspacesState);
     }
 
-    refreshVisiblePrimaryMsWorkspace() {
-        let activeMsWorkspace = this.getActiveMsWorkspace();
+    refreshMsWorkspaceUI() {
         this.msWorkspaceList.forEach((msWorkspace) => {
-            if (
-                msWorkspace.monitor !== Main.layoutManager.primaryMonitor ||
-                msWorkspace === activeMsWorkspace
-            ) {
-                activeMsWorkspace.uiVisible = true;
-                activeMsWorkspace.msWorkspaceActor.updateUI();
-            } else {
-                msWorkspace.uiVisible = false;
-                msWorkspace.msWorkspaceActor.updateUI();
-            }
+            msWorkspace.msWorkspaceActor.updateUI();
         });
     }
 

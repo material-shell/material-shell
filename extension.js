@@ -69,7 +69,7 @@ function enable() {
                 Me.msThemeManager.regenerateStylesheet();
             }
             Me.msWorkspaceManager.setupInitialState();
-            Me.layout = new MsMain();
+            new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
