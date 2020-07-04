@@ -386,18 +386,30 @@ var MsWindow = GObject.registerClass(
                 let offsetY = monitorInFullScreen
                     ? this.msWorkspace.monitor.y
                     : workArea.y;
-                if (metaWindow.resizeable) {
+                const needMove =
+                    frame.x - offsetX < this.x ||
+                    frame.x - offsetX + frame.width > this.x + this.width ||
+                    frame.y - offsetY < this.y ||
+                    frame.y - offsetY + frame.height > this.y + this.height;
+                const needResize =
+                    frame.width > this.width || frame.height > this.height;
+                logFocus('needResize', needResize, 'needMove', needMove);
+                if (needResize && metaWindow.resizeable) {
                     let minWidth = Math.min(frame.width, this.width);
                     let minHeight = Math.min(frame.height, this.height);
 
                     metaWindow.move_resize_frame(
                         true,
-                        offsetX + this.x + (this.width - minWidth) / 2,
-                        offsetY + this.y + (this.height - minHeight) / 2,
+                        needMove
+                            ? offsetX + this.x + (this.width - minWidth) / 2
+                            : frame.x,
+                        needMove
+                            ? offsetY + this.y + (this.height - minHeight) / 2
+                            : frame.y,
                         minWidth,
                         minHeight
                     );
-                } else if (metaWindow.allows_move()) {
+                } else if (needMove && metaWindow.allows_move()) {
                     metaWindow.move_frame(
                         true,
                         offsetX + this.x + (this.width - frame.width) / 2,
