@@ -30,10 +30,10 @@ var MsWindow = GObject.registerClass(
             AddLogToFunctions(this);
             super._init({
                 reactive: true,
-                x: initialAllocation ? initialAllocation.x : 0,
-                y: initialAllocation ? initialAllocation.y : 0,
-                width: initialAllocation ? initialAllocation.width : 0,
-                height: initialAllocation ? initialAllocation.height : 0,
+                x: initialAllocation ? initialAllocation.x || 0 : 0,
+                y: initialAllocation ? initialAllocation.y || 0 : 0,
+                width: initialAllocation ? initialAllocation.width || 0 : 0,
+                height: initialAllocation ? initialAllocation.height || 0 : 0,
             });
 
             this.destroyId = this.connect(

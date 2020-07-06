@@ -236,6 +236,7 @@ var MonitorContainer = GObject.registerClass(
         }
 
         setFullscreen(monitorIsFullscreen) {
+            this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
             if (this.msWorkspaceActor) {
                 this.msWorkspaceActor.updateUI();
             }
