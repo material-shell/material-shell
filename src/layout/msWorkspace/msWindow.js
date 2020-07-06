@@ -20,10 +20,20 @@ var MsWindow = GObject.registerClass(
         },
     },
     class MsWindow extends Clutter.Actor {
-        _init(app, metaWindowIdentifier, metaWindow, persistent) {
+        _init(
+            app,
+            metaWindowIdentifier,
+            metaWindow,
+            persistent,
+            initialAllocation
+        ) {
             AddLogToFunctions(this);
             super._init({
                 reactive: true,
+                x: initialAllocation ? initialAllocation.x : 0,
+                y: initialAllocation ? initialAllocation.y : 0,
+                width: initialAllocation ? initialAllocation.width : 0,
+                height: initialAllocation ? initialAllocation.height : 0,
             });
 
             this.destroyId = this.connect(
@@ -346,7 +356,7 @@ var MsWindow = GObject.registerClass(
         }
 
         mimicMetaWindowPositionAndSize() {
-            if (this.dragged) return;
+            if (!this.metaWindow || this.dragged) return;
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.metaWindow.get_monitor()
             );

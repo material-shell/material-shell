@@ -28,7 +28,15 @@ var MsWorkspace = class MsWorkspace {
                         msWindowData.appId,
                         msWindowData.metaWindowIdentifier,
                         null,
-                        msWindowData.persistent ? msWindowData.persistent : null
+                        msWindowData.persistent
+                            ? msWindowData.persistent
+                            : null,
+                        {
+                            x: msWindowData.x,
+                            y: msWindowData.y,
+                            width: msWindowData.width,
+                            height: msWindowData.height,
+                        }
                     )
                 );
             });
@@ -364,6 +372,10 @@ var MsWorkspace = class MsWorkspace {
                         appId: msWindow.app.get_id(),
                         metaWindowIdentifier: msWindow.metaWindowIdentifier,
                         persistent: msWindow._persistent,
+                        x: msWindow.x,
+                        y: msWindow.y,
+                        width: msWindow.width,
+                        height: msWindow.height,
                     };
                 }),
             focusedIndex: this.focusedIndex,
