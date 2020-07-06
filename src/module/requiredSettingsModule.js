@@ -25,7 +25,7 @@ var RequiredSettingsModule = class RequiredSettingsModule {
             {
                 schema: 'org.gnome.desktop.wm.preferences',
                 key: 'button-layout',
-                value: 'appmenu',
+                value: 'appmenu:close',
                 valueType: 'string',
             },
         ];
