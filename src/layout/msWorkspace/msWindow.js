@@ -257,7 +257,10 @@ var MsWindow = GObject.registerClass(
             //Or remove the maximized if it's not
             let currentFrameRect = this.metaWindow.get_frame_rect();
 
-            if (this.metaWindow.maximized_horizontally) {
+            if (
+                this.metaWindow.maximized_horizontally ||
+                this.metaWindow.maximized_vertically
+            ) {
                 windowActor.unmaximizedByMs = true;
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }

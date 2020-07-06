@@ -22,6 +22,12 @@ var RequiredSettingsModule = class RequiredSettingsModule {
                 value: true,
                 valueType: 'boolean',
             },
+            {
+                schema: 'org.gnome.desktop.wm.preferences',
+                key: 'button-layout',
+                value: 'appmenu',
+                valueType: 'string',
+            },
         ];
 
         this.signals = [];

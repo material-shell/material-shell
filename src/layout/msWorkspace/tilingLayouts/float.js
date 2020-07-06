@@ -8,6 +8,7 @@ const {
 const WindowUtils = Me.imports.src.utils.windows;
 const { reparentActor } = Me.imports.src.utils.index;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported FloatLayout */
 var FloatLayout = GObject.registerClass(
@@ -69,7 +70,12 @@ var FloatLayout = GObject.registerClass(
         }
 
         tileAll() {
-            //No tile all
+            this.msWorkspace.tileableList.forEach((tileable) => {
+                if (tileable.dragged) return;
+                if (tileable instanceof MsWindow) {
+                    tileable.mimicMetaWindowPositionAndSize();
+                }
+            });
         }
     }
 );
