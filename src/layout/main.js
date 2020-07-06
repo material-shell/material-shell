@@ -7,6 +7,7 @@ const { reparentActor } = Me.imports.src.utils.index;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const Background = imports.ui.background;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(
@@ -26,6 +27,8 @@ var MsMain = GObject.registerClass(
             this.monitorPanelSpacerList = [];
             this.aboveContainer = new Clutter.Actor();
             this.add_child(this.aboveContainer);
+            this.backgroundGroup = new Meta.BackgroundGroup({});
+            this.add_child(this.backgroundGroup);
             this.buildMonitorsLayout();
 
             this.primaryMonitorContainer.setMsWorkspaceActor(
@@ -56,18 +59,28 @@ var MsMain = GObject.registerClass(
                 this.add_child(topBarSpacer);
 
                 this.monitorPanelSpacerList.push(topBarSpacer);
+                let bgManager = new Background.BackgroundManager({
+                    container: this.backgroundGroup,
+                    monitorIndex: monitor.index,
+                });
                 if (monitor === Main.layoutManager.primaryMonitor) {
                     this.monitorsContainer[
                         monitor.index
-                    ] = new PrimaryMonitorContainer({
-                        clip_to_allocation: true,
-                    });
+                    ] = new PrimaryMonitorContainer(
+                        {
+                            clip_to_allocation: true,
+                        },
+                        bgManager
+                    );
                 } else {
                     this.monitorsContainer[
                         monitor.index
-                    ] = new MonitorContainer({
-                        clip_to_allocation: true,
-                    });
+                    ] = new MonitorContainer(
+                        {
+                            clip_to_allocation: true,
+                        },
+                        bgManager
+                    );
                 }
 
                 this.monitorsContainer[monitor.index].set_size(
@@ -217,8 +230,9 @@ var MonitorContainer = GObject.registerClass(
         GTypeName: 'MonitorContainer',
     },
     class MonitorContainer extends St.Widget {
-        _init(params) {
+        _init(params, bgManager) {
             super._init(params);
+            this.bgManager = bgManager;
         }
 
         setFullscreen(monitorIsFullscreen) {
@@ -258,8 +272,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
         GTypeName: 'PrimaryMonitorContainer',
     },
     class PrimaryMonitorContainer extends MonitorContainer {
-        _init(params) {
-            super._init(params);
+        _init(params, bgManager) {
+            super._init(params, bgManager);
             this.panel = new MsPanel();
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
