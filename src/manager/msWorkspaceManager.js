@@ -387,11 +387,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
             msWorkspaceToMove
         );
+        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
         let active = this.getActiveMsWorkspace();
 
         this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
 
-        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative) + 1;
+        toIndex = msWorkspaceToMoveIndex < toIndex ? toIndex : toIndex + 1;
         this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager.reorder_workspace(
             this.workspaceManager.get_workspace_by_index(

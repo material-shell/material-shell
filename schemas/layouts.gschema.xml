@@ -80,5 +80,10 @@
       <summary>Animation duration</summary>
       <description>Ajust duration of window move/resize animation</description>
     </key>
+    <key name="windows-excluded" type="s">
+      <default>''</default>
+      <summary>Window's class excluded</summary>
+      <description>Comma separated list of window's class that will be ignored by Material shell</description>
+    </key>
   </schema>
 </schemalist>

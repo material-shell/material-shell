@@ -5,6 +5,7 @@ const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {
@@ -72,8 +73,15 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         metaWindow.get_compositor_private().connect('first-frame', (params) => {
             metaWindow.firstFrameDrawn = true;
         });
+
         if (!this._handleWindow(metaWindow)) {
-            return Me.layout.setActorAbove(metaWindow.get_compositor_private());
+            /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
+            global.window_group.remove_child(
+                metaWindow.get_compositor_private()
+            );
+            return global.top_window_group.add_child(
+                metaWindow.get_compositor_private()
+            );
         }
         if (metaWindow.handledByMaterialShell) return;
 
@@ -353,6 +361,14 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     _handleWindow(metaWindow) {
+        if (
+            getSettings('layouts')
+                .get_string('windows-excluded')
+                .split(',')
+                .indexOf(metaWindow.wm_class) > -1
+        ) {
+            return false;
+        }
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(metaWindow.window_type);
