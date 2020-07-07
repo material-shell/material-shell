@@ -76,12 +76,17 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
         if (!this._handleWindow(metaWindow)) {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
-            global.window_group.remove_child(
-                metaWindow.get_compositor_private()
-            );
-            return global.top_window_group.add_child(
-                metaWindow.get_compositor_private()
-            );
+            let actor = metaWindow.get_compositor_private();
+            if (actor.get_parent() != global.top_window_group) {
+                actor
+                    .get_parent()
+                    .remove_child(metaWindow.get_compositor_private());
+                global.top_window_group.add_child(
+                    metaWindow.get_compositor_private()
+                );
+            }
+
+            return;
         }
         if (metaWindow.handledByMaterialShell) return;
 
