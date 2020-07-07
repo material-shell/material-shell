@@ -374,9 +374,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager.reorder_workspace(
             this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex
+                msWorkspaceToMoveIndex - 1
             ),
-            toIndex
+            toIndex - 1
         );
         active.activate();
         this.stateChanged();
@@ -396,9 +396,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager.reorder_workspace(
             this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex
+                msWorkspaceToMoveIndex - 1
             ),
-            toIndex
+            toIndex - 1
         );
         active.activate();
         this.stateChanged();
