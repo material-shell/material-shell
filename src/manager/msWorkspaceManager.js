@@ -363,44 +363,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             return GLib.SOURCE_REMOVE;
         });
     }
-
-    setMsWorkspaceBefore(msWorkspaceToMove, msWorkspaceRelative) {
-        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceToMove
+    setMsWorkspaceAt(msWorkspaceToMove, toIndex) {
+        let sourceIndex = this.msWorkspaceList.indexOf(msWorkspaceToMove);
+        let realIndex = this.msWorkspaceList.indexOf(
+            this.primaryMsWorkspaces[toIndex]
         );
-        let active = this.getActiveMsWorkspace();
-        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
-        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
-        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager.reorder_workspace(
             this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex - 1
+                this.primaryMsWorkspaces.indexOf(msWorkspaceToMove)
             ),
-            toIndex - 1
+            toIndex
         );
-        active.activate();
-        this.stateChanged();
-        this.emit('dynamic-super-workspaces-changed');
-    }
-
-    setMsWorkspaceAfter(msWorkspaceToMove, msWorkspaceRelative) {
-        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceToMove
-        );
-        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
-        let active = this.getActiveMsWorkspace();
-
-        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
-
-        toIndex = msWorkspaceToMoveIndex < toIndex ? toIndex : toIndex + 1;
-        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
-        this.workspaceManager.reorder_workspace(
-            this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex - 1
-            ),
-            toIndex - 1
-        );
-        active.activate();
+        this.msWorkspaceList.splice(sourceIndex, 1);
+        this.msWorkspaceList.splice(realIndex, 0, msWorkspaceToMove);
         this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
     }

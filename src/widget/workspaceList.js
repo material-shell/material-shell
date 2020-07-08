@@ -9,6 +9,7 @@ const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const Main = imports.ui.main;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
@@ -187,28 +188,31 @@ var WorkspaceList = GObject.registerClass(
                 );
 
                 if (this.tempDragData.draggedBefore) {
+                    toIndex =
+                        toIndex -
+                        (this.tempDragData.initialIndex < toIndex ? 1 : 0);
                     this.buttonList.set_child_at_index(
                         this.tempDragData.workspaceButton,
-                        toIndex -
-                            (this.tempDragData.initialIndex < toIndex ? 1 : 0)
+                        toIndex
                     );
 
-                    this.msWorkspaceManager.setMsWorkspaceBefore(
+                    this.msWorkspaceManager.setMsWorkspaceAt(
                         this.tempDragData.workspaceButton.msWorkspace,
-                        this.tempDragData.draggedOver.msWorkspace
+                        toIndex
                     );
                 } else {
+                    toIndex =
+                        toIndex +
+                        (this.tempDragData.initialIndex < toIndex ? 0 : 1);
                     this.buttonList.set_child_at_index(
                         this.tempDragData.workspaceButton,
-                        toIndex +
-                            (this.tempDragData.initialIndex < toIndex ? 0 : 1)
+                        toIndex
                     );
-                    this.msWorkspaceManager.setMsWorkspaceAfter(
+                    this.msWorkspaceManager.setMsWorkspaceAt(
                         this.tempDragData.workspaceButton.msWorkspace,
-                        this.tempDragData.draggedOver.msWorkspace
+                        toIndex
                     );
                 }
-                //this.buttonList.set_child_at_index(this.tempDragData.item, this.tempDragData.draggedBefore ? index : index + 1);
             } else {
                 this.buttonList.set_child_at_index(
                     this.tempDragData.workspaceButton,
