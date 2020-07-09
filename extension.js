@@ -47,6 +47,7 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+    Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {
         Me.showSplashScreens();
@@ -97,9 +98,14 @@ function loaded(disconnect) {
     Me.emit('extension-loaded');
     // When monitors changed we reload the extension completely by disabling and reenabling it
     monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
-        Me.showSplashScreens();
-        disable();
-        enable();
+        if (
+            Main.layoutManager.monitors.length &&
+            Main.layoutManager.monitors.length != Me.monitorsLength
+        ) {
+            Me.showSplashScreens();
+            disable();
+            enable();
+        }
     });
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
