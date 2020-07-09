@@ -152,15 +152,17 @@ var MsStatusArea = GObject.registerClass(
                 this.rightBoxActorAddedSignal
             );
 
-            let box;
-            this.get_children().forEach((actor) => {
-                box = this.leftBoxActors.includes(actor)
-                    ? this.gnomeShellPanel._leftBox
-                    : this.centerBoxActors.includes(actor)
-                    ? this.gnomeShellPanel._centerBox
-                    : this.gnomeShellPanel._rightBox;
+            this.leftBoxActors.forEach((actor) => {
                 this.recursivelySetVertical(actor, false);
-                reparentActor(actor, box);
+                reparentActor(actor, this.gnomeShellPanel._leftBox);
+            });
+            this.centerBoxActors.forEach((actor) => {
+                this.recursivelySetVertical(actor, false);
+                reparentActor(actor, this.gnomeShellPanel._centerBox);
+            });
+            this.rightBoxActors.reverse().forEach((actor) => {
+                this.recursivelySetVertical(actor, false);
+                reparentActor(actor, this.gnomeShellPanel._rightBox);
             });
         }
 
