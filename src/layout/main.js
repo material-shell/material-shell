@@ -63,6 +63,24 @@ var MsMain = GObject.registerClass(
                     container: this.backgroundGroup,
                     monitorIndex: monitor.index,
                 });
+                const themeContext = St.ThemeContext.get_for_stage(
+                    global.stage
+                );
+
+                let effect = new Shell.BlurEffect({
+                    brightness: 0.55,
+                    sigma: 60 * themeContext.scale_factor,
+                });
+
+                this._scaleChangedId = themeContext.connect(
+                    'notify::scale-factor',
+                    () => {
+                        effect.sigma = 60 * themeContext.scale_factor;
+                    }
+                );
+
+                bgManager.backgroundActor.add_effect(effect);
+
                 if (monitor === Main.layoutManager.primaryMonitor) {
                     this.monitorsContainer[
                         monitor.index

@@ -99,7 +99,7 @@ subtitle-1 {
     color: #3f51b5; }
 
 #msPanel {
-  background: white;
+  background: rgba(255, 255, 255, 0.4);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #msPanel .panel-button {
     color: rgba(0, 0, 0, 0.6);
@@ -140,7 +140,7 @@ subtitle-1 {
     spacing: 2px; }
 
 #topPanel {
-  background: white;
+  background: rgba(255, 255, 255, 0.4);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #topPanel .task-active-indicator {
     background: #3f51b5;
@@ -218,6 +218,12 @@ subtitle-1 {
 
 .surface-darker {
   background: #b3b3b3; }
+
+.surface-transparent {
+  background: rgba(255, 255, 255, 0.8); }
+
+.surface-darker-transparent {
+  background: rgba(179, 179, 179, 0.2); }
 
 /* .dark-theme {
     @include buildTheme('dark');
