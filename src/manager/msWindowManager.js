@@ -49,8 +49,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             const metaWindow = windowActor.metaWindow;
             metaWindow.firstFrameDrawn = true;
             metaWindow.createdAt = metaWindow.user_time;
-
-            log(metaWindow.get_title());
+            if (metaWindow.msWindow) delete metaWindow.msWindow;
             if (this._handleWindow(metaWindow)) {
                 let msWindow = this.msWindowList.find((msWindow) => {
                     return (
@@ -88,6 +87,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
             return;
         }
+
         if (metaWindow.handledByMaterialShell) return;
 
         // This flags if we handle this window or not for the session
@@ -173,13 +173,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 let app = this.windowTracker.get_window_app(
                     waitingMetaWindow.metaWindow
                 );
-
                 let msWindowFound = null;
                 // If window is dialog try t0 find his parent
                 if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                     // The best way to find it's parent it with the root ancestor.
                     let root = waitingMetaWindow.metaWindow.find_root_ancestor();
-                    logFocus('search for root', root);
                     if (root != waitingMetaWindow.metaWindow && root.msWindow) {
                         msWindowFound = root.msWindow;
                     } else if (app) {
@@ -205,10 +203,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                         });
                     }
                 }
-                logFocus(
-                    'after dialog parent search msWindowFound',
-                    msWindowFound
-                );
 
                 if (!msWindowFound) {
                     // First check among the msWindow waiting for an App to be opened
@@ -232,10 +226,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                         }
                     );
                 }
-                logFocus(
-                    'after search among the msWindow waiting  msWindowFound',
-                    msWindowFound
-                );
 
                 if (!msWindowFound && !app) {
                     return;
