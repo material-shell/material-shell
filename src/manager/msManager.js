@@ -18,7 +18,17 @@ var MsManager = class MsManager {
     destroy() {
         this.signals.forEach((signal) => {
             if (signal.from) {
-                signal.from.disconnect(signal.id);
+                try {
+                    signal.from.disconnect(signal.id);
+                } catch (error) {
+                    log(
+                        `Failed to disconnect signal ${signal.id} from ${
+                            signal.from
+                        } ${
+                            signal.from.constructor.name
+                        } ${signal.from.toString()}  `
+                    );
+                }
             }
         });
     }

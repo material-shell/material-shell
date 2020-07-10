@@ -67,10 +67,10 @@ var StateManager = class StateManager {
         );
     }
     getState(key) {
-        if (this.state[key]) return this.state[key];
+        return this.state[key];
     }
     setState(key, value) {
-        if (!value) {
+        if (value == undefined) {
             delete this.state[key];
         } else {
             this.state[key] = value;

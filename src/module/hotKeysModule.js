@@ -5,129 +5,53 @@ const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
-let LogAllocateActor = GObject.registerClass(
-    {
-        GTypeName: 'LogAllocateActor',
-    },
-    class LogAllocateActor extends Clutter.Actor {
-        _init(params) {
-            this.title = params.title;
-            log(this.title);
-            delete params.title;
-            super._init(params);
-        }
-
-        vfunc_allocate(box, flags) {
-            log(`allocate ${this.title}`, this.layout_manager);
-            this.set_allocation(box, flags);
-            this.get_children().forEach((actor, index) => {
-                let childBox = new Clutter.ActorBox();
-                childBox.x2 = box.get_width();
-                childBox.y1 = index * box.get_height();
-                childBox.y2 = childBox.y1 + box.get_height();
-                actor.allocate(childBox, flags);
-            });
-            //this.old_vfunc_allocate(box, flags);
-        }
-    }
-);
-let ColorActor = GObject.registerClass(
-    {
-        GTypeName: 'ColorActor',
-    },
-    class ColorActor extends LogAllocateActor {
-        _init() {
-            super._init({
-                title: 'ColorActor',
-                width: Main.layoutManager.primaryMonitor.width,
-                height: Main.layoutManager.primaryMonitor.height,
-                background_color: new Clutter.Color({
-                    red: Math.random() * 255,
-                    blue: Math.random() * 255,
-                    green: Math.random() * 255,
-                    alpha: 255,
-                }),
-            });
-        }
-    }
-);
+var KeyBindingAction = {
+    PREVIOUS_WINDOW: 'previous-window',
+    NEXT_WINDOW: 'next-window',
+    PREVIOUS_WORKSPACE: 'previous-workspace',
+    NEXT_WORKSPACE: 'next-workspace',
+    KILL_FOCUSED_WINDOW: 'kill-focused-window',
+    MOVE_WINDOW_LEFT: 'move-window-left',
+    MOVE_WINDOW_RIGHT: 'move-window-right',
+    MOVE_WINDOW_TOP: 'move-window-top',
+    MOVE_WINDOW_BOTTOM: 'move-window-bottom',
+    CYCLE_TILING_LAYOUT: 'cycle-tiling-layout',
+    REVERSE_CYCLE_TILING_LAYOUT: 'reverse-cycle-tiling-layout',
+    TOGGLE_MATERIAL_SHELL_UI: 'toggle-material-shell-ui',
+};
 
 /* exported HotKeysModule */
 var HotKeysModule = class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
-        this.testInProgress = false;
-        this.testContainer = new LogAllocateActor({
-            title: 'container',
-            layout_manager: new Clutter.BoxLayout({ vertical: true }),
+        this.settings = getSettings('bindings');
+        this.actionIdToNameMap = new Map();
+        this.actionNameToActionMap = new Map();
+
+        this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
+            const currentMonitorIndex = global.display.get_current_monitor();
+            const msWorkspace =
+                currentMonitorIndex === Main.layoutManager.primaryIndex
+                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                          currentMonitorIndex
+                      )[0];
+            msWorkspace.focusPreviousTileable();
         });
-        this.testContainer.add_child(new ColorActor());
-        this.testContainer.add_child(new ColorActor());
-        /* Me.layout.visible = noUImode; */
-        this.testFunc = (to) => {
-            this.testContainer.ease({
-                translation_y:
-                    -1 * to * Main.layoutManager.primaryMonitor.height,
-                duration: 250,
-                mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-                onComplete: () => {
-                    let next = to === 1 ? 0 : 1;
-                    if (this.testInProgress) {
-                        this.testFunc(next);
-                    }
-                },
-            });
-        };
 
-        const settings = getSettings('bindings');
+        this.actionNameToActionMap.set(KeyBindingAction.NEXT_WINDOW, () => {
+            const currentMonitorIndex = global.display.get_current_monitor();
+            const msWorkspace =
+                currentMonitorIndex === Main.layoutManager.primaryIndex
+                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                          currentMonitorIndex
+                      )[0];
+            msWorkspace.focusNextTileable();
+        });
 
-        Main.wm.addKeybinding(
-            'previous-window',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
-                if (Me.msWindowManager.msDndManager.dragInProgress) {
-                    msWorkspace.swapTileableLeft(msWorkspace.tileableFocused);
-                } else {
-                    msWorkspace.focusPreviousTileable();
-                }
-            }
-        );
-
-        Main.wm.addKeybinding(
-            'next-window',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
-                if (Me.msWindowManager.msDndManager.dragInProgress) {
-                    msWorkspace.swapTileableRight(msWorkspace.tileableFocused);
-                } else {
-                    msWorkspace.focusNextTileable();
-                }
-            }
-        );
-
-        Main.wm.addKeybinding(
-            'previous-workspace',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.PREVIOUS_WORKSPACE,
             () => {
                 let currentIndex = this.workspaceManager.get_active_workspace_index();
                 if (currentIndex > 0) {
@@ -138,26 +62,17 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'next-workspace',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                let currentIndex = this.workspaceManager.get_active_workspace_index();
-                if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        currentIndex + 1
-                    ].activate();
-                }
+        this.actionNameToActionMap.set(KeyBindingAction.NEXT_WORKSPACE, () => {
+            let currentIndex = this.workspaceManager.get_active_workspace_index();
+            if (currentIndex < this.workspaceManager.n_workspaces - 1) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    currentIndex + 1
+                ].activate();
             }
-        );
+        });
 
-        Main.wm.addKeybinding(
-            'kill-focused-window',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.KILL_FOCUSED_WINDOW,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const msWorkspace =
@@ -173,11 +88,8 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'move-window-left',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.MOVE_WINDOW_LEFT,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const msWorkspace =
@@ -190,11 +102,8 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'move-window-right',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.MOVE_WINDOW_RIGHT,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const msWorkspace =
@@ -208,43 +117,34 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'move-window-top',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
-            () => {
-                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                if (
-                    activeMsWorkspace ===
-                        Me.msWorkspaceManager.primaryMsWorkspaces[0] ||
-                    activeMsWorkspace.tileableFocused ===
-                        activeMsWorkspace.appLauncher
-                ) {
-                    return;
-                }
-                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                    activeMsWorkspace
-                );
-
-                const nextMsWorkspace =
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        currentMsWorkspaceIndex - 1
-                    ];
-
-                Me.msWorkspaceManager.setWindowToMsWorkspace(
-                    activeMsWorkspace.tileableFocused,
-                    nextMsWorkspace
-                );
-                nextMsWorkspace.activate();
+        this.actionNameToActionMap.set(KeyBindingAction.MOVE_WINDOW_TOP, () => {
+            const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+            if (
+                activeMsWorkspace ===
+                    Me.msWorkspaceManager.primaryMsWorkspaces[0] ||
+                activeMsWorkspace.tileableFocused ===
+                    activeMsWorkspace.appLauncher
+            ) {
+                return;
             }
-        );
+            const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                activeMsWorkspace
+            );
 
-        Main.wm.addKeybinding(
-            'move-window-bottom',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+            const nextMsWorkspace =
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    currentMsWorkspaceIndex - 1
+                ];
+
+            Me.msWorkspaceManager.setWindowToMsWorkspace(
+                activeMsWorkspace.tileableFocused,
+                nextMsWorkspace
+            );
+            nextMsWorkspace.activate();
+        });
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.MOVE_WINDOW_BOTTOM,
             () => {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 if (
@@ -274,11 +174,8 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'cycle-tiling-layout',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const msWorkspace =
@@ -290,11 +187,8 @@ var HotKeysModule = class HotKeysModule {
                 msWorkspace.nextTiling(1);
             }
         );
-        Main.wm.addKeybinding(
-            'reverse-cycle-tiling-layout',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
                 const currentMonitorIndex = global.display.get_current_monitor();
                 const msWorkspace =
@@ -307,51 +201,32 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
-        Main.wm.addKeybinding(
-            'toggle-material-shell-ui',
-            settings,
-            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-            Shell.ActionMode.NORMAL,
+        this.actionNameToActionMap.set(
+            KeyBindingAction.TOGGLE_MATERIAL_SHELL_UI,
             () => {
-                const noUImode = Me.msWorkspaceManager.noUImode;
-                Me.msWorkspaceManager.noUImode = !noUImode;
-                Me.layout.visible = noUImode;
+                Me.layout.togglePanelsVisibilities();
                 logFocus('');
                 logFocus('');
                 logFocus('');
                 logFocus('');
                 logFocus('');
-                /* 
-                if (!this.testInProgress) {
-                    this.testInProgress = true;
-                    Main.uiGroup.add_child(this.testContainer);
-                    this.testFunc(1);
-                } else {
-                    this.testInProgress = false;
-                    Main.uiGroup.remove_child(this.testContainer);
-                } */
-                /* Main.panel.get_parent().visible = noUImode;
-                Main.panel.visible = noUImode;
-                Main.panel.get_parent().set_width(!noUImode ? 0 : -1);
-                Main.layoutManager.panelBox.visible = noUImode;
-
-                Main.layoutManager.panelBox.set_height(!noUImode ? 0 : -1);
-                Main.layoutManager.monitors.forEach(monitor => {
-                    let msWorkspace;
-                    if (Main.layoutManager.primaryIndex === monitor.index) {
-                        msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                    } else {
-                        msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                            monitor.index
-                        )[0];
-                    }
-                    Main.layoutManager._queueUpdateRegions();
-                    msWorkspace.msWorkspaceActor.updateUI();
-                    msWorkspace.panel.set_height(!noUImode ? 0 : -1);
-                    msWorkspace.tilingLayout.onTile();
-                }); */
             }
         );
+
+        this.actionNameToActionMap.forEach((action, name) => {
+            this.addKeybinding(name);
+        });
+    }
+
+    addKeybinding(name) {
+        const actionId = Main.wm.addKeybinding(
+            name,
+            this.settings,
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            Shell.ActionMode.NORMAL,
+            this.actionNameToActionMap.get(name)
+        );
+        this.actionIdToNameMap.set(actionId, name);
     }
 
     destroy() {}

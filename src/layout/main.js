@@ -7,6 +7,7 @@ const { reparentActor } = Me.imports.src.utils.index;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const Background = imports.ui.background;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(
@@ -16,26 +17,30 @@ var MsMain = GObject.registerClass(
     class MsMain extends St.Widget {
         _init() {
             super._init({});
+            Me.layout = this;
+            this.panelsVisible = Me.stateManager.getState('panels-visible');
+            this.panelsVisible =
+                this.panelsVisible === undefined ? true : this.panelsVisible;
 
             Main.uiGroup.insert_child_above(this, global.window_group);
             this.monitorsContainer = [];
             this.monitorPanelSpacerList = [];
             this.aboveContainer = new Clutter.Actor();
             this.add_child(this.aboveContainer);
+            this.backgroundGroup = new Meta.BackgroundGroup({});
+            this.add_child(this.backgroundGroup);
             this.buildMonitorsLayout();
 
-            this.monitorsContainer[
-                Main.layoutManager.primaryIndex
-            ].setMsWorkspaceActor(
+            this.primaryMonitorContainer.setMsWorkspaceActor(
                 Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
             );
 
             this.panel = this.monitorsContainer[
                 Main.layoutManager.primaryIndex
             ].panel;
-
             this.registerToSignals();
             this.onMsWorkspacesChanged();
+            this.updatePanelVisibilities();
         }
 
         buildMonitorsLayout() {
@@ -52,24 +57,30 @@ var MsMain = GObject.registerClass(
                     );
                 });
                 this.add_child(topBarSpacer);
-                Main.layoutManager._trackActor(topBarSpacer, {
-                    affectsStruts: true,
-                    trackFullscreen: true,
-                });
 
                 this.monitorPanelSpacerList.push(topBarSpacer);
+                let bgManager = new Background.BackgroundManager({
+                    container: this.backgroundGroup,
+                    monitorIndex: monitor.index,
+                });
                 if (monitor === Main.layoutManager.primaryMonitor) {
                     this.monitorsContainer[
                         monitor.index
-                    ] = new PrimaryMonitorContainer({
-                        clip_to_allocation: true,
-                    });
+                    ] = new PrimaryMonitorContainer(
+                        {
+                            clip_to_allocation: true,
+                        },
+                        bgManager
+                    );
                 } else {
                     this.monitorsContainer[
                         monitor.index
-                    ] = new MonitorContainer({
-                        clip_to_allocation: true,
-                    });
+                    ] = new MonitorContainer(
+                        {
+                            clip_to_allocation: true,
+                        },
+                        bgManager
+                    );
                 }
 
                 this.monitorsContainer[monitor.index].set_size(
@@ -155,6 +166,9 @@ var MsMain = GObject.registerClass(
             });
         }
 
+        get primaryMonitorContainer() {
+            return this.monitorsContainer[Main.layoutManager.primaryIndex];
+        }
         onSwitchWorkspace(from, to) {
             this.onMsWorkspacesChanged();
         }
@@ -165,6 +179,29 @@ var MsMain = GObject.registerClass(
             this.onMsWorkspacesChanged();
             const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             activeMsWorkspace.refreshFocus();
+        }
+
+        togglePanelsVisibilities() {
+            this.panelsVisible = !this.panelsVisible;
+            Me.stateManager.setState('panels-visible', this.panelsVisible);
+            this.updatePanelVisibilities();
+        }
+
+        updatePanelVisibilities() {
+            [
+                this.primaryMonitorContainer.panel,
+                ...this.monitorPanelSpacerList,
+            ].forEach((actor) => {
+                actor.visible = this.panelsVisible;
+                if (this.panelsVisible) {
+                    Main.layoutManager._trackActor(actor, {
+                        affectsStruts: true,
+                    });
+                } else {
+                    Main.layoutManager._untrackActor(actor);
+                }
+            });
+            Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
 
         add_child(actor) {
@@ -193,11 +230,13 @@ var MonitorContainer = GObject.registerClass(
         GTypeName: 'MonitorContainer',
     },
     class MonitorContainer extends St.Widget {
-        _init(params) {
+        _init(params, bgManager) {
             super._init(params);
+            this.bgManager = bgManager;
         }
 
         setFullscreen(monitorIsFullscreen) {
+            this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
             if (this.msWorkspaceActor) {
                 this.msWorkspaceActor.updateUI();
             }
@@ -234,8 +273,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
         GTypeName: 'PrimaryMonitorContainer',
     },
     class PrimaryMonitorContainer extends MonitorContainer {
-        _init(params) {
-            super._init(params);
+        _init(params, bgManager) {
+            super._init(params, bgManager);
             this.panel = new MsPanel();
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
@@ -253,7 +292,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
         }
 
         setFullscreen(monitorIsFullscreen) {
-            this.panel.visible = !monitorIsFullscreen;
+            this.panel.visible =
+                Me.layout.panelsVisible && !monitorIsFullscreen;
             super.setFullscreen(monitorIsFullscreen);
         }
 

@@ -114,6 +114,7 @@ var BaseTilingLayout = GObject.registerClass(
             box.x1 = 0;
             box.y1 = 0;
             this.msWorkspace.tileableList.forEach((tileable) => {
+                if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
                     box || this.tileableContainer.allocation,
@@ -346,7 +347,17 @@ var BaseTilingLayout = GObject.registerClass(
         onDestroy() {
             log('destroy tilingLayout');
             this.signals.forEach((signal) => {
-                signal.from.disconnect(signal.id);
+                try {
+                    signal.from.disconnect(signal.id);
+                } catch (error) {
+                    log(
+                        `Failed to disconnect signal ${signal.id} from ${
+                            signal.from
+                        } ${
+                            signal.from.constructor.name
+                        } ${signal.from.toString()}  `
+                    );
+                }
             });
             if (!Me.disableInProgress) {
                 this.msWorkspace.tileableList.forEach((tileable) => {

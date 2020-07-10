@@ -23,10 +23,7 @@ var MsPanel = GObject.registerClass(
             });
             this.gnomeShellPanel = Main.panel;
             this.gnomeShellPanel.hide();
-            Main.layoutManager._trackActor(this, {
-                affectsStruts: true,
-                trackFullscreen: true,
-            });
+
             // Top part
             this.topBox = new St.BoxLayout({
                 vertical: true,

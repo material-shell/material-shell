@@ -17,8 +17,6 @@ var MsWorkspace = class MsWorkspace {
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
-        this.uiVisible = true;
-
         // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
         //this.tileableList.push(this.appLauncher);
@@ -31,7 +29,15 @@ var MsWorkspace = class MsWorkspace {
                         msWindowData.appId,
                         msWindowData.metaWindowIdentifier,
                         null,
-                        msWindowData.persistent ? msWindowData.persistent : null
+                        msWindowData.persistent
+                            ? msWindowData.persistent
+                            : null,
+                        {
+                            x: msWindowData.x,
+                            y: msWindowData.y,
+                            width: msWindowData.width,
+                            height: msWindowData.height,
+                        }
                     )
                 );
             });
@@ -283,7 +289,7 @@ var MsWorkspace = class MsWorkspace {
         return (
             !containFullscreenWindow &&
             this.msWorkspaceManager &&
-            !this.msWorkspaceManager.noUImode
+            Me.layout.panelsVisible
         );
     }
 
@@ -338,7 +344,8 @@ var MsWorkspace = class MsWorkspace {
         }
         if (
             this.tileableFocused instanceof MsWindow &&
-            this.tileableFocused.metaWindow
+            this.tileableFocused.metaWindow &&
+            !this.tileableFocused.dragged
         ) {
             this.workspace.activate_with_focus(
                 this.tileableFocused.metaWindow,
@@ -375,6 +382,10 @@ var MsWorkspace = class MsWorkspace {
                         appId: msWindow.app.get_id(),
                         metaWindowIdentifier: msWindow.metaWindowIdentifier,
                         persistent: msWindow._persistent,
+                        x: msWindow.x,
+                        y: msWindow.y,
+                        width: msWindow.width,
+                        height: msWindow.height,
                     };
                 }),
             focusedIndex: this.focusedIndex,

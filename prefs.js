@@ -335,6 +335,22 @@ function layoutsSettingsTab(notebook) {
             tweentime
         )
     );
+
+    const excludedClasses = Gtk.Entry.new();
+    settings.bind(
+        'windows-excluded',
+        excludedClasses,
+        'text',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    itemRows.push(
+        makeItemRow(
+            "Window's class excluded",
+            "Comma separated list of window's class that will be ignored by Material shell.",
+            excludedClasses
+        )
+    );
     notebook.append_page(
         ...makePage('Tiling settings', makeItemList(itemRows))
     );

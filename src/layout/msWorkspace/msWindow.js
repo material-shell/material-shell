@@ -20,10 +20,20 @@ var MsWindow = GObject.registerClass(
         },
     },
     class MsWindow extends Clutter.Actor {
-        _init(app, metaWindowIdentifier, metaWindow, persistent) {
+        _init(
+            app,
+            metaWindowIdentifier,
+            metaWindow,
+            persistent,
+            initialAllocation
+        ) {
             AddLogToFunctions(this);
             super._init({
                 reactive: true,
+                x: initialAllocation ? initialAllocation.x || 0 : 0,
+                y: initialAllocation ? initialAllocation.y || 0 : 0,
+                width: initialAllocation ? initialAllocation.width || 0 : 0,
+                height: initialAllocation ? initialAllocation.height || 0 : 0,
             });
 
             this.destroyId = this.connect(
@@ -257,7 +267,10 @@ var MsWindow = GObject.registerClass(
             //Or remove the maximized if it's not
             let currentFrameRect = this.metaWindow.get_frame_rect();
 
-            if (this.metaWindow.maximized_horizontally) {
+            if (
+                this.metaWindow.maximized_horizontally ||
+                this.metaWindow.maximized_vertically
+            ) {
                 windowActor.unmaximizedByMs = true;
                 this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
@@ -343,7 +356,7 @@ var MsWindow = GObject.registerClass(
         }
 
         mimicMetaWindowPositionAndSize() {
-            if (this.dragged) return;
+            if (!this.metaWindow || this.dragged) return;
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.metaWindow.get_monitor()
             );
@@ -386,18 +399,30 @@ var MsWindow = GObject.registerClass(
                 let offsetY = monitorInFullScreen
                     ? this.msWorkspace.monitor.y
                     : workArea.y;
-                if (metaWindow.resizeable) {
+                const needMove =
+                    frame.x - offsetX < this.x ||
+                    frame.x - offsetX + frame.width > this.x + this.width ||
+                    frame.y - offsetY < this.y ||
+                    frame.y - offsetY + frame.height > this.y + this.height;
+                const needResize =
+                    frame.width > this.width || frame.height > this.height;
+                logFocus('needResize', needResize, 'needMove', needMove);
+                if (needResize && metaWindow.resizeable) {
                     let minWidth = Math.min(frame.width, this.width);
                     let minHeight = Math.min(frame.height, this.height);
 
                     metaWindow.move_resize_frame(
                         true,
-                        offsetX + this.x + (this.width - minWidth) / 2,
-                        offsetY + this.y + (this.height - minHeight) / 2,
+                        needMove
+                            ? offsetX + this.x + (this.width - minWidth) / 2
+                            : frame.x,
+                        needMove
+                            ? offsetY + this.y + (this.height - minHeight) / 2
+                            : frame.y,
                         minWidth,
                         minHeight
                     );
-                } else if (metaWindow.allows_move()) {
+                } else if (needMove && metaWindow.allows_move()) {
                     metaWindow.move_frame(
                         true,
                         offsetX + this.x + (this.width - frame.width) / 2,
@@ -642,20 +667,13 @@ var MsWindow = GObject.registerClass(
 
         updateMetaWindowVisibility() {
             if (this.metaWindow) {
-                logFocus(
-                    this.visible,
-                    this.get_parent(),
-                    Me.msWindowManager.msDndManager.dragInProgress
-                );
                 let shouldBeHidden =
-                    (!this.visible ||
-                        this.get_parent() === null ||
-                        Me.msWindowManager.msDndManager.dragInProgress) &&
-                    !Me.msWorkspaceManager.noUImode;
-                logFocus(`shouldBeHiddn`, this, shouldBeHidden);
+                    !this.visible ||
+                    this.get_parent() === null ||
+                    Me.msWindowManager.msDndManager.dragInProgress;
                 if (shouldBeHidden && !this.metaWindow.minimized) {
                     this.metaWindow.minimize();
-                } else if (this.metaWindow.minimized) {
+                } else if (!shouldBeHidden && this.metaWindow.minimized) {
                     this.metaWindow.unminimize();
                 }
             }

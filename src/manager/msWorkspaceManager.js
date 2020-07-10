@@ -17,7 +17,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
         this.categoryList = Me.stateManager.getState('categoryList') || [];
-        this.noUImode = false;
         this.metaWindowFocused = null;
 
         this.workspaceTracker = Main.wm._workspaceTracker;
@@ -151,7 +150,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     init() {
-        this.refreshVisiblePrimaryMsWorkspace();
+        this.refreshMsWorkspaceUI();
     }
 
     destroy() {
@@ -365,43 +364,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             return GLib.SOURCE_REMOVE;
         });
     }
-
-    setMsWorkspaceBefore(msWorkspaceToMove, msWorkspaceRelative) {
-        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceToMove
+    setMsWorkspaceAt(msWorkspaceToMove, toIndex) {
+        let sourceIndex = this.msWorkspaceList.indexOf(msWorkspaceToMove);
+        let realIndex = this.msWorkspaceList.indexOf(
+            this.primaryMsWorkspaces[toIndex]
         );
-        let active = this.getActiveMsWorkspace();
-        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
-        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative);
-        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
         this.workspaceManager.reorder_workspace(
             this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex
+                this.primaryMsWorkspaces.indexOf(msWorkspaceToMove)
             ),
             toIndex
         );
-        active.activate();
-        this.stateChanged();
-        this.emit('dynamic-super-workspaces-changed');
-    }
-
-    setMsWorkspaceAfter(msWorkspaceToMove, msWorkspaceRelative) {
-        let msWorkspaceToMoveIndex = this.msWorkspaceList.indexOf(
-            msWorkspaceToMove
-        );
-        let active = this.getActiveMsWorkspace();
-
-        this.msWorkspaceList.splice(msWorkspaceToMoveIndex, 1);
-
-        let toIndex = this.msWorkspaceList.indexOf(msWorkspaceRelative) + 1;
-        this.msWorkspaceList.splice(toIndex, 0, msWorkspaceToMove);
-        this.workspaceManager.reorder_workspace(
-            this.workspaceManager.get_workspace_by_index(
-                msWorkspaceToMoveIndex
-            ),
-            toIndex
-        );
-        active.activate();
+        this.msWorkspaceList.splice(sourceIndex, 1);
+        this.msWorkspaceList.splice(realIndex, 0, msWorkspaceToMove);
         this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
     }
@@ -433,19 +408,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         Me.stateManager.setState('workspaces-state', workspacesState);
     }
 
-    refreshVisiblePrimaryMsWorkspace() {
-        let activeMsWorkspace = this.getActiveMsWorkspace();
+    refreshMsWorkspaceUI() {
         this.msWorkspaceList.forEach((msWorkspace) => {
-            if (
-                msWorkspace.monitor !== Main.layoutManager.primaryMonitor ||
-                msWorkspace === activeMsWorkspace
-            ) {
-                activeMsWorkspace.uiVisible = true;
-                activeMsWorkspace.msWorkspaceActor.updateUI();
-            } else {
-                msWorkspace.uiVisible = false;
-                msWorkspace.msWorkspaceActor.updateUI();
-            }
+            msWorkspace.msWorkspaceActor.updateUI();
         });
     }
 
