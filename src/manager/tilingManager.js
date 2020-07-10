@@ -44,6 +44,18 @@ var TilingManager = class TilingManager extends MsManager {
             this.ratio = schema.get_double('ratio-value');
             this.tileWindows();
         });
+        // update the layout of all workspaces if default-layout changed
+        this.observe(this.layoutsSettings, 'changed::defaultlayout', (schema) => {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                Me.msWorkspaceManager.msWorkspaceList.forEach(
+                    (msWorkspace) => {
+                        msWorkspace.setTilingLayout(schema.get_string('defaultlayout'));
+                    }
+                );
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+        );
 
         this.ratio = this.layoutsSettings.get_double('ratio-value');
         this.gap = this.layoutsSettings.get_int('gap');

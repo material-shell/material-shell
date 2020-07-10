@@ -19,7 +19,7 @@ var MsWorkspace = class MsWorkspace {
         this.tileableList = [];
         // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
-        //this.tileableList.push(this.appLauncher);
+        this.tileableList.push(this.appLauncher);
 
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         if (initialState) {
@@ -276,6 +276,17 @@ var MsWorkspace = class MsWorkspace {
             this.tilingLayout
         );
 
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.emit('tiling-layout-changed');
+    }
+
+    setTilingLayout(layout) {
+        this.tilingLayout.onDestroy();
+        const Layout = Me.tilingManager.getLayoutByKey(layout);
+        this.tilingLayout = new Layout(this);
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(
+            this.tilingLayout
+        );
         this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
         this.emit('tiling-layout-changed');
     }
