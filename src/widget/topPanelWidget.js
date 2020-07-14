@@ -13,6 +13,7 @@ var TopPanel = GObject.registerClass(
         _init(msWorkspace) {
             super._init({
                 name: 'topPanel',
+                style_class: 'surface',
             });
             this._delegate = this;
             this.msWorkspace = msWorkspace;

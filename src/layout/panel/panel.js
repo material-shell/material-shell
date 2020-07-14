@@ -18,6 +18,7 @@ var MsPanel = GObject.registerClass(
         _init() {
             super._init({
                 name: 'msPanel',
+                style_class: 'surface',
                 vertical: true,
                 y_align: Clutter.ActorAlign.START,
             });

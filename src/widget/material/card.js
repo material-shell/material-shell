@@ -7,6 +7,7 @@ var MatCard = GObject.registerClass(
         _init(params = {}) {
             super._init(params);
             this.add_style_class_name('mat-card');
+            this.add_style_class_name('surface');
         }
     }
 );

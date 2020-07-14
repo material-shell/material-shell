@@ -1,9 +1,9 @@
 @import 'typography';
 $theme: 'dark' !default;
-$color-primary: #3f51b5;
+$color-primary: #3f51b5; // Don't change this value since it's dynamically changed by the theme Manager
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-
+$surface-opacity: 0.987; // Don't change this value since it's dynamically changed by the theme Manager
 @function getForegroundColor($bgColor, $opacity) {
     @if ($bgColor== 'light') {
         @return rgba(0, 0, 0, $opacity);
@@ -48,18 +48,16 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
     }
 }
 
+@function getDarkerColor($color) {
+    @return hsl(hue($color), saturation($color), lightness($color) * 0.7);
+}
+
+@function getLighterColor($color) {
+    @return hsl(hue($color), saturation($color), lightness($color) * 1.3);
+}
+
 @mixin background($theme) {
     background: getBackgroundColor($theme);
-}
-
-@mixin background-darker($theme) {
-    $color: getBackgroundColor($theme);
-    background: hsl(hue($color), saturation($color), lightness($color) * 0.7);
-}
-
-@mixin background-lighter($theme) {
-    $color: getBackgroundColor($theme);
-    background: hsl(hue($color), saturation($color), lightness($color) * 1.3);
 }
 
 @mixin foreground-as-background($theme, $opacity) {
@@ -93,11 +91,11 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 
     @if ($theme== 'primary') {
         @at-root .light-primary#{&} {
-            @include background-darker($theme);
+            background: getDarkerColor(getBackgroundColor($theme));
         }
 
         @at-root .dark-primary#{&} {
-            @include background-lighter($theme);
+            background: getLighterColor(getBackgroundColor($theme));
         }
     }
 }
@@ -203,7 +201,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 #msPanel {
-    @include background($theme);
     box-shadow: $shadow;
 
     .panel-button {
@@ -269,7 +266,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
         $topPanelTheme: 'light';
     }
 
-    @include background($topPanelTheme);
     box-shadow: $shadow;
 
     .task-active-indicator {
@@ -356,12 +352,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .mat-card {
-    @if ($theme== 'primary') {
-        @include background('light');
-    } @else {
-        @include background($theme);
-    }
-
     border-radius: 6px;
     box-shadow: $shadow;
 
@@ -403,23 +393,17 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .surface {
-    @include background($theme);
+    background: rgba(getBackgroundColor($theme), $surface-opacity);
 }
 .surface-lighter {
-    @include background-lighter($theme);
+    background: rgba(
+        getLighterColor(getBackgroundColor($theme)),
+        $surface-opacity
+    );
 }
 .surface-darker {
-    @include background-darker($theme);
+    background: rgba(
+        getDarkerColor(getBackgroundColor($theme)),
+        $surface-opacity
+    );
 }
-
-/* .dark-theme {
-    @include buildTheme('dark');
-}
-
-.light-theme {
-    @include buildTheme('light');
-}
-
-.primary-theme {
-    @include buildTheme('primary');
-} */

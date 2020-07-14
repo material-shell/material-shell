@@ -28,9 +28,12 @@ var MsMain = GObject.registerClass(
             this.aboveContainer = new Clutter.Actor();
             this.add_child(this.aboveContainer);
             this.backgroundGroup = new Meta.BackgroundGroup({});
+            this.setBlurBackground(Me.msThemeManager.blurBackground);
+            Me.msThemeManager.connect('blur-background-changed', () => {
+                this.setBlurBackground(Me.msThemeManager.blurBackground);
+            });
             this.add_child(this.backgroundGroup);
             this.buildMonitorsLayout();
-
             this.primaryMonitorContainer.setMsWorkspaceActor(
                 Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
             );
@@ -41,6 +44,32 @@ var MsMain = GObject.registerClass(
             this.registerToSignals();
             this.onMsWorkspacesChanged();
             this.updatePanelVisibilities();
+        }
+
+        setBlurBackground(blur) {
+            const themeContext = St.ThemeContext.get_for_stage(global.stage);
+            if ((this.blurEffect && blur) || (!this.blurEffect && !blur)) {
+                return;
+            } else if (this.blurEffect && !blur) {
+                themeContext.disconnect(this._scaleChangedId);
+                this.backgroundGroup.remove_effect(this.blurEffect);
+                delete this.blurEffect;
+                return;
+            }
+
+            this.blurEffect = new Shell.BlurEffect({
+                brightness: 0.55,
+                sigma: 60 * themeContext.scale_factor,
+            });
+
+            this._scaleChangedId = themeContext.connect(
+                'notify::scale-factor',
+                () => {
+                    this.blurEffect.sigma = 60 * themeContext.scale_factor;
+                }
+            );
+
+            this.backgroundGroup.add_effect(this.blurEffect);
         }
 
         buildMonitorsLayout() {
@@ -63,6 +92,7 @@ var MsMain = GObject.registerClass(
                     container: this.backgroundGroup,
                     monitorIndex: monitor.index,
                 });
+
                 if (monitor === Main.layoutManager.primaryMonitor) {
                     this.monitorsContainer[
                         monitor.index

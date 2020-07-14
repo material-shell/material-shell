@@ -391,7 +391,7 @@ function GlobalSettingsTab(notebook) {
     itemRows.push(
         makeItemRow(
             'Panels Size',
-            'Width of the left panel and heigh of the top panels.',
+            'Width of the left panel and heigh of the top panels',
             panelSize
         )
     );
@@ -399,6 +399,36 @@ function GlobalSettingsTab(notebook) {
         'panel-size',
         panelSize.get_adjustment(),
         'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const surfaceOpacity = Gtk.SpinButton.new_with_range(0, 100, 1);
+    itemRows.push(
+        makeItemRow(
+            'Surface opacity',
+            'Change the opacity of Panels or other UI elements',
+            surfaceOpacity
+        )
+    );
+    settings.bind(
+        'surface-opacity',
+        surfaceOpacity.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const blurBackground = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Blur background',
+            'Add the blurred effect to the background wallpaper',
+            blurBackground
+        )
+    );
+    settings.bind(
+        'blur-background',
+        blurBackground,
+        'active',
         Gio.SettingsBindFlags.DEFAULT
     );
 
