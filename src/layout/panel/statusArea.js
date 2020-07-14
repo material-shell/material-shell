@@ -59,7 +59,6 @@ var MsStatusArea = GObject.registerClass(
                 const markup = clockSections
                     .map((section) => `<span>${section}</span>`)
                     .join('\n');
-                logFocus(markup);
                 this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
             };
             update();
