@@ -15,5 +15,15 @@
       <summary>Panels size</summary>
       <description>Width of the left panel and heigh of the top panels.</description>
     </key>
+    <key name="surface-opacity" type="i">
+      <default>100</default>
+      <summary>Surface opacity</summary>
+      <description>Change the opacity of Panels or other UI elements</description>
+    </key>
+    <key name="blur-background" type="b">
+      <default>false</default>
+      <summary>Blur background</summary>
+      <description>Add the blurred effect to the background wallpaper</description>
+    </key>
   </schema>
 </schemalist>

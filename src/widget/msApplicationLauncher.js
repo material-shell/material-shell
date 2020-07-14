@@ -16,7 +16,7 @@ var MsApplicationLauncher = GObject.registerClass(
                 style: 'padding:64px',
             });
             this.msWorkspace = msWorkspace;
-            this.add_style_class_name('surface-darker-transparent');
+            this.add_style_class_name('surface-darker');
 
             this.appListContainer = new MsApplicationButtonContainer(
                 msWorkspace.monitor

@@ -1,9 +1,9 @@
 @import 'typography';
 $theme: 'dark' !default;
-$color-primary: #3f51b5;
+$color-primary: #3f51b5; // Don't change this value since it's dynamically changed by the theme Manager
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-
+$surface-opacity: 0.987; // Don't change this value since it's dynamically changed by the theme Manager
 @function getForegroundColor($bgColor, $opacity) {
     @if ($bgColor== 'light') {
         @return rgba(0, 0, 0, $opacity);
@@ -201,7 +201,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 #msPanel {
-    background: rgba(getBackgroundColor($theme), 0.4);
     box-shadow: $shadow;
 
     .panel-button {
@@ -267,7 +266,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
         $topPanelTheme: 'light';
     }
 
-    background: rgba(getBackgroundColor($theme), 0.4);
     box-shadow: $shadow;
 
     .task-active-indicator {
@@ -354,12 +352,6 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .mat-card {
-    @if ($theme== 'primary') {
-        @include background('light');
-    } @else {
-        @include background($theme);
-    }
-
     border-radius: 6px;
     box-shadow: $shadow;
 
@@ -401,29 +393,17 @@ $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .surface {
-    @include background($theme);
+    background: rgba(getBackgroundColor($theme), $surface-opacity);
 }
 .surface-lighter {
-    background: getLighterColor(getBackgroundColor($theme));
+    background: rgba(
+        getLighterColor(getBackgroundColor($theme)),
+        $surface-opacity
+    );
 }
 .surface-darker {
-    background: getDarkerColor(getBackgroundColor($theme));
+    background: rgba(
+        getDarkerColor(getBackgroundColor($theme)),
+        $surface-opacity
+    );
 }
-.surface-transparent {
-    background: rgba(getBackgroundColor($theme), 0.8);
-}
-.surface-darker-transparent {
-    background: rgba(getDarkerColor(getBackgroundColor($theme)), 0.2);
-}
-
-/* .dark-theme {
-    @include buildTheme('dark');
-}
-
-.light-theme {
-    @include buildTheme('light');
-}
-
-.primary-theme {
-    @include buildTheme('primary');
-} */
