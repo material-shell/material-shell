@@ -128,6 +128,7 @@ subtitle-1 {
   color: rgba(255, 255, 255, 0.87); }
 
 #msPanel {
+  background: rgba(63, 81, 181, 0.876);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #msPanel .panel-button {
     text-align: center;
@@ -175,6 +176,7 @@ subtitle-1 {
     spacing: 2px; }
 
 #topPanel {
+  background: rgba(63, 81, 181, 0.876);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #topPanel .task-active-indicator {
     background: #3f51b5;

@@ -402,6 +402,21 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
+    const panelOpacity = Gtk.SpinButton.new_with_range(0, 100, 1);
+    itemRows.push(
+        makeItemRow(
+            'Panel opacity',
+            'Change the opacity of Panels',
+            panelOpacity
+        )
+    );
+    settings.bind(
+        'panel-opacity',
+        panelOpacity.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
     const surfaceOpacity = Gtk.SpinButton.new_with_range(0, 100, 1);
     itemRows.push(
         makeItemRow(

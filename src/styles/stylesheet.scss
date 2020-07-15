@@ -4,6 +4,8 @@ $color-primary: #3f51b5; // Don't change this value since it's dynamically chang
 $ripple: rgba(255, 255, 255, 0.12);
 $shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
 $surface-opacity: 0.987; // Don't change this value since it's dynamically changed by the theme Manager
+$panel-opacity: 0.876; // Don't change this value since it's dynamically changed by the theme Manager
+
 @function getForegroundColor($bgColor, $opacity) {
     @if ($bgColor== 'light') {
         @return rgba(0, 0, 0, $opacity);
@@ -201,6 +203,8 @@ $surface-opacity: 0.987; // Don't change this value since it's dynamically chang
 }
 
 #msPanel {
+    background: rgba(getBackgroundColor($theme), $panel-opacity);
+
     box-shadow: $shadow;
 
     .panel-button {
@@ -260,6 +264,7 @@ $surface-opacity: 0.987; // Don't change this value since it's dynamically chang
 }
 
 #topPanel {
+    background: rgba(getBackgroundColor($theme), $panel-opacity);
     $topPanelTheme: $theme;
 
     @if ($theme== 'primary') {
