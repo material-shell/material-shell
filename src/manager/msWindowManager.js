@@ -58,6 +58,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     );
                 });
                 if (msWindow) {
+                    metaWindow.handledByMaterialShell = true;
                     return msWindow.setWindow(metaWindow);
                 }
             }
