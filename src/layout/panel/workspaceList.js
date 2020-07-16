@@ -149,6 +149,12 @@ var WorkspaceList = GObject.registerClass(
                             msWorkspace,
                             workspaceButton
                         );
+                    } else {
+                        let button = this.msWorkspaceButtonMap.get(msWorkspace);
+                        let index = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                            msWorkspace
+                        );
+                        this.buttonList.set_child_at_index(button, index);
                     }
                 }
             );

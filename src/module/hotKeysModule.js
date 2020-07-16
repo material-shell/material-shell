@@ -120,11 +120,28 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(KeyBindingAction.MOVE_WINDOW_TOP, () => {
             const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             if (
-                activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[0] ||
                 activeMsWorkspace.tileableFocused ===
-                    activeMsWorkspace.appLauncher
+                activeMsWorkspace.appLauncher
             ) {
+                return;
+            }
+            if (
+                activeMsWorkspace ===
+                Me.msWorkspaceManager.primaryMsWorkspaces[0]
+            ) {
+                if (activeMsWorkspace.tileableList.length > 2) {
+                    logFocus('MOVE TOP');
+                    const nextMsWorkspace =
+                        Me.msWorkspaceManager.msWorkspaceList[
+                            Me.msWorkspaceManager.msWorkspaceList.length - 1
+                        ];
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
+                        activeMsWorkspace.tileableFocused,
+                        nextMsWorkspace
+                    );
+                    Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                    nextMsWorkspace.activate();
+                }
                 return;
             }
             const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
