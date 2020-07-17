@@ -45,16 +45,9 @@ var MsWorkspace = class MsWorkspace {
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         let defaultLayout = getSettings('layouts').get_string('defaultlayout');
-        let Layout;
-        if (defaultLayout !== '' && !initialState) {
-            Layout = Me.tilingManager.getLayoutByKey(
-                defaultLayout
-            );
-        } else {
-            Layout = Me.tilingManager.getLayoutByKey(
-                initialState ? initialState.tilingLayout : 'maximized'
-            );
-        }
+        const Layout = Me.tilingManager.getLayoutByKey(
+            initialState ? initialState.tilingLayout : defaultLayout
+        );
 
         this.tilingLayout = new Layout(this);
         this.msWorkspaceActor.tileableContainer.set_layout_manager(
