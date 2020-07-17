@@ -201,6 +201,15 @@ function getDefaultLayoutModel() {
     });
     return model;
 }
+function registerDefaultLayoutBoxListener(model) {
+    const settings = getSettings('layouts');
+    defaultLayoutComboBox.connect('changed', (entry) => {
+        let [success, iter] = defaultLayoutComboBox.get_active_iter();
+        if (!success) return;
+        let value = model.get_value(iter, 0);
+        settings.set_string('defaultlayout', value);
+    });
+}
 function getDefaultLayoutCheckbox() {
     const settings = getSettings('layouts');
     let model = getDefaultLayoutModel();
@@ -211,12 +220,7 @@ function getDefaultLayoutCheckbox() {
     defaultLayoutComboBox.add_attribute(renderer, 'text', 1);
     let defaultLayout = settings.get_string('defaultlayout');
     defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
-    defaultLayoutComboBox.connect('changed', (entry) => {
-        let [success, iter] = defaultLayoutComboBox.get_active_iter();
-        if (!success) return;
-        let value = model.get_value(iter, 0);
-        settings.set_string('defaultlayout', value);
-    });
+    registerDefaultLayoutBoxListener(model);
     return defaultLayoutComboBox;
 
 
@@ -233,6 +237,7 @@ function layoutsTab(notebook) {
             let activeLayouts = getActiveLayouts();
             let defaultLayout = settings.get_string('defaultlayout');
             defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
+            registerDefaultLayoutBoxListener(model);
         });
     }
     let setDefaultLayoutAdded = false;
