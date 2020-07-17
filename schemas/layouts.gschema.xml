@@ -81,7 +81,7 @@
       <description>Ajust duration of window move/resize animation</description>
     </key>
     <key name="defaultlayout" type="s">
-      <default>''</default>
+      <default>'maximize'</default>
       <summary>default layout</summary>
       <description>Determines the active default layout for Material Shell</description>
     </key>
