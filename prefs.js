@@ -2,7 +2,7 @@ const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-
+let defaultLayoutComboBox = null;
 // eslint-disable-next-line no-unused-vars
 function init() { }
 
@@ -186,38 +186,55 @@ function accelTab(notebook) {
 
     notebook.append_page(...makePage('Shortcuts', accelGrid));
 }
-function getDefaultLayoutCheckbox() {
+function getActiveLayouts() {
     const settings = getSettings('layouts');
-
-    let activeLayouts = Object.keys(layouts).filter(entry => {
+    return Object.keys(layouts).filter(entry => {
         return settings.get_boolean(entry.toString()) === true;
     });
+}
+function getDefaultLayoutModel() {
     let model = new Gtk.ListStore();
     model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
+    let activeLayouts = getActiveLayouts();
     activeLayouts.forEach(layout => {
         model.set(model.append(), [0, 1], [layout, layout]);
     });
-    let cbox = new Gtk.ComboBox({ model: model });
+    return model;
+}
+function getDefaultLayoutCheckbox() {
+    const settings = getSettings('layouts');
+    let model = getDefaultLayoutModel();
+    let activeLayouts = getActiveLayouts();
+    defaultLayoutComboBox = new Gtk.ComboBox({ model: model });
     let renderer = new Gtk.CellRendererText();
-    cbox.pack_start(renderer, true);
-    cbox.add_attribute(renderer, 'text', 1);
+    defaultLayoutComboBox.pack_start(renderer, true);
+    defaultLayoutComboBox.add_attribute(renderer, 'text', 1);
     let defaultLayout = settings.get_string('defaultlayout');
-    if (defaultLayout !== '') {
-        cbox.set_active(activeLayouts.indexOf(defaultLayout));
-    }
-    cbox.connect('changed', (entry) => {
-        let [success, iter] = cbox.get_active_iter();
+    defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
+    defaultLayoutComboBox.connect('changed', (entry) => {
+        let [success, iter] = defaultLayoutComboBox.get_active_iter();
         if (!success) return;
         let value = model.get_value(iter, 0);
         settings.set_string('defaultlayout', value);
     });
-    return cbox;
+    return defaultLayoutComboBox;
 
 
 }
 
 function layoutsTab(notebook) {
     const settings = getSettings('layouts');
+    // update the list of active layouts every time a layout-switch is toggled
+    for (const [layoutKey, layoutDescription] of Object.entries(layouts)) {
+        settings.connect(`changed::${layoutKey}`, () => {
+            // update the model of the combobox
+            let model = getDefaultLayoutModel();
+            defaultLayoutComboBox.set_model(model);
+            let activeLayouts = getActiveLayouts();
+            let defaultLayout = settings.get_string('defaultlayout');
+            defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
+        });
+    }
     let setDefaultLayoutAdded = false;
     const layoutItemCreator = (rows, [layout, description]) => {
         if (!setDefaultLayoutAdded) {
@@ -225,7 +242,7 @@ function layoutsTab(notebook) {
             rows.push(
                 makeItemRow(
                     'Default layout',
-                    'Determines the default layout for Material Shell',
+                    'Determines the default layout for Material Shell. This will only affect the workspaces that will be created after the selection',
                     cbox
                 )
             );
