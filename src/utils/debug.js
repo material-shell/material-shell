@@ -1,7 +1,7 @@
 const { GLib } = imports.gi;
 
 const DEBUG = false;
-const FOCUS_ONLY = false;
+const FOCUS_ONLY = true;
 let indent = 0;
 var AddLogToFunctions = function (object) {
     if (!DEBUG) return;

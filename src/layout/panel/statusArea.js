@@ -5,7 +5,7 @@ const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const { reparentActor } = Me.imports.src.utils.index;
 const { DateMenuButton } = imports.ui.dateMenu;
-const { log } = Me.imports.src.utils.debug;
+const { log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(
@@ -37,15 +37,14 @@ var MsStatusArea = GObject.registerClass(
 
         verticaliseDateMenuButton() {
             this.dateMenu._clock.time_only = true;
-            this.dateMenu.set_x_expand(false);
-            this.dateMenu.set_y_expand(false);
-            this.dateMenu.box = this.dateMenu.indicatorPad = this.dateMenu.get_child_at_index(
-                0
-            );
+            /*this.dateMenu.set_x_expand(false);
+            this.dateMenu.set_y_expand(false); */
+            this.dateMenu.box = this.dateMenu.get_child_at_index(0);
             this.dateMenu.indicatorPad = this.dateMenu.box.get_child_at_index(
                 0
             );
             this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
+            this.dateMenu.box.set_x_align(Clutter.ActorAlign.CENTER);
             let update = () => {
                 /**
                  * Format clock display to fit into the vertical panel
@@ -72,6 +71,7 @@ var MsStatusArea = GObject.registerClass(
         unVerticaliseDateMenuButton() {
             this.dateMenu.set_x_expand(true);
             this.dateMenu.set_y_expand(true);
+            this.dateMenu.box.set_x_align(Clutter.ActorAlign.FILL);
             this.dateMenu._clock.time_only = false;
             this.dateMenu._clock.disconnect(this.dateMenuSignal);
             this.dateMenu._clockDisplay.text = this.dateMenu._clock.clock;

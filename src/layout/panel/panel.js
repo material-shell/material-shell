@@ -7,7 +7,7 @@ const { Shell, Meta, St, GLib, GObject, Clutter, Gio } = imports.gi;
 const Main = imports.ui.main;
 const { reparentActor } = Me.imports.src.utils.index;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { WorkspaceList } = Me.imports.src.widget.workspaceList;
+const { WorkspaceList } = Me.imports.src.layout.panel.workspaceList;
 
 /* exported MsPanel */
 var MsPanel = GObject.registerClass(

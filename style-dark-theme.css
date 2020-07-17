@@ -99,7 +99,7 @@ subtitle-1 {
     color: rgba(255, 255, 255, 0.87); }
 
 #msPanel {
-  background: #191919;
+  background: rgba(25, 25, 25, 0.876);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #msPanel .panel-button {
     color: rgba(255, 255, 255, 0.6);
@@ -140,7 +140,7 @@ subtitle-1 {
     spacing: 2px; }
 
 #topPanel {
-  background: #191919;
+  background: rgba(25, 25, 25, 0.876);
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   #topPanel .task-active-indicator {
     background: white;
@@ -189,7 +189,6 @@ subtitle-1 {
   padding: 4px 0px !important; }
 
 .mat-card {
-  background: #191919;
   border-radius: 6px;
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
   .mat-card .mat-card-title {
@@ -211,22 +210,10 @@ subtitle-1 {
   border-radius: 48px; }
 
 .surface {
-  background: #191919; }
+  background: rgba(25, 25, 25, 0.987); }
 
 .surface-lighter {
-  background: #212121; }
+  background: rgba(33, 33, 33, 0.987); }
 
 .surface-darker {
-  background: #121212; }
-
-/* .dark-theme {
-    @include buildTheme('dark');
-}
-
-.light-theme {
-    @include buildTheme('light');
-}
-
-.primary-theme {
-    @include buildTheme('primary');
-} */
+  background: rgba(18, 18, 18, 0.987); }

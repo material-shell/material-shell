@@ -23,11 +23,30 @@ var MsThemeManager = class MsThemeManager extends MsManager {
             this.primary = schema.get_string('primary-color');
             this.regenerateStylesheet();
         });
+        this.observe(this.themeSettings, 'changed::panel-opacity', () => {
+            this.regenerateStylesheet();
+        });
+        this.observe(this.themeSettings, 'changed::surface-opacity', () => {
+            this.regenerateStylesheet();
+        });
         this.observe(this.themeSettings, 'changed::panel-size', () => {
             this.emit('panel-size-changed');
         });
+        this.observe(this.themeSettings, 'changed::blur-background', () => {
+            this.emit('blur-background-changed');
+        });
+    }
 
-        //this.regenerateStylesheet();
+    get panelOpacity() {
+        return this.themeSettings.get_int('panel-opacity');
+    }
+
+    get surfaceOpacity() {
+        return this.themeSettings.get_int('surface-opacity');
+    }
+
+    get blurBackground() {
+        return this.themeSettings.get_boolean('blur-background');
     }
 
     getPanelSize(monitorIndex) {
@@ -115,6 +134,8 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         );
         let content = await this.readFileContent(originThemeFile);
         content = content.replace(/#3f51b5/g, this.primary); // color-primary
+        content = content.replace(/0.876/g, this.panelOpacity / 100); // panel-opacity
+        content = content.replace(/0.987/g, this.surfaceOpacity / 100); // surface-opacity
         await this.writeContentToFile(content, file);
     }
 
