@@ -228,6 +228,13 @@ function getDefaultLayoutCheckbox() {
 
 function layoutsTab(notebook) {
     const settings = getSettings('layouts');
+    // create the defaultLayout-row
+    let cbox = getDefaultLayoutCheckbox();
+    let defaultLayoutRow = makeItemRow(
+        'Default layout',
+        'Determines the default layout for Material Shell. This will only affect the workspaces that will be created after the selection',
+        cbox
+    );
     // update the list of active layouts every time a layout-switch is toggled
     for (const [layoutKey, layoutDescription] of Object.entries(layouts)) {
         settings.connect(`changed::${layoutKey}`, () => {
@@ -240,19 +247,7 @@ function layoutsTab(notebook) {
             registerDefaultLayoutBoxListener(model);
         });
     }
-    let setDefaultLayoutAdded = false;
     const layoutItemCreator = (rows, [layout, description]) => {
-        if (!setDefaultLayoutAdded) {
-            let cbox = getDefaultLayoutCheckbox();
-            rows.push(
-                makeItemRow(
-                    'Default layout',
-                    'Determines the default layout for Material Shell. This will only affect the workspaces that will be created after the selection',
-                    cbox
-                )
-            );
-            setDefaultLayoutAdded = true;
-        }
         const name = layout
             .replace('-', ' ')
             .replace(/^\w/g, (c) => c.toUpperCase());
@@ -277,11 +272,11 @@ function layoutsTab(notebook) {
         }
         return rows;
     };
-
+    // append the defaultLayout-row and the layouts-rows to the page
     notebook.append_page(
         ...makePage(
             'Layouts',
-            makeItemList(Object.entries(layouts).reduce(layoutItemCreator, []))
+            makeItemList([defaultLayoutRow, ...Object.entries(layouts).reduce(layoutItemCreator, [])])
         )
     );
 }
