@@ -207,7 +207,7 @@ function registerDefaultLayoutBoxListener(model) {
         let [success, iter] = defaultLayoutComboBox.get_active_iter();
         if (!success) return;
         let value = model.get_value(iter, 0);
-        settings.set_string('defaultlayout', value);
+        settings.set_string('default-layout', value);
     });
 }
 function getDefaultLayoutCheckbox() {
@@ -218,7 +218,7 @@ function getDefaultLayoutCheckbox() {
     let renderer = new Gtk.CellRendererText();
     defaultLayoutComboBox.pack_start(renderer, true);
     defaultLayoutComboBox.add_attribute(renderer, 'text', 1);
-    let defaultLayout = settings.get_string('defaultlayout');
+    let defaultLayout = settings.get_string('default-layout');
     defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
     registerDefaultLayoutBoxListener(model);
     return defaultLayoutComboBox;
@@ -235,7 +235,7 @@ function layoutsTab(notebook) {
             let model = getDefaultLayoutModel();
             defaultLayoutComboBox.set_model(model);
             let activeLayouts = getActiveLayouts();
-            let defaultLayout = settings.get_string('defaultlayout');
+            let defaultLayout = settings.get_string('default-layout');
             defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
             registerDefaultLayoutBoxListener(model);
         });
