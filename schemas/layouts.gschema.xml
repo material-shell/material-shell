@@ -80,6 +80,11 @@
       <summary>Animation duration</summary>
       <description>Ajust duration of window move/resize animation</description>
     </key>
+    <key name="default-layout" type="s">
+      <default>'maximize'</default>
+      <summary>default layout</summary>
+      <description>Determines the active default layout for Material Shell</description>
+    </key>
     <key name="windows-excluded" type="s">
       <default>''</default>
       <summary>Window's class excluded</summary>
