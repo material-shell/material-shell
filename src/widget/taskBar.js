@@ -97,12 +97,9 @@ var TaskBar = GObject.registerClass(
                             this.msWorkspace.focusTileable(tileable);
                         });
                         item.connect('middle-clicked', (_) => {
-                            logFocus('right clicked');
-
                             tileable.kill();
                         });
                         item.connect('close-clicked', (_) => {
-                            logFocus('Close clicked');
                             tileable.kill();
                         });
 

@@ -3,7 +3,14 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
-/* exported MsThemeManager */
+/* exported PanelIconStyleEnum, MsThemeManager */
+
+var PanelIconStyleEnum = {
+    HYBRID: 0,
+    CATEGORY: 1,
+    APPLICATION: 2,
+};
+
 var MsThemeManager = class MsThemeManager extends MsManager {
     constructor() {
         super();
@@ -35,10 +42,21 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::blur-background', () => {
             this.emit('blur-background-changed');
         });
+        this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
+            this.emit('panel-icon-style-changed');
+        });
     }
 
     get panelOpacity() {
         return this.themeSettings.get_int('panel-opacity');
+    }
+
+    get panelIconStyle() {
+        return this.themeSettings.get_enum('panel-icon-style');
+    }
+
+    set panelIconStyle(value) {
+        this.themeSettings.set_enum('panel-icon-style', value);
     }
 
     get surfaceOpacity() {

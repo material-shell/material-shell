@@ -1,4 +1,9 @@
 <schemalist>
+  <enum id="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
+    <value nick="hybrid" value="0"/>
+    <value nick="category" value="1"/>
+    <value nick="application" value="2"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
     <key name="theme" type="s">
       <default>'dark'</default>
@@ -19,6 +24,11 @@
       <default>100</default>
       <summary>Panel opacity</summary>
       <description>Change the opacity of Panels</description>
+    </key>
+    <key name="panel-icon-style" enum="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
+      <default>'hybrid'</default>
+      <summary>Left panel icons style</summary>
+      <description>Type of icons for the workspaces on the left panel</description>
     </key>
     <key name="surface-opacity" type="i">
       <default>100</default>
