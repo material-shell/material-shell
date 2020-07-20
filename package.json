@@ -4,7 +4,7 @@
   "description": "A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.",
   "main": "extension.js",
   "dependencies": {
-    "eslint": "^7.2.0",
+    "eslint": "^7.5.0",
     "node-sass": "^4.14.1"
   },
   "devDependencies": {},

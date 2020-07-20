@@ -1,16 +1,17 @@
 const { Clutter, GObject, St, Gio } = imports.gi;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-
+const PopupMenu = imports.ui.popupMenu;
 const DND = imports.ui.dnd;
-const Me = ExtensionUtils.getCurrentExtension();
+const Main = imports.ui.main;
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const Main = imports.ui.main;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
-
+const {
+    MainCategories,
+} = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
+const { PanelIconStyleEnum } = Me.imports.src.manager.msThemeManager;
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
@@ -19,15 +20,18 @@ var WorkspaceList = GObject.registerClass(
                 clip_to_allocation: true,
                 style_class: 'workspace-list',
             });
+            this._delegate = this;
+
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceButtonMap = new Map();
             this.msWorkspaceManager = Me.msWorkspaceManager;
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
 
             this.buttonList = new St.Widget({
                 layout_manager: new Clutter.BoxLayout({ vertical: true }),
             });
-
             this.add_child(this.buttonList);
+
             this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
             this.dropPlaceholder.connect('drag-dropped', () => {
                 this.tempDragData.workspaceButton
@@ -35,7 +39,6 @@ var WorkspaceList = GObject.registerClass(
                     .remove_child(this.tempDragData.workspaceButton);
                 this.buttonList.add_child(this.tempDragData.workspaceButton);
             });
-
             this.dropPlaceholder.connect('drag-over', () => {
                 this.tempDragData.draggedOverByChild = true;
             });
@@ -91,6 +94,7 @@ var WorkspaceList = GObject.registerClass(
                             this.msWorkspaceManager,
                             msWorkspace
                         );
+                        this.menuManager.addMenu(workspaceButton.menu);
                         workspaceButton._draggable.connect('drag-begin', () => {
                             let workspaceButtonIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                                 msWorkspace
@@ -165,6 +169,8 @@ var WorkspaceList = GObject.registerClass(
                         msWorkspace
                     )
                 ) {
+                    this.menuManager.removeMenu(button.menu);
+                    button.menu.destroy();
                     button.destroy();
                     this.msWorkspaceButtonMap.delete(msWorkspace);
                 }
@@ -314,11 +320,17 @@ var WorkspaceButton = GObject.registerClass(
                 child: this.workspaceButtonIcon,
             });
             this._delegate = this;
+
+            this.buildMenu();
+
             Me.msThemeManager.connect('panel-size-changed', () => {
                 this.queue_relayout();
             });
             this.connect('clicked', (_, button) => {
-                if (button === 2) {
+                if (button === 3) {
+                    logFocus('toggle menu');
+                    this.menu.toggle();
+                } else if (button === 2) {
                     if (
                         this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                             this.msWorkspace
@@ -408,6 +420,126 @@ var WorkspaceButton = GObject.registerClass(
                 this.msWorkspaceManager.primaryMsWorkspaces.length - 1
             );
         }
+
+        buildMenu() {
+            this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+            this.menu.addMenuItem(
+                new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
+            );
+            this.panelIconStyleHybridRadio = this.menu.addAction(
+                _('Hybrid'),
+                () => {
+                    Me.msThemeManager.panelIconStyle =
+                        PanelIconStyleEnum.HYBRID;
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
+                        PanelIconStyleEnum.HYBRID
+                            ? 'marked'
+                            : 'blank'
+                    }-symbolic.svg`
+                )
+            );
+            this.panelIconStyleCategoryRadio = this.menu.addAction(
+                _('Categories only'),
+                () => {
+                    Me.msThemeManager.panelIconStyle =
+                        PanelIconStyleEnum.CATEGORY;
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
+                        PanelIconStyleEnum.CATEGORY
+                            ? 'marked'
+                            : 'blank'
+                    }-symbolic.svg`
+                )
+            );
+            this.panelIconStyleApplicationRadio = this.menu.addAction(
+                _('Applications preview'),
+                () => {
+                    Me.msThemeManager.panelIconStyle =
+                        PanelIconStyleEnum.APPLICATION;
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
+                        PanelIconStyleEnum.APPLICATION
+                            ? 'marked'
+                            : 'blank'
+                    }-symbolic.svg`
+                )
+            );
+
+            Me.msThemeManager.connect('panel-icon-style-changed', () => {
+                this.panelIconStyleHybridRadio._icon.set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.HYBRID
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+                this.panelIconStyleCategoryRadio._icon.set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.CATEGORY
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+                this.panelIconStyleApplicationRadio._icon.set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.APPLICATION
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+            });
+
+            this.menu.addMenuItem(
+                new PopupMenu.PopupSeparatorMenuItem(_('Override category'))
+            );
+            const autoSentence = _('Determined automatically');
+            this.subMenu = new PopupMenu.PopupSubMenuMenuItem(
+                this.msWorkspace.msWorkspaceCategory.forcedCategory ||
+                    autoSentence
+            );
+            let setCategory = (category) => {
+                this.msWorkspace.msWorkspaceCategory.forceCategory(category);
+                this.workspaceButtonIcon.buildIcons();
+                this.subMenu.label.text = category || autoSentence;
+            };
+            this.subMenu.menu.addAction(autoSentence, () => {
+                setCategory();
+            });
+            MainCategories.forEach((key) => {
+                this.subMenu.menu.addAction(
+                    key,
+                    () => {
+                        setCategory(key);
+                    },
+                    Gio.icon_new_for_string(
+                        `${
+                            Me.path
+                        }/assets/icons/category/${key.toLowerCase()}-symbolic.svg`
+                    )
+                );
+            });
+
+            this.menu.addMenuItem(this.subMenu);
+            Main.uiGroup.add_actor(this.menu.actor);
+            this.menu.close();
+        }
+
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
@@ -477,6 +609,9 @@ var WorkspaceButtonIcon = GObject.registerClass(
             this.msWorkspace.connect('tileableList-changed', (_) => {
                 this.buildIcons();
             });
+            Me.msThemeManager.connect('panel-icon-style-changed', () => {
+                this.buildIcons();
+            });
         }
 
         buildIcons() {
@@ -514,14 +649,33 @@ var WorkspaceButtonIcon = GObject.registerClass(
                     .map((entry) => {
                         return entry[0];
                     });
-
-                sortedByInstanceAppList.forEach((app) => {
-                    const icon = app.create_icon_texture(
-                        Me.msThemeManager.getPanelSizeNotScaled() / 2
-                    );
+                if (
+                    Me.msThemeManager.panelIconStyle ===
+                        PanelIconStyleEnum.CATEGORY ||
+                    (Me.msThemeManager.panelIconStyle ===
+                        PanelIconStyleEnum.HYBRID &&
+                        sortedByInstanceAppList.length > 1)
+                ) {
+                    let icon = new St.Icon({
+                        gicon: Gio.icon_new_for_string(
+                            `${
+                                Me.path
+                            }/assets/icons/category/${this.msWorkspace.msWorkspaceCategory.category.toLowerCase()}-symbolic.svg`
+                        ),
+                        icon_size:
+                            Me.msThemeManager.getPanelSizeNotScaled() / 2,
+                    });
                     this.appIconList.push(icon);
                     this.add_child(icon);
-                });
+                } else {
+                    sortedByInstanceAppList.forEach((app) => {
+                        const icon = app.create_icon_texture(
+                            Me.msThemeManager.getPanelSizeNotScaled() / 2
+                        );
+                        this.appIconList.push(icon);
+                        this.add_child(icon);
+                    });
+                }
             } else {
                 let icon = new St.Icon({
                     gicon: Gio.icon_new_for_string(

@@ -36,6 +36,19 @@ var MsWindow = GObject.registerClass(
                 height: initialAllocation ? initialAllocation.height || 0 : 0,
             });
 
+            this.app = app;
+            this._persistent = persistent;
+            logFocus('_persistent', this._persistent);
+            this.dialogs = [];
+            this.metaWindowIdentifier = metaWindowIdentifier;
+            this.windowClone = new Clutter.Clone();
+            this.placeholder = new AppPlaceholder(this.app);
+            this.metaWindowSignals = [];
+
+            logFocus('after placeholder creation');
+            this.placeholder.connect('clicked', (_) => {
+                this.emit('request-new-meta-window');
+            });
             this.destroyId = this.connect(
                 'destroy',
                 this._onDestroy.bind(this)
@@ -47,19 +60,6 @@ var MsWindow = GObject.registerClass(
             this.connect('notify::visible', () => {
                 this.updateMetaWindowVisibility();
             });
-
-            this.app = app;
-            this._persistent = persistent;
-            logFocus('_persistent', this._persistent);
-            this.dialogs = [];
-            this.metaWindowIdentifier = metaWindowIdentifier;
-            this.windowClone = new Clutter.Clone();
-            this.placeholder = new AppPlaceholder(this.app);
-            logFocus('after placeholder creation');
-            this.placeholder.connect('clicked', (_) => {
-                this.emit('request-new-meta-window');
-            });
-            this.metaWindowSignals = [];
             this.msContent = new MsWindowContent(
                 this.placeholder,
                 this.windowClone

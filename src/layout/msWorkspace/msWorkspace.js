@@ -7,7 +7,9 @@ const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
-
+const {
+    MsWorkspaceCategory,
+} = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
         AddLogToFunctions(this);
@@ -19,7 +21,10 @@ var MsWorkspace = class MsWorkspace {
         // First add Applauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
         this.tileableList.push(this.appLauncher);
-
+        this.msWorkspaceCategory = new MsWorkspaceCategory(
+            this,
+            initialState && initialState.forcedCategory
+        );
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         if (initialState) {
             initialState.msWindowList.forEach((msWindowData) => {
@@ -51,6 +56,9 @@ var MsWorkspace = class MsWorkspace {
             this.tilingLayout
         );
         this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.connect('tileableList-changed', () => {
+            this.msWorkspaceCategory.determineCategory();
+        });
     }
 
     destroy() {
@@ -379,6 +387,7 @@ var MsWorkspace = class MsWorkspace {
                     };
                 }),
             focusedIndex: this.focusedIndex,
+            forcedCategory: this.msWorkspaceCategory.forcedCategory,
         };
     }
 };

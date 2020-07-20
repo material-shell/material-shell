@@ -1,25 +1,94 @@
-var mainCategories = [
-    'AudioVideo',
-    'Audio',
-    'Video',
-    'Development',
-    'Education',
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+
+//Ordered by specificity in case of equality the most specific category will be chosen
+var MainCategories = [
     'Game',
+    'Development',
+    'Video',
+    'Audio',
+    'AudioVideo',
     'Graphics',
-    'Network',
     'Office',
     'Science',
+    'Education',
+    'FileManager',
+    'InstantMessaging',
+    'Network',
     'Settings',
     'System',
     'Utility',
 ];
 
+var meaningfulCategories = ['IDE', 'WebBrowser', 'Player'];
+
 var MsWorkspaceCategory = class MsWorkspaceCategory {
-    constructor(msWorkspace) {
+    constructor(msWorkspace, forcedCategory) {
         this.msWorkspace = msWorkspace;
+        this.forcedCategory = forcedCategory;
+        this.determineCategory();
+    }
+
+    forceCategory(category) {
+        this.forcedCategory = category;
+        this.determineCategory();
+        Me.msWorkspaceManager.saveCurrentState();
     }
 
     determineCategory() {
-        this.msWorkspace.msWindowList.forEach((msWindow) => {});
+        if (this.forcedCategory) {
+            return (this.category = this.forcedCategory);
+        }
+        let appList = this.msWorkspace.msWindowList.map((msWindow) => {
+            return msWindow.app;
+        });
+        if (!appList.length) return;
+        const categoryScoreMap = new Map();
+        logFocus('appList', appList);
+        appList.forEach((app) => {
+            if (app.is_window_backed()) return;
+            let appMainCategories = [];
+            let multiplicator = 1;
+            logFocus(app.get_app_info().get_categories());
+
+            const categories = app.get_app_info().get_categories().split(';');
+            categories.forEach((category) => {
+                logFocus(category, MainCategories.includes(category));
+                if (MainCategories.includes(category)) {
+                    appMainCategories.push(category);
+                }
+                if (meaningfulCategories.includes(category)) {
+                    multiplicator += 1;
+                }
+            });
+            logFocus('appMainCategories', appMainCategories);
+            appMainCategories.forEach((category) => {
+                if (categoryScoreMap.has(category)) {
+                    categoryScoreMap.set(
+                        category,
+                        categoryScoreMap.get(category) +
+                            1 * Number(multiplicator)
+                    );
+                } else {
+                    categoryScoreMap.set(category, 1 * Number(multiplicator));
+                }
+            });
+        });
+        let mostRatedCategoryEntry;
+        for (const entry of categoryScoreMap.entries()) {
+            logFocus('entry', entry);
+            if (!mostRatedCategoryEntry || entry[1] > mostRatedCategoryEntry[1])
+                mostRatedCategoryEntry = entry;
+
+            if (
+                entry[1] === mostRatedCategoryEntry[1] &&
+                MainCategories.indexOf(entry[0]) <
+                    MainCategories.indexOf(mostRatedCategoryEntry[0])
+            ) {
+                mostRatedCategoryEntry = entry;
+            }
+        }
+        if (!mostRatedCategoryEntry) return;
+        this.category = mostRatedCategoryEntry[0];
     }
 };
