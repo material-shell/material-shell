@@ -49,9 +49,10 @@ var MsWorkspaceCategory = class MsWorkspaceCategory {
             if (app.is_window_backed()) return;
             let appMainCategories = [];
             let multiplicator = 1;
-            logFocus(app.get_app_info().get_categories());
-
-            const categories = app.get_app_info().get_categories().split(';');
+            const categoriesString = app.get_app_info().get_categories();
+            const categories = categoriesString
+                ? categoriesString.split(';')
+                : [];
             categories.forEach((category) => {
                 logFocus(category, MainCategories.includes(category));
                 if (MainCategories.includes(category)) {
