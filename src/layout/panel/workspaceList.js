@@ -650,6 +650,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                         return entry[0];
                     });
                 if (
+                    this.msWorkspace.msWorkspaceCategory.forcedCategory ||
                     Me.msThemeManager.panelIconStyle ===
                         PanelIconStyleEnum.CATEGORY ||
                     (Me.msThemeManager.panelIconStyle ===

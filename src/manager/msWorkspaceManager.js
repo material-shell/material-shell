@@ -43,9 +43,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                         (lastRemoved.get_window_type() ==
                             Meta.WindowType.SPLASHSCREEN ||
                             lastRemoved.get_window_type() ==
-                            Meta.WindowType.DIALOG ||
+                                Meta.WindowType.DIALOG ||
                             lastRemoved.get_window_type() ==
-                            Meta.WindowType.MODAL_DIALOG)) ||
+                                Meta.WindowType.MODAL_DIALOG)) ||
                     this._workspaces[i]._keepAliveId
                 )
                     emptyWorkspaces[i] = false;
@@ -185,7 +185,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     let i = 0;
                     i <=
                     this.currentState.primaryWorkspaceList.length -
-                    this.workspaceManager.n_workspaces;
+                        this.workspaceManager.n_workspaces;
                     i++
                 ) {
                     log(
@@ -194,7 +194,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     );
                     this.workspaceManager.append_new_workspace(
                         this.currentState.primaryWorkspaceActiveIndex ===
-                        this.workspaceManager.n_workspaces,
+                            this.workspaceManager.n_workspaces,
                         global.get_current_time()
                     );
                     log('after ', this.workspaceManager.n_workspaces);
@@ -229,8 +229,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 this.createNewMsWorkspace(
                     monitor,
                     this.currentState &&
-                    this.currentState.externalWorkspaces &&
-                    this.currentState.externalWorkspaces[externalIndex]
+                        this.currentState.externalWorkspaces &&
+                        this.currentState.externalWorkspaces[externalIndex]
                 );
             }
         }
@@ -311,23 +311,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         });
         msWorkspace.connect('readyToBeClosed', () => {
             let index = this.primaryMsWorkspaces.indexOf(msWorkspace);
-            if (this.getActiveMsWorkspace() === msWorkspace) {
+            if (
+                this.getActiveMsWorkspace() === msWorkspace &&
+                !msWorkspace.msWindowList.length
+            ) {
+                //Try to switch to the prev workspace is there is no next one before kill it
+                if (this.primaryMsWorkspaces[index - 1]) {
+                    this.primaryMsWorkspaces[index - 1].activate();
+                }
                 //Try to switch to the next workspace before kill it
-                if (this.primaryMsWorkspaces[index + 1]) {
+                else if (this.primaryMsWorkspaces[index + 1]) {
                     this.primaryMsWorkspaces[index + 1].activate();
                 }
-                //Try to switch to the prev workspace is there is no next one before kill it
-                else if (this.primaryMsWorkspaces[index - 1]) {
-                    this.primaryMsWorkspaces[index - 1].activate();
-                } else {
-                    //This is the single workspace don't kill it
-                    return;
-                }
             }
-            this.workspaceManager.remove_workspace(
-                this.getWorkspaceOfMsWorkspace(msWorkspace),
-                global.get_current_time()
-            );
         });
         this.msWorkspaceList.push(msWorkspace);
         this.stateChanged();
@@ -347,7 +343,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
     }
 
-    closeMsWorkspace(msWorkspace) { }
+    closeMsWorkspace(msWorkspace) {}
 
     stateChanged() {
         if (
@@ -488,7 +484,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             metaWindow.msWindow.msWorkspace &&
             metaWindow.msWindow.msWorkspace != msWorkspace &&
             global.display.get_current_time_roundtrip() - metaWindow.createdAt <
-            2000
+                2000
         ) {
             return metaWindow.change_workspace(
                 metaWindow.msWindow.msWorkspace.workspace
