@@ -1,6 +1,6 @@
 {
     "name": "Material Shell",
-    "description": "Change the workflow of the Gnome-shell to Mouse-driven Tileable workflow",
+    "description": "A simple, productivity oriented GNOME Shell replacement that provides an innovative and automated mouse and keyboard workflow which aims to be faster and easier to use and creates a great user experience.",
     "uuid": "material-shell@papyelgringo",
     "shell-version": [
         "3.34",
