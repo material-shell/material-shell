@@ -24,14 +24,13 @@ reload:
 	$(extension_tool) -r $(extension) 
 
 build_prod: schemas sass
-	rm -rf dist
-	mkdir -p dist
-	cp -r assets dist
-	cp -r schemas dist
-	cp -r src dist
-	cp extension.js dist
-	cp prefs.js dist
-	cp metadata.json dist
-	cp style-dark-theme.css dist
-	cp style-light-theme.css dist
-	cp style-primary-theme.css dist
+	rm -f dist.zip
+	zip -r dist.zip assets
+	zip -r dist.zip schemas
+	zip -r dist.zip src
+	zip dist.zip extension.js
+	zip dist.zip prefs.js
+	zip dist.zip metadata.json
+	zip dist.zip style-dark-theme.css
+	zip dist.zip style-light-theme.css
+	zip dist.zip style-primary-theme.css
