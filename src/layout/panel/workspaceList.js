@@ -658,11 +658,13 @@ var WorkspaceButtonIcon = GObject.registerClass(
                         PanelIconStyleEnum.HYBRID &&
                         sortedByInstanceAppList.length > 1)
                 ) {
+                    let category =
+                        this.msWorkspace.msWorkspaceCategory.category || '';
                     let icon = new St.Icon({
                         gicon: Gio.icon_new_for_string(
                             `${
                                 Me.path
-                            }/assets/icons/category/${this.msWorkspace.msWorkspaceCategory.category.toLowerCase()}-symbolic.svg`
+                            }/assets/icons/category/${category.toLowerCase()}-symbolic.svg`
                         ),
                         icon_size:
                             Me.msThemeManager.getPanelSizeNotScaled() / 2,
