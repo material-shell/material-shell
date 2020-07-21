@@ -1,10 +1,11 @@
+/** Gnome libs imports */
 const { St, GObject, Clutter } = imports.gi;
+const Animation = imports.ui.animation;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
-const Animation = imports.ui.animation;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported AppPlaceholder */
 var AppPlaceholder = GObject.registerClass(
@@ -96,7 +97,7 @@ var AppPlaceholder = GObject.registerClass(
 
             this.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
-                logFocus('symbol', symbol);
+
                 if (ShellVersionMatch('3.34')) {
                     switch (symbol) {
                         case Clutter.Return:
@@ -118,12 +119,9 @@ var AppPlaceholder = GObject.registerClass(
 
             this.connect('key-focus-in', () => {
                 this.box.add_style_class_name('surface');
-                logFocus('placeholder grab key-focus');
             });
             this.connect('key-focus-out', () => {
                 this.box.remove_style_class_name('surface');
-
-                logFocus('placeholder lost key-focus');
             });
         }
 

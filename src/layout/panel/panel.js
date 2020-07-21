@@ -1,12 +1,11 @@
+/** Gnome libs imports */
+const { St, GObject, Clutter, Gio } = imports.gi;
+const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsStatusArea } = Me.imports.src.layout.panel.statusArea;
 const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
-
-const { Shell, Meta, St, GLib, GObject, Clutter, Gio } = imports.gi;
-const Main = imports.ui.main;
-const { reparentActor } = Me.imports.src.utils.index;
-const { MatButton } = Me.imports.src.widget.material.button;
 const { WorkspaceList } = Me.imports.src.layout.panel.workspaceList;
 
 /* exported MsPanel */

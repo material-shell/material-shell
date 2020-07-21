@@ -1,9 +1,13 @@
-const { Meta, Shell, Clutter, GObject } = imports.gi;
+/** Gnome libs imports */
+const { Meta, Shell } = imports.gi;
 const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+
+/* exported HotKeysModule, KeyBindingAction */
 
 var KeyBindingAction = {
     PREVIOUS_WINDOW: 'previous-window',
@@ -20,7 +24,6 @@ var KeyBindingAction = {
     TOGGLE_MATERIAL_SHELL_UI: 'toggle-material-shell-ui',
 };
 
-/* exported HotKeysModule */
 var HotKeysModule = class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
@@ -130,7 +133,6 @@ var HotKeysModule = class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
                 if (activeMsWorkspace.tileableList.length > 2) {
-                    logFocus('MOVE TOP');
                     const nextMsWorkspace =
                         Me.msWorkspaceManager.msWorkspaceList[
                             Me.msWorkspaceManager.msWorkspaceList.length - 1
@@ -222,11 +224,6 @@ var HotKeysModule = class HotKeysModule {
             KeyBindingAction.TOGGLE_MATERIAL_SHELL_UI,
             () => {
                 Me.layout.togglePanelsVisibilities();
-                logFocus('');
-                logFocus('');
-                logFocus('');
-                logFocus('');
-                logFocus('');
             }
         );
 

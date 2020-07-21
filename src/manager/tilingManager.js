@@ -1,11 +1,13 @@
+/** Gnome libs imports */
 const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const {
     MaximizeLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
-
 const {
     TilingLayoutByKey,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
@@ -66,7 +68,6 @@ var TilingManager = class TilingManager extends MsManager {
                         // change tiling of all workspaces using that layout.
 
                         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                            log('IDLE_ADD');
                             Me.msWorkspaceManager.msWorkspaceList.forEach(
                                 (msWorkspace) => {
                                     if (key == msWorkspace.tilingLayout.key) {
@@ -130,7 +131,6 @@ var TilingManager = class TilingManager extends MsManager {
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            log('IDLE_ADD');
             for (let monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {

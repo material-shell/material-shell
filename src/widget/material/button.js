@@ -1,7 +1,10 @@
+/** Gnome libs imports */
 const { Clutter, GObject, St, Meta } = imports.gi;
-const Params = imports.misc.params;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
+
 /* exported MatButton */
 var MatButton = GObject.registerClass(
     {

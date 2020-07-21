@@ -1,7 +1,7 @@
-const ByteArray = imports.byteArray;
+/** Gnome libs imports */
 const Util = imports.misc.util;
-const Meta = imports.gi.Meta;
-const GLib = imports.gi.GLib;
+
+/* exported updateTitleBarVisibility */
 
 var updateTitleBarVisibility = function (metaWindow) {
     let msWorkspaceIsInFloatLayout =

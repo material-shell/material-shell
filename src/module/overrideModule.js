@@ -1,8 +1,6 @@
+/** Gnome libs imports */
 const { Meta } = imports.gi;
-
 const { WindowManager } = imports.ui.windowManager;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported OverrideModule */
 var OverrideModule = class OverrideModule {

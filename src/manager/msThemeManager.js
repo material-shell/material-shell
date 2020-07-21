@@ -1,4 +1,7 @@
+/** Gnome libs imports */
 const { GLib, Gio, St } = imports.gi;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;

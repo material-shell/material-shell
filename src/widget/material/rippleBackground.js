@@ -1,7 +1,7 @@
+/** Gnome libs imports */
 const { St, Clutter, GObject, GLib } = imports.gi;
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+/* exported RippleBackground */
 
 let RippleWave = GObject.registerClass(
     class RippleWave extends St.Widget {
@@ -44,7 +44,6 @@ let RippleWave = GObject.registerClass(
     }
 );
 
-/* exported RippleBackground */
 var RippleBackground = GObject.registerClass(
     class RippleBackground extends St.Widget {
         _init(eventListener) {

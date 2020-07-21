@@ -1,11 +1,11 @@
+/** Gnome libs imports */
 const { GObject } = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported RatioLayout */
 var RatioLayout = GObject.registerClass(

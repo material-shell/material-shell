@@ -1,13 +1,14 @@
+/** Gnome libs imports */
 const { GLib, GObject } = imports.gi;
 
+/** Extension imports */
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
-const { reparentActor } = Me.imports.src.utils.index;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { log } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported FloatLayout */
@@ -16,7 +17,6 @@ var FloatLayout = GObject.registerClass(
         alterTileable(tileable) {
             if (tileable.metaWindow) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('IDLE_ADD');
                     WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                     tileable.mimicMetaWindowPositionAndSize();
                     return GLib.SOURCE_REMOVE;
@@ -34,7 +34,6 @@ var FloatLayout = GObject.registerClass(
         restoreTileable(tileable) {
             if (tileable.metaWindow) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('IDLE_ADD');
                     WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                     return GLib.SOURCE_REMOVE;
                 });
@@ -42,7 +41,6 @@ var FloatLayout = GObject.registerClass(
         }
 
         showAppLauncher() {
-            logFocus('showAppLauncherFloat');
             let actor = this.msWorkspace.appLauncher;
             actor.x = 0;
             actor.y = 0;

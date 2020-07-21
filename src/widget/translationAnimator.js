@@ -1,9 +1,11 @@
-const { St, GObject, Clutter, GLib } = imports.gi;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+/** Gnome libs imports */
+const { GObject, Clutter } = imports.gi;
 
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
+
 /* exported TranslationAnimator */
 var TranslationAnimator = GObject.registerClass(
     {

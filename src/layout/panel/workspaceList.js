@@ -1,17 +1,20 @@
+/** Gnome libs imports */
 const { Clutter, GObject, St, Gio } = imports.gi;
 const PopupMenu = imports.ui.popupMenu;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { log } = Me.imports.src.utils.debug;
 const {
     MainCategories,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 const { PanelIconStyleEnum } = Me.imports.src.manager.msThemeManager;
+
 /* exported WorkspaceList */
 var WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
@@ -295,7 +298,6 @@ var WorkspaceList = GObject.registerClass(
         }
 
         _onDestroy() {
-            log('workspaceList to its own destroy');
             global.workspace_manager.disconnect(this.workspaceSignal);
         }
     }
@@ -328,7 +330,6 @@ var WorkspaceButton = GObject.registerClass(
             });
             this.connect('clicked', (_, button) => {
                 if (button === 3) {
-                    logFocus('toggle menu');
                     this.menu.toggle();
                 } else if (button === 2) {
                     if (
@@ -556,7 +557,7 @@ var WorkspaceButton = GObject.registerClass(
             if (!(source instanceof WorkspaceButton) || !this.draggable) {
                 return DND.DragMotionResult.NO_DROP;
             }
-            log('dragover');
+
             this.emit('drag-over', y < this.height / 2);
             return DND.DragMotionResult.MOVE_DROP;
         }

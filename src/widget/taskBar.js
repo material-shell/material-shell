@@ -1,17 +1,16 @@
+/** Gnome libs imports */
 const { Clutter, GObject, St, Shell, Gio, GLib } = imports.gi;
-
 const DND = imports.ui.dnd;
+const PopupMenu = imports.ui.popupMenu;
+const Main = imports.ui.main;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
-const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
 
 let dragData = null;
 
@@ -37,13 +36,11 @@ var TaskBar = GObject.registerClass(
             this.connect('destroy', this._onDestroy.bind(this));
             this.msWorkspaceSignals = [
                 msWorkspace.connect('tileableList-changed', () => {
-                    log('tileableList-changed');
                     this.onTileableListChange();
                 }),
                 msWorkspace.connect(
                     'tileable-focus-changed',
                     (_, tileable, oldTileable) => {
-                        log('tileable-focus-changed');
                         this.onFocusChanged(tileable, oldTileable);
                     }
                 ),
@@ -81,7 +78,7 @@ var TaskBar = GObject.registerClass(
             if (!nextItem) return;
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
-            log('on new allocate');
+
             this._animateActiveIndicator();
             nextItem.add_style_class_name('active');
         }
@@ -317,11 +314,10 @@ var TaskBar = GObject.registerClass(
             });
         }
         vfunc_allocate(box, flags) {
-            log('allocate taskbar', box.x1, box.x2, box.y1, box.y2);
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
-            log('allocate taskButtonContainer', box.x1, box.x2, box.y1, box.y2);
+
             this.taskButtonContainer.allocate(box, flags);
 
             let taskActiveIndicatorBox = new Clutter.ActorBox();
@@ -333,19 +329,11 @@ var TaskBar = GObject.registerClass(
                 contentBox.y2 -
                 this.taskActiveIndicator.get_preferred_height(-1)[0];
             taskActiveIndicatorBox.y2 = contentBox.y2;
-            log(
-                'allocate taskButtonContainer',
-                taskActiveIndicatorBox.x1,
-                taskActiveIndicatorBox.x2,
-                taskActiveIndicatorBox.y1,
-                taskActiveIndicatorBox.y1
-            );
 
             this.taskActiveIndicator.allocate(taskActiveIndicatorBox, flags);
         }
 
         _onDestroy() {
-            log('Taskbar to its own destroy');
             this.msWorkspaceSignals.forEach((signal) =>
                 this.msWorkspace.disconnect(signal)
             );
@@ -636,151 +624,13 @@ let TileableItem = GObject.registerClass(
             super.vfunc_allocate(box, flags);
         }
         _onDestroy() {
-            log('TaskbarItem to its own destroy');
             if (this.connectSignal) {
                 this.tileable.disconnect(this.connectSignal);
             }
             this.menu.destroy();
         }
     }
-); /* 
-let TileableContent = GObject.registerClass(
-    {
-        Signals: {
-            'close-clicked': {},
-        },
-    },
-    class TileableContentClass extends St.Widget {
-        _init(tileable) {
-            super._init({
-                style_class: 'task-bar-item-content',
-            });
-            this.connect('destroy', this._onDestroy.bind(this));
-            tileable.connect('destroy', () => {
-                delete this.connectSignal;
-            });
-            this.tileable = tileable;
-            this.app = tileable.app;
-            if (this.app) {
-                // ICON
-            }
-
-            // TITLE
-            this.title = new St.Label({
-                style_class: 'task-bar-item-title',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.updateTitle();
-
-            this.connectSignal = this.tileable.connect('title-changed', () => {
-                this.updateTitle();
-            });
-
-            // CLOSE BUTTON
-            this.closeButton = new St.Button({
-                style_class: 'task-close-button',
-                child: new St.Icon({
-                    style_class: 'task-close-icon',
-                    gicon: Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/close-symbolic.svg`
-                    ),
-                }),
-            });
-
-            this.closeButton.connect('clicked', () => {
-                this.emit('close-clicked');
-            });
-
-            // LAYOUT CONTAINER
-            this.add_child(this.title);
-            this.add_child(this.closeButton);
-        }
-
-        buildIcon(height) {
-            if (this.icon) this.icon.destroy();
-            this.iconSize = height;
-            log('iconSize', this.iconSize);
-            this.icon = this.app.create_icon_texture(this.iconSize / 2);
-            this.icon.style_class = 'app-icon';
-            this.add_child(this.icon);
-        }
-
-        // Update the title and crop it if it's too long
-        updateTitle() {
-            this.title.text = this.tileable.title;
-        }
-
-        vfunc_get_preferred_width(_forHeight) {
-            let maxIconWidth = this.icon ? this.iconSize : 0;
-            log('maxTitleWidth', this.title.get_preferred_width(_forHeight));
-            let maxTitleWidth = this.title.get_preferred_width(_forHeight)[1];
-            let maxCloseWidth = this.closeButton.get_preferred_width(-1)[1];
-            return [
-                maxIconWidth + maxCloseWidth,
-                maxIconWidth + maxTitleWidth + maxCloseWidth,
-            ];
-        }
-        vfunc_get_preferred_height(_forWidth) {
-            return [
-                super.vfunc_get_preferred_height(_forWidth)[1],
-                super.vfunc_get_preferred_height(_forWidth)[1],
-            ];
-        }
-        vfunc_allocate(box, flags) {
-            log('width', box.get_width(), this.get_preferred_width(-1));
-            log('height', box.get_height(), this.get_preferred_height(-1));
-
-            this.set_allocation(box, flags);
-            let themeNode = this.get_theme_node();
-            box = themeNode.get_content_box(box);
-            let iconBox = new Clutter.ActorBox();
-            iconBox.x1 = box.x1;
-            iconBox.x2 = box.get_height();
-            iconBox.y1 = box.y1;
-            iconBox.y2 = box.y2;
-            if (!this.icon || iconBox.get_height() != this.iconSize) {
-                this.buildIcon(iconBox.get_height());
-            }
-            if (this.icon) {
-                this.icon.allocate(iconBox, flags);
-            }
-            let closeButtonBox = new Clutter.ActorBox();
-            closeButtonBox.x1 =
-                box.x2 - this.closeButton.get_preferred_width(-1)[1];
-            closeButtonBox.x2 = box.x2;
-            closeButtonBox.y1 =
-                (box.get_height() -
-                    this.closeButton.get_preferred_height(-1)[1]) /
-                2;
-            closeButtonBox.y2 =
-                closeButtonBox.y1 +
-                this.closeButton.get_preferred_height(-1)[1];
-            log(
-                'closeButtonBox',
-                closeButtonBox.x1,
-                closeButtonBox.x2,
-                closeButtonBox.y1,
-                closeButtonBox.y2
-            );
-            this.closeButton.allocate(closeButtonBox, flags);
-
-            let titleBox = new Clutter.ActorBox();
-            titleBox.x1 = iconBox.x2;
-            titleBox.x2 = closeButtonBox.x1;
-            titleBox.y1 = box.y1;
-            titleBox.y2 = box.y2;
-            log('titleBox', titleBox.x1, titleBox.x2, titleBox.y1, titleBox.y2);
-            this.title.allocate(titleBox, flags);
-        }
-
-        _onDestroy() {
-            log('TaskbarItem to its own destroy');
-            if (this.connectSignal) {
-                this.tileable.disconnect(this.connectSignal);
-            }
-        }
-    }
-); */
+);
 
 let IconTaskBarItem = GObject.registerClass(
     class IconTaskBarItem extends TaskBarItem {

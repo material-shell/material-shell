@@ -1,5 +1,5 @@
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 const {
     MaximizeLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;

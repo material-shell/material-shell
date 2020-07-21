@@ -1,29 +1,28 @@
-const { GLib, St, Clutter, Gio } = imports.gi;
+/** Gnome libs imports */
+const { GLib, St, Gio } = imports.gi;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     DisableIncompatibleExtensionsModule,
 } = Me.imports.src.module.disableIncompatibleExtensionsModule;
 const { OverrideModule } = Me.imports.src.module.overrideModule;
-
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-var { TilingManager } = Me.imports.src.manager.tilingManager;
-
+const { TilingManager } = Me.imports.src.manager.tilingManager;
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
-
 const { MsMain } = Me.imports.src.layout.main;
 
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
     monitorChangedId;
-let splashscreens = [];
+let splashScreens = [];
 
 // eslint-disable-next-line no-unused-vars
 function init() {
@@ -92,11 +91,11 @@ function loaded(disconnect) {
     if (disconnect) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
-    /* Me.msWorkspaceManager.init(); */
     Me.loaded = true;
     Me.locked = false;
     Me.emit('extension-loaded');
-    // When monitors changed we reload the extension completely by disabling and reenabling it
+
+    // When monitors changed we reload the extension completely by disabling and reEnabling it
     monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
         if (
             Main.layoutManager.monitors.length &&
@@ -159,12 +158,7 @@ function showSplashScreens() {
             width: monitor.width,
             height: monitor.height,
         });
-        Main.layoutManager.uiGroup.add_child(splashscreen);
-        /* Main.layoutManager.uiGroup.set_child_below_sibling(
-            splashscreen,
-            Main.lookingGlass
-        ); */
-        splashscreens.push(splashscreen);
+        splashScreens.push(splashscreen);
     });
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
         hideSplashScreens();
@@ -172,7 +166,7 @@ function showSplashScreens() {
 }
 
 function hideSplashScreens() {
-    splashscreens.forEach((splashscreen, index) => {
+    splashScreens.forEach((splashscreen) => {
         splashscreen.ease({
             opacity: 0,
             duration: 800,
@@ -182,5 +176,5 @@ function hideSplashScreens() {
             },
         });
     });
-    splashscreens = [];
+    splashScreens = [];
 }

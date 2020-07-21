@@ -1,11 +1,11 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-
-const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
+/** Gnome libs imports */
+const { St, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
+
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { reparentActor } = Me.imports.src.utils.index;
-const { DateMenuButton } = imports.ui.dateMenu;
-const { log, logFocus } = Me.imports.src.utils.debug;
+const { log } = Me.imports.src.utils.debug;
 
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(
@@ -85,8 +85,6 @@ var MsStatusArea = GObject.registerClass(
             this.gnomeShellPanel._leftBox
                 .get_children()
                 .filter((actor) => {
-                    log(actor, this.gnomeShellPanel.statusArea.activities);
-
                     return (
                         actor !=
                             this.gnomeShellPanel.statusArea.activities
@@ -214,7 +212,6 @@ var MsStatusArea = GObject.registerClass(
             });
         }
         onDisable() {
-            log('onDisable');
             Me.disconnect(this.disableConnect);
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();

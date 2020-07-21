@@ -1,10 +1,9 @@
-const { GObject, St, Clutter, Gio } = imports.gi;
+/** Gnome libs imports */
+const { GObject, St, Clutter } = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const { MatButton } = Me.imports.src.widget.material.button;
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
-
 const { TaskBar } = Me.imports.src.widget.taskBar;
 
 /* exported TopPanel */

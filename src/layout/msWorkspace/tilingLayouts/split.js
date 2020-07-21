@@ -1,12 +1,13 @@
-const { GObject, Clutter } = imports.gi;
+/** Gnome libs imports */
+const { GObject } = imports.gi;
 
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { log, logFocus } = Me.imports.src.utils.debug;
+
 // TODO: Make this configurable
 const WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 250;
@@ -137,13 +138,6 @@ var SplitLayout = GObject.registerClass(
 
             tileable.width = horizontalPortion;
             tileable.height = verticalPortion;
-            logFocus(
-                'tileSplit',
-                tileable.x,
-                tileable.y,
-                tileable.width,
-                tileable.height
-            );
         }
         /* 
         getAllocationBoxOfTileableFor(actor, containerBox, index, length) {

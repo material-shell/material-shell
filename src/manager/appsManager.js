@@ -1,6 +1,5 @@
+/** Gnome libs imports */
 const { Shell } = imports.gi;
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported AppsManager */
 var AppsManager = class AppsManager {

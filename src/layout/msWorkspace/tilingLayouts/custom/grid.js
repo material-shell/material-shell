@@ -1,19 +1,18 @@
+/** Gnome libs imports */
 const { GObject } = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const { range } = Me.imports.src.utils.index;
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported GridLayout */
 var GridLayout = GObject.registerClass(
     class GridLayout extends BaseTilingLayout {
         tileTileable(tileable, box, index, siblingLength) {
             const columns = Math.ceil(Math.sqrt(siblingLength));
-            logFocus(columns);
+
             const rows = Math.ceil(siblingLength / columns);
             const portionWidth = box.get_width() / columns;
             const portionHeight = box.get_height() / rows;

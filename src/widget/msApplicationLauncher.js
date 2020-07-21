@@ -1,13 +1,17 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
+/** Gnome libs imports */
+const { Clutter, GObject, St } = imports.gi;
+const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const Main = imports.ui.main;
 const { AppsManager } = Me.imports.src.manager.appsManager;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { log, logFocus } = Me.imports.src.utils.debug;
+const { log } = Me.imports.src.utils.debug;
+
+/* exported MsApplicationLauncher */
 
 const BUTTON_SIZE = 124;
-/* exported MsApplicationLauncher */
 var MsApplicationLauncher = GObject.registerClass(
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
@@ -100,7 +104,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.inputContainer.set_primary_icon(this.searchIcon);
             this._text = this.inputContainer.clutter_text;
             this._text.connect('text-changed', () => {
-                log(this.inputContainer.get_text());
                 this.updateFilteredAppButtonList();
             });
             this._text.connect('key-press-event', (entry, event) => {
@@ -271,7 +274,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             const nextButton = this.filteredAppButtonList[
                 currentIndex + this.numberOfColumn
             ];
-            logFocus('highlightButtonBelow', nextButton);
 
             if (nextButton) {
                 this.highlightButton(nextButton);

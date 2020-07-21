@@ -1,5 +1,7 @@
+/** Gnome libs imports */
 const { Gio } = imports.gi;
-const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 

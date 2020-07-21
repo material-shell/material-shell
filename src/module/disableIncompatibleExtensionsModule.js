@@ -1,10 +1,5 @@
-const { Gio } = imports.gi;
-
+/** Gnome libs imports */
 const Main = imports.ui.main;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
 /* exported DisableIncompatibleExtensionsModule */
 var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsModule {

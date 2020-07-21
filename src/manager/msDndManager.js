@@ -1,9 +1,12 @@
+/** Gnome libs imports */
 const { GLib, Meta, Clutter, GObject } = imports.gi;
+const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor, throttle } = Me.imports.src.utils.index;
-const Main = imports.ui.main;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 

@@ -1,10 +1,13 @@
-const { Shell, Meta, St, GLib } = imports.gi;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+/** Gnome libs imports */
+const { Shell, Meta, GLib } = imports.gi;
 const Signals = imports.signals;
+
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
@@ -30,17 +33,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(
             global.display,
             'window-demands-attention',
-            (_, metaWindow) => {
-                logFocus('window-demands-attention', metaWindow);
-            }
+            (_, metaWindow) => {}
         );
 
         this.observe(
             global.display,
             'window-marked-urgent',
-            (_, metaWindow) => {
-                logFocus('window-marked-urgent', metaWindow);
-            }
+            (_, metaWindow) => {}
         );
     }
 
@@ -123,7 +122,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             appSys.lookup_app(appId) ||
             (metaWindow && this.windowTracker.get_window_app(metaWindow));
         if (!app) {
-            log('unable to get app from id:', appId);
             return;
         }
         let msWindow = new MsWindow(
@@ -137,7 +135,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             this.openAppForMsWindow(msWindow);
         });
         msWindow.connect('destroy', () => {
-            log('msWindowManager connected to MsWindowDestroy');
             this.msWindowList.splice(this.msWindowList.indexOf(msWindow), 1);
         });
         this.msWindowList.push(msWindow);
@@ -166,7 +163,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     checkWindowsForAssignations() {
         const timestamp = Date.now();
-        logFocus('checkWindowsForAssignations', timestamp, Date.now());
 
         // For every waiting Window we do
         this.metaWindowWaitingForAssignationList.forEach(
@@ -326,7 +322,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onFocusMetaWindow(metaWindow) {
-        logFocus('onFocusMetaWindow', metaWindow);
         if (Me.disableInProgress || Me.closing) return;
         /*
              If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
@@ -342,7 +337,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
         if (!metaWindow) return;
 
-        logFocus(metaWindow.msWindow);
         if (metaWindow.msWindow) {
             this.emit('ms-window-focused', metaWindow.msWindow);
         }

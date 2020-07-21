@@ -1,13 +1,13 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
-const { Shell, Meta, St, GLib, GObject, Clutter } = imports.gi;
+/** Gnome libs imports */
+const { Shell, Meta, St, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
+const Background = imports.ui.background;
+
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
-const Background = imports.ui.background;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(

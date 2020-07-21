@@ -1,17 +1,18 @@
 // Inspired by https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator/blob/master/utils.js
 
+/** Gnome libs imports */
 const { GLib, Gio } = imports.gi;
-const FileQueryInfoFlags = Gio.FileQueryInfoFlags;
 const FileTest = GLib.FileTest;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
     Me.uuid
 }-state-next.json`;
 
+/* exported StateManager */
 var StateManager = class StateManager {
     constructor() {
         this.state = {};

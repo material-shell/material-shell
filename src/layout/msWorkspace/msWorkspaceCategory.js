@@ -1,5 +1,4 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+/* exported MsWorkspaceCategory, MainCategories */
 
 //Ordered by specificity in case of equality the most specific category will be chosen
 var MainCategories = [
@@ -44,40 +43,37 @@ var MsWorkspaceCategory = class MsWorkspaceCategory {
         });
         if (!appList.length) return;
         const categoryScoreMap = new Map();
-        logFocus('appList', appList);
+
         appList.forEach((app) => {
             if (app.is_window_backed()) return;
             let appMainCategories = [];
-            let multiplicator = 1;
+            let multiplier = 1;
             const categoriesString = app.get_app_info().get_categories();
             const categories = categoriesString
                 ? categoriesString.split(';')
                 : [];
             categories.forEach((category) => {
-                logFocus(category, MainCategories.includes(category));
                 if (MainCategories.includes(category)) {
                     appMainCategories.push(category);
                 }
                 if (meaningfulCategories.includes(category)) {
-                    multiplicator += 1;
+                    multiplier += 1;
                 }
             });
-            logFocus('appMainCategories', appMainCategories);
+
             appMainCategories.forEach((category) => {
                 if (categoryScoreMap.has(category)) {
                     categoryScoreMap.set(
                         category,
-                        categoryScoreMap.get(category) +
-                            1 * Number(multiplicator)
+                        categoryScoreMap.get(category) + 1 * Number(multiplier)
                     );
                 } else {
-                    categoryScoreMap.set(category, 1 * Number(multiplicator));
+                    categoryScoreMap.set(category, 1 * Number(multiplier));
                 }
             });
         });
         let mostRatedCategoryEntry;
         for (const entry of categoryScoreMap.entries()) {
-            logFocus('entry', entry);
             if (!mostRatedCategoryEntry || entry[1] > mostRatedCategoryEntry[1])
                 mostRatedCategoryEntry = entry;
 

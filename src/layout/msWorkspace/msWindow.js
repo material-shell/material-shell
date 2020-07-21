@@ -1,11 +1,14 @@
-const { St, Meta, GLib, Clutter, GObject, Gio } = imports.gi;
+/** Gnome libs imports */
+const { St, Meta, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
-const WindowUtils = Me.imports.src.utils.windows;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
-/* exported MsWindow */
 
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+const WindowUtils = Me.imports.src.utils.windows;
+const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
+const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
+
+/* exported MsWindow */
 var MsWindow = GObject.registerClass(
     {
         GTypeName: 'MsWindow',
@@ -38,14 +41,13 @@ var MsWindow = GObject.registerClass(
 
             this.app = app;
             this._persistent = persistent;
-            logFocus('_persistent', this._persistent);
+
             this.dialogs = [];
             this.metaWindowIdentifier = metaWindowIdentifier;
             this.windowClone = new Clutter.Clone();
             this.placeholder = new AppPlaceholder(this.app);
             this.metaWindowSignals = [];
 
-            logFocus('after placeholder creation');
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
             });
@@ -92,8 +94,6 @@ var MsWindow = GObject.registerClass(
         }
 
         delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
-            log('delay actor !', delayedCount);
-
             if (delayedCount < 20) {
                 // If we don't have actor we hope to get it in the next loop
                 GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
@@ -166,14 +166,6 @@ var MsWindow = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            log(
-                'allocate msWindow',
-                this.title,
-                box.x1,
-                box.y1,
-                box.get_width(),
-                box.get_height()
-            );
             box.x1 = Math.round(box.x1);
             box.y1 = Math.round(box.y1);
             box.x2 = Math.round(box.x2);
@@ -406,7 +398,7 @@ var MsWindow = GObject.registerClass(
                     frame.y - offsetY + frame.height > this.y + this.height;
                 const needResize =
                     frame.width > this.width || frame.height > this.height;
-                logFocus('needResize', needResize, 'needMove', needMove);
+
                 if (needResize && metaWindow.resizeable) {
                     let minWidth = Math.min(frame.width, this.width);
                     let minHeight = Math.min(frame.height, this.height);
@@ -737,7 +729,6 @@ var MsWindowContent = GObject.registerClass(
 
                     this.clone.allocate(cloneBox, flags);
                 } else {
-                    log('windowactor is missing', this.title);
                 }
             }
 

@@ -1,17 +1,21 @@
-const { Clutter, GLib, St, Shell, GObject } = imports.gi;
+/** Gnome libs imports */
+const { Clutter, GLib, GObject } = imports.gi;
 const Signals = imports.signals;
 const Main = imports.ui.main;
+
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 const {
     MsWorkspaceCategory,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 const { getSettings } = Me.imports.src.utils.settings;
 
+/* exported MsWorkspace */
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
         AddLogToFunctions(this);
@@ -20,7 +24,7 @@ var MsWorkspace = class MsWorkspace {
         this.monitorIsPrimary =
             monitor.index === Main.layoutManager.primaryIndex;
         this.tileableList = [];
-        // First add Applauncher since windows are inserted before it otherwise the order is a mess
+        // First add AppLauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
         this.tileableList.push(this.appLauncher);
         this.msWorkspaceCategory = new MsWorkspaceCategory(
@@ -66,7 +70,6 @@ var MsWorkspace = class MsWorkspace {
     }
 
     destroy() {
-        log('destroy msWorkspace');
         this.tilingLayout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
@@ -102,7 +105,6 @@ var MsWorkspace = class MsWorkspace {
     }
 
     async addMsWindow(msWindow, focus = false) {
-        logFocus('addMsWindow', msWindow);
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
@@ -143,7 +145,7 @@ var MsWorkspace = class MsWorkspace {
         }
         await this.emitTileableListChangedOnce(oldTileableList);
         // If there's no more focused msWindow on this workspace focus the last one
-        logFocus('tileableIsFocused', tileableIsFocused);
+
         if (tileableIsFocused) {
             this.focusTileable(this.tileableList[this.focusedIndex], true);
         }
@@ -154,7 +156,6 @@ var MsWorkspace = class MsWorkspace {
         if (!this.emitTileableChangedInProgress) {
             this.emitTileableChangedInProgress = new Promise((resolve) => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('IDLE_ADD');
                     delete this.emitTileableChangedInProgress;
                     this.emit(
                         'tileableList-changed',
@@ -220,7 +221,6 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusTileable(tileable, forced) {
-        logFocus('focusTileable', tileable, forced);
         if (tileable === this.tileableFocused && !forced) {
             return;
         }
@@ -328,7 +328,6 @@ var MsWorkspace = class MsWorkspace {
             // Make it async to prevent concurrent debounce calls
             if (debouncedArgs) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    log('IDLE_ADD');
                     this.emit('windows-changed', newWindows, oldWindows);
                     return GLib.SOURCE_REMOVE;
                 });
@@ -414,7 +413,6 @@ var MsWorkspaceActor = GObject.registerClass(
     },
     class MsWorkspaceActor extends Clutter.Actor {
         _init(msWorkspace) {
-            log('new MsWorkspaceActor');
             super._init({
                 clip_to_allocation: true,
                 x_expand: true,

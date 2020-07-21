@@ -26,7 +26,7 @@ var AddLogToFunctions = function (object) {
                 indent++;
                 var result = value.apply(this, arguments); // use .apply() to call it
                 // After
-                log(`>${result != undefined ? result : ''}`);
+
                 indent--;
                 return result;
             }.bind(object);
@@ -59,8 +59,6 @@ var startLogTick = function () {
 
 function logTick() {
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-        log('IDLE_ADD');
-        log('tick');
         if (doLogTick) {
             logTick();
         }

@@ -1,10 +1,11 @@
-const { Meta, Gio, GLib, Clutter, GObject } = imports.gi;
+/** Gnome libs imports */
+const { Gio, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 
+/** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported BaseTilingLayout */
@@ -345,7 +346,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         onDestroy() {
-            log('destroy tilingLayout');
             this.signals.forEach((signal) => {
                 try {
                     signal.from.disconnect(signal.id);

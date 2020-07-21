@@ -1,6 +1,6 @@
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
-const Params = imports.misc.params;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+/** Gnome libs imports */
+const { Clutter, GObject, St } = imports.gi;
+
 /* exported MatCard */
 var MatCard = GObject.registerClass(
     class MatCard extends St.Bin {

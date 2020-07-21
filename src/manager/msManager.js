@@ -1,3 +1,4 @@
+/** Gnome libs imports */
 const Signals = imports.signals;
 
 /* exported MsManager */

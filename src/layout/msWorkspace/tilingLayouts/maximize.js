@@ -1,18 +1,18 @@
-const { Clutter, GObject } = imports.gi;
+/** Gnome libs imports */
+const { GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
 
+/** Extension imports */
+const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { log, logFocus } = Me.imports.src.utils.debug;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = GObject.registerClass(
     class MaximizeLayout extends BaseTilingLayout {
         _init(msWorkspace) {
-            logFocus(' INIT MAXIMIZE LAYOUT');
             super._init(msWorkspace);
             this.translationAnimator = new TranslationAnimator();
             this.translationAnimator.connect('transition-completed', () => {
@@ -40,8 +40,6 @@ var MaximizeLayout = GObject.registerClass(
             this.currentDisplayedActorDestroySignal = this.currentDisplayedActor.connect(
                 'destroy',
                 () => {
-                    logFocus('displayTileable destroy');
-
                     delete this.currentDisplayedActor;
                 }
             );
