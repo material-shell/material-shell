@@ -34,6 +34,10 @@ var HotKeysModule = class HotKeysModule {
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
 
+        this.cycleThroughtWorkspaces = getSettings('layouts').get_boolean(
+            'cycle-through-workspaces'
+        );
+
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const currentMonitorIndex = global.display.get_current_monitor();
             const msWorkspace =
@@ -51,7 +55,7 @@ var HotKeysModule = class HotKeysModule {
                 currentMonitorIndex === Main.layoutManager.primaryIndex
                     ? Me.msWorkspaceManager.getActiveMsWorkspace()
                     : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                          currentMonitorIndex
+                          currentMonitorIndex - 1
                       )[0];
             msWorkspace.focusNextTileable();
         });
@@ -64,6 +68,13 @@ var HotKeysModule = class HotKeysModule {
                     Me.msWorkspaceManager.primaryMsWorkspaces[
                         currentIndex - 1
                     ].activate();
+                    return;
+                }
+
+                if (this.cycleThroughtWorkspaces) {
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        this.workspaceManager.n_workspaces - 1
+                    ].activate();
                 }
             }
         );
@@ -74,6 +85,11 @@ var HotKeysModule = class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[
                     currentIndex + 1
                 ].activate();
+                return;
+            }
+
+            if (this.cycleThroughtWorkspaces) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
             }
         });
 
@@ -232,21 +248,21 @@ var HotKeysModule = class HotKeysModule {
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `NAVIGATE_TO_${workspaceIndex + 1}`;
-            KeyBindingAction[actionKey] = `navigate-to-workspace-${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `navigate-to-workspace-${
+                workspaceIndex + 1
+            }`;
 
-            this.actionNameToActionMap.set(
-                KeyBindingAction[actionKey],
-                () => {
-                    const currentNumOfWorkspaces = Me.msWorkspaceManager.msWorkspaceList.length - 1;
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const currentNumOfWorkspaces =
+                    Me.msWorkspaceManager.msWorkspaceList.length - 1;
 
-                    // go to new workspace if attemping to go to index bigger than currently available
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        workspaceIndex > currentNumOfWorkspaces
-                            ? currentNumOfWorkspaces
-                            : workspaceIndex
-                    ].activate();
-                }
-            );
+                // go to new workspace if attemping to go to index bigger than currently available
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    workspaceIndex > currentNumOfWorkspaces
+                        ? currentNumOfWorkspaces
+                        : workspaceIndex
+                ].activate();
+            });
         });
 
         this.actionNameToActionMap.forEach((action, name) => {
