@@ -67,7 +67,7 @@ var HotKeysModule = class HotKeysModule {
                     return;
                 }
 
-                if (Me.msWorkspaceManager.getCycleThroughWorkspacesFlag()) {
+                if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                     Me.msWorkspaceManager.primaryMsWorkspaces[
                         this.workspaceManager.n_workspaces - 1
                     ].activate();
@@ -84,7 +84,7 @@ var HotKeysModule = class HotKeysModule {
                 return;
             }
 
-            if (Me.msWorkspaceManager.getCycleThroughWorkspacesFlag()) {
+            if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
             }
         });

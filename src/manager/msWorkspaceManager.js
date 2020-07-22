@@ -513,7 +513,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.stateChanged();
     }
 
-    getCycleThroughWorkspacesFlag() {
+    shouldCycleWorkspacesNavigation() {
         return getSettings('layouts').get_boolean('cycle-through-workspaces');
     }
 
