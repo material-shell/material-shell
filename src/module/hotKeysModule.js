@@ -34,10 +34,6 @@ var HotKeysModule = class HotKeysModule {
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
 
-        this.cycleThroughtWorkspaces = getSettings('layouts').get_boolean(
-            'cycle-through-workspaces'
-        );
-
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const currentMonitorIndex = global.display.get_current_monitor();
             const msWorkspace =
@@ -55,7 +51,7 @@ var HotKeysModule = class HotKeysModule {
                 currentMonitorIndex === Main.layoutManager.primaryIndex
                     ? Me.msWorkspaceManager.getActiveMsWorkspace()
                     : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                          currentMonitorIndex - 1
+                          currentMonitorIndex
                       )[0];
             msWorkspace.focusNextTileable();
         });
@@ -71,7 +67,7 @@ var HotKeysModule = class HotKeysModule {
                     return;
                 }
 
-                if (this.cycleThroughtWorkspaces) {
+                if (Me.msWorkspaceManager.getCycleThroughWorkspacesFlag()) {
                     Me.msWorkspaceManager.primaryMsWorkspaces[
                         this.workspaceManager.n_workspaces - 1
                     ].activate();
@@ -88,7 +84,7 @@ var HotKeysModule = class HotKeysModule {
                 return;
             }
 
-            if (this.cycleThroughtWorkspaces) {
+            if (Me.msWorkspaceManager.getCycleThroughWorkspacesFlag()) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
             }
         });

@@ -67,10 +67,6 @@ var MsWorkspace = class MsWorkspace {
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.determineCategory();
         });
-
-        this.cycleThroughtWindows = getSettings('layouts').get_boolean(
-            'cycle-through-windows'
-        );
     }
 
     destroy() {
@@ -211,7 +207,7 @@ var MsWorkspace = class MsWorkspace {
 
     focusNextTileable() {
         if (this.focusedIndex === this.tileableList.length - 1) {
-            if (this.cycleThroughtWindows) {
+            if (Me.msWindowManager.getCycleThroughWindowsFlag()) {
                 this.focusTileable(this.tileableList[0]);
                 return;
             }
@@ -222,7 +218,7 @@ var MsWorkspace = class MsWorkspace {
 
     focusPreviousTileable() {
         if (this.focusedIndex === 0) {
-            if (this.cycleThroughtWindows) {
+            if (Me.msWindowManager.getCycleThroughWindowsFlag()) {
                 this.focusTileable(
                     this.tileableList[this.tileableList.length - 1]
                 );

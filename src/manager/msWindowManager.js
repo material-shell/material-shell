@@ -382,6 +382,10 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
     }
 
+    getCycleThroughWindowsFlag() {
+        return getSettings('layouts').get_boolean('cycle-through-windows');
+    }
+
     destroy() {
         super.destroy();
         this.msDndManager.destroy();

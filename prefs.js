@@ -93,8 +93,8 @@ const layouts = {
     simple: 'Split screen unidirectionally according to screen ratio',
     'simple-horizontal': 'Split screen horizontally',
     'simple-vertical': 'Split screen vertically',
-    'cycle-through-windows': 'Cycle back to first when when trying to navigate past last window, and vice-versa',
-    'cycle-through-workspaces': 'Cycle back to first when when trying to navigate past last workspace, and vice-versa',
+    'cycle-through-windows': 'Cycle back to first when trying to navigate past last window, and vice-versa',
+    'cycle-through-workspaces': 'Cycle back to first when trying to navigate past last workspace, and vice-versa',
 };
 
 // eslint-disable-next-line no-unused-vars
