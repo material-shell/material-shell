@@ -10,18 +10,21 @@ const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 /* exported HotKeysModule, KeyBindingAction */
 
 var KeyBindingAction = {
+    // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
-    PREVIOUS_WORKSPACE: 'previous-workspace',
-    NEXT_WORKSPACE: 'next-workspace',
     KILL_FOCUSED_WINDOW: 'kill-focused-window',
     MOVE_WINDOW_LEFT: 'move-window-left',
     MOVE_WINDOW_RIGHT: 'move-window-right',
     MOVE_WINDOW_TOP: 'move-window-top',
     MOVE_WINDOW_BOTTOM: 'move-window-bottom',
+    // layout actions
     CYCLE_TILING_LAYOUT: 'cycle-tiling-layout',
     REVERSE_CYCLE_TILING_LAYOUT: 'reverse-cycle-tiling-layout',
     TOGGLE_MATERIAL_SHELL_UI: 'toggle-material-shell-ui',
+    // workspaces actions
+    PREVIOUS_WORKSPACE: 'previous-workspace',
+    NEXT_WORKSPACE: 'next-workspace',
 };
 
 var HotKeysModule = class HotKeysModule {
@@ -226,6 +229,25 @@ var HotKeysModule = class HotKeysModule {
                 Me.layout.togglePanelsVisibilities();
             }
         );
+
+        [...Array(10).keys()].forEach((workspaceIndex) => {
+            const actionKey = `NAVIGATE_TO_${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `navigate-to-workspace-${workspaceIndex + 1}`;
+
+            this.actionNameToActionMap.set(
+                KeyBindingAction[actionKey],
+                () => {
+                    const currentNumOfWorkspaces = Me.msWorkspaceManager.msWorkspaceList.length - 1;
+
+                    // go to new workspace if attemping to go to index bigger than currently available
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        workspaceIndex > currentNumOfWorkspaces
+                            ? currentNumOfWorkspaces
+                            : workspaceIndex
+                    ].activate();
+                }
+            );
+        });
 
         this.actionNameToActionMap.forEach((action, name) => {
             this.addKeybinding(name);

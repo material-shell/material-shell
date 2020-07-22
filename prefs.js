@@ -69,6 +69,16 @@ const hotKeysLabels = {
         'Cycle around in reverse order the tiling layout on the current workspace',
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen',
+    'navigate-to-workspace-1': 'Navigate to workspace 1',
+    'navigate-to-workspace-2': 'Navigate to workspace 2',
+    'navigate-to-workspace-3': 'Navigate to workspace 3',
+    'navigate-to-workspace-4': 'Navigate to workspace 4',
+    'navigate-to-workspace-5': 'Navigate to workspace 5',
+    'navigate-to-workspace-6': 'Navigate to workspace 6',
+    'navigate-to-workspace-7': 'Navigate to workspace 7',
+    'navigate-to-workspace-8': 'Navigate to workspace 8',
+    'navigate-to-workspace-9': 'Navigate to workspace 9',
+    'navigate-to-workspace-10': 'Navigate to workspace 10',
 };
 
 const layouts = {
