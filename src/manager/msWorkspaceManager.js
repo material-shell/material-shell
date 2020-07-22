@@ -8,6 +8,7 @@ const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { WorkspaceTracker } = imports.ui.windowManager;
+const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
@@ -510,6 +511,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
         newMsWorkspace.addMsWindow(msWindow, true);
         this.stateChanged();
+    }
+
+    shouldCycleWorkspacesNavigation() {
+        return getSettings('layouts').get_boolean('cycle-through-workspaces');
     }
 
     _handleWindow(metaWindow) {

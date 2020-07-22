@@ -64,6 +64,13 @@ var HotKeysModule = class HotKeysModule {
                     Me.msWorkspaceManager.primaryMsWorkspaces[
                         currentIndex - 1
                     ].activate();
+                    return;
+                }
+
+                if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        this.workspaceManager.n_workspaces - 1
+                    ].activate();
                 }
             }
         );
@@ -74,6 +81,11 @@ var HotKeysModule = class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[
                     currentIndex + 1
                 ].activate();
+                return;
+            }
+
+            if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
             }
         });
 
@@ -232,21 +244,21 @@ var HotKeysModule = class HotKeysModule {
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `NAVIGATE_TO_${workspaceIndex + 1}`;
-            KeyBindingAction[actionKey] = `navigate-to-workspace-${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `navigate-to-workspace-${
+                workspaceIndex + 1
+            }`;
 
-            this.actionNameToActionMap.set(
-                KeyBindingAction[actionKey],
-                () => {
-                    const currentNumOfWorkspaces = Me.msWorkspaceManager.msWorkspaceList.length - 1;
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const currentNumOfWorkspaces =
+                    Me.msWorkspaceManager.msWorkspaceList.length - 1;
 
-                    // go to new workspace if attemping to go to index bigger than currently available
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        workspaceIndex > currentNumOfWorkspaces
-                            ? currentNumOfWorkspaces
-                            : workspaceIndex
-                    ].activate();
-                }
-            );
+                // go to new workspace if attemping to go to index bigger than currently available
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    workspaceIndex > currentNumOfWorkspaces
+                        ? currentNumOfWorkspaces
+                        : workspaceIndex
+                ].activate();
+            });
         });
 
         this.actionNameToActionMap.forEach((action, name) => {
