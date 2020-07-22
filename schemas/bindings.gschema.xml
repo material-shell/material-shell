@@ -1,5 +1,6 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.materialshell.bindings" path="/org/gnome/shell/extensions/materialshell/bindings/">
+    <!-- Window Actions -->
     <key name="previous-window" type="as">
       <default><![CDATA[['<Super>a']]]></default>
       <summary>Focus previous window</summary>
@@ -12,20 +13,6 @@
       <summary>Focus next window</summary>
       <description>
         Focus the next window of the current workspace
-      </description>
-    </key>
-    <key name="previous-workspace" type="as">
-      <default><![CDATA[['<Super>w']]]></default>
-      <summary>Focus previous workspace</summary>
-      <description>
-        Focus the previous  workspace
-      </description>
-    </key>
-    <key name="next-workspace" type="as">
-      <default><![CDATA[['<Super>s']]]></default>
-      <summary>Focus next workspace</summary>
-      <description>
-        Focus the next workspace 
       </description>
     </key>
     <key name="kill-focused-window" type="as">
@@ -63,6 +50,7 @@
         Move the current window to lower workspace
       </description>
     </key>
+    <!-- Layout actions -->
     <key name="cycle-tiling-layout" type="as">
       <default><![CDATA[['<Super>Space']]]></default>
       <summary>Cycle around the tiling layout on the current workspace</summary>
@@ -82,6 +70,91 @@
       <summary>Toggle the material-shell UI to simulate fullscreen</summary>
       <description>
         Toggle the material-shell UI to simulate fullscreen
+      </description>
+    </key>
+    <!-- Workspace actions -->
+    <key name="previous-workspace" type="as">
+      <default><![CDATA[['<Super>w']]]></default>
+      <summary>Focus previous workspace</summary>
+      <description>
+        Focus the previous  workspace
+      </description>
+    </key>
+    <key name="next-workspace" type="as">
+      <default><![CDATA[['<Super>s']]]></default>
+      <summary>Focus next workspace</summary>
+      <description>
+        Focus the next workspace 
+      </description>
+    </key>
+        <key name="navigate-to-workspace-1" type="as">
+      <default><![CDATA[['<Super>1']]]></default>
+      <summary>Navigate to workspace 1</summary>
+      <description>
+        Navigate to workspace 1
+      </description>
+    </key>
+    <key name="navigate-to-workspace-2" type="as">
+      <default><![CDATA[['<Super>2']]]></default>
+      <summary>Navigate to workspace 2</summary>
+      <description>
+        Navigate to workspace 2
+      </description>
+    </key>
+    <key name="navigate-to-workspace-3" type="as">
+      <default><![CDATA[['<Super>3']]]></default>
+      <summary>Navigate to workspace 3</summary>
+      <description>
+        Navigate to workspace 3
+      </description>
+    </key>
+    <key name="navigate-to-workspace-4" type="as">
+      <default><![CDATA[['<Super>4']]]></default>
+      <summary>Navigate to workspace 4</summary>
+      <description>
+        Navigate to workspace 4
+      </description>
+    </key>
+    <key name="navigate-to-workspace-5" type="as">
+      <default><![CDATA[['<Super>5']]]></default>
+      <summary>Navigate to workspace 5</summary>
+      <description>
+        Navigate to workspace 5
+      </description>
+    </key>
+    <key name="navigate-to-workspace-6" type="as">
+      <default><![CDATA[['<Super>6']]]></default>
+      <summary>Navigate to workspace 6</summary>
+      <description>
+        Navigate to workspace 6
+      </description>
+    </key>
+    <key name="navigate-to-workspace-7" type="as">
+      <default><![CDATA[['<Super>7']]]></default>
+      <summary>Navigate to workspace 7</summary>
+      <description>
+        Navigate to workspace 7`
+      </description>
+    </key>
+    <key name="navigate-to-workspace-8" type="as">
+      <default><![CDATA[['<Super>8']]]></default>
+      <summary>Navigate to workspace 8</summary>
+      <description>
+        Navigate to workspace 8
+      </description>
+    </key>
+    <key name="navigate-to-workspace-9" type="as">
+      <default><![CDATA[['<Super>9']]]></default>
+      <summary>Navigate to workspace 9</summary>
+      <description>
+        Navigate to workspace 9
+      </description>
+    </key>
+    <key name="navigate-to-workspace-10" type="as">
+      <default><![CDATA[['<Super>0']]]></default>
+      <summary>Navigate to workspace 10</summary>
+      <description>
+        Navigate to workspace 10
       </description>
     </key>
   </schema>

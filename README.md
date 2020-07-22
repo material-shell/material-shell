@@ -44,6 +44,7 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+S` Navigate to the lower workspace/category.
 * `Super+A` Focus the window at the left of the current window.
 * `Super+D` Focus the window at the right of the current window.
+* `Super+1`, `Super+2`, `Super+n` Navigate to nth workspace
 
 #### Window manipulation
 * `Super+Q` Kill the current window focused.
