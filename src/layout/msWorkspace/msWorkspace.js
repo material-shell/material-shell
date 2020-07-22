@@ -315,9 +315,9 @@ var MsWorkspace = class MsWorkspace {
             Me.layout.panelsVisible
         );
     }
-    
+
     shouldCycleTileableNavigation() {
-        return getSettings('layouts').get_boolean('cycle-through-windows');
+        return getSettings('tweaks').get_boolean('cycle-through-windows');
     }
 
     emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {

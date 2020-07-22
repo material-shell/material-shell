@@ -90,15 +90,5 @@
       <summary>Window's class excluded</summary>
       <description>Comma separated list of window's class that will be ignored by Material shell</description>
     </key>
-    <key name="cycle-through-windows" type="b">
-      <default>false</default>
-      <summary>Cycle through windows</summary>
-      <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
-    </key>
-    <key name="cycle-through-workspaces" type="b">
-      <default>false</default>
-      <summary>Cycle through workspaces</summary>
-      <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
-    </key>
   </schema>
 </schemalist>

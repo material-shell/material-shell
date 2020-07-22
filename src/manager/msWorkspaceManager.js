@@ -514,7 +514,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     shouldCycleWorkspacesNavigation() {
-        return getSettings('layouts').get_boolean('cycle-through-workspaces');
+        return getSettings('tweaks').get_boolean('cycle-through-workspaces');
     }
 
     _handleWindow(metaWindow) {

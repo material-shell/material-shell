@@ -4,7 +4,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 let defaultLayoutComboBox = null;
 // eslint-disable-next-line no-unused-vars
-function init() { }
+function init() {}
 
 const makePage = (title, content) => {
     const tabWindow = new Gtk.ScrolledWindow({ vexpand: true });
@@ -12,7 +12,7 @@ const makePage = (title, content) => {
     const tabLabel = new Gtk.Label({
         label: title,
         halign: Gtk.Align.START,
-        use_markup: false
+        use_markup: false,
     });
     tabWindow.set_name(title);
     return [tabWindow, tabLabel];
@@ -93,8 +93,6 @@ const layouts = {
     simple: 'Split screen unidirectionally according to screen ratio',
     'simple-horizontal': 'Split screen horizontally',
     'simple-vertical': 'Split screen vertically',
-    'cycle-through-windows': 'Cycle back to first when trying to navigate past last window, and vice-versa',
-    'cycle-through-workspaces': 'Cycle back to first when trying to navigate past last workspace, and vice-versa',
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -200,7 +198,7 @@ function accelTab(notebook) {
 }
 function getActiveLayouts() {
     const settings = getSettings('layouts');
-    return Object.keys(layouts).filter(entry => {
+    return Object.keys(layouts).filter((entry) => {
         return settings.get_boolean(entry.toString()) === true;
     });
 }
@@ -208,7 +206,7 @@ function getDefaultLayoutModel() {
     let model = new Gtk.ListStore();
     model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
     let activeLayouts = getActiveLayouts();
-    activeLayouts.forEach(layout => {
+    activeLayouts.forEach((layout) => {
         model.set(model.append(), [0, 1], [layout, layout]);
     });
     return model;
@@ -234,8 +232,6 @@ function getDefaultLayoutCheckbox() {
     defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
     registerDefaultLayoutBoxListener(model);
     return defaultLayoutComboBox;
-
-
 }
 
 function layoutsTab(notebook) {
@@ -255,7 +251,9 @@ function layoutsTab(notebook) {
             defaultLayoutComboBox.set_model(model);
             let activeLayouts = getActiveLayouts();
             let defaultLayout = settings.get_string('default-layout');
-            defaultLayoutComboBox.set_active(activeLayouts.indexOf(defaultLayout));
+            defaultLayoutComboBox.set_active(
+                activeLayouts.indexOf(defaultLayout)
+            );
             registerDefaultLayoutBoxListener(model);
         });
     }
@@ -288,12 +286,13 @@ function layoutsTab(notebook) {
     notebook.append_page(
         ...makePage(
             'Layouts',
-            makeItemList([defaultLayoutRow, ...Object.entries(layouts).reduce(layoutItemCreator, [])])
+            makeItemList([
+                defaultLayoutRow,
+                ...Object.entries(layouts).reduce(layoutItemCreator, []),
+            ])
         )
     );
 }
-
-
 
 function layoutsSettingsTab(notebook) {
     const settings = getSettings('layouts');
@@ -411,7 +410,9 @@ function cssHexString(css) {
 }
 
 function GlobalSettingsTab(notebook) {
-    const settings = getSettings('theme');
+    const themeSettings = getSettings('theme');
+    const tweaksSettings = getSettings('tweaks');
+
     const itemRows = [];
 
     const darkMode = new Gtk.Switch({ valign: Gtk.Align.CENTER });
@@ -427,13 +428,13 @@ function GlobalSettingsTab(notebook) {
     model.set(model.append(), [0, 1], ['light', 'Light']);
     model.set(model.append(), [0, 1], ['primary', 'Primary']);
     let shit = ['dark', 'light', 'primary'];
-    cbox.set_active(shit.indexOf(settings.get_string('theme'))); // set value
+    cbox.set_active(shit.indexOf(themeSettings.get_string('theme'))); // set value
 
     cbox.connect('changed', (entry) => {
         let [success, iter] = cbox.get_active_iter();
         if (!success) return;
         let themeValue = model.get_value(iter, 0); // get value
-        settings.set_string('theme', themeValue);
+        themeSettings.set_string('theme', themeValue);
     });
     itemRows.push(
         makeItemRow(
@@ -445,7 +446,7 @@ function GlobalSettingsTab(notebook) {
 
     const primaryColor = new Gtk.ColorButton();
     let rgba = new Gdk.RGBA();
-    rgba.parse(settings.get_string('primary-color'));
+    rgba.parse(themeSettings.get_string('primary-color'));
     primaryColor.set_rgba(rgba);
     itemRows.push(
         makeItemRow(
@@ -458,7 +459,7 @@ function GlobalSettingsTab(notebook) {
         let rgba = button.get_rgba();
         let css = rgba.to_string();
         let hexString = cssHexString(css);
-        settings.set_string('primary-color', hexString);
+        themeSettings.set_string('primary-color', hexString);
     });
     const panelSize = Gtk.SpinButton.new_with_range(0, 1000, 1);
     itemRows.push(
@@ -468,7 +469,7 @@ function GlobalSettingsTab(notebook) {
             panelSize
         )
     );
-    settings.bind(
+    themeSettings.bind(
         'panel-size',
         panelSize.get_adjustment(),
         'value',
@@ -483,7 +484,7 @@ function GlobalSettingsTab(notebook) {
             panelOpacity
         )
     );
-    settings.bind(
+    themeSettings.bind(
         'panel-opacity',
         panelOpacity.get_adjustment(),
         'value',
@@ -498,7 +499,7 @@ function GlobalSettingsTab(notebook) {
             surfaceOpacity
         )
     );
-    settings.bind(
+    themeSettings.bind(
         'surface-opacity',
         surfaceOpacity.get_adjustment(),
         'value',
@@ -513,9 +514,39 @@ function GlobalSettingsTab(notebook) {
             blurBackground
         )
     );
-    settings.bind(
+    themeSettings.bind(
         'blur-background',
         blurBackground,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const cycleThroughWindows = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Cycle through windows',
+            'Cycle back to first when trying to navigate past last window, and vice-versa',
+            cycleThroughWindows
+        )
+    );
+    tweaksSettings.bind(
+        'cycle-through-windows',
+        cycleThroughWindows,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const cycleThroughWorkspaces = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    itemRows.push(
+        makeItemRow(
+            'Cycle through workspaces',
+            'Cycle back to first when trying to navigate past last workspace, and vice-versa',
+            cycleThroughWorkspaces
+        )
+    );
+    tweaksSettings.bind(
+        'cycle-through-workspaces',
+        cycleThroughWorkspaces,
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );

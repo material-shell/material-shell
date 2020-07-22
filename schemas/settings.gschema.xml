@@ -41,4 +41,16 @@
       <description>Add the blurred effect to the background wallpaper</description>
     </key>
   </schema>
+  <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/">
+    <key name="cycle-through-windows" type="b">
+      <default>false</default>
+      <summary>Cycle through windows</summary>
+      <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
+    </key>
+    <key name="cycle-through-workspaces" type="b">
+      <default>false</default>
+      <summary>Cycle through workspaces</summary>
+      <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
+    </key>
+  </schema>
 </schemalist>
