@@ -2,14 +2,16 @@
 const { GLib } = imports.gi;
 const Main = imports.ui.main;
 
-/* exported range */
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+/* exported range, debounce, throttle, reparentActor */
 var range = (to) =>
     // Returns a list containing all integers from 0 to `to`
     Array(to)
         .fill()
         .map((_, i) => i);
 
-/* exported debounce */
 var debounce = (fun, delay) => {
     // Only calls once fun after no calls for more than delay
     let timeout = null;
@@ -68,6 +70,7 @@ var throttle = (func, wait, options) => {
 
 var reparentActor = (actor, parent) => {
     if (!actor || !parent) return;
+    Me.reparentInProgress = true;
     const isFocused = actor.has_key_focus();
     const currentParent = actor.get_parent();
     if (isFocused) {
@@ -80,4 +83,5 @@ var reparentActor = (actor, parent) => {
     if (isFocused) {
         actor.grab_key_focus();
     }
+    Me.reparentInProgress = false;
 };

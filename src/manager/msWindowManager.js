@@ -7,7 +7,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
+const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
@@ -322,7 +322,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     }
 
     onFocusMetaWindow(metaWindow) {
-        if (Me.disableInProgress || Me.closing) return;
+        if (Me.disableInProgress || Me.closing || Me.reparentInProgress) return;
         /*
              If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
              We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
