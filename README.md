@@ -1,5 +1,5 @@
 
-![Material Shell](/documentation/on-all-full.png)
+![Material Shell](/documentation/on-all-full.svg)
 # 
 A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
 
