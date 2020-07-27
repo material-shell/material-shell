@@ -1,20 +1,37 @@
 
+
+
 ![Material Shell](/documentation/on-all-full.svg)
-##
-###
 
-A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
+---
 
-Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
+A **simple**, **productivity oriented** desktop interface for Linux that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
+<h4 align="center" valign="middle">
+Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7D9a">
+        <img valign="middle" src="https://img.shields.io/discord/584783412959641716?logo=discord&style=for-the-badge"
+            alt="chat on Discord">
+</a>
+</h4>
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="#how-to-use">How To Use</a> •
+  <a href="#download">Download</a> •
+  <a href="#credits">Credits</a> •
+  <a href="#related">Related</a> •
+  <a href="#license">License</a>
+</1>
 
-The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
+---
+
+![Demo GIF](demo.gif)
 
 #### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
 
-##
-###
+### Design
+Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
-![Demo GIF](demo.gif)
+### Persistence
+The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it.
 
 ### Discord
 Get notified about updates and join me on [the Material Shell Discord](https://discord.gg/vBb7D9a)!
@@ -78,3 +95,6 @@ gnome-extensions disable material-shell@papyelgringo
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
+## History
+The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
+
