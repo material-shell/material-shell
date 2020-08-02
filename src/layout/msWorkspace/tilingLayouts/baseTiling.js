@@ -17,7 +17,6 @@ var BaseTilingLayout = GObject.registerClass(
                 `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
-            this.monitor = msWorkspace.monitor;
             this.themeSettings = getSettings('theme');
             this.signals = [];
             this.registerToSignals();
@@ -38,6 +37,10 @@ var BaseTilingLayout = GObject.registerClass(
 
         get tileableContainer() {
             return this.msWorkspace.msWorkspaceActor.tileableContainer;
+        }
+
+        get monitor() {
+            return this.msWorkspace.monitor;
         }
 
         get tileableListVisible() {

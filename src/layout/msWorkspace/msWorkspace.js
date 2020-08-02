@@ -18,11 +18,15 @@ const { getSettings } = Me.imports.src.utils.settings;
 /* exported MsWorkspace */
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
-        AddLogToFunctions(this);
         this.msWorkspaceManager = msWorkspaceManager;
-        this.monitor = monitor;
-        this.monitorIsPrimary =
-            monitor.index === Main.layoutManager.primaryIndex;
+        // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
+        this.external =
+            initialState && initialState.external
+                ? initialState.external
+                : monitor.index !== Main.layoutManager.primaryIndex;
+        this.setMonitor(monitor);
+        AddLogToFunctions(this);
+
         this.tileableList = [];
         // First add AppLauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
@@ -90,7 +94,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     get workspace() {
-        if (!this.monitorIsPrimary) return null;
+        if (this.monitorIsExternal) return null;
         return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
     }
 
@@ -357,7 +361,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     isDisplayed() {
-        if (!this.monitorIsPrimary) {
+        if (this.monitorIsExternal) {
             return true;
         } else {
             return this === this.msWorkspaceManager.getActiveMsWorkspace();
@@ -365,7 +369,7 @@ var MsWorkspace = class MsWorkspace {
     }
 
     activate() {
-        if (!this.monitorIsPrimary) {
+        if (this.monitorIsExternal) {
             return;
         }
         if (
@@ -395,6 +399,7 @@ var MsWorkspace = class MsWorkspace {
 
     getState() {
         return {
+            external: this.external,
             tilingLayout: this.tilingLayout.constructor.key,
             msWindowList: this.tileableList
                 .filter((tileable) => {
@@ -417,6 +422,15 @@ var MsWorkspace = class MsWorkspace {
             focusedIndex: this.focusedIndex,
             forcedCategory: this.msWorkspaceCategory.forcedCategory,
         };
+    }
+
+    setMonitor(monitor) {
+        this.monitor = monitor;
+        this.monitorIsExternal =
+            monitor.index !== Main.layoutManager.primaryIndex;
+        this.msWindowList.forEach((msWindow) => {
+            msWindow.setMsWorkspace(this);
+        });
     }
 };
 Signals.addSignalMethods(MsWorkspace.prototype);

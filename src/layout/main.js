@@ -23,8 +23,8 @@ var MsMain = GObject.registerClass(
                 this.panelsVisible === undefined ? true : this.panelsVisible;
 
             Main.uiGroup.insert_child_above(this, global.window_group);
+
             this.monitorsContainer = [];
-            this.monitorPanelSpacerList = [];
             this.aboveContainer = new Clutter.Actor();
             this.add_child(this.aboveContainer);
             this.backgroundGroup = new Meta.BackgroundGroup({});
@@ -33,19 +33,44 @@ var MsMain = GObject.registerClass(
                 this.setBlurBackground(Me.msThemeManager.blurBackground);
             });
             this.add_child(this.backgroundGroup);
-            this.buildMonitorsLayout();
+
+            this.primaryMonitorContainer = new PrimaryMonitorContainer(
+                this.primaryMonitor,
+                this.backgroundGroup,
+                {
+                    clip_to_allocation: true,
+                }
+            );
+            this.add_child(this.primaryMonitorContainer);
+            this.panel = this.primaryMonitorContainer.panel;
             this.primaryMonitorContainer.setMsWorkspaceActor(
                 Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
             );
+            for (let externalMonitor of this.externalMonitors) {
+                let container = new MonitorContainer(
+                    externalMonitor,
+                    this.backgroundGroup,
+                    {
+                        clip_to_allocation: true,
+                    }
+                );
+                this.monitorsContainer.push(container);
+                this.add_child(container);
+            }
 
-            this.panel = this.monitorsContainer[
-                Main.layoutManager.primaryIndex
-            ].panel;
             this.registerToSignals();
             this.onMsWorkspacesChanged();
             this.updatePanelVisibilities();
         }
+        get primaryMonitor() {
+            return Main.layoutManager.primaryMonitor;
+        }
 
+        get externalMonitors() {
+            return Main.layoutManager.monitors.filter(
+                (monitor) => monitor !== this.primaryMonitor
+            );
+        }
         setBlurBackground(blur) {
             const themeContext = St.ThemeContext.get_for_stage(global.stage);
             if ((this.blurEffect && blur) || (!this.blurEffect && !blur)) {
@@ -70,59 +95,6 @@ var MsMain = GObject.registerClass(
             );
 
             this.backgroundGroup.add_effect(this.blurEffect);
-        }
-
-        buildMonitorsLayout() {
-            for (let monitor of Main.layoutManager.monitors) {
-                let topBarSpacer = new St.Widget({
-                    x: monitor.x,
-                    y: monitor.y,
-                    width: monitor.width,
-                    height: Me.msThemeManager.getPanelSize(monitor.index),
-                });
-                Me.msThemeManager.connect('panel-size-changed', () => {
-                    topBarSpacer.set_height(
-                        Me.msThemeManager.getPanelSize(monitor.index)
-                    );
-                });
-                this.add_child(topBarSpacer);
-
-                this.monitorPanelSpacerList.push(topBarSpacer);
-                let bgManager = new Background.BackgroundManager({
-                    container: this.backgroundGroup,
-                    monitorIndex: monitor.index,
-                });
-
-                if (monitor === Main.layoutManager.primaryMonitor) {
-                    this.monitorsContainer[
-                        monitor.index
-                    ] = new PrimaryMonitorContainer(
-                        {
-                            clip_to_allocation: true,
-                        },
-                        bgManager
-                    );
-                } else {
-                    this.monitorsContainer[
-                        monitor.index
-                    ] = new MonitorContainer(
-                        {
-                            clip_to_allocation: true,
-                        },
-                        bgManager
-                    );
-                }
-
-                this.monitorsContainer[monitor.index].set_size(
-                    monitor.width,
-                    monitor.height
-                );
-                this.monitorsContainer[monitor.index].set_position(
-                    monitor.x,
-                    monitor.y
-                );
-                this.add_child(this.monitorsContainer[monitor.index]);
-            }
         }
 
         registerToSignals() {
@@ -158,9 +130,6 @@ var MsMain = GObject.registerClass(
                     this.signals.forEach((signal) => {
                         signal.from.disconnect(signal.id);
                     });
-                    this.monitorPanelSpacerList.forEach((actor) => {
-                        actor.destroy();
-                    });
                 }),
             });
 
@@ -171,34 +140,91 @@ var MsMain = GObject.registerClass(
                         const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
                             monitor.index
                         );
-                        this.monitorsContainer[monitor.index].setFullscreen(
-                            monitorInFullScreen
-                        );
+                        if (monitor === this.primaryMonitor) {
+                            this.primaryMonitorContainer.setFullscreen(
+                                monitorInFullScreen
+                            );
+                        } else {
+                            this.monitorsContainer
+                                .find((container) => {
+                                    return container.monitor === monitor;
+                                })
+                                .setFullscreen(monitorInFullScreen);
+                        }
                     }
+                }),
+            });
+            this.signals.push({
+                from: Main.layoutManager,
+                id: Main.layoutManager.connect('monitors-changed', () => {
+                    this.primaryMonitorContainer.setMonitor(
+                        this.primaryMonitor
+                    );
+
+                    let externalMonitorsDiff =
+                        Main.layoutManager.monitors.length -
+                        1 -
+                        this.monitorsContainer.length;
+                    // if there are more external monitors
+                    if (externalMonitorsDiff > 0) {
+                        for (
+                            let i = 0;
+                            i < Math.abs(externalMonitorsDiff);
+                            i++
+                        ) {
+                            let container = new MonitorContainer(
+                                this.externalMonitors[
+                                    this.externalMonitors.length -
+                                        Math.abs(externalMonitorsDiff) +
+                                        i
+                                ],
+                                this.backgroundGroup,
+                                {
+                                    clip_to_allocation: true,
+                                }
+                            );
+                            this.monitorsContainer.push(container);
+                            this.add_child(container);
+                        }
+                    }
+                    // if there are less external monitors
+                    else if (externalMonitorsDiff < 0) {
+                        for (
+                            let i = 0;
+                            i < Math.abs(externalMonitorsDiff);
+                            i++
+                        ) {
+                            let container = this.monitorsContainer.pop();
+                            if (container.msWorkspaceActor) {
+                                container.remove_child(
+                                    container.msWorkspaceActor
+                                );
+                            }
+                            container.destroy();
+                        }
+                    }
+
+                    this.externalMonitors.forEach((monitor, index) => {
+                        this.monitorsContainer[index].setMonitor(monitor);
+                    });
+                    this.updatePanelVisibilities();
                 }),
             });
         }
 
         onMsWorkspacesChanged() {
-            this.monitorsContainer.forEach((container, index) => {
-                if (index === Main.layoutManager.primaryIndex) {
-                    container.setMsWorkspaceActor(
-                        Me.msWorkspaceManager.getActiveMsWorkspace()
-                            .msWorkspaceActor
-                    );
-                } else {
-                    container.setMsWorkspaceActor(
-                        Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                            index
-                        )[0].msWorkspaceActor
-                    );
-                }
+            this.primaryMonitorContainer.setMsWorkspaceActor(
+                Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
+            );
+            this.monitorsContainer.forEach((container) => {
+                container.setMsWorkspaceActor(
+                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        container.monitor.index
+                    )[0].msWorkspaceActor
+                );
             });
         }
 
-        get primaryMonitorContainer() {
-            return this.monitorsContainer[Main.layoutManager.primaryIndex];
-        }
         onSwitchWorkspace(from, to) {
             this.onMsWorkspacesChanged();
         }
@@ -220,7 +246,10 @@ var MsMain = GObject.registerClass(
         updatePanelVisibilities() {
             [
                 this.primaryMonitorContainer.panel,
-                ...this.monitorPanelSpacerList,
+                this.primaryMonitorContainer.topBarSpacer,
+                ...this.monitorsContainer.map(
+                    (container) => container.topBarSpacer
+                ),
             ].forEach((actor) => {
                 actor.visible = this.panelsVisible;
                 if (this.panelsVisible) {
@@ -260,9 +289,20 @@ var MonitorContainer = GObject.registerClass(
         GTypeName: 'MonitorContainer',
     },
     class MonitorContainer extends St.Widget {
-        _init(params, bgManager) {
+        _init(monitor, bgGroup, params) {
             super._init(params);
-            this.bgManager = bgManager;
+            this.bgManager = new Background.BackgroundManager({
+                container: bgGroup,
+                monitorIndex: monitor.index,
+            });
+            this.topBarSpacer = new St.Widget({});
+            this.setMonitor(monitor);
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.topBarSpacer.set_height(
+                    Me.msThemeManager.getPanelSize(this.monitor.index)
+                );
+            });
+            this.add_child(this.topBarSpacer);
         }
 
         setFullscreen(monitorIsFullscreen) {
@@ -274,17 +314,33 @@ var MonitorContainer = GObject.registerClass(
 
         setMsWorkspaceActor(actor) {
             if (actor === this.msWorkspaceActor) return;
-            if (this.msWorkspaceActor) {
+            if (
+                this.msWorkspaceActor &&
+                this.msWorkspaceActor.get_parent() === this
+            ) {
                 this.remove_child(this.msWorkspaceActor);
             }
             this.msWorkspaceActor = actor;
-            this.add_child(this.msWorkspaceActor);
+            reparentActor(this.msWorkspaceActor, this);
+        }
+
+        setMonitor(monitor) {
+            this.monitor = monitor;
+            this.set_size(monitor.width, monitor.height);
+            this.set_position(monitor.x, monitor.y);
+            this.topBarSpacer.set_size(
+                monitor.width,
+                Me.msThemeManager.getPanelSize(monitor.index)
+            );
         }
 
         vfunc_allocate(box, flags) {
             this.set_allocation(box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
+            if (this.topBarSpacer) {
+                this.topBarSpacer.allocate_preferred_size(flags);
+            }
             if (this.msWorkspaceActor) {
                 let msWorkspaceActorBox = new Clutter.ActorBox();
                 msWorkspaceActorBox.x1 = box.x1;
@@ -303,8 +359,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
         GTypeName: 'PrimaryMonitorContainer',
     },
     class PrimaryMonitorContainer extends MonitorContainer {
-        _init(params, bgManager) {
-            super._init(params, bgManager);
+        _init(monitor, bgGroup, params) {
+            super._init(monitor, bgGroup, params);
             this.panel = new MsPanel();
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
@@ -392,6 +448,9 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 panelBox.y2 = this.panel.get_preferred_height(-1)[1];
                 this.panel.allocate(panelBox, flags);
             }
+            if (this.topBarSpacer) {
+                this.topBarSpacer.allocate_preferred_size(flags);
+            }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
             msWorkspaceActorBox.x1 =
@@ -399,10 +458,13 @@ var PrimaryMonitorContainer = GObject.registerClass(
             msWorkspaceActorBox.x2 = box.x2;
             msWorkspaceActorBox.y1 = box.y1;
             msWorkspaceActorBox.y2 = box.y2;
-            this.get_children().forEach((child) => {
-                if (child === this.panel) return;
-                child.allocate(msWorkspaceActorBox, flags);
-            });
+            this.get_children()
+                .filter(
+                    (actor) => actor != this.panel && actor != this.topBarSpacer
+                )
+                .forEach((child) => {
+                    child.allocate(msWorkspaceActorBox, flags);
+                });
         }
     }
 );

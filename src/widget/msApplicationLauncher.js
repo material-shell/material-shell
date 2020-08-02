@@ -23,7 +23,7 @@ var MsApplicationLauncher = GObject.registerClass(
             this.add_style_class_name('surface-darker');
 
             this.appListContainer = new MsApplicationButtonContainer(
-                msWorkspace.monitor
+                msWorkspace
             );
             this.add_child(this.appListContainer);
             AppsManager.getApps().forEach((app) => {
@@ -81,9 +81,9 @@ var MsApplicationLauncher = GObject.registerClass(
 
 var MsApplicationButtonContainer = GObject.registerClass(
     class MsApplicationButtonContainer extends St.Widget {
-        _init(monitor) {
+        _init(msWorkspace) {
             super._init({});
-            this.monitor = monitor;
+            this.msWorkspace = msWorkspace;
             this.appButtonList = [];
             this.currentButtonFocused = null;
             this.inputLayout = new St.BoxLayout({});
@@ -208,6 +208,9 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.add_child(this.expandButton); */
         }
 
+        get monitor() {
+            return this.msWorkspace.monitor;
+        }
         get buttonSize() {
             return (
                 BUTTON_SIZE *

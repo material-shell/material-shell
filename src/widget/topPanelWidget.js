@@ -23,15 +23,12 @@ var TopPanel = GObject.registerClass(
                 icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
 
-            this.tilingButton = new MatPanelButton(
-                {
-                    child: this.tilingIcon,
-                    style_class: 'mat-panel-button',
-                    can_focus: true,
-                    track_hover: true,
-                },
-                this.msWorkspace.monitor
-            );
+            this.tilingButton = new MatPanelButton({
+                child: this.tilingIcon,
+                style_class: 'mat-panel-button',
+                can_focus: true,
+                track_hover: true,
+            });
 
             this.tilingButton.connect('clicked', (actor, button) => {
                 // Go in reverse direction on right click (button: 3)
