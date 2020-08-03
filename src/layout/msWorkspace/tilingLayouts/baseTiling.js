@@ -151,6 +151,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         hideAppLauncher() {
+            logFocus('hideAppLauncher');
             let actor = this.msWorkspace.appLauncher;
             actor.ease({
                 scale_x: 0.8,
@@ -186,6 +187,13 @@ var BaseTilingLayout = GObject.registerClass(
             leavingTileableList.forEach((tileable) => {
                 this.restoreTileable(tileable);
             });
+            if (
+                this.msWorkspace.appLauncher.visible &&
+                this.msWorkspace.tileableFocused !==
+                    this.msWorkspace.appLauncher
+            ) {
+                this.hideAppLauncher();
+            }
 
             this.tileAll();
 
@@ -208,12 +216,6 @@ var BaseTilingLayout = GObject.registerClass(
             } else if (oldTileable === this.msWorkspace.appLauncher) {
                 this.hideAppLauncher();
                 this.tileAll();
-                /* this.msWorkspace.tileableList.splice(
-                    this.msWorkspace.tileableList.indexOf(
-                        this.msWorkspace.appLauncher
-                    ),
-                    1
-                ); */
             }
         }
 

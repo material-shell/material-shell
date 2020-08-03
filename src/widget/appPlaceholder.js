@@ -169,7 +169,6 @@ var AppPlaceholder = GObject.registerClass(
                 } else {
                     this._spinner.destroy();
                 }
-                this._spinner.destroy();
             }
             this.spinnerContainer.set_opacity(0);
             delete this.waitForReset;
