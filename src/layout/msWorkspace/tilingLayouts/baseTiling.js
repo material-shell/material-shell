@@ -5,7 +5,7 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
+const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported BaseTilingLayout */
@@ -87,6 +87,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         alterTileable(tileable) {
+            logFocus('alter Tileable', tileable);
             if (
                 tileable === this.msWorkspace.appLauncher &&
                 tileable !== this.msWorkspace.tileableFocused
@@ -117,7 +118,7 @@ var BaseTilingLayout = GObject.registerClass(
             box = box || this.tileableContainer.allocation;
             box.x1 = 0;
             box.y1 = 0;
-            this.msWorkspace.tileableList.forEach((tileable) => {
+            this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
