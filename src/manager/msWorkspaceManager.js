@@ -559,14 +559,17 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         //Ignore unHandle metaWindow and metaWindow on secondary screens
         if (
             !metaWindow.handledByMaterialShell ||
-            global.display.get_n_monitors() !== this.numOfMonitors
+            global.display.get_n_monitors() !== this.numOfMonitors ||
+            monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
         }
-        if (metaWindow.msWindow && metaWindow.msWindow.msWorkspace) {
-            // enforce the current monitor and workspace
-            metaWindow.msWindow.setMsWorkspace(metaWindow.msWindow.msWorkspace);
+        const msWorkspace = this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
+
+        if (!msWorkspace) {
+            return;
         }
+        this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
     setWindowToMsWorkspace(msWindow, newMsWorkspace) {
