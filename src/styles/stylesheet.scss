@@ -356,6 +356,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 
+.drop-placeholder {
+    @include foreground-as-background($theme, 0.1);
+}
+
 .mat-card {
     border-radius: 6px;
     box-shadow: $shadow;

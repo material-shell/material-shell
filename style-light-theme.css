@@ -188,6 +188,9 @@ subtitle-1 {
 .clock-display * {
   padding: 4px 0px !important; }
 
+.drop-placeholder {
+  background: rgba(0, 0, 0, 0.1); }
+
 .mat-card {
   border-radius: 6px;
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
