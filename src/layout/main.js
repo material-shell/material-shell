@@ -8,6 +8,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { AddLogToFunctions, logFocus } = Me.imports.src.utils.debug;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(
@@ -18,6 +19,7 @@ var MsMain = GObject.registerClass(
         _init() {
             super._init({});
             Me.layout = this;
+            AddLogToFunctions(this);
             this.panelsVisible = Me.stateManager.getState('panels-visible');
             this.panelsVisible =
                 this.panelsVisible === undefined ? true : this.panelsVisible;
@@ -207,6 +209,7 @@ var MsMain = GObject.registerClass(
                     this.externalMonitors.forEach((monitor, index) => {
                         this.monitorsContainer[index].setMonitor(monitor);
                     });
+                    this.onMsWorkspacesChanged();
                     this.updatePanelVisibilities();
                 }),
             });
@@ -253,9 +256,11 @@ var MsMain = GObject.registerClass(
             ].forEach((actor) => {
                 actor.visible = this.panelsVisible;
                 if (this.panelsVisible) {
-                    Main.layoutManager._trackActor(actor, {
-                        affectsStruts: true,
-                    });
+                    if (Main.layoutManager._findActor(actor) === -1) {
+                        Main.layoutManager._trackActor(actor, {
+                            affectsStruts: true,
+                        });
+                    }
                 } else {
                     Main.layoutManager._untrackActor(actor);
                 }
@@ -291,10 +296,8 @@ var MonitorContainer = GObject.registerClass(
     class MonitorContainer extends St.Widget {
         _init(monitor, bgGroup, params) {
             super._init(params);
-            this.bgManager = new Background.BackgroundManager({
-                container: bgGroup,
-                monitorIndex: monitor.index,
-            });
+            this.bgGroup = bgGroup;
+
             this.topBarSpacer = new St.Widget({});
             this.setMonitor(monitor);
             Me.msThemeManager.connect('panel-size-changed', () => {
@@ -325,6 +328,9 @@ var MonitorContainer = GObject.registerClass(
         }
 
         setMonitor(monitor) {
+            if (this.bgManager) {
+                this.bgManager.destroy();
+            }
             this.monitor = monitor;
             this.set_size(monitor.width, monitor.height);
             this.set_position(monitor.x, monitor.y);
@@ -332,6 +338,10 @@ var MonitorContainer = GObject.registerClass(
                 monitor.width,
                 Me.msThemeManager.getPanelSize(monitor.index)
             );
+            this.bgManager = new Background.BackgroundManager({
+                container: this.bgGroup,
+                monitorIndex: monitor.index,
+            });
         }
 
         vfunc_allocate(box, flags) {
@@ -426,7 +436,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
             if (prevActor) {
                 this.setTranslation(prevActor, this.msWorkspaceActor);
             } else {
-                this.add_child(this.msWorkspaceActor);
+                reparentActor(this.msWorkspaceActor, this);
                 if (this.panel) {
                     this.set_child_below_sibling(
                         this.msWorkspaceActor,

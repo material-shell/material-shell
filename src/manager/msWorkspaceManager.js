@@ -21,6 +21,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.metaWindowFocused = null;
         this.numOfMonitors = global.display.get_n_monitors();
+        this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
         WorkspaceTracker.prototype._oldCheckWorkspaces =
             WorkspaceTracker.prototype._checkWorkspaces;
@@ -171,6 +172,14 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
     }
 
+    get updatingMonitors() {
+        return (
+            this._updatingMonitors ||
+            global.display.get_n_monitors() !== this.numOfMonitors ||
+            this.primaryIndex !== global.display.get_primary_monitor()
+        );
+    }
+
     restorePreviousState() {
         this.currentState = Me.stateManager.getState('workspaces-state');
         this.restoringState = true;
@@ -272,8 +281,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     onMonitorsChanged() {
-        this.numOfMonitors = Main.layoutManager.monitors.length;
-
+        this._updatingMonitors = true;
+        this.numOfMonitors = global.display.get_n_monitors();
+        this.primaryIndex = global.display.get_primary_monitor();
         // First manage external screen
         const externalMonitors = Main.layoutManager.monitors.filter(
             (monitor) => monitor != Main.layoutManager.primaryMonitor
@@ -358,6 +368,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     }
                 }
             });
+        this._updatingMonitors = false;
+
         this.stateChanged();
         this.emit('dynamic-super-workspaces-changed');
     }
@@ -426,6 +438,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     stateChanged() {
         if (
             this.restoringState ||
+            this.updatingMonitors ||
             this.stateChangedTriggered ||
             Me.disableInProgress
         )
@@ -527,17 +540,18 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     metaWindowEnteredWorkspace(metaWindow, workspace) {
+        if (this.updatingMonitors) return;
+
+        let msWindow = metaWindow.msWindow;
+        if (!msWindow) return;
+
+        const msWorkspace = this.primaryMsWorkspaces[workspace.index()];
         if (
-            !metaWindow.handledByMaterialShell ||
-            !metaWindow.msWindow ||
-            global.display.get_n_monitors() !== this.numOfMonitors ||
             metaWindow.on_all_workspaces ||
-            !metaWindow.get_compositor_private()
+            msWindow.msWorkspace === msWorkspace
         ) {
             return;
         }
-
-        const msWorkspace = this.primaryMsWorkspaces[workspace.index()];
 
         /**
          * Discard all the workspace changed of a window during the 2 seconds after creation to prevent the window changing it's workspace for the current one.
@@ -556,10 +570,13 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     windowEnteredMonitor(metaWindow, monitorIndex) {
+        if (this.updatingMonitors) return;
+
         //Ignore unHandle metaWindow and metaWindow on secondary screens
         if (
             !metaWindow.handledByMaterialShell ||
             global.display.get_n_monitors() !== this.numOfMonitors ||
+            metaWindow.get_monitor() === monitorIndex ||
             monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
