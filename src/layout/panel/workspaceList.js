@@ -9,7 +9,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder } = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { log } = Me.imports.src.utils.debug;
 const {
     MainCategories,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;

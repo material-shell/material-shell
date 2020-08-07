@@ -22,7 +22,7 @@ var MsManager = class MsManager {
                 try {
                     signal.from.disconnect(signal.id);
                 } catch (error) {
-                    log(
+                    Me.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from
                         } ${

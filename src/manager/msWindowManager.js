@@ -7,14 +7,13 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {
     constructor() {
         super();
-        AddLogToFunctions(this);
+
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWindowList = [];
         this.msWindowWaitingForMetaWindowList = [];

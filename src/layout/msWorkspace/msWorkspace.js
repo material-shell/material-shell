@@ -8,7 +8,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 const {
     MsWorkspaceCategory,
@@ -25,7 +24,6 @@ var MsWorkspace = class MsWorkspace {
                 ? initialState.external
                 : monitor.index !== Main.layoutManager.primaryIndex;
         this.setMonitor(monitor);
-        AddLogToFunctions(this);
 
         this.tileableList = [];
         // First add AppLauncher since windows are inserted before it otherwise the order is a mess

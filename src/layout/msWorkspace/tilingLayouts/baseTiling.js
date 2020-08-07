@@ -5,14 +5,12 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { AddLogToFunctions, log, logFocus } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
         _init(msWorkspace) {
-            AddLogToFunctions(this);
             this.icon = Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
             );
@@ -87,7 +85,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         alterTileable(tileable) {
-            logFocus('alter Tileable', tileable);
             if (
                 tileable === this.msWorkspace.appLauncher &&
                 tileable !== this.msWorkspace.tileableFocused
@@ -152,7 +149,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         hideAppLauncher() {
-            logFocus('hideAppLauncher');
+            Me.logFocus('hideAppLauncher');
             let actor = this.msWorkspace.appLauncher;
             actor.ease({
                 scale_x: 0.8,
@@ -356,7 +353,7 @@ var BaseTilingLayout = GObject.registerClass(
                 try {
                     signal.from.disconnect(signal.id);
                 } catch (error) {
-                    log(
+                    Me.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from
                         } ${

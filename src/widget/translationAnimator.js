@@ -3,7 +3,6 @@ const { GObject, Clutter } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
 /* exported TranslationAnimator */
@@ -20,7 +19,7 @@ var TranslationAnimator = GObject.registerClass(
                 layout_manager: new Clutter.BinLayout(),
                 clip_to_allocation: true,
             });
-            AddLogToFunctions(this);
+
             this.vertical = vertical;
             this.transitionContainer = new Clutter.Actor({
                 layout_manager: new Clutter.BoxLayout({ vertical }),

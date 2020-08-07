@@ -9,7 +9,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
 let dragData = null;
@@ -18,7 +17,6 @@ let dragData = null;
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
         _init(msWorkspace) {
-            AddLogToFunctions(this);
             super._init({
                 name: 'taskBar',
                 x_expand: true,

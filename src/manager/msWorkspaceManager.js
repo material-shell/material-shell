@@ -6,7 +6,6 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
 const { MsManager } = Me.imports.src.manager.msManager;
-const { AddLogToFunctions, logFocus } = Me.imports.src.utils.debug;
 const { WorkspaceTracker } = imports.ui.windowManager;
 const { getSettings } = Me.imports.src.utils.settings;
 
@@ -14,7 +13,6 @@ const { getSettings } = Me.imports.src.utils.settings;
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     constructor() {
         super();
-        AddLogToFunctions(this);
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];

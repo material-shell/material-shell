@@ -8,7 +8,6 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
-const { log } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported FloatLayout */

@@ -8,7 +8,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { AddLogToFunctions, logFocus } = Me.imports.src.utils.debug;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(
@@ -19,7 +18,6 @@ var MsMain = GObject.registerClass(
         _init() {
             super._init({});
             Me.layout = this;
-            AddLogToFunctions(this);
             this.panelsVisible = Me.stateManager.getState('panels-visible');
             this.panelsVisible =
                 this.panelsVisible === undefined ? true : this.panelsVisible;
