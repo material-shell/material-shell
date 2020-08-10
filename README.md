@@ -25,6 +25,18 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 
 ![Demo GIF](demo.gif)
 
+---
+
+## Workflow
+
+Our workflow is designed to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictible** and bring the benefits of tools covoted by professionnals to everyones. 
+
+### Spatial Model
+
+The spatial model is the core of the workflow and what everything is built around and in our case it's one of the simplest: **a Grid**
+
+![app-grid](./documentation/app-grid.png)
+
 #### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
 
 ### Design
