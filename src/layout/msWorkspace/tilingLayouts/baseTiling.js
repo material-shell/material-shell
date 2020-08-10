@@ -5,19 +5,16 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
         _init(msWorkspace) {
-            AddLogToFunctions(this);
             this.icon = Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
-            this.monitor = msWorkspace.monitor;
             this.themeSettings = getSettings('theme');
             this.signals = [];
             this.registerToSignals();
@@ -38,6 +35,10 @@ var BaseTilingLayout = GObject.registerClass(
 
         get tileableContainer() {
             return this.msWorkspace.msWorkspaceActor.tileableContainer;
+        }
+
+        get monitor() {
+            return this.msWorkspace.monitor;
         }
 
         get tileableListVisible() {
@@ -114,7 +115,7 @@ var BaseTilingLayout = GObject.registerClass(
             box = box || this.tileableContainer.allocation;
             box.x1 = 0;
             box.y1 = 0;
-            this.msWorkspace.tileableList.forEach((tileable) => {
+            this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
@@ -148,6 +149,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         hideAppLauncher() {
+            Me.logFocus('hideAppLauncher');
             let actor = this.msWorkspace.appLauncher;
             actor.ease({
                 scale_x: 0.8,
@@ -183,6 +185,13 @@ var BaseTilingLayout = GObject.registerClass(
             leavingTileableList.forEach((tileable) => {
                 this.restoreTileable(tileable);
             });
+            if (
+                this.msWorkspace.appLauncher.visible &&
+                this.msWorkspace.tileableFocused !==
+                    this.msWorkspace.appLauncher
+            ) {
+                this.hideAppLauncher();
+            }
 
             this.tileAll();
 
@@ -205,12 +214,6 @@ var BaseTilingLayout = GObject.registerClass(
             } else if (oldTileable === this.msWorkspace.appLauncher) {
                 this.hideAppLauncher();
                 this.tileAll();
-                /* this.msWorkspace.tileableList.splice(
-                    this.msWorkspace.tileableList.indexOf(
-                        this.msWorkspace.appLauncher
-                    ),
-                    1
-                ); */
             }
         }
 
@@ -350,7 +353,7 @@ var BaseTilingLayout = GObject.registerClass(
                 try {
                     signal.from.disconnect(signal.id);
                 } catch (error) {
-                    log(
+                    Me.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from
                         } ${

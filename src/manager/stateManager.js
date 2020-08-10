@@ -26,9 +26,13 @@ var StateManager = class StateManager {
             this.stateFile.load_contents_async(null, (obj, res) => {
                 let [success, contents] = obj.load_contents_finish(res);
                 if (success) {
-                    this.state = JSON.parse(
-                        imports.byteArray.toString(contents)
-                    );
+                    try {
+                        this.state = JSON.parse(
+                            imports.byteArray.toString(contents)
+                        );
+                    } catch {
+                        this.state = {};
+                    }
                 }
 
                 callback(this.state);

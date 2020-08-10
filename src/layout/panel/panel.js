@@ -38,13 +38,10 @@ var MsPanel = GObject.registerClass(
                 icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
 
-            this.searchButton = new MatPanelButton(
-                {
-                    child: icon,
-                    primary: true,
-                },
-                Main.layoutManager.primaryMonitor
-            );
+            this.searchButton = new MatPanelButton({
+                child: icon,
+                primary: true,
+            });
 
             this.searchButton.connect('clicked', () => {
                 if (!Main.overview._shown) {

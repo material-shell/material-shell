@@ -5,7 +5,6 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { reparentActor } = Me.imports.src.utils.index;
-const { log } = Me.imports.src.utils.debug;
 
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(

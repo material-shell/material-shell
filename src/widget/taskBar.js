@@ -9,7 +9,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 const { reparentActor } = Me.imports.src.utils.index;
 
 let dragData = null;
@@ -18,7 +17,6 @@ let dragData = null;
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
         _init(msWorkspace) {
-            AddLogToFunctions(this);
             super._init({
                 name: 'taskBar',
                 x_expand: true,
@@ -122,7 +120,10 @@ var TaskBar = GObject.registerClass(
                                 dragData.draggedOverByChild = true;
                             });
 
-                            dropPlaceholder.resize(item);
+                            dropPlaceholder.resize(
+                                item.width,
+                                dragData.currentTaskBar.height
+                            );
                             this.taskButtonContainer.add_child(dropPlaceholder);
                             this.taskButtonContainer.set_child_at_index(
                                 dropPlaceholder,
@@ -223,10 +224,11 @@ var TaskBar = GObject.registerClass(
             currentTaskBar.taskButtonContainer.set_child_at_index(item, index);
             if (
                 originalTaskBar !== currentTaskBar &&
-                item.tileable.metaWindow
+                item.tileable instanceof MsWindow
             ) {
-                item.tileable.metaWindow.move_to_monitor(
-                    currentTaskBar.msWorkspace.monitor.index
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    item.tileable,
+                    currentTaskBar.msWorkspace
                 );
             }
             if (draggedOver) {
@@ -272,6 +274,7 @@ var TaskBar = GObject.registerClass(
                 dropPlaceholder,
                 toIndex + (draggedBefore ? 0 : 1)
             );
+            dropPlaceholder.resize(item.width, currentTaskBar.height);
         }
 
         _animateActiveIndicator() {
@@ -665,9 +668,9 @@ var DropPlaceholder = GObject.registerClass(
     },
     class DropPlaceholder extends St.Widget {
         _init(targetClass) {
-            super._init();
+            super._init({ style_class: 'drop-placeholder' });
             this.targetClass = targetClass;
-            this.set_style('background:rgba(255,255,255,0.1)');
+            //this.set_style('background:rgba(255,255,255,0.1)');
             this._delegate = this;
         }
 
@@ -687,9 +690,9 @@ var DropPlaceholder = GObject.registerClass(
             return true;
         }
 
-        resize(rect) {
-            this.width = rect.width;
-            this.height = rect.height;
+        resize(width, height) {
+            this.width = width;
+            this.height = height;
         }
     }
 );

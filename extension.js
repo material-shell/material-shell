@@ -68,7 +68,7 @@ function enable() {
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();
             }
-            Me.msWorkspaceManager.setupInitialState();
+            Me.msWorkspaceManager.restorePreviousState();
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
@@ -96,16 +96,6 @@ function loaded(disconnect) {
     Me.emit('extension-loaded');
 
     // When monitors changed we reload the extension completely by disabling and reEnabling it
-    monitorChangedId = Main.layoutManager.connect('monitors-changed', () => {
-        if (
-            Main.layoutManager.monitors.length &&
-            Main.layoutManager.monitors.length != Me.monitorsLength
-        ) {
-            Me.showSplashScreens();
-            disable();
-            enable();
-        }
-    });
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
     });

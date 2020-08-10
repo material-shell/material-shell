@@ -6,7 +6,6 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
-const { AddLogToFunctions, log } = Me.imports.src.utils.debug;
 
 /* exported MsWindow */
 var MsWindow = GObject.registerClass(
@@ -30,7 +29,6 @@ var MsWindow = GObject.registerClass(
             persistent,
             initialAllocation
         ) {
-            AddLogToFunctions(this);
             super._init({
                 reactive: true,
                 x: initialAllocation ? initialAllocation.x || 0 : 0,

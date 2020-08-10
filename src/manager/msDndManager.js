@@ -5,7 +5,6 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { AddLogToFunctions } = Me.imports.src.utils.debug;
 const { reparentActor, throttle } = Me.imports.src.utils.index;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
@@ -14,7 +13,7 @@ const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 var MsDndManager = class MsDndManager extends MsManager {
     constructor(msWindowManager) {
         super();
-        AddLogToFunctions(this);
+
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.dragInProgress = false;
