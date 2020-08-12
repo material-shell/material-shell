@@ -78,7 +78,7 @@
     <key name="tween-time" type="d">
       <default>0.25</default>
       <summary>Animation duration</summary>
-      <description>Ajust duration of window move/resize animation</description>
+      <description>Adjust duration of window move/resize animation</description>
     </key>
     <key name="default-layout" type="s">
       <default>'maximize'</default>
