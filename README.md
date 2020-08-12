@@ -5,7 +5,7 @@
 
 ---
 
-A **simple**, **productivity oriented** desktop interface for Linux that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
+A **simple** yet **productivity oriented** desktop interface for Linux that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
 <h4 align="center" valign="middle">
 Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7D9a">
         <img valign="middle" src="https://img.shields.io/discord/584783412959641716?logo=discord&style=for-the-badge"
