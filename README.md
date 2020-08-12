@@ -36,10 +36,8 @@ Our workflow is designed to **simplify** navigation and **reduce** the need to *
 The spatial model is the core of the workflow and what everything is built around and in our case it's one of the simplest: **a Grid**
 
 <p align="center" valign="middle">
-
-<img align="center" valign="middle" src="./documentation/spatialisation.gif"
+ <img align="center" valign="middle" src="./documentation/spatialisation.gif"
             alt="Spatialisation illustred">
-            
 </p>
 
 Workspaces are applications containers and everything is **always sorted automatically**: The workspaces as rows and applications as cells.
