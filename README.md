@@ -42,9 +42,11 @@ The spatial model is the core of the workflow and what everything is built aroun
 
 Workspaces are applications containers and everything is **always sorted automatically**: The workspaces as rows and applications as cells.
 
-Since new workspaces are added at the end of the grid and new applications to the end of the current workspace the behavior is very **predictable**.
+Every **new application** is **automatically positioned** inside this grid at the end of its workspace's row and every **new workspaces** are **appended at the bottom** which is very **predictable**
 
-You can organize your applications by usescases (activity) or by categories and navigate in any direction to switch workspaces or applications easily.
+This allow us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** change the current window(s) on screen.
+
+You can organize your applications by usescases as **activities** or by applications type as **categories**.
 
 ### Interface
 
