@@ -40,9 +40,9 @@ The spatial model is the **core** of the **workflow** and what everything is bui
             alt="Spatialisation illustred">
 </p>
 
-Workspaces are applications containers and everything is **always sorted automatically**: The workspaces as rows and applications as cells.
+A **Workspace** is an applications container that can be **visualized as a row** and **applications as cells**.
 
-Every **new application** is **automatically positioned** inside this grid at the end of its workspace's row and every **new workspaces** are **appended at the bottom** which is very **predictable**
+Every **new application** is **automatically positioned** inside this grid at the end of its workspace's row and every **new workspaces** are **appended at the bottom** which is very **predictable** and **always sorted automatically**.
 
 This allow us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** change the current window(s) on screen.
 
@@ -53,7 +53,24 @@ You can organize your applications by usescases as **activities** or by applicat
 The interface is designed to represent the **state** of the **workflow** and provide **navigation** capabilities for both a **mouse** and a **touchscreen**.
 
 #### Layout
+![interface](./documentation/interface.png)
+The interface is divided in **two parts**:
 
+On the **left** side everything pertains to the **system**: current status, notifications, etc.
+
+On the **right** everything pertains to the **active category**: the windows on the category's grid, the layout switcher, and the windows themselves.
+
+The two most important components are the **system panel** (on the left) and the **category panel** (on the top).
+
+#### System panel
+The system panel is the main component of the left side of the interface. It consists of:
+* **Category switcher**: This component lists all the categories available and the currently selected category. It allows us to navigate to a specific category by clicking on its icon.
+* **System tray**: This component lists all the information about the system, e.g. network status, bluetooth connectivity, volume, battery, and notification icons.
+
+#### Category panel
+The category panel is the main component of the right side of the interface. It consists of:
+* **App switcher**: This component lists all the application windows opened in the current category's grid and the currently focused one. It allows us to navigate to a specific window within the grid by selecting its item.
+* **Layout switcher**: This component displays the current layout of the category and can be clicked to switch to the next available layout.
 #### Design
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
