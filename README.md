@@ -35,7 +35,7 @@ Our workflow is designed to **simplify** navigation and **reduce** the need to *
 
 The spatial model is the core of the workflow and what everything is built around and in our case it's one of the simplest: **a Grid**
 
-![app-grid](./documentation/app-grid.png)
+![app-grid](./documentation/spatialisation.gif)
 
 #### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
 
