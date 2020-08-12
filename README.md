@@ -33,7 +33,7 @@ Our workflow is designed to **simplify** navigation and **reduce** the need to *
 
 ### Spatial Model
 
-The spatial model is the core of the workflow and what everything is built around and in our case it's one of the simplest: **a Grid**
+The spatial model is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
 
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/spatialisation.gif"
@@ -50,8 +50,11 @@ You can organize your applications by usescases as **activities** or by applicat
 
 ### Interface
 
+The interface is designed to represent the **state** of the **workflow** and provide **navigation** capabilities for both a **mouse** and a **touchscreen**.
 
-### Design
+#### Layout
+
+#### Design
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
 ### Persistence
