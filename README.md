@@ -19,7 +19,7 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
   <a href="#credits">Credits</a> •
   <a href="#related">Related</a> •
   <a href="#license">License</a>
-</1>
+</p>
 
 ---
 
@@ -35,9 +35,21 @@ Our workflow is designed to **simplify** navigation and **reduce** the need to *
 
 The spatial model is the core of the workflow and what everything is built around and in our case it's one of the simplest: **a Grid**
 
-![app-grid](./documentation/spatialisation.gif)
+<p align="center" valign="middle">
 
-#### [Read more about the workflow and Material Shell](./documentation/material-shell.md#workflow)
+<img align="center" valign="middle" src="./documentation/spatialisation.gif"
+            alt="Spatialisation illustred">
+            
+</p>
+
+Workspaces are applications containers and everything is **always sorted automatically**: The workspaces as rows and applications as cells.
+
+Since new workspaces are added at the end of the grid and new applications to the end of the current workspace the behavior is very **predictable**.
+
+You can organize your applications by usescases (activity) or by categories and navigate in any direction to switch workspaces or applications easily.
+
+### Interface
+
 
 ### Design
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
