@@ -27,11 +27,11 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 
 ---
 
-## Workflow
+# Workflow
 
 Our workflow is designed to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictible** and bring the benefits of tools covoted by professionnals to everyones. 
 
-### Spatial Model
+## Spatial Model
 
 The spatial model is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
 
@@ -48,33 +48,35 @@ This allow us to provide **intuitive navigation** by moving the screen around a 
 
 You can organize your applications by usescases as **activities** or by applications type as **categories**.
 
-### Interface
+## Interface
 
 The interface is designed to represent the **state** of the **workflow** and provide **navigation** capabilities for both a **mouse** and a **touchscreen**.
 
-#### Layout
+### Layout
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/interface_showcase.gif"
             alt="Interface layout illustrated">
 </p>
+
 The interface is divided in **two parts**:
 
 On the **left** side everything pertains to the **system**: current status, notifications, etc.
 
-On the **right** everything pertains to the **active category**: the windows on the category's grid, the layout switcher, and the windows themselves.
+On the **right** everything pertains to the **active workspace**: the windows on the workspace's row, the layout switcher, and the windows themselves.
 
-The two most important components are the **system panel** (on the left) and the **category panel** (on the top).
+The two most important components are the **system panel** (on the left) and the **workspace panel** (on the top).
 
 #### System panel
 The system panel is the main component of the left side of the interface. It consists of:
-* **Category switcher**: This component lists all the categories available and the currently selected category. It allows us to navigate to a specific category by clicking on its icon.
+* **Workspace list and switcher**: This component lists all the workspaces available and the currently selected one. It allows us to navigate to a specific workspace by clicking on its icon.
 * **System tray**: This component lists all the information about the system, e.g. network status, bluetooth connectivity, volume, battery, and notification icons.
 
-#### Category panel
-The category panel is the main component of the right side of the interface. It consists of:
-* **App switcher**: This component lists all the application windows opened in the current category's grid and the currently focused one. It allows us to navigate to a specific window within the grid by selecting its item.
-* **Layout switcher**: This component displays the current layout of the category and can be clicked to switch to the next available layout.
-#### Design
+#### Workspace panel
+The workspace panel is the main component of the right side of the interface. It consists of:
+* **App switcher**: This component lists all the application windows opened in the current workspace's row and the currently focused one. It allows us to navigate to a specific window within the row by selecting its item.
+* **Layout switcher**: This component displays the current layout of the workspace and can be clicked to switch to the next available layout.
+
+### Design
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
 ### Persistence
