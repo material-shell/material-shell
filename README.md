@@ -29,11 +29,11 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 
 # Workflow
 
-Our workflow is designed to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictible** and bring the benefits of tools covoted by professionnals to everyones. 
+Created to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictible** and bring the benefits of tools covoted by professionnals to everyones. 
 
 ## Spatial Model
 
-The spatial model is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
+This is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
 
 <br />
 
@@ -54,7 +54,7 @@ You can organize your applications by usescases as **activities** or by applicat
 
 ## Interface
 
-The interface is designed to represent the **state** of the **workflow** and provide **navigation** capabilities for both a **mouse** and a **touchscreen**.
+Designed to represent the **state** of the **workflow** and provide **navigation** capabilities for both a **mouse** and a **touchscreen**.
 
 ### Layout
 
@@ -88,7 +88,11 @@ The workspace panel is the main component of the right side of the interface. It
 ### Design
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
-### Persistence
+### Themes
+
+## Tiling engine
+
+## Persistence
 The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it.
 
 ### Discord
