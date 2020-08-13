@@ -34,14 +34,10 @@ Created to **simplify** navigation and **reduce** the need to **manipulate** win
 
 This is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
 
-<br />
-
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/spatialisation.gif"
             alt="Spatialisation illustrated">
 </p>
-
-<br />
 
 A **Workspace** is an applications container that can be **visualized as a row** and **applications as cells**.
 
@@ -63,14 +59,10 @@ In the **left panel** everything pertains to the **system**: workspaces state, c
 
 On the **right** of the left panel everything pertains to the **active workspace**: the windows on the workspace's row, the layout switcher, and the windows themselves.
 
-<br />
-
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/interface_showcase.gif"
             alt="Interface layout illustrated">
 </p>
-
-<br />
 
 The two most important components are the **system panel** (on the left) and the **workspace panel** (on the top).
 
@@ -102,7 +94,6 @@ It's the **tool** that **automatically organize** the application's **window** f
  <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
             alt="Tiling engine illustrated">
 </p>
-<br />
 
 **Choose** at **any time** which tiling layout suit the most for your need:
 * **Maximize**: Single window at a time
