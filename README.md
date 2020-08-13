@@ -13,12 +13,11 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 </a>
 </h4>
 <p align="center">
+  <a href="#workflow">Workflow</a> •
+  <a href="#hotkeys">Hotkeys</a> •
   <a href="#installation">Installation</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#related">Related</a> •
-  <a href="#license">License</a>
+  <a href="#uninstallation-">Uninstallation</a> •
+  <a href="#history">History</a>
 </p>
 
 ---
@@ -113,7 +112,13 @@ It's the **tool** that **automatically organize** the application's **window** f
 * **Grid**: All windows displayed as a grid
 
 ## Persistence
-The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it. 
+The **best way** to **configure** the desktop layout it's to **not** having to **do it**.
+
+Material Shell **keep track** of every **decisions** relative to the desktop layout: where are windows, in which workspaces in which order.
+
+This allow to **configure** the layouts **on the go** while using it.
+
+When opening a **new session** Material Shell will **restore every windows** previously present with a "**window placeholder** which allow you to reopen any of the previous window easily at the same spot you like to have them.
 
 ## Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
@@ -136,7 +141,7 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+Space` Cycle the tiling layout of the current workspace.
 * `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
-## Installation
+# Installation
 1. Check your GNOME Shell version as we only support **gnome-shell >= 3.34.0**
 
 2. Download the extension. Depending on your distribution, there are several ways to acquire it:
@@ -161,7 +166,7 @@ gnome-extensions enable material-shell@papyelgringo
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
-## Uninstallation 😢
+# Uninstallation 😢
 We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
 
 1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using 
@@ -172,6 +177,6 @@ gnome-extensions disable material-shell@papyelgringo
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
-## History
+# History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
