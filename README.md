@@ -99,7 +99,6 @@ And there is also a **blurry** version available for the more fancy ones !
 ## Tiling engine
 It's the **tool** that allow us to **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
 
-<br />
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
             alt="Tiling engine illustrated">
