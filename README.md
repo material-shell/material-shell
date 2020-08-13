@@ -100,51 +100,23 @@ And there is also a **blurry** version available for the more fancy ones !
 It's the **tool** that allow us to **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
 
 <br />
-
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
             alt="Tiling engine illustrated">
 </p>
-
 <br />
 
 Choose at any time which tiling layout suit the most for your need:
-* Maximize
-* Split
-* Column
-* Half
-* Grid
+* Maximize: Single window at a time
+* Split: 2 windows side by side 
+* Column: All windows displayed as columns (Usefull for ultra wide monitor)
+* Half: One master window on the left then others windows stacked to the right
+* Grid: All windows displayed as a grid
 
 ## Persistence
 The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it. 
 
-### Discord
-Get notified about updates and join me on [the Material Shell Discord](https://discord.gg/vBb7D9a)!
-#
-#### STATUS: BETA (expect bugs!)
-#### REQUIRES: gnome-shell >= 3.34.0
-
-## Installation
-
-1. Download the extension. Depending on your distribution, there are several ways to acquire it:
-
-| Distribution | Install via | Command |
-| :----------- | :---------- | :------ |
-| Arch Linux   | AUR         | `yay -S gnome-shell-extension-material-shell-git` |
-| Fedora       | DNF         | `sudo dnf install gnome-shell-extension-material-shell` |
-| Others       | source      | `git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` |
-
-(We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
-
-2. Reload GNOME Shell:
-  + On X.org: Hit `Alt+F2` and type the command `r`
-  + On Wayland: Log out and back in
-3. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
-```bash
-gnome-extensions enable material-shell@papyelgringo
-```
-
-## Workflow Hotkeys
+## Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
 #### Desktop navigation
 * `Super+W` Navigate to the upper workspace/category.
@@ -165,6 +137,27 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+Space` Cycle the tiling layout of the current workspace.
 * `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
+## Installation
+1. Check your GNOME Shell version as we only support **gnome-shell >= 3.34.0**
+
+2. Download the extension. Depending on your distribution, there are several ways to acquire it:
+
+| Distribution | Install via | Command |
+| :----------- | :---------- | :------ |
+| Arch Linux   | AUR         | `yay -S gnome-shell-extension-material-shell-git` |
+| Fedora       | DNF         | `sudo dnf install gnome-shell-extension-material-shell` |
+| Others       | source      | `git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` |
+
+(We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
+
+3. Reload GNOME Shell:
+  + On X.org: Hit `Alt+F2` and type the command `r`
+  + On Wayland: Log out and back in
+  
+4. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
+```bash
+gnome-extensions enable material-shell@papyelgringo
+```
 ## Recommended Additional Configuration
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
