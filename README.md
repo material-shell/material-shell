@@ -4,8 +4,16 @@
 ![Material Shell](/documentation/on-all-full.svg)
 
 ---
+<p align="center">
+        A <b>modern desktop interface</b> for <b>Linux</b> extending <b><a href="https://wiki.gnome.org/Projects/GnomeShell">GNOME Shell</a></b>.
+</p>
+<p align="center">
+Providing an <b>unique</b>, <b>simple</b>, <b>productivity oriented</b>, <b>innovative</b> and <b>automated</b> <b>mouse and keyboard <a href="#workflow">workflow</a></b> which aims to be <b>faster</b> and <b>easier</b> to use and creates a <b>great user experience</b>.
+</p>
+<p align="center">
+        Powered by it's unique <b><a href="#spatial-model">spatial model</a></b>, it's modern <b><a href="#interface">material design interface</a></b>, it's <b><a href="#tiling-engine">tiling engine</a></b> and it's <b><a href="#persistence">persistability</a></b>.
+</p>
 
-A **simple** yet **productivity oriented** desktop interface for Linux that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.
 <h4 align="center" valign="middle">
 Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7D9a">
         <img valign="middle" src="https://img.shields.io/discord/584783412959641716?logo=discord&style=for-the-badge"
