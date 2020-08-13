@@ -105,12 +105,12 @@ It's the **tool** that **automatically organize** the application's **window** f
 </p>
 <br />
 
-Choose at any time which tiling layout suit the most for your need:
-* Maximize: Single window at a time
-* Split: 2 windows side by side 
-* Column: All windows displayed as columns (Usefull for ultra wide monitor)
-* Half: One master window on the left then others windows stacked to the right
-* Grid: All windows displayed as a grid
+**Choose** at **any time** which tiling layout suit the most for your need:
+* **Maximize**: Single window at a time
+* **Split**: 2 windows side by side 
+* **Column**: All windows displayed as columns (Usefull for ultra wide monitor)
+* **Half**: One master window on the left then others windows stacked to the right
+* **Grid**: All windows displayed as a grid
 
 ## Persistence
 The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it. 
