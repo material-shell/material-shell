@@ -97,7 +97,7 @@ You can choose between 3 different themes:
 And there is also a **blurry** version available for the more fancy ones !
 
 ## Tiling engine
-It's the **tool** that allow us to **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
+It's the **tool** that **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
 
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
