@@ -89,11 +89,34 @@ The workspace panel is the main component of the right side of the interface. It
 Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
 
 ### Themes
+You can choose between 3 different themes:
+* Dark
+* Light
+* Primary (Colorful one)
+
+And there is also a **blurry** version available for the more fancy ones !
 
 ## Tiling engine
+It's the **tool** that allow us to **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
+
+<br />
+
+<p align="center" valign="middle">
+ <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
+            alt="Tiling engine illustrated">
+</p>
+
+<br />
+
+Choose at any time which tiling layout suit the most for your need:
+* Maximize
+* Split
+* Column
+* Half
+* Grid
 
 ## Persistence
-The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it.
+The simplest way we found for user configuration is to keep every user decision permanent, that's way the user configure his layouts on the go while using it. 
 
 ### Discord
 Get notified about updates and join me on [the Material Shell Discord](https://discord.gg/vBb7D9a)!
