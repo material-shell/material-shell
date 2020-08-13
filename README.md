@@ -22,13 +22,13 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 
 ---
 
-![Demo GIF](demo.gif)
+![Demo GIF](documentation/general_showcase.gif)
 
 ---
 
 # Workflow
 
-Created to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictible** and bring the benefits of tools covoted by professionnals to everyones. 
+Created to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictable** and bring the benefits of tools coveted by professionals to everyone. 
 
 ## Spatial Model
 
@@ -45,11 +45,11 @@ This is the **core** of the **workflow** and what everything is built around and
 
 A **Workspace** is an applications container that can be **visualized as a row** and **applications as cells**.
 
-Every **new application** is **automatically positioned** inside this grid at the end of its workspace's row and every **new workspaces** are **appended at the bottom** which is very **predictable** and **always sorted automatically**.
+Every **new application** is **automatically positioned** inside this grid at the end of its workspace row and every **new workspaces** are **appended at the bottom** which is very **predictable** and **always sorted automatically**.
 
 This allow us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** change the current window(s) on screen.
 
-You can organize your applications by usescases as **activities** or by applications type as **categories**.
+You can organize your applications by use cases as **activities** or by applications type as **categories**.
 
 ## Interface
 
@@ -107,7 +107,7 @@ It's the **tool** that **automatically organize** the application's **window** f
 **Choose** at **any time** which tiling layout suit the most for your need:
 * **Maximize**: Single window at a time
 * **Split**: 2 windows side by side 
-* **Column**: All windows displayed as columns (Usefull for ultra wide monitor)
+* **Column**: All windows displayed as columns (useful for ultra wide monitor)
 * **Half**: One master window on the left then others windows stacked to the right
 * **Grid**: All windows displayed as a grid
 
