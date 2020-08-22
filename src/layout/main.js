@@ -61,6 +61,7 @@ var MsMain = GObject.registerClass(
             this.registerToSignals();
             this.onMsWorkspacesChanged();
             this.updatePanelVisibilities();
+            this.updateFullscreenMonitors();
         }
         get primaryMonitor() {
             return Main.layoutManager.primaryMonitor;
@@ -136,22 +137,7 @@ var MsMain = GObject.registerClass(
             this.signals.push({
                 from: global.display,
                 id: global.display.connect('in-fullscreen-changed', () => {
-                    for (let monitor of Main.layoutManager.monitors) {
-                        const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
-                            monitor.index
-                        );
-                        if (monitor === this.primaryMonitor) {
-                            this.primaryMonitorContainer.setFullscreen(
-                                monitorInFullScreen
-                            );
-                        } else {
-                            this.monitorsContainer
-                                .find((container) => {
-                                    return container.monitor === monitor;
-                                })
-                                .setFullscreen(monitorInFullScreen);
-                        }
-                    }
+                    this.updateFullscreenMonitors();
                 }),
             });
             this.signals.push({
@@ -209,6 +195,7 @@ var MsMain = GObject.registerClass(
                     });
                     this.onMsWorkspacesChanged();
                     this.updatePanelVisibilities();
+                    this.updateFullscreenMonitors();
                 }),
             });
         }
@@ -266,6 +253,26 @@ var MsMain = GObject.registerClass(
             Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
 
+        updateFullscreenMonitors() {
+            for (let monitor of Main.layoutManager.monitors) {
+                const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+                    monitor.index
+                );
+                if (monitor === this.primaryMonitor) {
+                    this.primaryMonitorContainer.setFullscreen(
+                        monitorInFullScreen
+                    );
+                } else {
+                    this.monitorsContainer
+                        .find((container) => {
+                            return container.monitor === monitor;
+                        })
+                        .setFullscreen(monitorInFullScreen);
+                }
+            }
+            Me.msWorkspaceManager.refreshMsWorkspaceUI();
+        }
+
         add_child(actor) {
             super.add_child(actor);
             this.set_child_above_sibling(this.aboveContainer, null);
@@ -304,13 +311,13 @@ var MonitorContainer = GObject.registerClass(
                 );
             });
             this.add_child(this.topBarSpacer);
+            this.setFullscreen(
+                global.display.get_monitor_in_fullscreen(monitor.index)
+            );
         }
 
         setFullscreen(monitorIsFullscreen) {
             this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
-            if (this.msWorkspaceActor) {
-                this.msWorkspaceActor.updateUI();
-            }
         }
 
         setMsWorkspaceActor(actor) {
@@ -368,8 +375,8 @@ var PrimaryMonitorContainer = GObject.registerClass(
     },
     class PrimaryMonitorContainer extends MonitorContainer {
         _init(monitor, bgGroup, params) {
-            super._init(monitor, bgGroup, params);
             this.panel = new MsPanel();
+            super._init(monitor, bgGroup, params);
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {

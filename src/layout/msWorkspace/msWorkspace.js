@@ -91,6 +91,14 @@ var MsWorkspace = class MsWorkspace {
         });
     }
 
+    get containFullscreenWindow() {
+        return this.msWindowList.some((msWindow) => {
+            return msWindow.metaWindow
+                ? msWindow.metaWindow.is_fullscreen()
+                : false;
+        });
+    }
+
     get workspace() {
         if (this.monitorIsExternal) return null;
         return this.msWorkspaceManager.getWorkspaceOfMsWorkspace(this);
@@ -123,6 +131,7 @@ var MsWorkspace = class MsWorkspace {
         if (focus) {
             this.focusTileable(msWindow);
         }
+        this.msWorkspaceActor.updateUI();
         await this.emitTileableListChangedOnce(oldTileableList);
         /*  // Focusing window if the window comes from a drag and drop
         // or if there's no focused window
@@ -151,6 +160,7 @@ var MsWorkspace = class MsWorkspace {
         if (tileableIsFocused) {
             this.focusTileable(this.tileableList[this.focusedIndex], true);
         }
+        this.msWorkspaceActor.updateUI();
         this.refreshFocus();
     }
 
@@ -306,16 +316,11 @@ var MsWorkspace = class MsWorkspace {
     }
 
     shouldPanelBeVisible() {
-        let containFullscreenWindow = this.msWindowList.some((msWindow) => {
-            return msWindow.metaWindow
-                ? msWindow.metaWindow.is_fullscreen()
-                : false;
-        });
-        return (
-            !containFullscreenWindow &&
+        return !this.containFullscreenWindow &&
             this.msWorkspaceManager &&
-            Me.layout.panelsVisible
-        );
+            Me.layout
+            ? Me.layout.panelsVisible
+            : true;
     }
 
     shouldCycleTileableNavigation() {
@@ -452,6 +457,7 @@ var MsWorkspaceActor = GObject.registerClass(
             this.panel = new TopPanel(msWorkspace);
             this.add_child(this.tileableContainer);
             this.add_child(this.panel);
+            this.updateUI();
         }
 
         updateUI() {
@@ -459,9 +465,13 @@ var MsWorkspaceActor = GObject.registerClass(
                 this.msWorkspace.monitor.index
             );
             if (this.panel) {
-                this.panel.visible = this.msWorkspace.shouldPanelBeVisible();
+                this.panel.visible =
+                    this.msWorkspace.shouldPanelBeVisible() &&
+                    !monitorInFullScreen;
             }
-            this.tileableContainer.visible = !monitorInFullScreen;
+            this.tileableContainer.visible =
+                !this.msWorkspace.containFullscreenWindow &&
+                !monitorInFullScreen;
         }
 
         vfunc_allocate(box, flags) {
