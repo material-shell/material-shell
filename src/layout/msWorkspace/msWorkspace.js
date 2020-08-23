@@ -53,6 +53,7 @@ var MsWorkspace = class MsWorkspace {
                     )
                 );
             });
+            this.msWorkspaceCategory.determineCategory();
         }
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
