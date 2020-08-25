@@ -4,7 +4,10 @@ const { GObject, St, Clutter } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
-const { TaskBar } = Me.imports.src.widget.taskBar;
+const { 
+    TaskBar,
+    TaskBarItem
+} = Me.imports.src.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
@@ -46,13 +49,19 @@ var TopPanel = GObject.registerClass(
             });
         }
 
-        handleDragOver() {
-            return this.taskBar.updateCurrentTaskBar();
+        handleDragOver(source) {
+            if (source instanceof TaskBarItem) {
+                return this.taskBar.updateCurrentTaskBar();
+            }
+            return DND.DragMotionResult.NO_DROP;
         }
-
-        acceptDrop() {
-            this.taskBar.reparentDragItem();
-            return true;
+        
+        acceptDrop(source) {
+            if (source instanceof TaskBarItem) {
+                this.taskBar.reparentDragItem();
+                return true;
+            }
+            return false;
         }
 
         vfunc_get_preferred_height(_forWidth) {

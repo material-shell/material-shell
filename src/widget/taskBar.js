@@ -11,7 +11,9 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { reparentActor } = Me.imports.src.utils.index;
 
-let dragData = null;
+var dragData = {
+    current: null
+};
 
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
@@ -105,7 +107,7 @@ var TaskBar = GObject.registerClass(
                             const dropPlaceholder = new DropPlaceholder(
                                 TaskBarItem
                             );
-                            dragData = {
+                            dragData.current = {
                                 item,
                                 initialIndex,
                                 dropPlaceholder,
@@ -117,12 +119,12 @@ var TaskBar = GObject.registerClass(
                                 this.reparentDragItem
                             );
                             dropPlaceholder.connect('drag-over', () => {
-                                dragData.draggedOverByChild = true;
+                                dragData.current.draggedOverByChild = true;
                             });
 
                             dropPlaceholder.resize(
                                 item.width,
-                                dragData.currentTaskBar.height
+                                dragData.current.currentTaskBar.height
                             );
                             this.taskButtonContainer.add_child(dropPlaceholder);
                             this.taskButtonContainer.set_child_at_index(
@@ -133,16 +135,18 @@ var TaskBar = GObject.registerClass(
                         });
 
                         item._draggable.connect('drag-cancelled', () => {
-                            delete dragData.draggedOver;
-                            delete dragData.draggedBefore;
+                            delete dragData.current.draggedOver;
+                            delete dragData.current.draggedBefore;
                             // We need to reparent on the original taskBar
                             // if it's a different one
-                            dragData.originalTaskBar.updateCurrentTaskBar();
+                            dragData.current.originalTaskBar.updateCurrentTaskBar();
 
                             const {
-                                currentTaskBar,
-                                dropPlaceholder,
-                                initialIndex,
+                                current: {
+                                    currentTaskBar,
+                                    dropPlaceholder,
+                                    initialIndex,
+                                }
                             } = dragData;
 
                             currentTaskBar.taskButtonContainer.set_child_at_index(
@@ -157,7 +161,7 @@ var TaskBar = GObject.registerClass(
                         );
 
                         item.connect('drag-over', (_, before) => {
-                            dragData.draggedOverByChild = true;
+                            dragData.current.draggedOverByChild = true;
                             this._onDragOver(item, before);
                         });
 
@@ -192,29 +196,40 @@ var TaskBar = GObject.registerClass(
         }
 
         updateCurrentTaskBar() {
-            const { dropPlaceholder } = dragData;
+            const {
+                current: {
+                    dropPlaceholder,
+                }
+            } = dragData;
 
-            if (dragData.currentTaskBar !== this) {
+            if (dragData.current.currentTaskBar !== this) {
                 reparentActor(dropPlaceholder, this.taskButtonContainer);
-                dragData.currentTaskBar = this;
+                dragData.current.currentTaskBar = this;
             }
 
             return DND.DragMotionResult.MOVE_DROP;
         }
 
         reparentDragItem() {
-            const { item, currentTaskBar } = dragData;
+            const { 
+                current: {
+                    item, 
+                    currentTaskBar,
+                }
+            } = dragData;
             reparentActor(item, currentTaskBar.taskButtonContainer);
         }
 
         _onDragEnd() {
             const {
-                item,
-                originalTaskBar,
-                currentTaskBar,
-                dropPlaceholder,
-                draggedOver,
-                draggedBefore,
+                current: {
+                    item,
+                    originalTaskBar,
+                    currentTaskBar,
+                    dropPlaceholder,
+                    draggedOver,
+                    draggedBefore,
+                }
             } = dragData;
             let index = currentTaskBar.taskButtonContainer
                 .get_children()
@@ -247,19 +262,21 @@ var TaskBar = GObject.registerClass(
 
             currentTaskBar.msWorkspace.focusTileable(item.tileable);
             this.taskActiveIndicator.show();
-            dragData = null;
+            delete dragData.current;
         }
 
         _onDragOver(item, before) {
-            dragData.draggedOver = item;
-            dragData.draggedBefore = before;
+            dragData.current.draggedOver = item;
+            dragData.current.draggedBefore = before;
             this.updateCurrentTaskBar();
 
             const {
-                currentTaskBar,
-                dropPlaceholder,
-                draggedOver,
-                draggedBefore,
+                current: {
+                    currentTaskBar,
+                    dropPlaceholder,
+                    draggedOver,
+                    draggedBefore,
+                }
             } = dragData;
 
             const dropPlaceholderIndex = currentTaskBar.taskButtonContainer

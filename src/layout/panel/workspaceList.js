@@ -7,7 +7,11 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
-const { DropPlaceholder } = Me.imports.src.widget.taskBar;
+const { 
+    DropPlaceholder,
+    TaskBarItem,
+    dragData
+} = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
@@ -553,20 +557,51 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (!(source instanceof WorkspaceButton) || !this.draggable) {
-                return DND.DragMotionResult.NO_DROP;
+            if ((source instanceof WorkspaceButton) && this.draggable) {
+                this.emit('drag-over', y < this.height / 2);
+                return DND.DragMotionResult.MOVE_DROP;
             }
-
-            this.emit('drag-over', y < this.height / 2);
-            return DND.DragMotionResult.MOVE_DROP;
+            else if (source instanceof TaskBarItem) {
+                return DND.DragMotionResult.MOVE_DROP;
+            }
+            return DND.DragMotionResult.NO_DROP;
         }
 
         acceptDrop(source) {
-            if (!(source instanceof WorkspaceButton)) {
-                return false;
+            if (source instanceof WorkspaceButton) {
+                this.emit('drag-dropped');
+                return true;
             }
-            this.emit('drag-dropped');
-            return true;
+            else if (source instanceof TaskBarItem) {
+                const dragItem = dragData.current.item;
+                const tileableIndex = this.msWorkspace.tileableList.indexOf(dragItem.tileable);
+                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const isOnlyTileable = (activeMsWorkspace.tileableList.length == 2);
+                const isDraggable = this.draggable;
+                if (
+                    tileableIndex < 0 && 
+                    !(!isDraggable && isOnlyTileable)
+                ) {
+                    this.msWorkspace.activate();
+                    this.msWorkspaceManager.setWindowToMsWorkspace(
+                        dragItem.tileable,
+                        this.msWorkspace
+                        );
+                    activeMsWorkspace.refreshFocus();
+                    if (isDraggable) {
+                        this.msWorkspace.focusLastTileable();
+                    } else {
+                        this.msWorkspace.focusTileable(
+                            this.msWorkspace.tileableList[0], 
+                            true
+                        );
+                    }
+                }
+                this.msWorkspace.refreshFocus();
+                dragItem.emit('drag-dropped');
+                return true;
+            }
+            return false;
         }
 
         /**
