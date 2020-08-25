@@ -260,7 +260,7 @@ var TaskBar = GObject.registerClass(
                 }
             }
 
-            currentTaskBar.msWorkspace.focusTileable(item.tileable);
+            currentTaskBar.msWorkspace.focusTileable(item.tileable, true);
             this.taskActiveIndicator.show();
             delete dragData.current;
         }

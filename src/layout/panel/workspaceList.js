@@ -109,7 +109,8 @@ var WorkspaceList = GObject.registerClass(
                                 workspaceButton: workspaceButton,
                                 initialIndex: workspaceButtonIndex,
                             };
-                            this.dropPlaceholder.resize(workspaceButton);
+                            const [buttonWidth, buttonHeight] = workspaceButton.get_preferred_width(-1);
+                            this.dropPlaceholder.resize(buttonWidth, buttonHeight);
                             this.buttonList.add_child(this.dropPlaceholder);
                             this.buttonList.set_child_at_index(
                                 this.dropPlaceholder,
@@ -244,7 +245,8 @@ var WorkspaceList = GObject.registerClass(
         _onDragOver(workspaceButton, before) {
             this.tempDragData.draggedOver = workspaceButton;
             this.tempDragData.draggedBefore = before;
-            this.dropPlaceholder.resize(this.tempDragData.workspaceButton);
+            const [buttonWidth, buttonHeight] = this.tempDragData.workspaceButton.get_preferred_width(-1);
+-           this.dropPlaceholder.resize(buttonWidth, buttonHeight);
             let dropPlaceholderIndex = this.buttonList
                 .get_children()
                 .indexOf(this.dropPlaceholder);
@@ -341,7 +343,7 @@ var WorkspaceButton = GObject.registerClass(
                         ) !==
                         this.msWorkspaceManager.primaryMsWorkspaces.length - 1
                     )
-                        msWorkspace.close();
+                        this.msWorkspace.close();
                 } else {
                     this.msWorkspace.activate();
                 }
@@ -607,7 +609,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the parent width
          */
-        vfunc_get_preferred_width(forHeight) {
+        vfunc_get_preferred_width(_forHeight) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -617,7 +619,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the child height
          */
-        vfunc_get_preferred_height(forWidth) {
+        vfunc_get_preferred_height(_forWidth) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
