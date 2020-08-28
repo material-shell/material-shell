@@ -7,7 +7,10 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MatButton } = Me.imports.src.widget.material.button;
-const { DropPlaceholder } = Me.imports.src.widget.taskBar;
+const { 
+    DropPlaceholder,
+    TaskBarItem
+} = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
@@ -179,16 +182,18 @@ var WorkspaceList = GObject.registerClass(
             });
         }
 
-        handleDragOver() {
-            if (!this.tempDragData.draggedOverByChild) {
-                let workspaceButton =
+        handleDragOver(source, actor, x, y) {
+            if (source instanceof WorkspaceButton) { // Needed for dragging over tasks
+                if (!this.tempDragData.draggedOverByChild) {
+                    let workspaceButton =
                     this.items[this.items.length - 1] ===
                     this.tempDragData.workspaceButton
-                        ? this.items[this.items.length - 2]
-                        : this.items[this.items.length - 1];
-                this._onDragOver(workspaceButton, false);
-            } else {
-                this.tempDragData.draggedOverByChild = false;
+                    ? this.items[this.items.length - 2]
+                    : this.items[this.items.length - 1];
+                    this._onDragOver(workspaceButton, false);
+                } else {
+                    this.tempDragData.draggedOverByChild = false;
+                }
             }
 
             return DND.DragMotionResult.MOVE_DROP;
@@ -553,20 +558,44 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (!(source instanceof WorkspaceButton) || !this.draggable) {
-                return DND.DragMotionResult.NO_DROP;
+            if ((source instanceof WorkspaceButton) && this.draggable) {
+                this.emit('drag-over', y < this.height / 2);
+                return DND.DragMotionResult.MOVE_DROP;
             }
-
-            this.emit('drag-over', y < this.height / 2);
-            return DND.DragMotionResult.MOVE_DROP;
+            else if (source instanceof TaskBarItem) {
+                return DND.DragMotionResult.MOVE_DROP;
+            }
+            return DND.DragMotionResult.NO_DROP;
         }
 
         acceptDrop(source) {
-            if (!(source instanceof WorkspaceButton)) {
-                return false;
+            if (source instanceof WorkspaceButton) {
+                this.emit('drag-dropped');
+                return true;
             }
-            this.emit('drag-dropped');
-            return true;
+            else if (source instanceof TaskBarItem) {
+                const tileableIndex = this.msWorkspace.tileableList.indexOf(
+                    source.tileable
+                );
+                const tileable = source.tileable;
+                if (
+                    (tileableIndex < 0) &&
+                    (tileable instanceof MsWindow)
+                ) {
+                    (async () => {
+                        await source.emit('drag-dropped');
+                        await tileable.msWorkspace.removeMsWindow(tileable);
+                        await this.msWorkspace.addMsWindow(tileable, true);
+                        this.msWorkspaceManager.stateChanged();
+                        this.msWorkspace.activate();
+                      })();
+
+                } else {
+                    source.emit('drag-dropped');
+                }
+                return true;
+            }
+            return false;
         }
 
         /**
