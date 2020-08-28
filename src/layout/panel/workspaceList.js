@@ -245,7 +245,7 @@ var WorkspaceList = GObject.registerClass(
         _onDragOver(workspaceButton, before) {
             this.tempDragData.draggedOver = workspaceButton;
             this.tempDragData.draggedBefore = before;
--           this.dropPlaceholder.resize(workspaceButton);
+-           this.dropPlaceholder.resize(this.tempDragData.workspaceButton);
             let dropPlaceholderIndex = this.buttonList
                 .get_children()
                 .indexOf(this.dropPlaceholder);
