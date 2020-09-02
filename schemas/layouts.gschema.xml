@@ -11,7 +11,7 @@
       <description>Put all windows side by side, two at a time</description>
     </key>
     <key name="half" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Half layout</summary>
       <description>Tile windows according to screen ratio</description>
     </key>
@@ -41,7 +41,7 @@
       <description>Tile windows according to a regular grid</description>
     </key>
     <key name="float" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Float layout</summary>
       <description>No tiling is done, windows are floating freely</description>
     </key>
@@ -78,7 +78,7 @@
     <key name="tween-time" type="d">
       <default>0.25</default>
       <summary>Animation duration</summary>
-      <description>Ajust duration of window move/resize animation</description>
+      <description>Adjust duration of window move/resize animation</description>
     </key>
     <key name="default-layout" type="s">
       <default>'maximize'</default>

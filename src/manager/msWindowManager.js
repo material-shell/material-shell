@@ -101,6 +101,18 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     onMetaWindowUnManaged(metaWindow) {
         if (Me.disableInProgress || Me.closing) return;
         if (
+            this.metaWindowWaitingForAssignationList
+                .map((o) => o.metaWindow)
+                .includes(metaWindow)
+        ) {
+            this.metaWindowWaitingForAssignationList.splice(
+                this.metaWindowWaitingForAssignationList
+                    .map((o) => o.metaWindow)
+                    .indexOf(metaWindow),
+                1
+            );
+        }
+        if (
             metaWindow.msWindow &&
             metaWindow.msWindow.metaWindow === metaWindow
         ) {

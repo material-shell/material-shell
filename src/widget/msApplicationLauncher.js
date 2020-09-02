@@ -105,12 +105,15 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this._text = this.inputContainer.clutter_text;
             this._text.connect('text-changed', () => {
                 this.updateFilteredAppButtonList();
+                this.highlightButton(this.filteredAppButtonList[0]);
             });
             this._text.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
                 if (ShellVersionMatch('3.34')) {
                     switch (symbol) {
                         case Clutter.Escape:
+                            this.reset(); // Reset both
+                            this.removeHighlightButton();
                             return Clutter.EVENT_STOP;
                         case Clutter.Tab:
                             this.highlightNextButton();
@@ -149,6 +152,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 } else {
                     switch (symbol) {
                         case Clutter.KEY_Escape:
+                            this.reset(); // Reset both
+                            this.removeHighlightButton();
                             return Clutter.EVENT_STOP;
                         case Clutter.KEY_Tab:
                             this.highlightNextButton();
@@ -233,14 +238,24 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     return false;
                 }
             });
-            this.highlightButton(this.filteredAppButtonList[0]);
+        }
+
+        // Get current focused button index, resets to 0 if value is invalid
+        getCurrentIndex() {
+            const index = this.filteredAppButtonList.indexOf(
+                this.currentButtonFocused
+            );
+            if (index < 0 || index > this.maxIndex) {
+                this.highlightInitialButton();
+            }
+            return index;
         }
 
         highlightNextButton() {
-            let currentIndex = this.filteredAppButtonList.indexOf(
-                this.currentButtonFocused
-            );
-            if (currentIndex != this.filteredAppButtonList.length - 1) {
+            let currentIndex = this.getCurrentIndex();
+            if (currentIndex < 0 || currentIndex == this.maxIndex) {
+                return;
+            } else if (currentIndex < this.filteredAppButtonList.length - 1) {
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex + 1]
                 );
@@ -248,10 +263,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         highlightPreviousButton() {
-            let currentIndex = this.filteredAppButtonList.indexOf(
-                this.currentButtonFocused
-            );
-            if (currentIndex != 0) {
+            let currentIndex = this.getCurrentIndex();
+            if (currentIndex > 0) {
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex - 1]
                 );
@@ -259,38 +272,64 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         highlightButtonAbove() {
-            let currentIndex = this.filteredAppButtonList.indexOf(
-                this.currentButtonFocused
-            );
-            const nextButton = this.filteredAppButtonList[
-                currentIndex - this.numberOfColumn
-            ];
-            if (nextButton) {
-                this.highlightButton(nextButton);
+            let currentIndex = this.getCurrentIndex();
+            if (currentIndex > this.numberOfColumn) {
+                const nextButton = this.filteredAppButtonList[
+                    currentIndex - this.numberOfColumn
+                ];
+                if (nextButton) {
+                    this.highlightButton(nextButton);
+                }
             }
         }
 
         highlightButtonBelow() {
-            let currentIndex = this.filteredAppButtonList.indexOf(
-                this.currentButtonFocused
-            );
-            const nextButton = this.filteredAppButtonList[
-                currentIndex + this.numberOfColumn
-            ];
+            let currentIndex = this.getCurrentIndex();
+            if (
+                currentIndex < 0 ||
+                currentIndex + this.numberOfColumn > this.maxIndex
+            ) {
+                return;
+            } else {
+                const nextButton = this.filteredAppButtonList[
+                    currentIndex + this.numberOfColumn
+                ];
 
-            if (nextButton) {
-                this.highlightButton(nextButton);
+                if (nextButton) {
+                    this.highlightButton(nextButton);
+                }
             }
         }
 
         highlightButton(button) {
+            if (button) {
+                if (this.currentButtonFocused) {
+                    this.currentButtonFocused.remove_style_class_name(
+                        'highlighted'
+                    );
+                }
+                this.currentButtonFocused = button;
+                this.currentButtonFocused.add_style_class_name('highlighted');
+            }
+        }
+
+        // Set starting button as focused
+        highlightInitialButton() {
+            if (this.filteredAppButtonList) {
+                this.highlightButton(this.filteredAppButtonList[0]);
+            }
+        }
+
+        // Remove focus
+        removeHighlightButton() {
             if (this.currentButtonFocused) {
                 this.currentButtonFocused.remove_style_class_name(
                     'highlighted'
                 );
             }
-            this.currentButtonFocused = button;
-            this.currentButtonFocused.add_style_class_name('highlighted');
+            if (this.filteredAppButtonList) {
+                this.currentButtonFocused = null;
+            }
         }
 
         addAppButton(button) {
@@ -331,6 +370,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
             expandButtonHeight =
                 this.numberOfRow === numberOfRowNeeded ? 0 : expandButtonHeight;
+            this.maxIndex = this.numberOfColumn * this.numberOfRow - 1;
 
             const horizontalOffset =
                 (contentBox.get_width() -
@@ -414,6 +454,11 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     button.allocate(hiddenBox, flags);
                     button.visible = false;
                 });
+
+            // Reset focused button to position zero if hidden
+            if (this.currentButtonFocused) {
+                this.getCurrentIndex();
+            }
         }
     }
 );

@@ -192,7 +192,9 @@ var TaskBar = GObject.registerClass(
         }
 
         updateCurrentTaskBar() {
-            const { dropPlaceholder } = dragData;
+            const {
+                dropPlaceholder,
+            } = dragData;
 
             if (dragData.currentTaskBar !== this) {
                 reparentActor(dropPlaceholder, this.taskButtonContainer);
@@ -203,7 +205,10 @@ var TaskBar = GObject.registerClass(
         }
 
         reparentDragItem() {
-            const { item, currentTaskBar } = dragData;
+            const { 
+                item, 
+                currentTaskBar,
+            } = dragData;
             reparentActor(item, currentTaskBar.taskButtonContainer);
         }
 
