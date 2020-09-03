@@ -278,8 +278,8 @@ var BaseTilingLayout = GObject.registerClass(
             const box = this.msWorkspace.msWorkspaceActor.tileableContainer
                 .allocation;
             return {
-                x: box.x1,
-                y: box.x2,
+                x: 0,
+                y: 0,
                 width: box.get_width(),
                 height: box.get_height(),
             };
