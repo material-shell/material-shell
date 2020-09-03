@@ -89,7 +89,7 @@ var BaseTilingLayout = GObject.registerClass(
                 tileable === this.msWorkspace.appLauncher &&
                 tileable !== this.msWorkspace.tileableFocused
             ) {
-                this.hideAppLauncher();
+                this.msWorkspace.appLauncher.hide();
             }
             if (!tileable.get_parent()) {
                 this.tileableContainer.add_child(tileable);
