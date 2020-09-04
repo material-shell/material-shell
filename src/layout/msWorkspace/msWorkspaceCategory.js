@@ -1,3 +1,6 @@
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /* exported MsWorkspaceCategory, MainCategories */
 
 //Ordered by specificity in case of equality the most specific category will be chosen

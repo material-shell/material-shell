@@ -30,6 +30,12 @@ var SplitLayout = GObject.registerClass(
             this.refreshVisibleActors();
         }
 
+        get tileableListVisible() {
+            return this.msWorkspace.tileableList.filter(
+                (tileable) => tileable.visible
+            );
+        }
+
         updateActiveTileableListFromFocused() {
             this.baseIndex = Math.max(
                 0,
@@ -104,6 +110,7 @@ var SplitLayout = GObject.registerClass(
 
         alterTileable(tileable) {
             super.alterTileable(tileable);
+            tileable.visible = true;
             if (tileable.get_parent()) {
                 this.tileableContainer.remove_child(tileable);
             }

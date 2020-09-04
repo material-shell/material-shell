@@ -20,6 +20,12 @@ var MaximizeLayout = GObject.registerClass(
             });
         }
 
+        get tileableListVisible() {
+            return this.msWorkspace.tileableList.filter(
+                (tileable) => tileable.visible
+            );
+        }
+
         displayTileable(actor) {
             if (this.currentDisplayedActor) {
                 if (
@@ -69,6 +75,7 @@ var MaximizeLayout = GObject.registerClass(
 
         alterTileable(tileable) {
             super.alterTileable(tileable);
+            tileable.visible = true;
             if (this.tileableContainer.get_children().includes(tileable)) {
                 this.tileableContainer.remove_child(tileable);
             }

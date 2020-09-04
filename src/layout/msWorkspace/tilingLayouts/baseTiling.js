@@ -89,7 +89,7 @@ var BaseTilingLayout = GObject.registerClass(
                 tileable === this.msWorkspace.appLauncher &&
                 tileable !== this.msWorkspace.tileableFocused
             ) {
-                this.hideAppLauncher();
+                this.msWorkspace.appLauncher.hide();
             }
             if (!tileable.get_parent()) {
                 this.tileableContainer.add_child(tileable);
@@ -278,8 +278,8 @@ var BaseTilingLayout = GObject.registerClass(
             const box = this.msWorkspace.msWorkspaceActor.tileableContainer
                 .allocation;
             return {
-                x: box.x1,
-                y: box.x2,
+                x: 0,
+                y: 0,
                 width: box.get_width(),
                 height: box.get_height(),
             };
