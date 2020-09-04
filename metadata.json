@@ -6,6 +6,7 @@
         "3.34",
         "3.36"
     ],
+    "version": 4,
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",
     "theme": "org.gnome.shell.extensions.materialshell.theme",
