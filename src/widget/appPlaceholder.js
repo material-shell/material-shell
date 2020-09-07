@@ -141,9 +141,9 @@ var AppPlaceholder = GObject.registerClass(
                 : Clutter.ActorAlign.START;
         }
 
-        vfunc_allocate(box, flags) {
-            this.setOrientation(box.get_width(), box.get_height());
-            super.vfunc_allocate(box, flags);
+        vfunc_allocate(...args) {
+            this.setOrientation(args[0].get_width(), args[0].get_height());
+            super.vfunc_allocate(...args);
         }
 
         activate(button) {
