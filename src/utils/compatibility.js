@@ -26,6 +26,6 @@ var AllocatePreferredSize = function (actor, flags) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
         actor.allocate_preferred_size(flags);
     } else {
-        actor.allocate_preferred_size(0, 0);
+        actor.allocate_preferred_size(actor.x, actor.y);
     }
 };
