@@ -341,7 +341,7 @@ var BaseTilingLayout = GObject.registerClass(
             this.tileAll(box);
             container.get_children().forEach((actor) => {
                 if (this.msWorkspace.tileableList.includes(actor)) {
-                    actor.allocate_preferred_size(flags);
+                    actor.allocate_preferred_size(flags, 0);
                 } else {
                     actor.allocate(box, flags);
                 }

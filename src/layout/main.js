@@ -354,7 +354,7 @@ var MonitorContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             if (this.topBarSpacer) {
-                this.topBarSpacer.allocate_preferred_size(flags);
+                this.topBarSpacer.allocate_preferred_size(flags, 0);
             }
             if (this.msWorkspaceActor) {
                 let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -464,7 +464,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 this.panel.allocate(panelBox, flags);
             }
             if (this.topBarSpacer) {
-                this.topBarSpacer.allocate_preferred_size(flags);
+                this.topBarSpacer.allocate_preferred_size(flags, 0);
             }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
