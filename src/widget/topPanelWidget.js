@@ -3,11 +3,9 @@ const { GObject, St, Clutter } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { Allocate } = Me.imports.src.utils.compatibility;
 const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
-const { 
-    TaskBar,
-    TaskBarItem
-} = Me.imports.src.widget.taskBar;
+const { TaskBar, TaskBarItem } = Me.imports.src.widget.taskBar;
 
 /* exported TopPanel */
 var TopPanel = GObject.registerClass(
@@ -55,7 +53,7 @@ var TopPanel = GObject.registerClass(
             }
             return DND.DragMotionResult.NO_DROP;
         }
-        
+
         acceptDrop(source) {
             if (source instanceof TaskBarItem) {
                 this.taskBar.reparentDragItem();
@@ -83,14 +81,14 @@ var TopPanel = GObject.registerClass(
             );
             taskBarBox.y1 = contentBox.y1;
             taskBarBox.y2 = contentBox.y2;
-            this.taskBar.allocate(taskBarBox, flags);
+            Allocate(this.taskBar, taskBarBox, flags);
 
             let tilingButtonBox = new Clutter.ActorBox();
             tilingButtonBox.x1 = taskBarBox.x2;
             tilingButtonBox.x2 = contentBox.x2;
             tilingButtonBox.y1 = contentBox.y1;
             tilingButtonBox.y2 = contentBox.y2;
-            this.tilingButton.allocate(tilingButtonBox, flags);
+            Allocate(this.tilingButton, tilingButtonBox, flags);
         }
     }
 );

@@ -3,6 +3,7 @@ const { Clutter, GObject, St, Meta } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { Allocate } = Me.imports.src.utils.compatibility;
 const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
 
 /* exported MatButton */
@@ -90,10 +91,10 @@ var MatButton = GObject.registerClass(
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             if (this.child) {
-                this.child.allocate(contentBox, flags);
+                Allocate(this.child, contentBox, flags);
             }
             if (this.rippleBackground.get_parent()) {
-                this.rippleBackground.allocate(contentBox, flags);
+                Allocate(this.rippleBackground, contentBox, flags);
             }
         }
 

@@ -6,6 +6,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
@@ -726,7 +727,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                 centerBox.x2 = allocationBox.x2 - 2 * portion;
                 centerBox.y1 = allocationBox.y1 + 2 * portion;
                 centerBox.y2 = allocationBox.y2 - 2 * portion;
-                this.appIconList[0].allocate(centerBox, flags);
+                Allocate(this.appIconList[0], centerBox, flags);
             } else {
                 this.appIconList.forEach((icon, index) => {
                     let box = new Clutter.ActorBox();
@@ -736,21 +737,21 @@ var WorkspaceButtonIcon = GObject.registerClass(
                             box.x2 = allocationBox.x2 - 3 * portion;
                             box.y1 = allocationBox.y1 + 2 * portion;
                             box.y2 = allocationBox.y2 - 2 * portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                         case 1:
                             box.x1 = allocationBox.x1 + 3 * portion;
                             box.x2 = allocationBox.x2 - portion;
                             box.y1 = allocationBox.y1 + 3 * portion;
                             box.y2 = allocationBox.y2 - portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                         case 2:
                             box.x1 = allocationBox.x1 + 4 * portion;
                             box.x2 = allocationBox.x2 - portion;
                             box.y1 = allocationBox.y1 + portion;
                             box.y2 = allocationBox.y2 - 4 * portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                     }
                 });

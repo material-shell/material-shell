@@ -5,6 +5,7 @@ const Background = imports.ui.background;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { Allocate, AllocatePreferredSize } = Me.imports.src.utils.compatibility;
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
@@ -354,7 +355,7 @@ var MonitorContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             if (this.topBarSpacer) {
-                this.topBarSpacer.allocate_preferred_size(flags, 0);
+                AllocatePreferredSize(this.topBarSpacer, flags);
             }
             if (this.msWorkspaceActor) {
                 let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -362,7 +363,7 @@ var MonitorContainer = GObject.registerClass(
                 msWorkspaceActorBox.x2 = box.x2;
                 msWorkspaceActorBox.y1 = box.y1;
                 msWorkspaceActorBox.y2 = box.y2;
-                this.msWorkspaceActor.allocate(msWorkspaceActorBox, flags);
+                Allocate(this.msWorkspaceActor, msWorkspaceActorBox, flags);
             }
         }
     }
@@ -461,10 +462,10 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 panelBox.x2 = this.panel.get_preferred_width(-1)[1];
                 panelBox.y1 = box.y1;
                 panelBox.y2 = this.panel.get_preferred_height(-1)[1];
-                this.panel.allocate(panelBox, flags);
+                Allocate(this.panel, panelBox, flags);
             }
             if (this.topBarSpacer) {
-                this.topBarSpacer.allocate_preferred_size(flags, 0);
+                AllocatePreferredSize(this.topBarSpacer, flags);
             }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -478,7 +479,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                     (actor) => actor != this.panel && actor != this.topBarSpacer
                 )
                 .forEach((child) => {
-                    child.allocate(msWorkspaceActorBox, flags);
+                    Allocate(child, msWorkspaceActorBox, flags);
                 });
         }
     }
