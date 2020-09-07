@@ -4,7 +4,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate } = Me.imports.src.utils.compatibility;
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { AppsManager } = Me.imports.src.manager.appsManager;
 const { MatButton } = Me.imports.src.widget.material.button;
@@ -53,7 +53,7 @@ var MsApplicationLauncher = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             if (!this.visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
@@ -340,7 +340,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);

@@ -4,7 +4,11 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate, AllocatePreferredSize } = Me.imports.src.utils.compatibility;
+const {
+    SetAllocation,
+    Allocate,
+    AllocatePreferredSize,
+} = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 

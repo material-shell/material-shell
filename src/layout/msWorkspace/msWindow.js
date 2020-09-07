@@ -4,7 +4,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate } = Me.imports.src.utils.compatibility;
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 
@@ -169,7 +169,7 @@ var MsWindow = GObject.registerClass(
             box.y1 = Math.round(box.y1);
             box.x2 = Math.round(box.x2);
             box.y2 = Math.round(box.y2);
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();
             contentBox.y2 = box.get_height();
@@ -698,7 +698,7 @@ var MsWindowContent = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let metaWindow = this.get_parent().metaWindow;

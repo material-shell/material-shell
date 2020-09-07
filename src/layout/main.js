@@ -5,7 +5,11 @@ const Background = imports.ui.background;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate, AllocatePreferredSize } = Me.imports.src.utils.compatibility;
+const {
+    SetAllocation,
+    Allocate,
+    AllocatePreferredSize,
+} = Me.imports.src.utils.compatibility;
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
@@ -351,7 +355,7 @@ var MonitorContainer = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             if (this.topBarSpacer) {
@@ -453,7 +457,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let panelBox = new Clutter.ActorBox();

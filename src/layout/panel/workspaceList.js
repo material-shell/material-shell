@@ -6,7 +6,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate } = Me.imports.src.utils.compatibility;
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
 const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
@@ -716,7 +716,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
         }
 
         vfunc_allocate(allocationBox, flags) {
-            this.set_allocation(allocationBox, flags);
+            SetAllocation(this, allocationBox, flags);
 
             let themeNode = this.get_theme_node();
             allocationBox = themeNode.get_content_box(allocationBox);

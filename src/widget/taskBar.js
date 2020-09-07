@@ -6,7 +6,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate } = Me.imports.src.utils.compatibility;
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
@@ -318,7 +318,7 @@ var TaskBar = GObject.registerClass(
             });
         }
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
 

@@ -3,7 +3,7 @@ const { GObject, St, Clutter } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { Allocate } = Me.imports.src.utils.compatibility;
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
 const { TaskBar, TaskBarItem } = Me.imports.src.widget.taskBar;
 
@@ -70,7 +70,7 @@ var TopPanel = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             let taskBarBox = new Clutter.ActorBox();
