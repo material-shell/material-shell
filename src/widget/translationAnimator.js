@@ -22,7 +22,11 @@ var TranslationAnimator = GObject.registerClass(
 
             this.vertical = vertical;
             this.transitionContainer = new Clutter.Actor({
-                layout_manager: new Clutter.BoxLayout({ vertical }),
+                layout_manager: new Clutter.BoxLayout({
+                    orientation: this.vertical
+                        ? Clutter.Orientation.VERTICAL
+                        : Clutter.Orientation.HORIZONTAL,
+                }),
             });
             this.add_actor(this.transitionContainer);
         }

@@ -15,7 +15,7 @@ var MsStatusArea = GObject.registerClass(
         _init() {
             super._init({
                 layout_manager: new Clutter.BoxLayout({
-                    vertical: true,
+                    orientation: Clutter.Orientation.VERTICAL,
                     pack_start: true,
                 }),
             });
