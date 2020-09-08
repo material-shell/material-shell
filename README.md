@@ -143,7 +143,7 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 # Installation
 
 #### Get it in two clicks
-* Navigate to [extensions.gnome.org]("https://extensions.gnome.org/extension/3357/material-shell/)
+* Navigate to [extensions.gnome.org](https://extensions.gnome.org/extension/3357/material-shell/)
 * Switch the toggle ON
 
 #### Get the most up to date version with Git
