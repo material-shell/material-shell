@@ -141,6 +141,13 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
 # Installation
+
+#### Get it in two clicks
+* Navigate to [extensions.gnome.org](https://extensions.gnome.org/extension/3357/material-shell/)
+* Switch the toggle ON
+
+#### Get the most up to date version with Git
+
 1. Check your GNOME Shell version as we only support **gnome-shell >= 3.34.0**
 
 2. Download the extension. Depending on your distribution, there are several ways to acquire it:

@@ -146,42 +146,6 @@ var SplitLayout = GObject.registerClass(
             tileable.width = horizontalPortion;
             tileable.height = verticalPortion;
         }
-        /* 
-        getAllocationBoxOfTileableFor(actor, containerBox, index, length) {
-            let allocationBox = new Clutter.ActorBox();
-            if (this.vertical) {
-                let verticalPortion =
-                    containerBox.get_height() / WINDOW_PER_SCREEN;
-                allocationBox.x2 = containerBox.get_width();
-                allocationBox.y1 = index * verticalPortion;
-                allocationBox.y2 = allocationBox.y1 + verticalPortion;
-            } else {
-                let horizontalPortion =
-                    containerBox.get_width() / WINDOW_PER_SCREEN;
-                allocationBox.x1 = index * horizontalPortion;
-                allocationBox.x2 = allocationBox.x1 + horizontalPortion;
-                allocationBox.y2 = containerBox.get_height();
-            }
-            return allocationBox;
-        }
-
-        vfunc_allocate(container, box, flags) {
-            container.get_children().forEach((actor) => {
-                if (this.activeTileableList.includes(actor)) {
-                    actor.allocate(
-                        this.getAllocationBoxOfTileableFor(
-                            actor,
-                            box,
-                            this.activeTileableList.indexOf(actor),
-                            this.msWorkspace.tileableList.length
-                        ),
-                        flags
-                    );
-                } else {
-                    actor.allocate(box, flags);
-                }
-            });
-        } */
 
         /*
          * Animations

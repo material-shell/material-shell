@@ -6,11 +6,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { 
-    DropPlaceholder,
-    TaskBarItem
-} = Me.imports.src.widget.taskBar;
+const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
@@ -33,7 +31,9 @@ var WorkspaceList = GObject.registerClass(
             this.menuManager = new PopupMenu.PopupMenuManager(this);
 
             this.buttonList = new St.Widget({
-                layout_manager: new Clutter.BoxLayout({ vertical: true }),
+                layout_manager: new Clutter.BoxLayout({
+                    orientation: Clutter.Orientation.VERTICAL,
+                }),
             });
             this.add_child(this.buttonList);
 
@@ -183,13 +183,14 @@ var WorkspaceList = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (source instanceof WorkspaceButton) { // Needed for dragging over tasks
+            if (source instanceof WorkspaceButton) {
+                // Needed for dragging over tasks
                 if (!this.tempDragData.draggedOverByChild) {
                     let workspaceButton =
-                    this.items[this.items.length - 1] ===
-                    this.tempDragData.workspaceButton
-                    ? this.items[this.items.length - 2]
-                    : this.items[this.items.length - 1];
+                        this.items[this.items.length - 1] ===
+                        this.tempDragData.workspaceButton
+                            ? this.items[this.items.length - 2]
+                            : this.items[this.items.length - 1];
                     this._onDragOver(workspaceButton, false);
                 } else {
                     this.tempDragData.draggedOverByChild = false;
@@ -558,11 +559,10 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if ((source instanceof WorkspaceButton) && this.draggable) {
+            if (source instanceof WorkspaceButton && this.draggable) {
                 this.emit('drag-over', y < this.height / 2);
                 return DND.DragMotionResult.MOVE_DROP;
-            }
-            else if (source instanceof TaskBarItem) {
+            } else if (source instanceof TaskBarItem) {
                 return DND.DragMotionResult.MOVE_DROP;
             }
             return DND.DragMotionResult.NO_DROP;
@@ -572,24 +572,19 @@ var WorkspaceButton = GObject.registerClass(
             if (source instanceof WorkspaceButton) {
                 this.emit('drag-dropped');
                 return true;
-            }
-            else if (source instanceof TaskBarItem) {
+            } else if (source instanceof TaskBarItem) {
                 const tileableIndex = this.msWorkspace.tileableList.indexOf(
                     source.tileable
                 );
                 const tileable = source.tileable;
-                if (
-                    (tileableIndex < 0) &&
-                    (tileable instanceof MsWindow)
-                ) {
+                if (tileableIndex < 0 && tileable instanceof MsWindow) {
                     (async () => {
                         await source.emit('drag-dropped');
                         await tileable.msWorkspace.removeMsWindow(tileable);
                         await this.msWorkspace.addMsWindow(tileable, true);
                         this.msWorkspaceManager.stateChanged();
                         this.msWorkspace.activate();
-                      })();
-
+                    })();
                 } else {
                     source.emit('drag-dropped');
                 }
@@ -721,7 +716,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
         }
 
         vfunc_allocate(allocationBox, flags) {
-            this.set_allocation(allocationBox, flags);
+            SetAllocation(this, allocationBox, flags);
 
             let themeNode = this.get_theme_node();
             allocationBox = themeNode.get_content_box(allocationBox);
@@ -732,7 +727,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
                 centerBox.x2 = allocationBox.x2 - 2 * portion;
                 centerBox.y1 = allocationBox.y1 + 2 * portion;
                 centerBox.y2 = allocationBox.y2 - 2 * portion;
-                this.appIconList[0].allocate(centerBox, flags);
+                Allocate(this.appIconList[0], centerBox, flags);
             } else {
                 this.appIconList.forEach((icon, index) => {
                     let box = new Clutter.ActorBox();
@@ -742,21 +737,21 @@ var WorkspaceButtonIcon = GObject.registerClass(
                             box.x2 = allocationBox.x2 - 3 * portion;
                             box.y1 = allocationBox.y1 + 2 * portion;
                             box.y2 = allocationBox.y2 - 2 * portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                         case 1:
                             box.x1 = allocationBox.x1 + 3 * portion;
                             box.x2 = allocationBox.x2 - portion;
                             box.y1 = allocationBox.y1 + 3 * portion;
                             box.y2 = allocationBox.y2 - portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                         case 2:
                             box.x1 = allocationBox.x1 + 4 * portion;
                             box.x2 = allocationBox.x2 - portion;
                             box.y1 = allocationBox.y1 + portion;
                             box.y2 = allocationBox.y2 - 4 * portion;
-                            icon.allocate(box, flags);
+                            Allocate(icon, box, flags);
                             break;
                     }
                 });

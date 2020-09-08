@@ -5,6 +5,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
@@ -476,7 +477,7 @@ var MsWorkspaceActor = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();
             contentBox.y2 = box.get_height();
@@ -485,14 +486,14 @@ var MsWorkspaceActor = GObject.registerClass(
             panelBox.x2 = contentBox.x2;
             panelBox.y1 = contentBox.y1;
             panelBox.y2 = panelBox.y1 + this.panel.get_preferred_height(-1)[1];
-            this.panel.allocate(panelBox, flags);
+            Allocate(this.panel, panelBox, flags);
             let containerBox = new Clutter.ActorBox();
             containerBox.x1 = contentBox.x1;
             containerBox.x2 = contentBox.x2;
             containerBox.y1 =
                 this.panel && this.panel.visible ? panelBox.y2 : contentBox.y1;
             containerBox.y2 = contentBox.y2;
-            this.tileableContainer.allocate(containerBox, flags);
+            Allocate(this.tileableContainer, containerBox, flags);
         }
     }
 );

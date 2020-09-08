@@ -6,6 +6,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
@@ -192,9 +193,7 @@ var TaskBar = GObject.registerClass(
         }
 
         updateCurrentTaskBar() {
-            const {
-                dropPlaceholder,
-            } = dragData;
+            const { dropPlaceholder } = dragData;
 
             if (dragData.currentTaskBar !== this) {
                 reparentActor(dropPlaceholder, this.taskButtonContainer);
@@ -205,10 +204,7 @@ var TaskBar = GObject.registerClass(
         }
 
         reparentDragItem() {
-            const { 
-                item, 
-                currentTaskBar,
-            } = dragData;
+            const { item, currentTaskBar } = dragData;
             reparentActor(item, currentTaskBar.taskButtonContainer);
         }
 
@@ -322,11 +318,11 @@ var TaskBar = GObject.registerClass(
             });
         }
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
 
-            this.taskButtonContainer.allocate(box, flags);
+            Allocate(this.taskButtonContainer, box, flags);
 
             let taskActiveIndicatorBox = new Clutter.ActorBox();
             taskActiveIndicatorBox.x1 = contentBox.x1;
@@ -338,7 +334,7 @@ var TaskBar = GObject.registerClass(
                 this.taskActiveIndicator.get_preferred_height(-1)[0];
             taskActiveIndicatorBox.y2 = contentBox.y2;
 
-            this.taskActiveIndicator.allocate(taskActiveIndicatorBox, flags);
+            Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
         }
 
         _onDestroy() {

@@ -4,6 +4,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { AppsManager } = Me.imports.src.manager.appsManager;
 const { MatButton } = Me.imports.src.widget.material.button;
@@ -52,7 +53,7 @@ var MsApplicationLauncher = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             if (!this.visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
@@ -74,7 +75,7 @@ var MsApplicationLauncher = GObject.registerClass(
                 contentBox.x2 - (contentBox.get_width() - containerWidth) / 2;
             containerBox.y1 = contentBox.y1 + 0.1 * minSize;
             containerBox.y2 = contentBox.y2 - 0.1 * minSize;
-            this.appListContainer.allocate(containerBox, flags);
+            Allocate(this.appListContainer, containerBox, flags);
         }
     }
 );
@@ -339,7 +340,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
@@ -390,14 +391,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
             searchBox.x2 = contentBox.x2 - horizontalOffset;
             searchBox.y1 = contentBox.y1 + verticalOffset;
             searchBox.y2 = searchBox.y1 + searchHeight;
-            this.inputContainer.allocate(searchBox, flags);
+            Allocate(this.inputContainer, searchBox, flags);
             const containerBox = new Clutter.ActorBox();
             containerBox.x1 = contentBox.x1 + horizontalOffset;
             containerBox.x2 = contentBox.x2 - horizontalOffset;
             containerBox.y1 =
                 contentBox.y1 + verticalOffset + searchHeight + searchMargin;
             containerBox.y2 = contentBox.y2 - verticalOffset;
-            this.container.allocate(containerBox, flags);
+            Allocate(this.container, containerBox, flags);
 
             let index;
             for (let y = 0; y < this.numberOfRow; y++) {
@@ -417,7 +418,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                             containerPadding;
                         buttonBox.y2 = buttonBox.y1 + this.buttonSize;
                         button.visible = true;
-                        button.allocate(buttonBox, flags);
+                        Allocate(button, buttonBox, flags);
                     }
                 }
             }
@@ -451,7 +452,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     hiddenBox.x2 = contentBox.x1;
                     hiddenBox.y1 = contentBox.x1;
                     hiddenBox.y2 = contentBox.x1;
-                    button.allocate(hiddenBox, flags);
+                    Allocate(button, hiddenBox, flags);
                     button.visible = false;
                 });
 

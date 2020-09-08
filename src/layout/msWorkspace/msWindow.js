@@ -4,6 +4,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 
@@ -168,11 +169,11 @@ var MsWindow = GObject.registerClass(
             box.y1 = Math.round(box.y1);
             box.x2 = Math.round(box.x2);
             box.y2 = Math.round(box.y2);
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();
             contentBox.y2 = box.get_height();
-            this.msContent.allocate(contentBox, flags);
+            Allocate(this.msContent, contentBox, flags);
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
             );
@@ -192,7 +193,7 @@ var MsWindow = GObject.registerClass(
                 dialogBox.x2 = dialogBox.x1 + dialogFrame.width;
                 dialogBox.y1 = dialogFrame.y - box.y1 - offsetY;
                 dialogBox.y2 = dialogBox.y1 + dialogFrame.height;
-                dialog.clone.allocate(dialogBox, flags);
+                Allocate(dialog.clone, dialogBox, flags);
             });
         }
 
@@ -697,7 +698,7 @@ var MsWindowContent = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            this.set_allocation(box, flags);
+            SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let metaWindow = this.get_parent().metaWindow;
@@ -725,14 +726,13 @@ var MsWindowContent = GObject.registerClass(
                         cloneBox.y2 = cloneBox.y1 + windowActor.height;
                     }
 
-                    this.clone.allocate(cloneBox, flags);
-                } else {
+                    Allocate(this.clone, cloneBox, flags);
                 }
             }
 
             if (this.placeholder.get_parent() === this) {
                 this.placeholder.set_size(box.get_width(), box.get_height());
-                this.placeholder.allocate(box, flags);
+                Allocate(this.placeholder, box, flags);
             }
         }
     }
