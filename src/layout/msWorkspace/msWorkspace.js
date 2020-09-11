@@ -248,10 +248,6 @@ var MsWorkspace = class MsWorkspace {
         this.focusTileable(this.tileableList[this.tileableList.length - 1]);
     }
 
-    focusAppLauncher() {
-        this.focusTileable(this.tileableList[this.tileableList.length - 1]);
-    }
-
     focusTileable(tileable, forced) {
         if (tileable === this.tileableFocused && !forced) {
             return;
