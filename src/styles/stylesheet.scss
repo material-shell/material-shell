@@ -336,10 +336,19 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             border-radius: 20px;
             width: 24px;
             height: 20px;
+            @include foreground-medium-emphasis($theme);
+            transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+            &:hover {
+                color: rgba(255, 0, 0, 0.4);
+            }
+
+            &:hover:active {
+                background: rgba(255, 255, 255, 0.12);
+            }
         }
         .task-small-icon {
             icon-size: 18px;
-            @include foreground-medium-emphasis($theme);
         }
     }
 }
@@ -350,7 +359,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     padding: 0px;
 }
 
-.clock-display {
+.clock-display-box {
     * {
         padding: 4px 0px !important;
     }

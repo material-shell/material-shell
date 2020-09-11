@@ -175,17 +175,22 @@ subtitle-1 {
     .task-bar-item .task-bar-item-content .task-close-button {
       border-radius: 20px;
       width: 24px;
-      height: 20px; }
+      height: 20px;
+      color: rgba(0, 0, 0, 0.6);
+      transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+      .task-bar-item .task-bar-item-content .task-close-button:hover {
+        color: rgba(255, 0, 0, 0.4); }
+      .task-bar-item .task-bar-item-content .task-close-button:hover:active {
+        background: rgba(255, 255, 255, 0.12); }
     .task-bar-item .task-bar-item-content .task-small-icon {
-      icon-size: 18px;
-      color: rgba(0, 0, 0, 0.6); }
+      icon-size: 18px; }
 
 .system-status-icon {
   height: 24px;
   width: 24px;
   padding: 0px; }
 
-.clock-display * {
+.clock-display-box * {
   padding: 4px 0px !important; }
 
 .drop-placeholder {
