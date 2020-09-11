@@ -13,6 +13,7 @@ var KeyBindingAction = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
+    APP_LAUNCHER: 'app-launcher',
     KILL_FOCUSED_WINDOW: 'kill-focused-window',
     MOVE_WINDOW_LEFT: 'move-window-left',
     MOVE_WINDOW_RIGHT: 'move-window-right',
@@ -25,6 +26,7 @@ var KeyBindingAction = {
     // workspaces actions
     PREVIOUS_WORKSPACE: 'previous-workspace',
     NEXT_WORKSPACE: 'next-workspace',
+    LAST_WORKSPACE: 'last-workspace',
 };
 
 var HotKeysModule = class HotKeysModule {
@@ -54,6 +56,17 @@ var HotKeysModule = class HotKeysModule {
                           currentMonitorIndex
                       )[0];
             msWorkspace.focusNextTileable();
+        });
+
+        this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
+            const currentMonitorIndex = global.display.get_current_monitor();
+            const msWorkspace =
+                currentMonitorIndex === Main.layoutManager.primaryIndex
+                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                          currentMonitorIndex
+                      )[0];
+            msWorkspace.focusAppLauncher();
         });
 
         this.actionNameToActionMap.set(
@@ -86,6 +99,16 @@ var HotKeysModule = class HotKeysModule {
 
             if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
+            }
+        });
+
+        this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
+            let currentIndex = this.workspaceManager.get_active_workspace_index();
+            let lastIndex = this.workspaceManager.n_workspaces - 1;
+            if (currentIndex < lastIndex) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    lastIndex
+                ].activate();
             }
         });
 
