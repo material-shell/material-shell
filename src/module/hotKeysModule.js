@@ -274,12 +274,32 @@ var HotKeysModule = class HotKeysModule {
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const currentNumOfWorkspaces =
                     Me.msWorkspaceManager.msWorkspaceList.length - 1;
+                const currentWorkspaceIndex =
+                    this.workspaceManager.get_active_workspace_index();
+                let nextWorkspaceIndex = workspaceIndex;
 
-                // go to new workspace if attemping to go to index bigger than currently available
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    workspaceIndex > currentNumOfWorkspaces
+                if (
+                    this.lastWorkspaceIndex === null ||
+                    (nextWorkspaceIndex !== this.lastNextWorkspaceIndex)
+                    ) {
+                    this.lastWorkspaceIndex = currentWorkspaceIndex;
+                    this.lastNextWorkspaceIndex = nextWorkspaceIndex;
+                } else {
+                    if (nextWorkspaceIndex === this.lastNextWorkspaceIndex) {
+                        nextWorkspaceIndex = this.lastWorkspaceIndex;
+                    }
+                    this.lastWorkspaceIndex = null;
+                    this.lastNextWorkspaceIndex = null;
+                }
+
+                // go to new workspace if attempting to go to index bigger than currently available
+                nextWorkspaceIndex =
+                    nextWorkspaceIndex > currentNumOfWorkspaces
                         ? currentNumOfWorkspaces
-                        : workspaceIndex
+                        : nextWorkspaceIndex;
+
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    nextWorkspaceIndex
                 ].activate();
             });
         });
