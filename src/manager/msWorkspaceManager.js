@@ -538,7 +538,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     metaWindowEnteredWorkspace(metaWindow, workspace) {
-        if (this.updatingMonitors) return;
+        if (this.updatingMonitors || !metaWindow.get_compositor_private())
+            return;
 
         let msWindow = metaWindow.msWindow;
         if (!msWindow) return;
