@@ -35,6 +35,8 @@ var HotKeysModule = class HotKeysModule {
         this.settings = getSettings('bindings');
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
+        this.lastWorkspaceIndex = null;
+        this.lastNextWorkspaceIndex = null;
 
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const currentMonitorIndex = global.display.get_current_monitor();
