@@ -1,6 +1,3 @@
-
-
-
 ![Material Shell](/documentation/on-all-full.svg)
 
 ---
@@ -11,7 +8,7 @@
 Providing an <b>unique</b>, <b>simple</b>, <b>productivity oriented</b>, <b>innovative</b> and <b>automated</b> <b>mouse and keyboard <a href="#workflow">workflow</a></b> which aims to be <b>faster</b> and <b>easier</b> to use and creates a <b>great user experience</b>.
 </p>
 <p align="center">
-        Powered by it's unique <b><a href="#spatial-model">spatial model</a></b>, it's modern <b><a href="#interface">material design interface</a></b>, it's <b><a href="#tiling-engine">tiling engine</a></b> and it's <b><a href="#persistence">persistability</a></b>.
+        Powered by its unique <b><a href="#spatial-model">spatial model</a></b>, its modern <b><a href="#interface">material design interface</a></b>, its <b><a href="#tiling-engine">tiling engine</a></b> and its <b><a href="#persistence">persistability</a></b>.
 </p>
 
 <h4 align="center" valign="middle">
@@ -111,7 +108,7 @@ It's the **tool** that **automatically organize** the application's **window** f
 * **Grid**: All windows displayed as a grid
 
 ## Persistence
-The **best way** to **configure** the desktop layout it's to **not** having to **do it**.
+The **best way** to **configure** the desktop layout is to **not** have to **do it**.
 
 Material Shell **keep track** of every **decisions** relative to the desktop layout: where are windows, in which workspaces in which order.
 
