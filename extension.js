@@ -17,6 +17,7 @@ const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
 const { MsMain } = Me.imports.src.layout.main;
+const { Check } = Me.imports.src.utils.sponsor;
 
 let disableIncompatibleExtensionsModule,
     modules,
@@ -94,7 +95,7 @@ function loaded(disconnect) {
     Me.loaded = true;
     Me.locked = false;
     Me.emit('extension-loaded');
-
+    Check();
     // When monitors changed we reload the extension completely by disabling and reEnabling it
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         hideSplashScreens();
