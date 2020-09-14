@@ -35,8 +35,15 @@ var HotKeysModule = class HotKeysModule {
         this.settings = getSettings('bindings');
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
-        this.lastWorkspaceIndex = null;
-        this.lastNextWorkspaceIndex = null;
+
+        this.resetStash();
+        this.connectId = global.window_manager.connect(
+            'switch-workspace',
+            (_, from, to) => {
+                if ((this.lastStash !== null) && (from != this.lastStash)) {
+                    this.resetStash();
+                }
+            });
 
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const currentMonitorIndex = global.display.get_current_monitor();
@@ -281,17 +288,16 @@ var HotKeysModule = class HotKeysModule {
                 let nextWorkspaceIndex = workspaceIndex;
 
                 if (
-                    this.lastWorkspaceIndex === null ||
-                    (nextWorkspaceIndex !== this.lastNextWorkspaceIndex)
+                    this.lastStash === null ||
+                    (nextWorkspaceIndex !== this.nextStash)
                     ) {
-                    this.lastWorkspaceIndex = currentWorkspaceIndex;
-                    this.lastNextWorkspaceIndex = nextWorkspaceIndex;
+                    this.lastStash = currentWorkspaceIndex;
+                    this.nextStash = nextWorkspaceIndex;
                 } else {
-                    if (nextWorkspaceIndex === this.lastNextWorkspaceIndex) {
-                        nextWorkspaceIndex = this.lastWorkspaceIndex;
+                    if (nextWorkspaceIndex === this.nextStash) {
+                        nextWorkspaceIndex = this.lastStash;
                     }
-                    this.lastWorkspaceIndex = null;
-                    this.lastNextWorkspaceIndex = null;
+                    this.resetStash();
                 }
 
                 // go to new workspace if attempting to go to index bigger than currently available
@@ -309,6 +315,11 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.forEach((action, name) => {
             this.addKeybinding(name);
         });
+    }
+    
+    resetStash() {
+        this.lastStash = null;
+        this.nextStash = null;
     }
 
     addKeybinding(name) {
