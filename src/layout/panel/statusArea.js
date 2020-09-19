@@ -32,6 +32,9 @@ var MsStatusArea = GObject.registerClass(
                 'extension-disable',
                 this.onDisable.bind(this)
             );
+            
+            this.gnomeShellPanel._oldChangeMenu = this.gnomeShellPanel.menuManager._changeMenu;
+            this.gnomeShellPanel.menuManager._changeMenu = () => {};
         }
 
         verticaliseDateMenuButton() {
@@ -216,6 +219,7 @@ var MsStatusArea = GObject.registerClass(
             this.restorePanelMenuSide();
             this.restorePanelActors();
             this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
+            this.gnomeShellPanel.menuManager._changeMenu = this.gnomeShellPanel._oldChangeMenu;
         }
     }
 );
