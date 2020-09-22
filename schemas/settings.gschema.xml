@@ -52,5 +52,10 @@
       <summary>Cycle through workspaces</summary>
       <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
     </key>
+    <key name="disable-notifications" type="b">
+      <default>false</default>
+      <summary>Disable Material Shell notifications</summary>
+      <description>When enabled you will not receive Material Shell communications about updates anymore</description>
+    </key>
   </schema>
 </schemalist>

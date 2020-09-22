@@ -551,6 +551,23 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
+    const disableMaterialShellNotifications = new Gtk.Switch({
+        valign: Gtk.Align.CENTER,
+    });
+    itemRows.push(
+        makeItemRow(
+            'Disable Material Shell notifications',
+            'When enabled you will not receive Material Shell communications about updates anymore',
+            disableMaterialShellNotifications
+        )
+    );
+    tweaksSettings.bind(
+        'disable-notifications',
+        disableMaterialShellNotifications,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
     notebook.append_page(
         ...makePage('Global settings', makeItemList(itemRows))
     );

@@ -7,6 +7,7 @@ const ModalDialog = imports.ui.modalDialog;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { reparentActor, throttle } = Me.imports.src.utils.index;
 const { MsManager } = Me.imports.src.manager.msManager;
@@ -20,12 +21,11 @@ var MsNotificationManager = class MsNotificationManager extends MsManager {
         this.httpSession = new Soup.Session({ ssl_use_system_ca_file: true });
     }
     check() {
+        if (getSettings('tweaks').get_boolean('disable-notifications')) return;
         let previousCheck = Me.stateManager.getState('notification-check')
             ? new Date(Me.stateManager.getState('notification-check'))
             : new Date();
-        Me.log(
-            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}`
-        );
+
         var message = new Soup.Message({
             method: 'GET',
             uri: new Soup.URI(
@@ -66,16 +66,6 @@ var MsNotificationManager = class MsNotificationManager extends MsManager {
             'notification-check',
             new Date().toISOString()
         );
-        /* let notificationData = {
-            title: 'Material Shell need you !',
-            content: `Material Shell is made Open Source and will remain free for everyone. \n While this seem amazing, the downside is that it's very difficult to monetize. Until I find another way, I have no choice than rely on all of you. Please sponsor me and I'll make the best desktop experience I can.`,
-            icon: 'heart-symbolic',
-            action: {
-                label: 'Sponsor the project',
-                url: 'https://github.com/sponsors/PapyElGringo',
-            },
-            date: new Date(),
-        }; */
     }
 };
 
@@ -105,7 +95,6 @@ const MsNotification = GObject.registerClass(
             super._init(source, title, text, params);
             this.action = action;
             this.bannerBodyMarkup = true;
-            this.setUrgency(MessageTray.Urgency.CRITICAL);
         }
 
         activate() {
