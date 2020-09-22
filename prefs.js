@@ -56,8 +56,10 @@ const makeItemList = (rows) => {
 const hotKeysLabels = {
     'previous-window': 'Focus the previous window',
     'next-window': 'Focus the next window',
+    'app-launcher': 'Focus App Launcher',
     'previous-workspace': 'Focus the previous workspace',
     'next-workspace': 'Focus the next workspace',
+    'last-workspace': 'Focus the last (empty) workspace',
     'kill-focused-window': 'Kill the current window',
     'move-window-left': 'Move the current window to the left',
     'move-window-right': 'Move the current window to the right',

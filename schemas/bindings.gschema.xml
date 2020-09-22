@@ -15,11 +15,18 @@
         Focus the next window of the current workspace
       </description>
     </key>
+    <key name="app-launcher" type="as">
+      <default><![CDATA[['<Super>x']]]></default>
+      <summary>Focus App Launcher</summary>
+      <description>
+        Focus App Launcher of the current workspace
+      </description>
+    </key>
     <key name="kill-focused-window" type="as">
       <default><![CDATA[['<Super>q']]]></default>
       <summary>Kill the current window</summary>
       <description>
-        Kill the current focused window 
+        Kill the current focused window
       </description>
     </key>
     <key name="move-window-left" type="as">
@@ -33,7 +40,7 @@
       <default><![CDATA[['<Shift><Super>d']]]></default>
       <summary>Move the current window to the right</summary>
       <description>
-        Move the current window to the right 
+        Move the current window to the right
       </description>
     </key>
     <key name="move-window-top" type="as">
@@ -84,10 +91,17 @@
       <default><![CDATA[['<Super>s']]]></default>
       <summary>Focus next workspace</summary>
       <description>
-        Focus the next workspace 
+        Focus the next workspace
       </description>
     </key>
-        <key name="navigate-to-workspace-1" type="as">
+    <key name="last-workspace" type="as">
+      <default><![CDATA[['<Super>z']]]></default>
+      <summary>Focus last workspace</summary>
+      <description>
+        Focus the last workspace
+      </description>
+    </key>
+    <key name="navigate-to-workspace-1" type="as">
       <default><![CDATA[['<Super>1']]]></default>
       <summary>Navigate to workspace 1</summary>
       <description>
