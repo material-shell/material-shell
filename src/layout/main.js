@@ -323,6 +323,8 @@ var MonitorContainer = GObject.registerClass(
 
         setFullscreen(monitorIsFullscreen) {
             this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
+            this.topBarSpacer.visible =
+                Me.layout.panelsVisible && !monitorIsFullscreen;
         }
 
         setMsWorkspaceActor(actor) {
