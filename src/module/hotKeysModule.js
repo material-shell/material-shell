@@ -40,10 +40,11 @@ var HotKeysModule = class HotKeysModule {
         this.connectId = global.window_manager.connect(
             'switch-workspace',
             (_, from, to) => {
-                if ((this.lastStash !== null) && (from != this.lastStash)) {
+                if (this.lastStash !== null && from != this.lastStash) {
                     this.resetStash();
                 }
-            });
+            }
+        );
 
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
@@ -56,13 +57,8 @@ var HotKeysModule = class HotKeysModule {
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
-            const currentMonitorIndex = global.display.get_current_monitor();
-            const msWorkspace =
-                currentMonitorIndex === Main.layoutManager.primaryIndex
-                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                          currentMonitorIndex
-                      )[0];
+            const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+
             msWorkspace.focusAppLauncher();
         });
 
@@ -103,9 +99,7 @@ var HotKeysModule = class HotKeysModule {
             let currentIndex = this.workspaceManager.get_active_workspace_index();
             let lastIndex = this.workspaceManager.n_workspaces - 1;
             if (currentIndex < lastIndex) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    lastIndex
-                ].activate();
+                Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
             }
         });
 
@@ -241,14 +235,13 @@ var HotKeysModule = class HotKeysModule {
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const currentNumOfWorkspaces =
                     Me.msWorkspaceManager.msWorkspaceList.length - 1;
-                const currentWorkspaceIndex =
-                    this.workspaceManager.get_active_workspace_index();
+                const currentWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
                 let nextWorkspaceIndex = workspaceIndex;
 
                 if (
                     this.lastStash === null ||
-                    (nextWorkspaceIndex !== this.nextStash)
-                    ) {
+                    nextWorkspaceIndex !== this.nextStash
+                ) {
                     this.lastStash = currentWorkspaceIndex;
                     this.nextStash = nextWorkspaceIndex;
                 } else {
@@ -274,7 +267,7 @@ var HotKeysModule = class HotKeysModule {
             this.addKeybinding(name);
         });
     }
-    
+
     resetStash() {
         this.lastStash = null;
         this.nextStash = null;
