@@ -13,6 +13,7 @@ var KeyBindingAction = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
+    APP_LAUNCHER: 'app-launcher',
     KILL_FOCUSED_WINDOW: 'kill-focused-window',
     MOVE_WINDOW_LEFT: 'move-window-left',
     MOVE_WINDOW_RIGHT: 'move-window-right',
@@ -25,6 +26,7 @@ var KeyBindingAction = {
     // workspaces actions
     PREVIOUS_WORKSPACE: 'previous-workspace',
     NEXT_WORKSPACE: 'next-workspace',
+    LAST_WORKSPACE: 'last-workspace',
 };
 
 var HotKeysModule = class HotKeysModule {
@@ -34,6 +36,15 @@ var HotKeysModule = class HotKeysModule {
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
 
+        this.resetStash();
+        this.connectId = global.window_manager.connect(
+            'switch-workspace',
+            (_, from, to) => {
+                if ((this.lastStash !== null) && (from != this.lastStash)) {
+                    this.resetStash();
+                }
+            });
+
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             msWorkspace.focusPreviousTileable();
@@ -42,6 +53,17 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WINDOW, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             msWorkspace.focusNextTileable();
+        });
+
+        this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
+            const currentMonitorIndex = global.display.get_current_monitor();
+            const msWorkspace =
+                currentMonitorIndex === Main.layoutManager.primaryIndex
+                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
+                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                          currentMonitorIndex
+                      )[0];
+            msWorkspace.focusAppLauncher();
         });
 
         this.actionNameToActionMap.set(
@@ -74,6 +96,16 @@ var HotKeysModule = class HotKeysModule {
 
             if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
+            }
+        });
+
+        this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
+            let currentIndex = this.workspaceManager.get_active_workspace_index();
+            let lastIndex = this.workspaceManager.n_workspaces - 1;
+            if (currentIndex < lastIndex) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    lastIndex
+                ].activate();
             }
         });
 
@@ -209,12 +241,31 @@ var HotKeysModule = class HotKeysModule {
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const currentNumOfWorkspaces =
                     Me.msWorkspaceManager.msWorkspaceList.length - 1;
+                const currentWorkspaceIndex =
+                    this.workspaceManager.get_active_workspace_index();
+                let nextWorkspaceIndex = workspaceIndex;
 
-                // go to new workspace if attemping to go to index bigger than currently available
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    workspaceIndex > currentNumOfWorkspaces
+                if (
+                    this.lastStash === null ||
+                    (nextWorkspaceIndex !== this.nextStash)
+                    ) {
+                    this.lastStash = currentWorkspaceIndex;
+                    this.nextStash = nextWorkspaceIndex;
+                } else {
+                    if (nextWorkspaceIndex === this.nextStash) {
+                        nextWorkspaceIndex = this.lastStash;
+                    }
+                    this.resetStash();
+                }
+
+                // go to new workspace if attempting to go to index bigger than currently available
+                nextWorkspaceIndex =
+                    nextWorkspaceIndex > currentNumOfWorkspaces
                         ? currentNumOfWorkspaces
-                        : workspaceIndex
+                        : nextWorkspaceIndex;
+
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    nextWorkspaceIndex
                 ].activate();
             });
         });
@@ -222,6 +273,11 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.forEach((action, name) => {
             this.addKeybinding(name);
         });
+    }
+    
+    resetStash() {
+        this.lastStash = null;
+        this.nextStash = null;
     }
 
     addKeybinding(name) {
