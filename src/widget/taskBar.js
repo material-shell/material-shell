@@ -411,6 +411,7 @@ let TaskBarItem = GObject.registerClass(
                         this.mouseData.pressed = false;
                         this.mouseData.dragged = false;
                         switch (event.get_button()) {
+                            case 0:
                             case 1:
                                 this.emit('left-clicked');
                                 break;
