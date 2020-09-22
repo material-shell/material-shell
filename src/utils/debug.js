@@ -4,7 +4,7 @@ const { GLib } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const DEBUG = false;
+const DEBUG = true;
 const FOCUS_ONLY = false;
 let indent = 0;
 var AddLogToFunctions = function (prototype) {
