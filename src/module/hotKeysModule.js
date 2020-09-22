@@ -35,24 +35,12 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap = new Map();
 
         this.actionNameToActionMap.set(KeyBindingAction.PREVIOUS_WINDOW, () => {
-            const currentMonitorIndex = global.display.get_current_monitor();
-            const msWorkspace =
-                currentMonitorIndex === Main.layoutManager.primaryIndex
-                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                          currentMonitorIndex
-                      )[0];
+            const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             msWorkspace.focusPreviousTileable();
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WINDOW, () => {
-            const currentMonitorIndex = global.display.get_current_monitor();
-            const msWorkspace =
-                currentMonitorIndex === Main.layoutManager.primaryIndex
-                    ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                    : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                          currentMonitorIndex
-                      )[0];
+            const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             msWorkspace.focusNextTileable();
         });
 
@@ -92,13 +80,7 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.KILL_FOCUSED_WINDOW,
             () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 if (msWorkspace.tileableFocused instanceof MsWindow) {
                     msWorkspace.tileableFocused.kill();
@@ -109,13 +91,7 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_LEFT,
             () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.swapTileableLeft(msWorkspace.tileableFocused);
             }
         );
@@ -123,20 +99,14 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_RIGHT,
             () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 msWorkspace.swapTileableRight(msWorkspace.tileableFocused);
             }
         );
 
         this.actionNameToActionMap.set(KeyBindingAction.MOVE_WINDOW_TOP, () => {
-            const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+            const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             if (
                 activeMsWorkspace.tileableFocused ===
                 activeMsWorkspace.appLauncher
@@ -180,7 +150,7 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_BOTTOM,
             () => {
-                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 if (
                     (activeMsWorkspace ===
                         Me.msWorkspaceManager.primaryMsWorkspaces[
@@ -211,26 +181,14 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.nextTiling(1);
             }
         );
         this.actionNameToActionMap.set(
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
-                const currentMonitorIndex = global.display.get_current_monitor();
-                const msWorkspace =
-                    currentMonitorIndex === Main.layoutManager.primaryIndex
-                        ? Me.msWorkspaceManager.getActiveMsWorkspace()
-                        : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                              currentMonitorIndex
-                          )[0];
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.nextTiling(-1);
             }
         );

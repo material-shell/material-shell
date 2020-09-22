@@ -28,7 +28,7 @@ var MsDndManager = class MsDndManager extends MsManager {
             'active-workspace-changed',
             () => {
                 if (this.dragInProgress) {
-                    const newMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    const newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                     if (this.msWindowDragged.metaWindow) {
                         this.msWindowDragged.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
@@ -186,7 +186,7 @@ var MsDndManager = class MsDndManager extends MsManager {
         if (monitor !== msWorkspace.monitor) {
             let newMsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
-                newMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             } else {
                 newMsWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                     monitor.index

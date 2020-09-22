@@ -400,7 +400,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         msWorkspace.connect('readyToBeClosed', () => {
             let index = this.primaryMsWorkspaces.indexOf(msWorkspace);
             if (
-                this.getActiveMsWorkspace() === msWorkspace &&
+                this.getActivePrimaryMsWorkspace() === msWorkspace &&
                 !msWorkspace.msWindowList.length
             ) {
                 //Try to switch to the prev workspace is there is no next one before kill it
@@ -489,6 +489,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     getActiveMsWorkspace() {
+        const currentMonitorIndex = global.display.get_current_monitor();
+        let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
+
+        const msWorkspace =
+            currentMonitorIndex === Main.layoutManager.primaryIndex
+                ? this.primaryMsWorkspaces[activeWorkspaceIndex]
+                : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                      currentMonitorIndex
+                  )[0];
+        return msWorkspace;
+    }
+
+    getActivePrimaryMsWorkspace() {
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         return this.primaryMsWorkspaces[activeWorkspaceIndex];
     }

@@ -49,7 +49,8 @@ var MsMain = GObject.registerClass(
             this.add_child(this.primaryMonitorContainer);
             this.panel = this.primaryMonitorContainer.panel;
             this.primaryMonitorContainer.setMsWorkspaceActor(
-                Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
+                Me.msWorkspaceManager.getActivePrimaryMsWorkspace()
+                    .msWorkspaceActor
             );
             for (let externalMonitor of this.externalMonitors) {
                 let container = new MonitorContainer(
@@ -207,7 +208,8 @@ var MsMain = GObject.registerClass(
 
         onMsWorkspacesChanged() {
             this.primaryMonitorContainer.setMsWorkspaceActor(
-                Me.msWorkspaceManager.getActiveMsWorkspace().msWorkspaceActor
+                Me.msWorkspaceManager.getActivePrimaryMsWorkspace()
+                    .msWorkspaceActor
             );
             this.monitorsContainer.forEach((container) => {
                 container.setMsWorkspaceActor(

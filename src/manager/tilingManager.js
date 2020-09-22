@@ -133,7 +133,7 @@ var TilingManager = class TilingManager extends MsManager {
             for (let monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
-                    msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    msWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 } else {
                     msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                         monitor.index

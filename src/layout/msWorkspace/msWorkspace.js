@@ -369,7 +369,9 @@ var MsWorkspace = class MsWorkspace {
         if (this.monitorIsExternal) {
             return true;
         } else {
-            return this === this.msWorkspaceManager.getActiveMsWorkspace();
+            return (
+                this === this.msWorkspaceManager.getActivePrimaryMsWorkspace()
+            );
         }
     }
 
