@@ -32,6 +32,12 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
                     if (extension.stateObj) extension.stateObj.disable();
                 },
             },
+            {
+                uuid: 'dash-to-dock@micxgx.gmail.com',
+                disable: (extension) => {
+                    if (extension.stateObj) extension.stateObj.disable();
+                },
+            },
         ];
 
         for (let incompatibleExtension of this.incompatibleExtensions) {
