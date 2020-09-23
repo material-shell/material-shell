@@ -284,5 +284,13 @@ var HotKeysModule = class HotKeysModule {
         this.actionIdToNameMap.set(actionId, name);
     }
 
-    destroy() {}
+    destroy() {
+        this.actionIdToNameMap.forEach(key => {
+                Main.wm.removeKeybinding(key);
+                this.actionIdToNameMap.delete(key);
+            });
+        if (this.connectId) {
+            global.window_manager.disconnect(this.connectId);
+        }
+    }
 };
