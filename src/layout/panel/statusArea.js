@@ -167,6 +167,7 @@ var MsStatusArea = GObject.registerClass(
         }
 
         recursivelySetVertical(actor, value) {
+            if (!actor) return;
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
             }
