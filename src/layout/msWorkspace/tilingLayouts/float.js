@@ -69,6 +69,12 @@ var FloatLayout = GObject.registerClass(
         tileAll() {
             this.msWorkspace.tileableList.forEach((tileable) => {
                 if (tileable.dragged) return;
+                if (tileable === this.msWorkspace.appLauncher) {
+                    tileable.x = 0;
+                    tileable.y = 0;
+                    tileable.width = this.tileableContainer.allocation.get_width();
+                    tileable.height = this.tileableContainer.allocation.get_height();
+                }
                 if (tileable instanceof MsWindow) {
                     tileable.mimicMetaWindowPositionAndSize();
                 }

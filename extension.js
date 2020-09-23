@@ -18,7 +18,6 @@ const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
-
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
@@ -47,6 +46,7 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+    Me.imports.src.utils.debug.init();
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {
