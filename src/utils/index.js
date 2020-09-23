@@ -79,9 +79,13 @@ var reparentActor = (actor, parent) => {
     if (currentParent) {
         currentParent.remove_child(actor);
     }
-    parent.add_child(actor);
-    if (isFocused) {
-        actor.grab_key_focus();
+    try { // FIXME: workaround from crash on disabling = status area gone
+        parent.add_child(actor);
+        if (isFocused) {
+            actor.grab_key_focus();
+        }
+    } catch (error) {
+        logError(error, '[material-shell.index]');
     }
     Me.reparentInProgress = false;
 };
