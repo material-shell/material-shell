@@ -404,10 +404,11 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include foreground-high-emphasis($theme);
     }
 }
-
-.search-entry {
-    @include background($theme);
-    border-radius: 48px;
+MsApplicationLauncher {
+    .search-entry {
+        @include background($theme);
+        border-radius: 48px;
+    }
 }
 
 .surface {

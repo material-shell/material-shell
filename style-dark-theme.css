@@ -212,7 +212,7 @@ subtitle-1 {
     padding: 24px;
     color: rgba(255, 255, 255, 0.87); }
 
-.search-entry {
+MsApplicationLauncher .search-entry {
   background: #191919;
   border-radius: 48px; }
 

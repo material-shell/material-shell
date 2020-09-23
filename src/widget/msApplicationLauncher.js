@@ -14,6 +14,9 @@ const { log } = Me.imports.src.utils.debug;
 
 const BUTTON_SIZE = 124;
 var MsApplicationLauncher = GObject.registerClass(
+    {
+        GTypeName: 'MsApplicationLauncher',
+    },
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
             super._init({
