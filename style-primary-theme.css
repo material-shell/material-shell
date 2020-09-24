@@ -157,8 +157,6 @@ subtitle-1 {
         color: rgba(0, 0, 0, 0.87); }
       .dark-primary#msPanel .panel-button:active, #msPanel .panel-button:overview, #msPanel .panel-button:focus, #msPanel .panel-button:checked {
         color: rgba(255, 255, 255, 0.87); }
-    #msPanel .panel-button .system-status-icon {
-      icon-size: 1.09em; }
     .light-primary.unlock-screen #msPanel .panel-button, .login-screen #msPanel .panel-button, .lock-screen #msPanel .panel-button {
       color: rgba(0, 0, 0, 0.6); }
     .dark-primary.unlock-screen #msPanel .panel-button, .login-screen #msPanel .panel-button, .lock-screen #msPanel .panel-button {
@@ -172,13 +170,14 @@ subtitle-1 {
     spacing: 2px;
     vertical-align: middle;
     text-align: center;
-    min-height: 20px;
-    padding: 4px 0px; }
+    min-height: 20px; }
   #msPanel .clock-display * {
     padding: 4px 0px !important; }
-
-.system-status-icon {
-  height: 20px; }
+  #msPanel .system-status-icon {
+    height: 20px;
+    icon-size: 1.09em;
+    margin-top: 4px;
+    margin-bottom: 4px; }
 
 #topPanel {
   background: rgba(63, 81, 181, 0.876);

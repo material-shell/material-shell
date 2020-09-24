@@ -166,6 +166,7 @@ var MsStatusArea = GObject.registerClass(
         recursivelySetVertical(actor, value) {
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
+                actor.set_x_align(Clutter.ActorAlign.CENTER);
             }
             if (
                 actor instanceof St.Icon &&
