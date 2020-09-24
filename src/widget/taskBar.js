@@ -575,14 +575,10 @@ let TileableItem = GObject.registerClass(
             this.signalManager.observe(getSettings('tweaks'), 'changed::taskbar-app-title-width', () => this.setTitleWidth());
             this.setTitleWidth();
 
-            this.updateTitle();
+			this.updateTitle();
+			
+			this.signalManager.observe(this.tileable, 'title-changed', () => this.updateTitle());
 
-            this.connectSignal = this.tileable.connect('title-changed', () => {
-                this.updateTitle();
-            });
-            this.tileable.connect('destroy', () => {
-                delete this.connectSignal;
-            });
             this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
             this.closeButton = new St.Button({
@@ -645,9 +641,6 @@ let TileableItem = GObject.registerClass(
         }
         _onDestroy() {
 			this.signalManager.destroy();
-            if (this.connectSignal) {
-                this.tileable.disconnect(this.connectSignal);
-            }
             this.menu.destroy();
         }
     }
