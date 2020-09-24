@@ -4,7 +4,7 @@ const { GLib } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const DEBUG = false;
+const DEBUG = true;
 const FOCUS_ONLY = false;
 let indent = 0;
 var init = function () {
@@ -87,12 +87,12 @@ var init = function () {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             [
-                Me.imports.src.manager.msWindowManager.MsWindowManager,
+                //Me.imports.src.manager.msWindowManager.MsWindowManager,
                 //Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
                 //Me.imports.src.manager.msThemeManager.MsThemeManager,
                 //Me.imports.src.layout.main.MsMain,
                 //Me.imports.src.layout.msWorkspace.msWorkspace.MsWorkspace,
-                Me.imports.src.layout.msWorkspace.msWindow.MsWindow,
+                //Me.imports.src.layout.msWorkspace.msWindow.MsWindow,
             ]
                 .filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));
