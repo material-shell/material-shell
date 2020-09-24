@@ -52,12 +52,12 @@
       <summary>Cycle through workspaces</summary>
       <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
     </key>
-	<key name="fixed-taskbar-app-title-width" type="b">
+    <key name="fixed-taskbar-app-title-width" type="b">
       <default>true</default>
       <summary>Fixed width taskbar app title</summary>
       <description>When enabled taskbar apps have fixed width</description>
     </key>
-	<key name="taskbar-app-title-width" type="i">
+    <key name="taskbar-app-title-width" type="i">
       <default>180</default>
       <summary>Taskbar app title width</summary>
       <description>Determines width of the app title in taskbar</description>
