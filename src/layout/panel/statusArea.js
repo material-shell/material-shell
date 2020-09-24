@@ -93,45 +93,42 @@ var MsStatusArea = GObject.registerClass(
                     );
                 })
                 .forEach((actor) => {
-                    this.leftBoxActors.push(actor);
-
-                    this.stealActor(actor);
+                    this.stealActor(actor, this.leftBoxActors);
                 });
             this.leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
                 'actor-added',
                 (_, actor) => {
-                    this.leftBoxActors.push(actor);
-                    this.stealActor(actor);
+                    this.stealActor(actor, this.leftBoxActors);
                 }
             );
             this.gnomeShellPanel._centerBox.get_children().forEach((actor) => {
-                this.centerBoxActors.push(actor);
-                this.stealActor(actor);
+                this.stealActor(actor, this.centerBoxActors);
             });
             this.centerBoxActorAddedSignal = this.gnomeShellPanel._centerBox.connect(
                 'actor-added',
                 (_, actor) => {
-                    this.centerBoxActors.push(actor);
-                    this.stealActor(actor);
+                    this.stealActor(actor, this.centerBoxActors);
                 }
             );
             this.gnomeShellPanel._rightBox
                 .get_children()
                 .reverse()
                 .forEach((actor) => {
-                    this.rightBoxActors.push(actor);
-                    this.stealActor(actor);
+                    this.stealActor(actor, this.rightBoxActors);
                 });
             this.rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
                 'actor-added',
                 (_, actor) => {
-                    this.rightBoxActors.push(actor);
-                    this.stealActor(actor);
+                    this.stealActor(actor, this.rightBoxActors);
                 }
             );
         }
 
-        stealActor(actor) {
+        stealActor(actor, container) {
+            container.push(actor);
+            actor.connect('destroy', () => {
+                container.splice(container.indexOf(actor), 1);
+            });
             actor.y_expand = false;
             actor.x_expand = true;
             this.recursivelySetVertical(actor, true);
@@ -167,7 +164,6 @@ var MsStatusArea = GObject.registerClass(
         }
 
         recursivelySetVertical(actor, value) {
-            if (!actor) return;
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
             }

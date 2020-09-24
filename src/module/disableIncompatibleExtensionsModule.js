@@ -32,12 +32,6 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
                     if (extension.stateObj) extension.stateObj.disable();
                 },
             },
-            {
-                uuid: 'dash-to-dock@micxgx.gmail.com',
-                disable: (extension) => {
-                    if (extension.stateObj) extension.stateObj.disable();
-                },
-            },
         ];
 
         for (let incompatibleExtension of this.incompatibleExtensions) {
@@ -50,5 +44,14 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
         }
     }
 
-    destroy() {}
+    destroy() {
+        /* for (let incompatibleExtension of this.incompatibleExtensions) {
+            let extension = Main.extensionManager.lookup(
+                incompatibleExtension.uuid
+            );
+            if (extension) {
+                extension.stateObj.enable();
+            }
+        } */
+    }
 };

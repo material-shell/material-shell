@@ -251,19 +251,13 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         }
     }
 
-    .panel-status-indicators-box {
-        vertical-align: middle;
-        text-align: center;
-        padding: 4px 0px;
-    }
-
     .panel-status-indicators-box,
     .panel-status-menu-box {
         spacing: 2px;
-    }
-
-    .panel-status-menu-box {
-        padding: 8px 0px;
+        vertical-align: middle;
+        text-align: center;
+        min-height: 20px;
+        padding: 4px 0px;
     }
 
     .clock-display {
@@ -271,6 +265,11 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             padding: 4px 0px !important;
         }
     }
+}
+
+.system-status-icon {
+    height: 24px !important;
+    width: 24px;
 }
 
 #topPanel {

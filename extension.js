@@ -127,6 +127,7 @@ function disable() {
 
     Me.layout.destroy();
     Me.msThemeManager.destroy();
+    disableIncompatibleExtensionsModule.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
     log('END DISABLE EXTENSION');

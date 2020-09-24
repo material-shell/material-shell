@@ -131,17 +131,19 @@ subtitle-1 {
       .lock-screen #msPanel .panel-button:hover,
       .lock-screen #msPanel .panel-button:active {
         color: rgba(255, 255, 255, 0.87); }
-  #msPanel .panel-status-indicators-box {
-    vertical-align: middle;
-    text-align: center;
-    padding: 4px 0px; }
   #msPanel .panel-status-indicators-box,
   #msPanel .panel-status-menu-box {
-    spacing: 2px; }
-  #msPanel .panel-status-menu-box {
-    padding: 8px 0px; }
+    spacing: 2px;
+    vertical-align: middle;
+    text-align: center;
+    min-height: 20px;
+    padding: 4px 0px; }
   #msPanel .clock-display * {
     padding: 4px 0px !important; }
+
+.system-status-icon {
+  height: 24px !important;
+  width: 24px; }
 
 #topPanel {
   background: rgba(25, 25, 25, 0.876);
