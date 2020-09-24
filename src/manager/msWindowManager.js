@@ -381,11 +381,17 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             Meta.WindowType.MODAL_DIALOG,
             Meta.WindowType.UTILITY,
         ];
+        const isFrozen = !(
+            metaWindow.allows_resize() && metaWindow.allows_move()
+        );
+        const isMaximizedAny =
+            metaWindow.maximized_horizontally ||
+            metaWindow.maximized_vertically;
         return (
             dialogTypes.includes(metaWindow.window_type) ||
             (metaWindow.get_transient_for() != null &&
                 metaWindow.skip_taskbar) ||
-            !(metaWindow.allows_resize() && metaWindow.allows_move())
+            (isFrozen && !isMaximizedAny)
         );
     }
 
