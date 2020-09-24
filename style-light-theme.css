@@ -142,8 +142,7 @@ subtitle-1 {
     padding: 4px 0px !important; }
 
 .system-status-icon {
-  height: 24px !important;
-  width: 24px; }
+  height: 20px; }
 
 #topPanel {
   background: rgba(255, 255, 255, 0.876);
