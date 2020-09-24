@@ -11,6 +11,8 @@ const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { reparentActor } = Me.imports.src.utils.index;
+const { getSettings } = Me.imports.src.utils.settings;
+const { MsManager } = Me.imports.src.manager.msManager;
 
 let dragData = null;
 
@@ -567,6 +569,12 @@ let TileableItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER,
             });
+
+            this.signalManager = new MsManager();
+            this.signalManager.observe(getSettings('tweaks'), 'changed::fixed-taskbar-app-title-width', () => this.setTitleWidth());
+            this.signalManager.observe(getSettings('tweaks'), 'changed::taskbar-app-title-width', () => this.setTitleWidth());
+            this.setTitleWidth();
+
             this.updateTitle();
 
             this.connectSignal = this.tileable.connect('title-changed', () => {
@@ -617,6 +625,13 @@ let TileableItem = GObject.registerClass(
             this.startIconContainer.set_child(this.icon);
             this.queue_relayout();
         }
+        
+        setTitleWidth() {
+            const fixedTaskbarAppTitleWidth = getSettings('tweaks').get_boolean('fixed-taskbar-app-title-width');
+            const taskbarAppTitleWidth = getSettings('tweaks').get_int('taskbar-app-title-width');
+            this.title.natural_width = taskbarAppTitleWidth;
+            this.title.natural_width_set = fixedTaskbarAppTitleWidth;
+        }
 
         // Update the title and crop it if it's too long
         updateTitle() {
@@ -629,6 +644,7 @@ let TileableItem = GObject.registerClass(
             super.vfunc_allocate(box, flags);
         }
         _onDestroy() {
+			this.signalManager.destroy();
             if (this.connectSignal) {
                 this.tileable.disconnect(this.connectSignal);
             }

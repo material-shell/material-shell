@@ -552,6 +552,38 @@ function GlobalSettingsTab(notebook) {
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );
+    
+    const fixedTaskbarAppTitleWidth = new Gtk.Switch({
+        valign: Gtk.Align.CENTER,
+    });
+    itemRows.push(
+        makeItemRow(
+            'Fixed width for application titles',
+            'When enabled application will have fixed width in taskbar',
+            fixedTaskbarAppTitleWidth
+        )
+    );
+    tweaksSettings.bind(
+        'fixed-taskbar-app-title-width',
+        fixedTaskbarAppTitleWidth,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    
+    const taskbarAppTitleWidth = Gtk.SpinButton.new_with_range(1, 500, 10);
+    itemRows.push(
+        makeItemRow(
+            'Width of the application titles',
+            'Width of the application titles in taskbar. To work option `Fixed width for application titles` need to be turn on',
+            taskbarAppTitleWidth
+        )
+    );
+    tweaksSettings.bind(
+        'taskbar-app-title-width',
+        taskbarAppTitleWidth.get_adjustment(),
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
 
     const disableMaterialShellNotifications = new Gtk.Switch({
         valign: Gtk.Align.CENTER,
