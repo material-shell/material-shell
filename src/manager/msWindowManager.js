@@ -385,7 +385,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             dialogTypes.includes(metaWindow.window_type) ||
             (metaWindow.get_transient_for() != null &&
                 metaWindow.skip_taskbar) ||
-            !metaWindow.resizeable
+            !(metaWindow.allows_resize() && metaWindow.allows_move())
         );
     }
 
