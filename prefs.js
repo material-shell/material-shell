@@ -523,6 +523,24 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
+    const taskbarItemStyle = new Gtk.ComboBoxText();
+    taskbarItemStyle.append('full', 'Full');
+    taskbarItemStyle.append('name', 'Name');
+    taskbarItemStyle.append('icon', 'Icon');
+    itemRows.push(
+        makeItemRow(
+            'Taskbar item style',
+            'Type of style for the taskbar item',
+            taskbarItemStyle
+        )
+    );
+    themeSettings.bind(
+        'taskbar-item-style',
+        taskbarItemStyle,
+        'active-id',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
     const cycleThroughWindows = new Gtk.Switch({ valign: Gtk.Align.CENTER });
     itemRows.push(
         makeItemRow(

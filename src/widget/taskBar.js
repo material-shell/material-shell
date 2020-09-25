@@ -11,6 +11,8 @@ const { MatButton } = Me.imports.src.widget.material.button;
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { reparentActor } = Me.imports.src.utils.index;
+const { getSettings } = Me.imports.src.utils.settings;
+const { MsManager } = Me.imports.src.manager.msManager;
 
 let dragData = null;
 
@@ -567,15 +569,17 @@ let TileableItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER,
             });
-            this.updateTitle();
 
-            this.connectSignal = this.tileable.connect('title-changed', () => {
+            this.signalManager = new MsManager();
+            this.style = getSettings('theme').get_string('taskbar-item-style');
+            this.signalManager.observe(getSettings('theme'), 'changed::taskbar-item-style', () => {
+                this.style = getSettings('theme').get_string('taskbar-item-style');
                 this.updateTitle();
+                this.setStyle();
             });
-            this.tileable.connect('destroy', () => {
-                delete this.connectSignal;
-            });
-            this.connect('destroy', this._onDestroy.bind(this));
+            this.signalManager.observe(this.tileable, 'title-changed', () => this.updateTitle());
+            this.setStyle();
+            
             // CLOSE BUTTON
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
@@ -607,6 +611,21 @@ let TileableItem = GObject.registerClass(
             this.container.add_child(this.title);
             this.container.add_child(this.endIconContainer);
         }
+        
+        setStyle() {
+            this.updateTitle();
+            if(this.style == 'full') {
+                this.title.natural_width = 160
+                this.title.natural_width_set = 1;
+            } else {
+                this.title.natural_width_set = 0;
+            }
+            if(this.style == 'icon') {
+                this.title.hide();
+            } else {
+                this.title.show();
+            }
+        }
 
         buildIcon(height) {
             if (this.icon) this.icon.destroy();
@@ -620,7 +639,11 @@ let TileableItem = GObject.registerClass(
 
         // Update the title and crop it if it's too long
         updateTitle() {
-            this.title.text = this.tileable.title;
+            if(this.style == 'full') {
+                this.title.text = this.tileable.title;
+            } else if(this.style == 'name') {
+                this.title.text = this.app.get_name();
+            }
         }
         vfunc_allocate(box, flags) {
             if (!this.icon || this.iconSize != box.get_height()) {
@@ -629,9 +652,7 @@ let TileableItem = GObject.registerClass(
             super.vfunc_allocate(box, flags);
         }
         _onDestroy() {
-            if (this.connectSignal) {
-                this.tileable.disconnect(this.connectSignal);
-            }
+            this.signalManager.destroy();
             this.menu.destroy();
         }
     }
