@@ -46,7 +46,6 @@ var MsWindow = GObject.registerClass(
             this.windowClone = new Clutter.Clone();
             this.placeholder = new AppPlaceholder(this.app);
             this.metaWindowSignals = [];
-
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
             });
@@ -337,45 +336,46 @@ var MsWindow = GObject.registerClass(
             }
 
             if (shouldBeMaximized) {
+                windowActor.manipulateByMs = true;
                 this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-                return;
             }
 
             if (!shouldBeMaximized && isMaximized) {
-                windowActor.unmaximizedByMs = true;
+                windowActor.manipulateByMs = true;
                 this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
             }
+            if (needToMoveOrResize) {
+                // Secure the futur metaWindow Position to ensure it's not outside the current monitor
+                if (!this.dragged) {
+                    moveTo.x = Math.max(
+                        Math.min(
+                            moveTo.x,
+                            this.msWorkspace.monitor.x +
+                                this.msWorkspace.monitor.width -
+                                resizeTo.width
+                        ),
+                        this.msWorkspace.monitor.x
+                    );
+                    moveTo.y = Math.max(
+                        Math.min(
+                            moveTo.y,
+                            this.msWorkspace.monitor.y +
+                                this.msWorkspace.monitor.height -
+                                resizeTo.height
+                        ),
+                        this.msWorkspace.monitor.y
+                    );
+                }
 
-            // Secure the futur metaWindow Position to ensure it's not outside the current monitor
-            if (!this.dragged) {
-                moveTo.x = Math.max(
-                    Math.min(
-                        moveTo.x,
-                        this.msWorkspace.monitor.x +
-                            this.msWorkspace.monitor.width -
-                            resizeTo.width
-                    ),
-                    this.msWorkspace.monitor.x
-                );
-                moveTo.y = Math.max(
-                    Math.min(
-                        moveTo.y,
-                        this.msWorkspace.monitor.y +
-                            this.msWorkspace.monitor.height -
-                            resizeTo.height
-                    ),
-                    this.msWorkspace.monitor.y
+                //Set the size accordingly
+                this._metaWindow.move_resize_frame(
+                    true,
+                    moveTo.x,
+                    moveTo.y,
+                    resizeTo.width,
+                    resizeTo.height
                 );
             }
-
-            //Set the size accordingly
-            this._metaWindow.move_resize_frame(
-                true,
-                moveTo.x,
-                moveTo.y,
-                resizeTo.width,
-                resizeTo.height
-            );
 
             /**
              * Hack start to prevent unmaximize crash
