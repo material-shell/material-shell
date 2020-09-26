@@ -45,11 +45,11 @@
       <summary>Blur background</summary>
       <description>Add the blurred effect to the background wallpaper</description>
     </key>
-	<key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
-		<default>'full'</default>
-		<summary>Taskbar item style</summary>
-		<description>Type of style for the taskbar item</description>
-	</key>
+    <key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
+        <default>'full'</default>
+        <summary>Taskbar item style</summary>
+        <description>Type of style for the taskbar item</description>
+    </key>
   </schema>
   <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/">
     <key name="cycle-through-windows" type="b">
