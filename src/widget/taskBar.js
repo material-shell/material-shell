@@ -579,7 +579,7 @@ let TileableItem = GObject.registerClass(
             });
             this.signalManager.observe(this.tileable, 'title-changed', () => this.updateTitle());
             this.setStyle();
-            
+            this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
@@ -614,6 +614,7 @@ let TileableItem = GObject.registerClass(
         
         setStyle() {
             this.updateTitle();
+
             if(this.style == 'full') {
                 this.title.natural_width = 160
                 this.title.natural_width_set = 1;
@@ -640,7 +641,11 @@ let TileableItem = GObject.registerClass(
         // Update the title and crop it if it's too long
         updateTitle() {
             if(this.style == 'full') {
-                this.title.text = this.tileable.title;
+                if( this.tileable.title.includes(this.app.get_name()) ) {
+                    this.title.text = this.tileable.title;
+                } else {
+                    this.title.text = `${this.tileable.title} - ${this.app.get_name()}`;
+                }
             } else if(this.style == 'name') {
                 this.title.text = this.app.get_name();
             }
