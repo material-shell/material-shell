@@ -39,21 +39,32 @@ var OverrideModule = class OverrideModule {
         const _shouldAnimateActor = WindowManager.prototype._shouldAnimateActor;
         WindowManager.prototype._shouldAnimateActor = function () {
             let actor = arguments[0];
+            let types = arguments[1];
+
+            if (
+                !actor ||
+                this._skippedActors.delete(actor) ||
+                !this._shouldAnimate() ||
+                !actor.get_texture()
+            ) {
+                return false;
+            }
+
             if (actor.manipulateByMs && !actor.completeIsRequested) {
                 actor.completeIsRequested = true;
                 return true;
             }
-            return _shouldAnimateActor.apply(this, arguments);
+            return types.includes(actor.meta_window.get_window_type());
         };
         this.windowManagersFunctionToRestore.push([
             WindowManager.prototype._shouldAnimateActor,
             _shouldAnimateActor,
         ]);
 
-        const _prepareAnimationInfo =
-            WindowManager.prototype._prepareAnimationInfo;
+        const _prepareAnimationInfo = WindowManager.prototype._prepareAnimationInfo;
         WindowManager.prototype._prepareAnimationInfo = function () {
             let actor = arguments[1];
+            if (!actor) return;
             if (actor.manipulateByMs) {
                 delete actor.manipulateByMs;
                 return;
