@@ -200,16 +200,11 @@ subtitle-1 {
         color: rgba(0, 0, 0, 0.87); }
       .dark-primary#topPanel .task-bar-item.active .task-bar-item-content, #topPanel .task-bar-item.active .task-bar-icon-container {
         color: rgba(255, 255, 255, 0.87); }
-      .light-primary#topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-subtitle, #topPanel .task-bar-item.active .task-bar-icon-container .task-bar-item-subtitle {
-        color: rgba(0, 0, 0, 0.6); }
-      .dark-primary#topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-subtitle, #topPanel .task-bar-item.active .task-bar-icon-container .task-bar-item-subtitle {
-        color: rgba(255, 255, 255, 0.6); }
     .light-primary#topPanel .task-bar-item .task-bar-icon-container {
       color: rgba(0, 0, 0, 0.6); }
     .dark-primary#topPanel .task-bar-item .task-bar-icon-container {
       color: rgba(255, 255, 255, 0.6); }
     #topPanel .task-bar-item .app-icon {
-      margin-right: 12px;
       icon-size: 24px;
       width: 24px;
       height: 24px; }
@@ -220,15 +215,12 @@ subtitle-1 {
         color: rgba(0, 0, 0, 0.6); }
       .dark-primary#topPanel .task-bar-item .task-bar-item-content {
         color: rgba(255, 255, 255, 0.6); }
-      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title,
-      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-subtitle {
-        font-weight: 600;
-        font-size: 14px;
+      #topPanel .task-bar-item .task-bar-item-content .app-icon {
         margin-right: 12px; }
-      .light-primary#topPanel .task-bar-item .task-bar-item-content .task-bar-item-subtitle {
-        color: rgba(0, 0, 0, 0.38); }
-      .dark-primary#topPanel .task-bar-item .task-bar-item-content .task-bar-item-subtitle {
-        color: rgba(255, 255, 255, 0.38); }
+      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        margin-right: 12px;
+        font-weight: 600;
+        font-size: 14px; }
       #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;

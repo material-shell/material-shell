@@ -449,6 +449,15 @@ let TaskBarItem = GObject.registerClass(
             }
         }
 
+        setActive(active) {
+            if (!active && this.has_style_class_name('active')) {
+                this.remove_style_class_name('active');
+            }
+            if (active && !this.has_style_class_name('active')) {
+                this.add_style_class_name('active');
+            }
+        }
+
         initDrag() {
             this._draggable = DND.makeDraggable(this, {
                 restoreOnSuccess: false,
@@ -630,16 +639,6 @@ let TileableItem = GObject.registerClass(
             }
         }
 
-        setActive(active) {
-            if (!active && this.has_style_class_name('active')) {
-                this.remove_style_class_name('active');
-            }
-            if (active && !this.has_style_class_name('active')) {
-                this.add_style_class_name('active');
-            }
-            this.updateTitle();
-        }
-
         buildIcon(height) {
             if (this.icon) this.icon.destroy();
             this.iconSize = height;
@@ -648,6 +647,11 @@ let TileableItem = GObject.registerClass(
             this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
             this.startIconContainer.set_child(this.icon);
             this.queue_relayout();
+        }
+
+        setActive(active) {
+            super.setActive(active);
+            this.updateTitle();
         }
 
         // Update the title and crop it if it's too long

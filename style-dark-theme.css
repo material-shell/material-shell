@@ -161,13 +161,9 @@ subtitle-1 {
     #topPanel .task-bar-item.active .task-bar-icon-container {
       background: rgba(255, 255, 255, 0.03);
       color: rgba(255, 255, 255, 0.87); }
-      #topPanel .task-bar-item.active .task-bar-item-content .task-bar-item-subtitle,
-      #topPanel .task-bar-item.active .task-bar-icon-container .task-bar-item-subtitle {
-        color: rgba(255, 255, 255, 0.6); }
     #topPanel .task-bar-item .task-bar-icon-container {
       color: rgba(255, 255, 255, 0.6); }
     #topPanel .task-bar-item .app-icon {
-      margin-right: 12px;
       icon-size: 24px;
       width: 24px;
       height: 24px; }
@@ -175,13 +171,12 @@ subtitle-1 {
       padding: 0px 12px;
       color: rgba(255, 255, 255, 0.6);
       max-width: 248px; }
-      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title,
-      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-subtitle {
-        font-weight: 600;
-        font-size: 14px;
+      #topPanel .task-bar-item .task-bar-item-content .app-icon {
         margin-right: 12px; }
-      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-subtitle {
-        color: rgba(255, 255, 255, 0.38); }
+      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        margin-right: 12px;
+        font-weight: 600;
+        font-size: 14px; }
       #topPanel .task-bar-item .task-bar-item-content .task-close-button {
         border-radius: 20px;
         width: 24px;
