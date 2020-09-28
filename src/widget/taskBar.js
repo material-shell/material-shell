@@ -72,7 +72,7 @@ var TaskBar = GObject.registerClass(
 
             if (previousItem) {
                 if (previousItem.has_style_class_name('active')) {
-                    previousItem.remove_style_class_name('active');
+                    previousItem.setActive(false);
                 }
             }
 
@@ -81,7 +81,7 @@ var TaskBar = GObject.registerClass(
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
             this._animateActiveIndicator();
-            nextItem.add_style_class_name('active');
+            nextItem.setActive(true);
         }
 
         updateItems() {
@@ -572,12 +572,20 @@ let TileableItem = GObject.registerClass(
 
             this.signalManager = new MsManager();
             this.style = getSettings('theme').get_string('taskbar-item-style');
-            this.signalManager.observe(getSettings('theme'), 'changed::taskbar-item-style', () => {
-                this.style = getSettings('theme').get_string('taskbar-item-style');
-                this.updateTitle();
-                this.setStyle();
-            });
-            this.signalManager.observe(this.tileable, 'title-changed', () => this.updateTitle());
+            this.signalManager.observe(
+                getSettings('theme'),
+                'changed::taskbar-item-style',
+                () => {
+                    this.style = getSettings('theme').get_string(
+                        'taskbar-item-style'
+                    );
+                    this.updateTitle();
+                    this.setStyle();
+                }
+            );
+            this.signalManager.observe(this.tileable, 'title-changed', () =>
+                this.updateTitle()
+            );
             this.setStyle();
             this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
@@ -611,21 +619,25 @@ let TileableItem = GObject.registerClass(
             this.container.add_child(this.title);
             this.container.add_child(this.endIconContainer);
         }
-        
+
         setStyle() {
             this.updateTitle();
 
-            if(this.style == 'full') {
-                this.title.natural_width = 160
-                this.title.natural_width_set = 1;
-            } else {
-                this.title.natural_width_set = 0;
-            }
-            if(this.style == 'icon') {
+            if (this.style == 'icon') {
                 this.title.hide();
             } else {
                 this.title.show();
             }
+        }
+
+        setActive(active) {
+            if (!active && this.has_style_class_name('active')) {
+                this.remove_style_class_name('active');
+            }
+            if (active && !this.has_style_class_name('active')) {
+                this.add_style_class_name('active');
+            }
+            this.updateTitle();
         }
 
         buildIcon(height) {
@@ -640,13 +652,21 @@ let TileableItem = GObject.registerClass(
 
         // Update the title and crop it if it's too long
         updateTitle() {
-            if(this.style == 'full') {
-                if( this.tileable.title.includes(this.app.get_name()) ) {
+            if (this.style == 'full') {
+                if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
-                    this.title.text = `${this.tileable.title} - ${this.app.get_name()}`;
+                    this.title
+                        .get_clutter_text()
+                        .set_markup(
+                            `${this.tileable.title}<span alpha="${
+                                this.has_style_class_name('active')
+                                    ? '40%'
+                                    : '20%'
+                            }">   -   ${this.app.get_name()}</span>`
+                        );
                 }
-            } else if(this.style == 'name') {
+            } else if (this.style == 'name') {
                 this.title.text = this.app.get_name();
             }
         }

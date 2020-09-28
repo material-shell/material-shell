@@ -1,6 +1,8 @@
 /** Gnome libs imports */
 const Signals = imports.signals;
 
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 /* exported MsManager */
 var MsManager = class MsManager {
     constructor() {
