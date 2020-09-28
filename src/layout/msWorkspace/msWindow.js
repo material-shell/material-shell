@@ -267,11 +267,9 @@ var MsWindow = GObject.registerClass(
                     this.x === 0 &&
                     this.y === 0 &&
                     this.width ===
-                        this.msWorkspace.msWorkspaceActor.tileableContainer
-                            .width &&
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_width() &&
                     this.height ===
-                        this.msWorkspace.msWorkspaceActor.tileableContainer
-                            .height;
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_height();
             }
 
             let needToMoveOrResize = false;
