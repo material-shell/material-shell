@@ -35,7 +35,6 @@ var BaseTilingLayout = GObject.registerClass(
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.alterTileable(tileable);
             });
-            this.tileAll();
         }
 
         get tileableContainer() {
@@ -117,6 +116,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         tileAll(box) {
+            Me.logFocus('tileAll');
             box = box || this.tileableContainer.allocation;
             box.x1 = 0;
             box.y1 = 0;
@@ -343,6 +343,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         vfunc_allocate(container, box, flags) {
+            Me.logFocus('allocate', box.get_width(), box.get_height());
             this.tileAll(box);
             container.get_children().forEach((actor) => {
                 if (this.msWorkspace.tileableList.includes(actor)) {
