@@ -35,7 +35,6 @@ var BaseTilingLayout = GObject.registerClass(
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.alterTileable(tileable);
             });
-            this.tileAll();
         }
 
         get tileableContainer() {
@@ -154,7 +153,6 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         hideAppLauncher() {
-            Me.logFocus('hideAppLauncher');
             let actor = this.msWorkspace.appLauncher;
             actor.ease({
                 scale_x: 0.8,

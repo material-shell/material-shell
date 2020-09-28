@@ -4,6 +4,11 @@
     <value nick="category" value="1"/>
     <value nick="application" value="2"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
+    <value nick="full" value="0"/>
+    <value nick="name" value="1"/>
+    <value nick="icon" value="2"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
     <key name="theme" type="s">
       <default>'dark'</default>
@@ -39,6 +44,11 @@
       <default>false</default>
       <summary>Blur background</summary>
       <description>Add the blurred effect to the background wallpaper</description>
+    </key>
+    <key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
+        <default>'full'</default>
+        <summary>Taskbar item style</summary>
+        <description>Type of style for the taskbar item</description>
     </key>
   </schema>
   <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/">

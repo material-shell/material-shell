@@ -191,48 +191,51 @@ subtitle-1 {
     background: rgba(0, 0, 0, 0.12); }
     #topPanel .mat-panel-button.active .mat-panel-button-icon {
       color: rgba(0, 0, 0, 0.87); }
-
-.task-bar-item {
-  font-size: 14px; }
-  .light-primary.task-bar-item.active .task-bar-item-content, .task-bar-item.active .task-bar-icon-container {
-    color: rgba(0, 0, 0, 0.87); }
-  .dark-primary.task-bar-item.active .task-bar-item-content, .task-bar-item.active .task-bar-icon-container {
-    color: rgba(255, 255, 255, 0.87); }
-  .light-primary.task-bar-item .task-bar-icon-container {
-    color: rgba(0, 0, 0, 0.6); }
-  .dark-primary.task-bar-item .task-bar-icon-container {
-    color: rgba(255, 255, 255, 0.6); }
-  .task-bar-item .app-icon {
-    icon-size: 24px;
-    width: 24px;
-    height: 24px; }
-  .task-bar-item .task-bar-item-content {
-    padding: 0px 12px; }
-    .light-primary.task-bar-item .task-bar-item-content {
+  #topPanel .task-bar-item {
+    font-size: 14px; }
+    #topPanel .task-bar-item.active .task-bar-item-content,
+    #topPanel .task-bar-item.active .task-bar-icon-container {
+      background: rgba(255, 255, 255, 0.03); }
+      .light-primary#topPanel .task-bar-item.active .task-bar-item-content, #topPanel .task-bar-item.active .task-bar-icon-container {
+        color: rgba(0, 0, 0, 0.87); }
+      .dark-primary#topPanel .task-bar-item.active .task-bar-item-content, #topPanel .task-bar-item.active .task-bar-icon-container {
+        color: rgba(255, 255, 255, 0.87); }
+    .light-primary#topPanel .task-bar-item .task-bar-icon-container {
       color: rgba(0, 0, 0, 0.6); }
-    .dark-primary.task-bar-item .task-bar-item-content {
+    .dark-primary#topPanel .task-bar-item .task-bar-icon-container {
       color: rgba(255, 255, 255, 0.6); }
-    .task-bar-item .task-bar-item-content .task-bar-item-title {
-      max-width: 248px;
-      margin-left: 8px;
-      margin-right: 8px;
-      font-weight: 600;
-      font-size: 14px; }
-    .task-bar-item .task-bar-item-content .task-close-button {
-      border-radius: 20px;
+    #topPanel .task-bar-item .app-icon {
+      icon-size: 24px;
       width: 24px;
-      height: 24px;
-      transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-      .light-primary.task-bar-item .task-bar-item-content .task-close-button {
+      height: 24px; }
+    #topPanel .task-bar-item .task-bar-item-content {
+      padding: 0px 12px;
+      max-width: 248px; }
+      .light-primary#topPanel .task-bar-item .task-bar-item-content {
         color: rgba(0, 0, 0, 0.6); }
-      .dark-primary.task-bar-item .task-bar-item-content .task-close-button {
+      .dark-primary#topPanel .task-bar-item .task-bar-item-content {
         color: rgba(255, 255, 255, 0.6); }
-      .task-bar-item .task-bar-item-content .task-close-button:hover {
-        background: rgba(255, 255, 255, 0.12); }
-      .task-bar-item .task-bar-item-content .task-close-button:hover:active {
-        background: rgba(255, 255, 255, 0.24); }
-    .task-bar-item .task-bar-item-content .task-small-icon {
-      icon-size: 18px; }
+      #topPanel .task-bar-item .task-bar-item-content .app-icon {
+        margin-right: 12px; }
+      #topPanel .task-bar-item .task-bar-item-content .task-bar-item-title {
+        margin-right: 12px;
+        font-weight: 600;
+        font-size: 14px; }
+      #topPanel .task-bar-item .task-bar-item-content .task-close-button {
+        border-radius: 20px;
+        width: 24px;
+        height: 24px;
+        transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .light-primary#topPanel .task-bar-item .task-bar-item-content .task-close-button {
+          color: rgba(0, 0, 0, 0.6); }
+        .dark-primary#topPanel .task-bar-item .task-bar-item-content .task-close-button {
+          color: rgba(255, 255, 255, 0.6); }
+        #topPanel .task-bar-item .task-bar-item-content .task-close-button:hover {
+          background: rgba(255, 255, 255, 0.12); }
+        #topPanel .task-bar-item .task-bar-item-content .task-close-button:hover:active {
+          background: rgba(255, 255, 255, 0.24); }
+      #topPanel .task-bar-item .task-bar-item-content .task-small-icon {
+        icon-size: 18px; }
 
 .light-primary.drop-placeholder {
   background: rgba(0, 0, 0, 0.1); }

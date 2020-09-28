@@ -8,6 +8,8 @@ const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 
+const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
+
 /* exported MsWindow */
 var MsWindow = GObject.registerClass(
     {
@@ -222,7 +224,6 @@ var MsWindow = GObject.registerClass(
         }
 
         delayUpdateMetaWindowPositionAndSize() {
-            this.updateDelayed = true;
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
                 this.updateDelayed = false;
                 this.updateMetaWindowPositionAndSize();
@@ -266,16 +267,13 @@ var MsWindow = GObject.registerClass(
                     this.x === 0 &&
                     this.y === 0 &&
                     this.width ===
-                        this.msWorkspace.msWorkspaceActor.tileableContainer
-                            .width &&
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_width() &&
                     this.height ===
-                        this.msWorkspace.msWorkspaceActor.tileableContainer
-                            .height;
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_height();
             }
 
             let needToMoveOrResize = false;
             let moveTo, resizeTo;
-
             // check if the window need a changes only if we don't need to already maximize
             if (!shouldBeMaximized) {
                 let currentFrameRect = this._metaWindow.get_frame_rect();
@@ -332,18 +330,34 @@ var MsWindow = GObject.registerClass(
                 windowActor.lastResize &&
                 Date.now() - windowActor.lastResize < 100
             ) {
+                this.updateDelayed = true;
                 return this.delayUpdateMetaWindowPositionAndSize();
             }
 
             if (shouldBeMaximized) {
-                windowActor.manipulateByMs = true;
-                this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                if (isWayland) {
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                        return GLib.SOURCE_REMOVE;
+                    });
+                } else {
+                    this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                }
+                return;
             }
 
             if (!shouldBeMaximized && isMaximized) {
-                windowActor.manipulateByMs = true;
-                this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                if (isWayland) {
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                        return GLib.SOURCE_REMOVE;
+                    });
+                } else {
+                    this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                }
+                return;
             }
+
             if (needToMoveOrResize) {
                 // Secure the futur metaWindow Position to ensure it's not outside the current monitor
                 if (!this.dragged) {
@@ -368,29 +382,27 @@ var MsWindow = GObject.registerClass(
                 }
 
                 //Set the size accordingly
-                this._metaWindow.move_resize_frame(
-                    true,
-                    moveTo.x,
-                    moveTo.y,
-                    resizeTo.width,
-                    resizeTo.height
-                );
+                if (isWayland) {
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        this._metaWindow.move_resize_frame(
+                            true,
+                            moveTo.x,
+                            moveTo.y,
+                            resizeTo.width,
+                            resizeTo.height
+                        );
+                        return GLib.SOURCE_REMOVE;
+                    });
+                } else {
+                    this._metaWindow.move_resize_frame(
+                        true,
+                        moveTo.x,
+                        moveTo.y,
+                        resizeTo.width,
+                        resizeTo.height
+                    );
+                }
             }
-
-            /**
-             * Hack start to prevent unmaximize crash
-             * Check overrideModule.js to know more about this hack
-             */
-            if (windowActor.completeIsRequested) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    Main.wm._shellwm.completed_size_change(windowActor);
-                    delete windowActor.completeIsRequested;
-                    return GLib.SOURCE_REMOVE;
-                });
-            }
-            /**
-             * Hack end
-             */
         }
 
         mimicMetaWindowPositionAndSize() {
@@ -668,7 +680,7 @@ var MsWindow = GObject.registerClass(
                     delete this.metaWindow;
                     this._onDestroy();
                     this.msWorkspace.removeMsWindow(this);
-                    this.disconnect(this.destroyId);
+                    if (this.destroyId) this.disconnect(this.destroyId);
                     this.destroy();
                 }
             });

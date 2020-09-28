@@ -302,59 +302,61 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             }
         }
     }
-}
+    .task-bar-item {
+        font-size: 14px;
 
-.task-bar-item {
-    font-size: 14px;
+        &.active {
+            .task-bar-item-content,
+            .task-bar-icon-container {
+                background: rgba(255, 255, 255, 0.03);
 
-    &.active {
-        .task-bar-item-content,
-        .task-bar-icon-container {
-            @if ($theme== 'light') {
-                color: $color-primary;
-            } @else {
-                @include foreground-high-emphasis($theme);
+                @if ($theme== 'light') {
+                    color: $color-primary;
+                } @else {
+                    @include foreground-high-emphasis($theme);
+                }
             }
         }
-    }
-    .task-bar-icon-container {
-        @include foreground-medium-emphasis($theme);
-    }
-    .app-icon {
-        icon-size: 24px;
-        width: 24px;
-        height: 24px;
-    }
-
-    .task-bar-item-content {
-        padding: 0px 12px;
-        @include foreground-medium-emphasis($theme);
-
-        .task-bar-item-title {
-            max-width: 248px;
-            margin-left: 8px;
-            margin-right: 8px;
-            font-weight: 600;
-            font-size: 14px;
+        .task-bar-icon-container {
+            @include foreground-medium-emphasis($theme);
         }
-
-        .task-close-button {
-            border-radius: 20px;
+        .app-icon {
+            icon-size: 24px;
             width: 24px;
             height: 24px;
-            @include foreground-medium-emphasis($theme);
-            transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
-            &:hover {
-                background: rgba(255, 255, 255, 0.12);
-            }
-
-            &:hover:active {
-                background: rgba(255, 255, 255, 0.24);
-            }
         }
-        .task-small-icon {
-            icon-size: 18px;
+
+        .task-bar-item-content {
+            padding: 0px 12px;
+            @include foreground-medium-emphasis($theme);
+            max-width: 248px;
+            .app-icon {
+                margin-right: 12px;
+            }
+            .task-bar-item-title {
+                margin-right: 12px;
+                font-weight: 600;
+                font-size: 14px;
+            }
+
+            .task-close-button {
+                border-radius: 20px;
+                width: 24px;
+                height: 24px;
+                @include foreground-medium-emphasis($theme);
+                transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.12);
+                }
+
+                &:hover:active {
+                    background: rgba(255, 255, 255, 0.24);
+                }
+            }
+            .task-small-icon {
+                icon-size: 18px;
+            }
         }
     }
 }
