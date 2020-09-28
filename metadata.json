@@ -1,13 +1,14 @@
 {
     "name": "Material Shell",
-    "description": "A simple, productivity oriented GNOME Shell replacement that provides an innovative and automated mouse and keyboard workflow which aims to be faster and easier to use and creates a great user experience.",
+    "description": "A modern desktop interface for Linux - packaged as an extension for GNOME Shell. Improve your user experience and get rid of the anarchy of traditional desktop workflows. Designed to simplify navigation and reduce the need to manipulate windows in order to improve productivity. It's meant to be 100% predictable and bring the benefits of tools coveted by professionals to everyone.",
     "uuid": "material-shell@papyelgringo",
+    "url": "https://material-shell.com",
     "shell-version": [
         "3.34",
         "3.36",
         "3.38"
     ],
-    "version": 4,
+    "version": 6,
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",
     "theme": "org.gnome.shell.extensions.materialshell.theme",

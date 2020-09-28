@@ -117,8 +117,6 @@ subtitle-1 {
       background: rgba(0, 0, 0, 0.04);
       box-shadow: inset 3px 0 0px #3f51b5;
       color: rgba(0, 0, 0, 0.87); }
-    #msPanel .panel-button .system-status-icon {
-      icon-size: 1.09em; }
     .unlock-screen #msPanel .panel-button,
     .login-screen #msPanel .panel-button,
     .lock-screen #msPanel .panel-button {
@@ -131,15 +129,19 @@ subtitle-1 {
       .lock-screen #msPanel .panel-button:hover,
       .lock-screen #msPanel .panel-button:active {
         color: rgba(0, 0, 0, 0.87); }
-  #msPanel .panel-status-indicators-box {
-    min-height: 24px;
-    vertical-align: middle;
-    text-align: center; }
   #msPanel .panel-status-indicators-box,
   #msPanel .panel-status-menu-box {
-    spacing: 2px; }
+    spacing: 2px;
+    vertical-align: middle;
+    text-align: center;
+    min-height: 20px; }
   #msPanel .clock-display * {
     padding: 4px 0px !important; }
+  #msPanel .system-status-icon {
+    height: 20px;
+    icon-size: 1.09em;
+    margin-top: 4px;
+    margin-bottom: 4px; }
 
 #topPanel {
   background: rgba(255, 255, 255, 0.876);
@@ -187,11 +189,6 @@ subtitle-1 {
     .task-bar-item .task-bar-item-content .task-small-icon {
       icon-size: 18px; }
 
-.system-status-icon {
-  height: 24px;
-  width: 24px;
-  padding: 0px; }
-
 .drop-placeholder {
   background: rgba(0, 0, 0, 0.1); }
 
@@ -212,7 +209,7 @@ subtitle-1 {
     padding: 24px;
     color: rgba(0, 0, 0, 0.87); }
 
-.search-entry {
+MsApplicationLauncher .search-entry {
   background: white;
   border-radius: 48px; }
 

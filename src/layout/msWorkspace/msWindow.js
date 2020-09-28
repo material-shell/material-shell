@@ -46,7 +46,6 @@ var MsWindow = GObject.registerClass(
             this.windowClone = new Clutter.Clone();
             this.placeholder = new AppPlaceholder(this.app);
             this.metaWindowSignals = [];
-
             this.placeholder.connect('clicked', (_) => {
                 this.emit('request-new-meta-window');
             });
@@ -222,113 +221,161 @@ var MsWindow = GObject.registerClass(
             };
         }
 
+        delayUpdateMetaWindowPositionAndSize() {
+            this.updateDelayed = true;
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+                this.updateDelayed = false;
+                this.updateMetaWindowPositionAndSize();
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+
         /*
          * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
          */
         updateMetaWindowPositionAndSize() {
+            let windowActor =
+                this._metaWindow && this._metaWindow.get_compositor_private();
+
             if (
-                !this._metaWindow ||
-                !this._metaWindow.get_compositor_private() ||
+                !windowActor ||
                 !this.mapped ||
                 this.width === 0 ||
                 this.height === 0 ||
                 !this._metaWindow.firstFrameDrawn ||
-                this.followMetaWindow
+                this.followMetaWindow ||
+                this.updateDelayed ||
+                this._metaWindow.minimized
             ) {
                 return;
             }
 
-            const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                this.msWorkspace.monitor.index
-            );
-            let contentBox = this.msContent.allocation;
-            let windowActor = this.metaWindow.get_compositor_private();
-
-            //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
             const isMaximized =
-                this.x === workArea.x &&
-                this.y === workArea.y &&
-                this.width === workArea.width &&
-                this.height === workArea.height;
+                this._metaWindow.maximized_horizontally &&
+                this._metaWindow.maximized_vertically;
 
-            /*  if (isMaximized) {
-                if (this.metaWindow.maximized) return;
-                return this.metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-            }*/
-            //Or remove the maximized if it's not
-            let currentFrameRect = this.metaWindow.get_frame_rect();
+            let shouldBeMaximized = isMaximized;
 
+            // Check for maximized only if the msWindow is inside the tileableContainer
             if (
-                this.metaWindow.maximized_horizontally ||
-                this.metaWindow.maximized_vertically
+                this.get_parent() ===
+                this.msWorkspace.msWorkspaceActor.tileableContainer
             ) {
-                windowActor.unmaximizedByMs = true;
-                this.metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
+                shouldBeMaximized =
+                    this.x === 0 &&
+                    this.y === 0 &&
+                    this.width ===
+                        this.msWorkspace.msWorkspaceActor.tileableContainer
+                            .width &&
+                    this.height ===
+                        this.msWorkspace.msWorkspaceActor.tileableContainer
+                            .height;
             }
+
+            let needToMoveOrResize = false;
             let moveTo, resizeTo;
-            if (this.metaWindow.resizeable) {
-                //Set the metaWindow maximized if it's the case
-                moveTo = this.getRelativeMetaWindowPosition(this.metaWindow);
-                resizeTo = {
-                    width: this.width,
-                    height: this.height,
-                };
-            } else {
-                let relativePosition = this.getRelativeMetaWindowPosition(
-                    this.metaWindow
-                );
 
-                moveTo = {
-                    x:
-                        relativePosition.x +
-                        (contentBox.get_width() - currentFrameRect.width) / 2,
-                    y:
-                        relativePosition.y +
-                        (contentBox.get_height() - currentFrameRect.height) / 2,
-                };
-                resizeTo = {
-                    width: currentFrameRect.width,
-                    height: currentFrameRect.height,
-                };
+            // check if the window need a changes only if we don't need to already maximize
+            if (!shouldBeMaximized) {
+                let currentFrameRect = this._metaWindow.get_frame_rect();
+                let contentBox = this.msContent.allocation;
+
+                if (this._metaWindow.allows_resize()) {
+                    moveTo = this.getRelativeMetaWindowPosition(
+                        this._metaWindow
+                    );
+                    resizeTo = {
+                        width: this.width,
+                        height: this.height,
+                    };
+                } else {
+                    let relativePosition = this.getRelativeMetaWindowPosition(
+                        this._metaWindow
+                    );
+
+                    moveTo = {
+                        x:
+                            relativePosition.x +
+                            (contentBox.get_width() - currentFrameRect.width) /
+                                2,
+                        y:
+                            relativePosition.y +
+                            (contentBox.get_height() -
+                                currentFrameRect.height) /
+                                2,
+                    };
+                    resizeTo = {
+                        width: currentFrameRect.width,
+                        height: currentFrameRect.height,
+                    };
+                }
+
+                needToMoveOrResize = !(
+                    currentFrameRect.x === moveTo.x &&
+                    currentFrameRect.y === moveTo.y &&
+                    currentFrameRect.width === resizeTo.width &&
+                    currentFrameRect.height === resizeTo.height
+                );
             }
 
+            // If there is no need to maximize, unmaximize, resize or move discard
             if (
-                currentFrameRect.x === moveTo.x &&
-                currentFrameRect.y === moveTo.y &&
-                currentFrameRect.width === resizeTo.width &&
-                currentFrameRect.height === resizeTo.height
+                (shouldBeMaximized && isMaximized) ||
+                (!shouldBeMaximized && !isMaximized && !needToMoveOrResize)
             ) {
                 return;
             }
-            // Secure the futur metaWindow Position to ensure it's not outside the current monitor
-            if (!this.dragged) {
-                moveTo.x = Math.max(
-                    Math.min(
-                        moveTo.x,
-                        this.msWorkspace.monitor.x +
-                            this.msWorkspace.monitor.width -
-                            resizeTo.width
-                    ),
-                    this.msWorkspace.monitor.x
-                );
-                moveTo.y = Math.max(
-                    Math.min(
-                        moveTo.y,
-                        this.msWorkspace.monitor.y +
-                            this.msWorkspace.monitor.height -
-                            resizeTo.height
-                    ),
-                    this.msWorkspace.monitor.y
+
+            // Delay the update if the previous one is too recent to prevent freeze bug aka window don't update anymore
+            if (
+                windowActor.lastResize &&
+                Date.now() - windowActor.lastResize < 100
+            ) {
+                return this.delayUpdateMetaWindowPositionAndSize();
+            }
+
+            if (shouldBeMaximized) {
+                windowActor.manipulateByMs = true;
+                this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+            }
+
+            if (!shouldBeMaximized && isMaximized) {
+                windowActor.manipulateByMs = true;
+                this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+            }
+            if (needToMoveOrResize) {
+                // Secure the futur metaWindow Position to ensure it's not outside the current monitor
+                if (!this.dragged) {
+                    moveTo.x = Math.max(
+                        Math.min(
+                            moveTo.x,
+                            this.msWorkspace.monitor.x +
+                                this.msWorkspace.monitor.width -
+                                resizeTo.width
+                        ),
+                        this.msWorkspace.monitor.x
+                    );
+                    moveTo.y = Math.max(
+                        Math.min(
+                            moveTo.y,
+                            this.msWorkspace.monitor.y +
+                                this.msWorkspace.monitor.height -
+                                resizeTo.height
+                        ),
+                        this.msWorkspace.monitor.y
+                    );
+                }
+
+                //Set the size accordingly
+                this._metaWindow.move_resize_frame(
+                    true,
+                    moveTo.x,
+                    moveTo.y,
+                    resizeTo.width,
+                    resizeTo.height
                 );
             }
-            //Set the size accordingly
-            this.metaWindow.move_resize_frame(
-                true,
-                moveTo.x,
-                moveTo.y,
-                resizeTo.width,
-                resizeTo.height
-            );
 
             /**
              * Hack start to prevent unmaximize crash
@@ -704,26 +751,30 @@ var MsWindowContent = GObject.registerClass(
             let metaWindow = this.get_parent().metaWindow;
             if (metaWindow) {
                 let windowFrameRect = metaWindow.get_frame_rect();
-                let windowActor = metaWindow.get_compositor_private();
+                let windowBufferRect = metaWindow.get_buffer_rect();
                 //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
-                if (windowActor) {
+                if (metaWindow.get_compositor_private()) {
                     let cloneBox = new Clutter.ActorBox();
                     if (metaWindow.resizeable || metaWindow.fullscreen) {
-                        cloneBox.x1 = windowActor.x - windowFrameRect.x;
-                        cloneBox.y1 = windowActor.y - windowFrameRect.y;
-                        cloneBox.x2 = cloneBox.x1 + windowActor.width;
-                        cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                        cloneBox.x1 = windowBufferRect.x - windowFrameRect.x;
+                        cloneBox.y1 = windowBufferRect.y - windowFrameRect.y;
+                        cloneBox.x2 = cloneBox.x1 + windowBufferRect.width;
+                        cloneBox.y2 = cloneBox.y1 + windowBufferRect.height;
                     } else {
                         const monitor = this.get_parent().msWorkspace.monitor;
                         const workArea = Main.layoutManager.getWorkAreaForMonitor(
                             monitor.index
                         );
                         cloneBox.x1 =
-                            windowActor.x - workArea.x - this.get_parent().x;
+                            windowBufferRect.x -
+                            workArea.x -
+                            this.get_parent().x;
                         cloneBox.y1 =
-                            windowActor.y - workArea.y - this.get_parent().y;
-                        cloneBox.x2 = cloneBox.x1 + windowActor.width;
-                        cloneBox.y2 = cloneBox.y1 + windowActor.height;
+                            windowBufferRect.y -
+                            workArea.y -
+                            this.get_parent().y;
+                        cloneBox.x2 = cloneBox.x1 + windowBufferRect.width;
+                        cloneBox.y2 = cloneBox.y1 + windowBufferRect.height;
                     }
 
                     Allocate(this.clone, cloneBox, flags);

@@ -8,10 +8,8 @@ const ModalDialog = imports.ui.modalDialog;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { reparentActor, throttle } = Me.imports.src.utils.index;
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MsManager } = Me.imports.src.manager.msManager;
-const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 
 const API_SERVER = 'http://api.material-shell.com';
 /* exported MsNotificationManager */
@@ -68,11 +66,11 @@ var MsNotificationManager = class MsNotificationManager extends MsManager {
         );
     }
 };
-
-const MsNotificationSource = GObject.registerClass(
-    class MsNotificationSource extends MessageTray.Source {
-        _init() {
-            super._init('Material Shell');
+let MsNotificationSource, MsNotification;
+if (ShellVersionMatch('3.34')) {
+    MsNotificationSource = class MsNotificationSource extends MessageTray.Source {
+        constructor() {
+            super('Material Shell');
         }
 
         getIcon() {
@@ -80,19 +78,16 @@ const MsNotificationSource = GObject.registerClass(
                 `${Me.path}/assets/icons/on-dark-small.svg`
             );
         }
-    }
-);
-
-const MsNotification = GObject.registerClass(
-    class MsNotification extends MessageTray.Notification {
-        _init(source, title, text, icon, action) {
+    };
+    MsNotification = class MsNotification extends MessageTray.Notification {
+        constructor(source, title, text, icon, action) {
             let params = {};
             if (icon) {
                 params.gicon = Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/${icon}.svg`
                 );
             }
-            super._init(source, title, text, params);
+            super(source, title, text, params);
             this.action = action;
             this.bannerBodyMarkup = true;
         }
@@ -106,8 +101,48 @@ const MsNotification = GObject.registerClass(
             );
             dialog.open(global.get_current_time());
         }
-    }
-);
+    };
+} else {
+    MsNotificationSource = GObject.registerClass(
+        class MsNotificationSource extends MessageTray.Source {
+            _init() {
+                super._init('Material Shell');
+            }
+
+            getIcon() {
+                return Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/on-dark-small.svg`
+                );
+            }
+        }
+    );
+
+    MsNotification = GObject.registerClass(
+        class MsNotification extends MessageTray.Notification {
+            _init(source, title, text, icon, action) {
+                let params = {};
+                if (icon) {
+                    params.gicon = Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/${icon}.svg`
+                    );
+                }
+                super._init(source, title, text, params);
+                this.action = action;
+                this.bannerBodyMarkup = true;
+            }
+
+            activate() {
+                super.activate();
+                let dialog = new MsNotificationDialog(
+                    this.title,
+                    this.bannerBodyText,
+                    this.action
+                );
+                dialog.open(global.get_current_time());
+            }
+        }
+    );
+}
 
 const MsNotificationDialog = GObject.registerClass(
     class MsNotificationDialog extends ModalDialog.ModalDialog {

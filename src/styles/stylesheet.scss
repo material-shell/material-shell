@@ -236,9 +236,6 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             @include foreground-high-emphasis($theme);
         }
 
-        .system-status-icon {
-            icon-size: 1.09em;
-        }
         .unlock-screen &,
         .login-screen &,
         .lock-screen & {
@@ -251,21 +248,24 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         }
     }
 
-    .panel-status-indicators-box {
-        min-height: 24px;
-        vertical-align: middle;
-        text-align: center;
-    }
-
     .panel-status-indicators-box,
     .panel-status-menu-box {
         spacing: 2px;
+        vertical-align: middle;
+        text-align: center;
+        min-height: 20px;
     }
 
     .clock-display {
         * {
             padding: 4px 0px !important;
         }
+    }
+    .system-status-icon {
+        height: 20px;
+        icon-size: 1.09em;
+        margin-top: 4px;
+        margin-bottom: 4px;
     }
 }
 
@@ -359,12 +359,6 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 
-.system-status-icon {
-    height: 24px;
-    width: 24px;
-    padding: 0px;
-}
-
 .drop-placeholder {
     @include foreground-as-background($theme, 0.1);
 }
@@ -404,10 +398,11 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include foreground-high-emphasis($theme);
     }
 }
-
-.search-entry {
-    @include background($theme);
-    border-radius: 48px;
+MsApplicationLauncher {
+    .search-entry {
+        @include background($theme);
+        border-radius: 48px;
+    }
 }
 
 .surface {

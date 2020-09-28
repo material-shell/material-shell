@@ -44,5 +44,14 @@ var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsMod
         }
     }
 
-    destroy() {}
+    destroy() {
+        /* for (let incompatibleExtension of this.incompatibleExtensions) {
+            let extension = Main.extensionManager.lookup(
+                incompatibleExtension.uuid
+            );
+            if (extension) {
+                extension.stateObj.enable();
+            }
+        } */
+    }
 };
