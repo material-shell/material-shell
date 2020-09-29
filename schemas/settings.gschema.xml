@@ -67,5 +67,10 @@
       <summary>Disable Material Shell notifications</summary>
       <description>When enabled you will not receive Material Shell communications about updates anymore</description>
     </key>
+    <key name="enable-persistance" type="b">
+      <default>true</default>
+      <summary>Enable session persistance</summary>
+      <description>When enabled, the current session layout will be saved to disk and restored in the next start</description>
+    </key>
   </schema>
 </schemalist>

@@ -14,7 +14,6 @@ const makePage = (title, content) => {
         halign: Gtk.Align.START,
         use_markup: false,
     });
-    tabWindow.set_name(title);
     return [tabWindow, tabLabel];
 };
 
@@ -584,6 +583,23 @@ function GlobalSettingsTab(notebook) {
     tweaksSettings.bind(
         'disable-notifications',
         disableMaterialShellNotifications,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const enablePersistance = new Gtk.Switch({
+        valign: Gtk.Align.CENTER,
+    });
+    itemRows.push(
+        makeItemRow(
+            'Enable session persistance',
+            'When enabled, the current session layout will be saved to disk and restored in the next start',
+            enablePersistance
+        )
+    );
+    tweaksSettings.bind(
+        'enable-persistance',
+        enablePersistance,
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );
