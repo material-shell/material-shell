@@ -72,6 +72,20 @@
         Cycle around in reverse order the tiling layout on the current workspace
       </description>
     </key>
+    <key name="customize-layout-increase" type="as">
+      <default><![CDATA[['<Super>k']]]></default>
+      <summary>Increase ratio of windows in workspace (works on Split and Ratio layouts).</summary>
+      <description>
+        Increase ratio of windows in workspace (works on Split and Ratio layouts).
+      </description>
+    </key>
+    <key name="customize-layout-decrease" type="as">
+      <default><![CDATA[['<Super>j']]]></default>
+      <summary>Decrease ratio of windows in workspace (works on Split and Ratio layouts).</summary>
+      <description>
+        Decrease ratio of windows in workspace (works on Split and Ratio layouts).
+      </description>
+    </key>
     <key name="toggle-material-shell-ui" type="as">
       <default><![CDATA[['<Super>Escape']]]></default>
       <summary>Toggle the material-shell UI to simulate fullscreen</summary>

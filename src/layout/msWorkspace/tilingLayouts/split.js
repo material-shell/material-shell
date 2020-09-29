@@ -8,15 +8,12 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 
-// TODO: Make this configurable
-const WINDOW_PER_SCREEN = 2;
-const WINDOW_SLIDE_TWEEN_TIME = 250;
-
 /* exported SplitLayout */
 var SplitLayout = GObject.registerClass(
     class SplitLayout extends BaseTilingLayout {
         _init(msWorkspace) {
             super._init(msWorkspace);
+            this.window_per_screen = 2;
             this.updateActiveTileableListFromFocused();
             this.vertical = this.monitor.width < this.monitor.height;
             this.translationAnimator = new TranslationAnimator();
@@ -41,12 +38,12 @@ var SplitLayout = GObject.registerClass(
                 0,
                 Math.min(
                     this.msWorkspace.focusedIndex,
-                    this.msWorkspace.tileableList.length - WINDOW_PER_SCREEN - 1
+                    this.msWorkspace.tileableList.length - this.window_per_screen - 1
                 )
             );
             this.activeTileableList = this.msWorkspace.tileableList.slice(
                 this.baseIndex,
-                this.baseIndex + WINDOW_PER_SCREEN
+                this.baseIndex + this.window_per_screen
             );
         }
 
@@ -82,13 +79,13 @@ var SplitLayout = GObject.registerClass(
             const oldTileableList = this.activeTileableList;
             if (oldIndex < newIndex) {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
-                    newIndex - WINDOW_PER_SCREEN + 1,
+                    newIndex - this.window_per_screen + 1,
                     newIndex + 1
                 );
             } else {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
                     newIndex,
-                    newIndex + WINDOW_PER_SCREEN
+                    newIndex + this.window_per_screen
                 );
             }
             this.baseIndex = this.msWorkspace.tileableList.indexOf(
@@ -124,11 +121,11 @@ var SplitLayout = GObject.registerClass(
 
         tileTileable(tileable, box, index, siblingLength) {
             let verticalPortion = this.vertical
-                ? box.get_height() / WINDOW_PER_SCREEN
+                ? box.get_height() / this.window_per_screen
                 : box.get_height();
             let horizontalPortion = this.vertical
                 ? box.get_width()
-                : box.get_width() / WINDOW_PER_SCREEN;
+                : box.get_width() / this.window_per_screen;
             if (this.activeTileableList.includes(tileable)) {
                 let activeIndex = this.activeTileableList.indexOf(tileable);
                 if (this.vertical) {
@@ -174,12 +171,12 @@ var SplitLayout = GObject.registerClass(
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height() /
-                            WINDOW_PER_SCREEN
+                            this.window_per_screen
                     );
                 } else {
                     actor.set_width(
                         this.tileableContainer.allocation.get_width() /
-                            WINDOW_PER_SCREEN
+                            this.window_per_screen
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
@@ -195,6 +192,20 @@ var SplitLayout = GObject.registerClass(
 
         endTransition() {
             this.tileableContainer.remove_child(this.translationAnimator);
+            this.refreshVisibleActors();
+        }
+
+        onCustomizingHotkeyDecrease() { // Min = 2
+            if (this.window_per_screen < 3) return;
+            this.window_per_screen = Math.max(2, this.window_per_screen - 1);
+            this.updateActiveTileableListFromFocused();
+            this.refreshVisibleActors();
+        }
+
+        onCustomizingHotkeyIncrease() { // Max = 4
+            if (this.window_per_screen > 3) return;
+            this.window_per_screen = Math.min(4, this.window_per_screen + 1);
+            this.updateActiveTileableListFromFocused();
             this.refreshVisibleActors();
         }
     }

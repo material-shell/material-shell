@@ -22,6 +22,8 @@ var KeyBindingAction = {
     // layout actions
     CYCLE_TILING_LAYOUT: 'cycle-tiling-layout',
     REVERSE_CYCLE_TILING_LAYOUT: 'reverse-cycle-tiling-layout',
+    CUSTOMIZE_LAYOUT_INCREASE: 'customize-layout-increase',
+    CUSTOMIZE_LAYOUT_DECREASE: 'customize-layout-decrease',
     TOGGLE_MATERIAL_SHELL_UI: 'toggle-material-shell-ui',
     // workspaces actions
     PREVIOUS_WORKSPACE: 'previous-workspace',
@@ -216,6 +218,22 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.nextTiling(-1);
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.CUSTOMIZE_LAYOUT_INCREASE,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                msWorkspace.tilingLayout.onCustomizingHotkeyIncrease();
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.CUSTOMIZE_LAYOUT_DECREASE,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                msWorkspace.tilingLayout.onCustomizingHotkeyDecrease();
             }
         );
 

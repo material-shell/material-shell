@@ -371,5 +371,8 @@ var BaseTilingLayout = GObject.registerClass(
                 });
             }
         }
+
+        onCustomizingHotkeyDecrease() {}
+        onCustomizingHotkeyIncrease() {}
     }
 );

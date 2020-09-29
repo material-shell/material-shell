@@ -69,6 +69,10 @@ const hotKeysLabels = {
         'Cycle around the tiling layout on the current workspace',
     'reverse-cycle-tiling-layout':
         'Cycle around in reverse order the tiling layout on the current workspace',
+    'customize-layout-increase':
+        'Increase ratio of windows in workspace (works on Split and Ratio layouts).',
+    'customize-layout-decrease':
+        'Decrease ratio of windows in workspace (works on Split and Ratio layouts).',
     'toggle-material-shell-ui':
         'Toggle the material-shell UI to simulate fullscreen',
     'navigate-to-workspace-1': 'Navigate to workspace 1',
@@ -85,7 +89,7 @@ const hotKeysLabels = {
 
 const layouts = {
     maximize: 'Maximize all windows',
-    split: 'Put all windows side by side, two at a time',
+    split: 'Put all windows side by side (from 2 to 4)',
     float: 'Windows are not tiled',
     half: 'Tile windows according to screen ratio',
     'half-horizontal': 'Tile windows horizontally',
@@ -267,7 +271,7 @@ function layoutsTab(notebook) {
         settings.bind(layout, item, 'active', Gio.SettingsBindFlags.DEFAULT);
         rows.push(makeItemRow(name, description, item));
         if (layout === 'ratio') {
-            const ratio = Gtk.SpinButton.new_with_range(0, 1, 0.01);
+            const ratio = Gtk.SpinButton.new_with_range(0.2, 0.8, 0.01);
             settings.bind(
                 'ratio-value',
                 ratio.get_adjustment(),

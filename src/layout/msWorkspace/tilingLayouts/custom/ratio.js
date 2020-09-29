@@ -6,6 +6,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported RatioLayout */
 var RatioLayout = GObject.registerClass(
@@ -22,10 +23,12 @@ var RatioLayout = GObject.registerClass(
             tileable.y = y;
             tileable.width = width;
             tileable.height = height;
+            this.ratio = Me.tilingManager.ratio;
+            this.layoutsSettings = getSettings('layouts');
         }
 
         tile(box, index, last) {
-            const ratio = Me.tilingManager.ratio;
+            let ratio = this.ratio;
             let areaBox = {
                 x: box.x1,
                 y: box.y1,
@@ -71,6 +74,22 @@ var RatioLayout = GObject.registerClass(
                     height: area.height * (1 - ratio),
                 };
             }, areaBox);
+        }
+
+        onCustomizingHotkeyDecrease() {
+            if (this.ratio < 0.2) return;
+            this.ratio = Math.max(0, this.ratio - 0.05);
+            this.layoutsSettings.set_double('ratio-value', this.ratio);
+            this.tileAll();
+            this.layout_changed();
+        }
+
+        onCustomizingHotkeyIncrease() {
+            if (this.ratio > 0.8) return;
+            this.ratio = Math.min(1, this.ratio + 0.05);
+            this.layoutsSettings.set_double('ratio-value', this.ratio);
+            this.tileAll();
+            this.layout_changed();
         }
     }
 );
