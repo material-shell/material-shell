@@ -14,6 +14,12 @@ const makePage = (title, content) => {
         halign: Gtk.Align.START,
         use_markup: false,
     });
+    tabWindow.set_name(title);
+    tabWindow.connect('realize', () => {
+        let window = tabWindow.get_toplevel();
+        let [default_width, default_height] = window.get_default_size();
+        window.resize(800, default_height);
+    });
     return [tabWindow, tabLabel];
 };
 
