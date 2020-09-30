@@ -6,7 +6,6 @@ const FileTest = GLib.FileTest;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
@@ -18,13 +17,6 @@ var StateManager = class StateManager {
     constructor() {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
-        this.settings = getSettings('tweaks');
-        this.observer = this.settings.connect(
-            'changed::enable-persistance',
-            (schema) => {
-                this.isEnabled = schema.get_boolean('enable-persistance');
-            });
-        this.isEnabled = this.settings.get_boolean('enable-persistance');
         }
     loadRegistry(callback) {
         if (typeof callback !== 'function')
@@ -42,15 +34,6 @@ var StateManager = class StateManager {
                         this.state = {};
                     }
                 }
-
-                if (!this.isEnabled) {
-                    Object.keys(this.state).forEach(
-                        (key) =>
-                            key === 'notification-check' ||
-                            delete this.state[key]
-                    );
-                }
-
                 callback(this.state);
             });
         } else {
@@ -88,14 +71,9 @@ var StateManager = class StateManager {
         );
     }
     getState(key) {
-        if (this.isEnabled || key === 'notification-check') {
-            return this.state[key];
-        } else {
-            return undefined;
-        }
+        return this.state[key];
     }
     setState(key, value) {
-        if (!this.isEnabled && key !== 'notification-check') return;
         if (value === undefined) {
             delete this.state[key];
         } else {

@@ -16,6 +16,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.workspaceManager = global.workspace_manager;
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
+        this.settings = getSettings('tweaks');
+        this.isPersistenceDisabled = !this.settings.get_boolean('enable-persistence');
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.metaWindowFocused = null;
         this.numOfMonitors = global.display.get_n_monitors();
@@ -102,6 +104,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             return false;
         };
 
+        this.observe(this.settings, 'changed::enable-persistence', (schema) => {
+            this.isPersistenceDisabled = !schema.get_boolean('enable-persistence');
+            if (this.isPersistenceDisabled) {
+                Me.stateManager.setState('workspaces-state');
+            } else {
+                this.saveCurrentState();
+            }
+        });
+
         this.observe(Main.layoutManager, 'monitors-changed', () => {
             this.onMonitorsChanged();
         });
@@ -179,7 +190,13 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     restorePreviousState() {
-        this.currentState = Me.stateManager.getState('workspaces-state');
+        // Make sure nothing is restored if state persistence is disabled
+        if (this.isPersistenceDisabled) {
+            this.currentState = undefined;
+        } else {
+            this.currentState = Me.stateManager.getState('workspaces-state');
+        }
+
         this.restoringState = true;
         this.removeEmptyWorkspaces();
 
@@ -241,6 +258,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             global.get_current_time()
         );
         this.setupNewWorkspace(workspace);
+
+        // Activate the saved workspace, if valid
+        if (this.currentState && this.currentState.primaryWorkspaceActiveIndex) {
+            const savedIndex = this.currentState.primaryWorkspaceActiveIndex;
+            if (savedIndex && savedIndex < this.workspaceManager.n_workspaces) {
+                this.workspaceManager
+                    .get_workspace_by_index(savedIndex)
+                    .activate(global.get_current_time());
+            }
+        }
 
         delete this.restoringState;
     }
@@ -467,6 +494,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     saveCurrentState() {
+        // Avoid unnecessary work
+        if (this.isPersistenceDisabled) return;
         const workspacesState = {
             msWorkspaceList: [],
             primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),

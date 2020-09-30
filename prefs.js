@@ -593,19 +593,19 @@ function GlobalSettingsTab(notebook) {
         Gio.SettingsBindFlags.DEFAULT
     );
 
-    const enablePersistance = new Gtk.Switch({
+    const enablePersistence = new Gtk.Switch({
         valign: Gtk.Align.CENTER,
     });
     itemRows.push(
         makeItemRow(
-            'Enable session persistance',
-            'When enabled, the current session layout will be saved to disk and restored in the next start',
-            enablePersistance
+            'Enable session persistence',
+            'Current session layout will be saved to disk and restored in the next start',
+            enablePersistence
         )
     );
     tweaksSettings.bind(
-        'enable-persistance',
-        enablePersistance,
+        'enable-persistence',
+        enablePersistence,
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );
