@@ -17,7 +17,7 @@ var StateManager = class StateManager {
     constructor() {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
-        }
+    }
     loadRegistry(callback) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
@@ -82,9 +82,5 @@ var StateManager = class StateManager {
         this.saveRegistry();
     }
 
-    destroy() {
-        if (this.observer) {
-            this.settings.disconnect(this.observer);
-        }
-    }
+    destroy() {}
 };
