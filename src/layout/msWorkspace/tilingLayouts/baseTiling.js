@@ -116,9 +116,11 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         tileAll(box) {
-            box = box || this.tileableContainer.allocation;
-            box.x1 = 0;
-            box.y1 = 0;
+            if (!box) {
+                box = new Clutter.ActorBox();
+                box.x2 = this.tileableContainer.allocation.get_width();
+                box.y2 = this.tileableContainer.allocation.get_height();
+            }
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
@@ -298,7 +300,7 @@ var BaseTilingLayout = GObject.registerClass(
                 (!gap && (!useScreenGap || !screenGap)) ||
                 // Never apply gaps if App Launcher is the only tileable
                 this.msWorkspace.tileableList.length < 2
-             ) {
+            ) {
                 return { x, y, width, height };
             }
             const bounds = this.getWorkspaceBounds();
