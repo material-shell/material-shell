@@ -34,7 +34,6 @@ var StateManager = class StateManager {
                         this.state = {};
                     }
                 }
-
                 callback(this.state);
             });
         } else {
@@ -75,11 +74,13 @@ var StateManager = class StateManager {
         return this.state[key];
     }
     setState(key, value) {
-        if (value == undefined) {
+        if (value === undefined) {
             delete this.state[key];
         } else {
             this.state[key] = value;
         }
         this.saveRegistry();
     }
+
+    destroy() {}
 };

@@ -141,7 +141,7 @@ var TilingManager = class TilingManager extends MsManager {
                 }
                 let layout = msWorkspace.tilingLayout;
 
-                layout.onTile();
+                layout.tileAll();
                 //this.dialogLayout.onTile(dialogWindows, monitor);
             }
 

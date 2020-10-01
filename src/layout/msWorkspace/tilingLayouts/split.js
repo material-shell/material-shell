@@ -123,28 +123,49 @@ var SplitLayout = GObject.registerClass(
         }
 
         tileTileable(tileable, box, index, siblingLength) {
-            let verticalPortion = this.vertical
-                ? box.get_height() / WINDOW_PER_SCREEN
-                : box.get_height();
-            let horizontalPortion = this.vertical
-                ? box.get_width()
-                : box.get_width() / WINDOW_PER_SCREEN;
-            if (this.activeTileableList.includes(tileable)) {
-                let activeIndex = this.activeTileableList.indexOf(tileable);
-                if (this.vertical) {
-                    tileable.x = box.x1;
-                    tileable.y = box.y1 + activeIndex * verticalPortion;
-                } else {
-                    tileable.x = box.x1 + activeIndex * horizontalPortion;
-                    tileable.y = box.y1;
-                }
-            } else {
+            // Do nothing if App Launcher is the only tileable
+            if (index === 0 && siblingLength === 1) {
                 tileable.x = box.x1;
                 tileable.y = box.y1;
-            }
+                tileable.width = box.get_width();
+                tileable.height = box.get_height();
+           } else {
+               let x, y, width, height;
+               let verticalPortion = this.vertical
+                   ? box.get_height() / WINDOW_PER_SCREEN
+                   : box.get_height();
+               let horizontalPortion = this.vertical
+                   ? box.get_width()
+                   : box.get_width() / WINDOW_PER_SCREEN;
+               if (this.activeTileableList.includes(tileable)) {
+                   let activeIndex = this.activeTileableList.indexOf(tileable);
+                   if (this.vertical) {
+                       x = box.x1;
+                       y = box.y1 + activeIndex * verticalPortion;
+                   } else {
+                       x = box.x1 + activeIndex * horizontalPortion;
+                       y = box.y1;
+                   }
+               } else {
+                   x = box.x1;
+                   y = box.y1;
+               }
 
-            tileable.width = horizontalPortion;
-            tileable.height = verticalPortion;
+               width = horizontalPortion;
+               height = verticalPortion;
+
+               let {
+                   x: gapX,
+                   y: gapY,
+                   width: gapWidth,
+                   height: gapHeight,
+               } = this.applyGaps(x, y, width, height);
+
+               tileable.x = gapX;
+               tileable.y = gapY;
+               tileable.width = gapWidth;
+               tileable.height = gapHeight;
+           }
         }
 
         /*
