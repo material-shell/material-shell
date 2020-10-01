@@ -82,8 +82,8 @@
     </key>
     <key name="default-layout" type="s">
       <default>'maximize'</default>
-      <summary>default layout</summary>
-      <description>Determines the active default layout for Material Shell</description>
+      <summary>Default layout</summary>
+      <description>Determines the default layout for new workspace</description>
     </key>
     <key name="windows-excluded" type="s">
       <default>''</default>
