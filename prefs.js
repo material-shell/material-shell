@@ -15,6 +15,11 @@ const makePage = (title, content) => {
         use_markup: false,
     });
     tabWindow.set_name(title);
+    tabWindow.connect('realize', () => {
+        let window = tabWindow.get_toplevel();
+        let [default_width, default_height] = window.get_default_size();
+        window.resize(800, default_height);
+    });
     return [tabWindow, tabLabel];
 };
 
@@ -584,6 +589,23 @@ function GlobalSettingsTab(notebook) {
     tweaksSettings.bind(
         'disable-notifications',
         disableMaterialShellNotifications,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const enablePersistence = new Gtk.Switch({
+        valign: Gtk.Align.CENTER,
+    });
+    itemRows.push(
+        makeItemRow(
+            'Enable session persistence',
+            'Current session layout will be saved to disk and restored in the next start',
+            enablePersistence
+        )
+    );
+    tweaksSettings.bind(
+        'enable-persistence',
+        enablePersistence,
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );
