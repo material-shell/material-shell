@@ -1,4 +1,9 @@
 <schemalist>
+  <enum id="org.gnome.shell.extensions.materialshell.theme.themeEnum">
+    <value nick="dark" value="0"/>
+    <value nick="light" value="1"/>
+    <value nick="primary" value="2"/>
+  </enum>
   <enum id="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
     <value nick="hybrid" value="0"/>
     <value nick="category" value="1"/>
@@ -10,9 +15,9 @@
     <value nick="icon" value="2"/>
   </enum>
   <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
-    <key name="theme" type="s">
+    <key name="theme" enum="org.gnome.shell.extensions.materialshell.theme.themeEnum">
       <default>'dark'</default>
-      <summary>theme</summary>
+      <summary>Theme</summary>
       <description>Determines the active theme for Material Shell</description>
     </key>
     <key name="primary-color" type="s">
@@ -46,13 +51,13 @@
       <description>Add the blurred effect to the background wallpaper</description>
     </key>
     <key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
-        <default>'full'</default>
-        <summary>Taskbar item style</summary>
-        <description>Type of style for the taskbar item</description>
+      <default>'full'</default>
+      <summary>Taskbar item style</summary>
+      <description>Type of style for the taskbar item</description>
     </key>
   </schema>
-  <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/">
-    <key name="cycle-through-windows" type="b">
+  <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
+    <key name="cycle-through-windows" type="b" >
       <default>false</default>
       <summary>Cycle through windows</summary>
       <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
