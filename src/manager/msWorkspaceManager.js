@@ -17,7 +17,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
         this.settings = getSettings('tweaks');
-        this.isPersistenceDisabled = !this.settings.get_boolean('enable-persistence');
+        this.isPersistenceEnabled = this.settings.get_boolean(
+            'enable-persistence'
+        );
         this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.metaWindowFocused = null;
         this.numOfMonitors = global.display.get_n_monitors();
@@ -105,11 +107,13 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         };
 
         this.observe(this.settings, 'changed::enable-persistence', (schema) => {
-            this.isPersistenceDisabled = !schema.get_boolean('enable-persistence');
-            if (this.isPersistenceDisabled) {
-                Me.stateManager.setState('workspaces-state');
-            } else {
+            this.isPersistenceEnabled = schema.get_boolean(
+                'enable-persistence'
+            );
+            if (this.isPersistenceEnabled) {
                 this.saveCurrentState();
+            } else {
+                Me.stateManager.setState('workspaces-state');
             }
         });
 
@@ -191,10 +195,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     restorePreviousState() {
         // Make sure nothing is restored if state persistence is disabled
-        if (this.isPersistenceDisabled) {
-            this.currentState = undefined;
-        } else {
+        if (this.isPersistenceEnabled) {
             this.currentState = Me.stateManager.getState('workspaces-state');
+        } else {
+            this.currentState = undefined;
         }
 
         this.restoringState = true;
@@ -260,7 +264,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.setupNewWorkspace(workspace);
 
         // Activate the saved workspace, if valid
-        if (this.currentState && this.currentState.primaryWorkspaceActiveIndex) {
+        if (
+            this.currentState &&
+            this.currentState.primaryWorkspaceActiveIndex
+        ) {
             const savedIndex = this.currentState.primaryWorkspaceActiveIndex;
             if (savedIndex && savedIndex < this.workspaceManager.n_workspaces) {
                 this.workspaceManager
@@ -495,7 +502,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
     saveCurrentState() {
         // Avoid unnecessary work
-        if (this.isPersistenceDisabled) return;
+        if (!this.isPersistenceEnabled) return;
         const workspacesState = {
             msWorkspaceList: [],
             primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),
