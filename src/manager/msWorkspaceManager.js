@@ -557,6 +557,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     saveCurrentState() {
         // Avoid unnecessary work
         if (!this.isPersistenceEnabled) return;
+
         const workspacesState = {
             msWorkspaceList: [],
             primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),
@@ -569,6 +570,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 return msWorkspace.getState();
             });
         this.currentState = workspacesState;
+        Me.logFocus(
+            '[DEBUG]',
+            `saveCurrentState (${workspacesState.msWorkspaceList.length} different workspaces)`
+        );
         Me.stateManager.setState('workspaces-state', workspacesState);
     }
 
