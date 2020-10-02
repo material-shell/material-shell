@@ -141,6 +141,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             'workspace-added',
             (_, workspaceIndex) => {
                 if (this.restoringState) return;
+                Me.logFocus('[DEBUG]', `Workspace ${workspaceIndex} was added`);
                 this.setupNewWorkspace(
                     this.workspaceManager.get_workspace_by_index(workspaceIndex)
                 );
@@ -151,6 +152,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.workspaceManager,
             'workspace-removed',
             (_, workspaceIndex) => {
+                Me.logFocus(
+                    '[DEBUG]',
+                    `Workspace ${workspaceIndex} was removed`
+                );
                 this.removeMsWorkspaceAtIndex(workspaceIndex);
             }
         );
@@ -202,6 +207,8 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
 
         this.restoringState = true;
+        Me.logFocus('[DEBUG]', 'Restoring previous state');
+        Me.logFocus('[DEBUG]', 'Step 1 Remove empty workspace if any');
         this.removeEmptyWorkspaces();
 
         let msWorkspaceListToRestore = this.currentState
@@ -213,6 +220,20 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                   ]
             : [];
 
+        Me.logFocus(
+            '[DEBUG]',
+            `Step 2 Restoring ${msWorkspaceListToRestore.length} previous MS workspace`
+        );
+        Me.logFocus(
+            '[DEBUG]',
+            `Start by restoring external monitors: ${
+                Main.layoutManager.monitors.length - 1
+            } external monitors found and ${
+                msWorkspaceListToRestore.filter(
+                    (msWorkspaceState) => msWorkspaceState.external
+                ).length
+            } external MS workspaces found`
+        );
         // First restore the external monitors
         Main.layoutManager.monitors
             .filter((monitor) => monitor != Main.layoutManager.primaryMonitor)
@@ -231,6 +252,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 );
             });
 
+        Me.logFocus(
+            '[DEBUG]',
+            `Then continue by restoring all other ${msWorkspaceListToRestore.length} MS workspaces into ${this.workspaceManager.n_workspaces} existing gnome-shell workspace`
+        );
         // Then restore all the others msWorkspaces
         if (msWorkspaceListToRestore.length) {
             msWorkspaceListToRestore.forEach((msWorkspaceState, index) => {
@@ -244,18 +269,25 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             });
         }
 
+        Me.logFocus(
+            '[DEBUG]',
+            `Then continue by creating a new Ms Workspace for every Gnome Workspace still not assigned ${
+                this.workspaceManager.n_workspaces -
+                this.primaryMsWorkspaces.length
+            }`
+        );
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             if (!this.primaryMsWorkspaces[i]) {
-                /* const workspace = this.workspaceManager.append_new_workspace(
-                    false,
-                    global.get_current_time()
-                ); */
                 this.setupNewWorkspace(
                     this.workspaceManager.get_workspace_by_index(i)
                 );
             }
         }
 
+        Me.logFocus(
+            '[DEBUG]',
+            `Then add the last empty Ms Workspace at the end`
+        );
         // Add empty workspace at the end
         const workspace = this.workspaceManager.append_new_workspace(
             false,
@@ -268,6 +300,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.currentState &&
             this.currentState.primaryWorkspaceActiveIndex
         ) {
+            Me.logFocus(
+                '[DEBUG]',
+                `Finally try to activate the previous active MsWorkspace: ${this.currentState.primaryWorkspaceActiveIndex}`
+            );
             const savedIndex = this.currentState.primaryWorkspaceActiveIndex;
             if (savedIndex && savedIndex < this.workspaceManager.n_workspaces) {
                 this.workspaceManager
@@ -282,6 +318,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     removeEmptyWorkspaces() {
         let emptyWorkspaces = [];
         let i;
+        Me.logFocus(
+            '[DEBUG]',
+            `Checking among ${this.workspaceManager.n_workspaces} workspaces`
+        );
         for (i = 0; i < this.workspaceManager.n_workspaces; i++) {
             emptyWorkspaces[i] = true;
         }
@@ -297,19 +337,24 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             emptyWorkspaces[workspaceIndex] = false;
         }
 
-        emptyWorkspaces
+        emptyWorkspaces = emptyWorkspaces
             .map((empty, index) => {
                 return empty
                     ? this.workspaceManager.get_workspace_by_index(index)
                     : null;
             })
-            .filter((workspace) => workspace != null)
-            .forEach((workspace) => {
-                this.workspaceManager.remove_workspace(
-                    workspace,
-                    global.get_current_time()
-                );
-            });
+            .filter((workspace) => workspace != null);
+
+        Me.logFocus(
+            '[DEBUG]',
+            `Removing ${emptyWorkspaces.length} empty workspaces`
+        );
+        emptyWorkspaces.forEach((workspace) => {
+            this.workspaceManager.remove_workspace(
+                workspace,
+                global.get_current_time()
+            );
+        });
     }
 
     onMonitorsChanged() {
@@ -414,6 +459,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     setupNewWorkspace(workspace, initialState) {
+        Me.logFocus('[DEBUG]', `Setup a new Workspace`);
         this.createNewMsWorkspace(
             Main.layoutManager.primaryMonitor,
             initialState
@@ -424,6 +470,14 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     createNewMsWorkspace(monitor, initialState) {
+        Me.logFocus(
+            '[DEBUG]',
+            `Create new MS Workspace: Restoring previous state? ${
+                initialState != null
+                    ? `YES. Restoring ${initialState.msWindowList.length} windows`
+                    : 'NO'
+            }`
+        );
         let msWorkspace = new MsWorkspace(this, monitor, initialState);
         msWorkspace.connect('tileableList-changed', (_) => {
             this.stateChanged();
