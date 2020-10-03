@@ -362,7 +362,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         let workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
             msWindow.msWorkspace
         );
-        msWindow.app.open_new_window(workspaceIndex);
+        msWindow.app.launch(0, workspaceIndex, false);
     }
 
     _handleWindow(metaWindow) {
