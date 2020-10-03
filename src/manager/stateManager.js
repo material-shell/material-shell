@@ -64,10 +64,6 @@ var StateManager = class StateManager {
                         stream.close(null);
                         file.move(this.stateFile, 1, null, () => {
                             //Progress callback
-                            Me.logFocus(
-                                '[DEBUG]',
-                                `registry successfully saved`
-                            );
                         });
                     }
                 );

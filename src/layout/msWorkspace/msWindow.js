@@ -90,7 +90,6 @@ var MsWindow = GObject.registerClass(
 
         set persistent(boolean) {
             this._persistent = boolean;
-            Me.logFocus('[DEBUG]', `stateChanged from set Persistent`);
             Me.msWorkspaceManager.stateChanged();
         }
 
