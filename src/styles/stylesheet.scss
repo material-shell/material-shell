@@ -303,7 +303,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         }
     }
     .task-bar-item {
-        font-size: 14px;
+        font-size: 10.5pt;
 
         &.active {
             .task-bar-item-content,
@@ -336,7 +336,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             .task-bar-item-title {
                 margin-right: 12px;
                 font-weight: 600;
-                font-size: 14px;
+                font-size: 10.5pt;
             }
 
             .task-close-button {
@@ -391,7 +391,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         }
 
         .mat-card-title-label {
-            font-size: 24px;
+            font-size: 18pt;
         }
     }
 
