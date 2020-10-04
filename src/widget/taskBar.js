@@ -100,6 +100,9 @@ var TaskBar = GObject.registerClass(
                         item.connect('close-clicked', (_) => {
                             tileable.kill();
                         });
+                        item.tileable.connect('disconnect-tileable', (_) => {
+                            item.disconnectTileable();
+                        });
 
                         item._draggable.connect('drag-begin', () => {
                             const initialIndex = this.msWorkspace.tileableList.indexOf(
@@ -627,6 +630,10 @@ let TileableItem = GObject.registerClass(
             this.container.add_child(this.startIconContainer);
             this.container.add_child(this.title);
             this.container.add_child(this.endIconContainer);
+        }
+
+        disconnectTileable() {
+            this.signalManager.destroyItem(this.tileable);
         }
 
         setStyle() {

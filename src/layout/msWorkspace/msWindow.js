@@ -22,6 +22,7 @@ var MsWindow = GObject.registerClass(
                 param_types: [GObject.TYPE_BOOLEAN],
             },
             request_new_meta_window: {},
+            'disconnect-tileable': {},
         },
     },
     class MsWindow extends Clutter.Actor {
@@ -648,6 +649,7 @@ var MsWindow = GObject.registerClass(
         }
 
         kill() {
+            this.emit('disconnect-tileable');
             let dialogPromises = this.dialogs.map((dialog) => {
                 return new Promise((resolve) => {
                     delete dialog.metaWindow.msWindow;
@@ -677,10 +679,10 @@ var MsWindow = GObject.registerClass(
                 if (this._persistent) {
                     this.unsetWindow();
                 } else {
-                    delete this.metaWindow;
+                    log('*** material-shell.msWindow | d.id: ' + this.destroyId);
                     this._onDestroy();
+                    delete this.metaWindow;
                     this.msWorkspace.removeMsWindow(this);
-                    if (this.destroyId) this.disconnect(this.destroyId);
                     this.destroy();
                 }
             });
@@ -738,6 +740,7 @@ var MsWindow = GObject.registerClass(
         }
 
         _onDestroy() {
+            if (this.destroyId) this.disconnect(this.destroyId);
             this.unregisterOnMetaWindowSignals();
         }
     }
