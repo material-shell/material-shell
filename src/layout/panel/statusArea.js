@@ -43,6 +43,14 @@ var MsStatusArea = GObject.registerClass(
                 0
             );
             this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
+            this.dateMenu._indicator.bind_property(
+                'visible',
+                this.dateMenu.indicatorPad,
+                'visible',
+                GObject.BindingFlags.SYNC_CREATE |
+                GObject.BindingFlags.INVERT_BOOLEAN
+            );
+            this.dateMenu.box.add_child(this.dateMenu.indicatorPad);
             this.dateMenu.box.set_x_align(Clutter.ActorAlign.CENTER);
             let update = () => {
                 /**
@@ -210,6 +218,14 @@ var MsStatusArea = GObject.registerClass(
         }
         onDisable() {
             Me.disconnect(this.disableConnect);
+            this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
+            this.dateMenu._indicator.bind_property(
+                'visible',
+                this.dateMenu.indicatorPad,
+                'visible',
+                GObject.BindingFlags.SYNC_CREATE
+            );
+            this.dateMenu.box.insert_child_at_index(this.dateMenu.indicatorPad, 0);
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();
             this.restorePanelActors();
