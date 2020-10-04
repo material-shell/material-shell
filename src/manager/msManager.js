@@ -25,33 +25,42 @@ var MsManager = class MsManager {
         };
     }
 
-    destroy(subject) {
-        this.signals
-            .filter((signal) => {
-                if (subject) return signal.from === subject;
-                else return true;
-            })
-            .forEach((signal) => {
-                if (signal.from) {
+    destroy() {
+        this.signals.forEach((signal) => {
+            if (signal.from) {
+                try {
+                    signal.from.disconnect(signal.id);
+                } catch (error) {
+                    Me.log(
+                        `Failed to disconnect signal ${signal.id} from ${
+                            signal.from
+                        } ${
+                            signal.from.constructor.name
+                        } ${signal.from.toString()}  `
+                    );
+                }
+            }
+        });
+    }
+
+    removeAll(subject) {
+        for (let i = this.signals.length ; i--;) {
+            if (this.signals[i].from == subject) {
+                let id = this.signals[i].id;
+                this.signals.splice(i, 1);
+                if (id) {
                     try {
-                        signal.from.disconnect(signal.id);
-                        if (subject) {
-                            this.signals.splice(
-                                this.signals.indexOf(signal),
-                                1
-                            );
-                        }
-                    } catch (error) {
+                        subject.disconnect(id);
+                    } catch (e) {
                         Me.log(
-                            `Failed to disconnect signal ${signal.id} from ${
-                                signal.from
-                            } ${
-                                signal.from.constructor.name
-                            } ${signal.from.toString()}  `
+                            `Failed to disconnect signal ${id} (${
+                                subject.constructor.name
+                            })`
                         );
                     }
                 }
-            });
+            }
+        }
     }
 };
 Signals.addSignalMethods(MsManager.prototype);
