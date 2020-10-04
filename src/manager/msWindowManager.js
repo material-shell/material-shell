@@ -10,8 +10,8 @@ const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { getSettings } = Me.imports.src.utils.settings;
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
-const MAX_TIME_FIND = 2000 + ((isWayland ? 1 : 0) * 1000);
-const MAX_TIME_WAIT = 5000 + ((isWayland ? 1 : 0) * 1000);
+const MAX_TIME_FIND = 2000 + ((isWayland ? 2 : 0) * 1000);
+const MAX_TIME_WAIT = 5000 + ((isWayland ? 2 : 0) * 1000);
 
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {

@@ -26,7 +26,7 @@ var MsManager = class MsManager {
         };
     }
 
-    destroyItem(subject) {
+    disconnectItem(subject) {
         this.signals
             .filter((signal) => signal.from === subject)
             .forEach((signal) => {
