@@ -633,7 +633,7 @@ let TileableItem = GObject.registerClass(
         }
 
         disconnectTileable() {
-            this.signalManager.disconnectItem(this.tileable);
+            this.signalManager.destroy(this.tileable);
         }
 
         setStyle() {

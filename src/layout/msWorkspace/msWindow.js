@@ -649,6 +649,8 @@ var MsWindow = GObject.registerClass(
         }
 
         kill() {
+            // Disconnect all signals from TileableItem that uses MsWindow
+            // to avoid errors
             this.emit('disconnect-tileable');
             let dialogPromises = this.dialogs.map((dialog) => {
                 return new Promise((resolve) => {
@@ -679,7 +681,6 @@ var MsWindow = GObject.registerClass(
                 if (this._persistent) {
                     this.unsetWindow();
                 } else {
-                    log('*** material-shell.msWindow | d.id: ' + this.destroyId);
                     this._onDestroy();
                     delete this.metaWindow;
                     this.msWorkspace.removeMsWindow(this);

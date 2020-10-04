@@ -9,6 +9,7 @@ const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { getSettings } = Me.imports.src.utils.settings;
 
+// Wayland takes much longer to display new windows, so the way is increased
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 const MAX_TIME_FIND = 2000 + ((isWayland ? 2 : 0) * 1000);
 const MAX_TIME_WAIT = 5000 + ((isWayland ? 2 : 0) * 1000);
@@ -182,7 +183,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
     checkWindowsForAssignations() {
         const timestamp = Date.now();
-        log('*** material-shell.msWindowManager | check: ' + timestamp);
 
         // For every waiting Window we do
         this.metaWindowWaitingForAssignationList.forEach(
@@ -190,7 +190,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 let app = this.windowTracker.get_window_app(
                     waitingMetaWindow.metaWindow
                 );
-                log('*** material-shell.msWindowManager | a.name: ' + app.get_name());
                 let msWindowFound = null;
                 // If window is dialog try t0 find his parent
                 if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
@@ -210,9 +209,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                             }
                         );
                         //We take the msWindow focused the last
-                        log('*** material-shell.msWindowManager | msWindowFound: ' + msWindowFound);
                         sameAppMsWindowList.forEach((msWindow) => {
-                            log('*** material-shell.msWindowManager | w.title: ' + msWindow.title);
                             if (
                                 !msWindowFound ||
                                 msWindowFound.metaWindow.get_user_time() <
@@ -224,13 +221,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     }
                 }
 
-                log('*** material-shell.msWindowManager | found1: ' + msWindowFound);
                 if (!msWindowFound) {
                     // First check among the msWindow waiting for an App to be opened
                     this.msWindowWaitingForMetaWindowList.some(
                         (waitingMsWindow) => {
                             waitingMsWindow.checked = true;
-                            log('*** material-shell.msWindowManager | w.id: ' + waitingMsWindow.msWindow.app.get_id() + ' a.id: ' + app.get_id());
                             if (
                                 app &&
                                 waitingMsWindow.msWindow.app.get_id() ===
@@ -253,7 +248,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     return;
                 }
 
-                log('*** material-shell.msWindowManager | app: ' + app.get_name());
                 if (!msWindowFound) {
                     //Then check among empty msWindows
                     const emptyMsWindowListOfApp = this.msWindowList.filter(
@@ -279,7 +273,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                     }
                 }
 
-                log('*** material-shell.msWindowManager | found2: ' + msWindowFound);
                 if (msWindowFound) {
                     if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                         msWindowFound.addDialog(waitingMetaWindow.metaWindow);
@@ -287,10 +280,10 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                         msWindowFound.setWindow(waitingMetaWindow.metaWindow);
                     }
                 } else {
+                    // This is not needed
                     // let app = this.windowTracker.get_window_app(
                     //     waitingMetaWindow.metaWindow
                     // );
-                    log(`*** material-shell.msWindowManager | t1: ${timestamp - waitingMetaWindow.timestamp}`);
                     if (
                         (waitingMetaWindow.metaWindow.firstFrameDrawn &&
                             !app.is_window_backed()) ||
@@ -320,13 +313,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
 
         // Remove MsWindow waiting for too much time. We probably missed the window awaited.
         this.msWindowWaitingForMetaWindowList.forEach((waitingMsWindow) => {
-            log(`*** material-shell.msWindowManager | t2: ${timestamp - waitingMsWindow.timestamp}`);
             if (
                 (waitingMsWindow.checked &&
                     timestamp - waitingMsWindow.timestamp > MAX_TIME_FIND) ||
                 timestamp - waitingMsWindow.timestamp > MAX_TIME_WAIT
             ) {
-                log('*** material-shell.msWindowManager | checked: ' + waitingMsWindow.checked);
                 waitingMsWindow.msWindow.kill();
                 this.msWindowWaitingForMetaWindowList.splice(
                     this.msWindowWaitingForMetaWindowList.indexOf(
@@ -342,11 +333,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             this.metaWindowWaitingForAssignationList.length ||
             this.msWindowWaitingForMetaWindowList.length
         ) {
-            log('*** material-shell.msWindowManager | checkInProgress: ' + this.checkInProgress);
             if (this.checkInProgress) return;
             this.checkInProgress = true;
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
-                log('*** material-shell.msWindowManager | timeout');
                 this.checkInProgress = false;
                 this.checkWindowsForAssignations();
             });
@@ -379,19 +368,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         let workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
             msWindow.msWorkspace
         );
-        // const app = msWindow.app;
-        // if (isWayland && app.get_state() === Shell.AppState.STOPPED) {
-        //     const useGPU =
-        //         app.get_app_info().get_boolean('PrefersNonDefaultGPU') ||
-        //         app.get_app_info().get_boolean('X-KDE-RunOnDiscreteGpu');
-        //     log('*** material-shell.msWindowManager | launch: ' +
-        //         app.get_name() + ' useGPU: ' + useGPU);
-        //     app.launch(0, workspaceIndex, useGPU);
-        // } else {
-        //     log('*** material-shell.msWindowManager | open: ' + msWindow.title);
-        //     app.open_new_window(workspaceIndex);
-        // }
-        log('*** material-shell.msWindowManager | open: ' + msWindow.title + ' ***');
         msWindow.app.open_new_window(workspaceIndex);
     }
 
