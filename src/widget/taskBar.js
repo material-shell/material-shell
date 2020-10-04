@@ -350,7 +350,7 @@ var TaskBar = GObject.registerClass(
     }
 );
 
-let TaskBarItem = GObject.registerClass(
+var TaskBarItem = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
