@@ -13,6 +13,7 @@ const { getSettings } = Me.imports.src.utils.settings;
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 const MAX_TIME_FIND = 2000 + ((isWayland ? 2 : 0) * 1000);
 const MAX_TIME_WAIT = 5000 + ((isWayland ? 2 : 0) * 1000);
+const TIME_CHECK = 100 + ((isWayland ? 1 : 0) * 100);
 
 /* exported MsWindowManager */
 var MsWindowManager = class MsWindowManager extends MsManager {
@@ -335,7 +336,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         ) {
             if (this.checkInProgress) return;
             this.checkInProgress = true;
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, TIME_CHECK, () => {
                 this.checkInProgress = false;
                 this.checkWindowsForAssignations();
             });
