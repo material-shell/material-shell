@@ -58,8 +58,16 @@ var HotKeysModule = class HotKeysModule {
 
         this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-
-            msWorkspace.focusAppLauncher();
+            if (
+                msWorkspace.tileableFocused ===
+                msWorkspace.appLauncher
+            ) {
+                if (msWorkspace.focusUsedHotkey) {
+                    msWorkspace.focusPrevious();
+                }
+                return;
+            }
+            msWorkspace.focusAppLauncher(true);
         });
 
         this.actionNameToActionMap.set(
