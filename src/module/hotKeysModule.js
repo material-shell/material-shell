@@ -62,7 +62,7 @@ var HotKeysModule = class HotKeysModule {
                 msWorkspace.tileableFocused ===
                 msWorkspace.appLauncher
             ) {
-                if (msWorkspace.focusUsedHotkey) {
+                if (msWorkspace.lastFocusUsedHotkey) {
                     msWorkspace.focusPrevious();
                 }
                 return;

@@ -36,7 +36,7 @@ var MsWorkspace = class MsWorkspace {
         );
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
         this.previousIndex = this.focusedIndex;
-        this.focusUsedHotkey = null;
+        this.lastFocusUsedHotkey = false;
         if (initialState) {
             initialState.msWindowList.forEach((msWindowData) => {
                 this.addMsWindow(
@@ -246,10 +246,14 @@ var MsWorkspace = class MsWorkspace {
         this.focusTileable(this.tileableList[this.focusedIndex - 1]);
     }
 
-    focusAppLauncher(focusUsedHotkey) {
-        if (!this.tileableList || this.tileableList.length < 2) return;
-        this.focusUsedHotkey = focusUsedHotkey;
+    focusAppLauncher(usedHotkey) {
+        if (
+            !this.tileableList ||
+            this.tileableList.length < 2 ||
+            this.focusTileable === this.appLauncher
+        ) return;
         this.focusTileable(this.appLauncher);
+        this.lastFocusUsedHotkey = usedHotkey;
     }
 
     focusPrevious() {
@@ -261,13 +265,12 @@ var MsWorkspace = class MsWorkspace {
 
     focusTileable(tileable, forced) {
         if (tileable === this.tileableFocused && !forced) {
-            this.focusUsedHotkey = undefined;
             return;
         }
         const oldTileableFocused = this.tileableFocused;
-        this.previousIndex = this.focusedIndex;
-        if (tileable !== this.appLauncher && this.focusUsedHotkey) {
-            this.focusUsedHotkey = undefined;
+        if (tileable !== this.tileableFocused) {
+            this.previousIndex = this.focusedIndex;
+            this.lastFocusUsedHotkey = false;
         }
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
         if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
