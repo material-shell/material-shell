@@ -226,6 +226,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
             );
         }
         reset() {
+            //Go back to the previous window if ESC is pressed and nothing is selected
+            if (
+                this.inputContainer.get_text() === '' &&
+                this.currentButtonFocused === null
+            ) {
+                this.msWorkspace.focusPrevious();
+                return;
+            }
             this.inputContainer.set_text('');
         }
 
