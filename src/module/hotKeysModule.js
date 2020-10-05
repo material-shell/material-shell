@@ -108,6 +108,11 @@ var HotKeysModule = class HotKeysModule {
             let lastIndex = this.workspaceManager.n_workspaces - 1;
             if (currentIndex < lastIndex) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
+                this.lastStash = currentIndex;
+            } else if (this.lastStash !== null) {
+                Me.msWorkspaceManager.primaryMsWorkspaces[
+                    this.lastStash
+                ].activate();
             }
         });
 
