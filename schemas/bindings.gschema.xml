@@ -15,6 +15,13 @@
         Focus the next window of the current workspace
       </description>
     </key>
+    <key name="last-window" type="as">
+      <default><![CDATA[['<Super>b']]]></default>
+      <summary>Focus last focused window</summary>
+      <description>
+        Go back to the previously focused window in the current workspace
+      </description>
+    </key>
     <key name="app-launcher" type="as">
       <default><![CDATA[['<Super>x']]]></default>
       <summary>Focus App Launcher</summary>

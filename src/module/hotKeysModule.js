@@ -13,6 +13,7 @@ var KeyBindingAction = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
+    LAST_WINDOW: 'last-window',
     APP_LAUNCHER: 'app-launcher',
     KILL_FOCUSED_WINDOW: 'kill-focused-window',
     MOVE_WINDOW_LEFT: 'move-window-left',
@@ -54,6 +55,11 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WINDOW, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
             msWorkspace.focusNextTileable();
+        });
+
+        this.actionNameToActionMap.set(KeyBindingAction.LAST_WINDOW, () => {
+            const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+            msWorkspace.focusPrevious();
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
