@@ -251,20 +251,24 @@ var MsWorkspace = class MsWorkspace {
             !this.tileableList ||
             this.tileableList.length < 2 ||
             this.focusTileable === this.appLauncher
-        ) return;
+        )
+            return;
         this.focusTileable(this.appLauncher);
         this.lastFocusUsedHotkey = usedHotkey;
     }
 
     focusPrevious() {
         if (!this.tileableList || this.tileableList.length < 2) return;
-        if (this.focusedIndex !== this.previousIndex) {
+        if (
+            this.focusedIndex !== this.previousIndex &&
+            this.previousIndex < this.tileableList.length
+        ) {
             this.focusTileable(this.tileableList[this.previousIndex]);
         }
     }
 
     focusTileable(tileable, forced) {
-        if (tileable === this.tileableFocused && !forced) {
+        if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
         const oldTileableFocused = this.tileableFocused;
