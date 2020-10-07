@@ -13,8 +13,6 @@ var BlinkingIndicator = GObject.registerClass(
         _init() {
             super._init();
             this.visible = true;
-            log('*** material-shell.statusArea | actor: ' + (this instanceof Clutter.Actor));
-
         }
 
         _sync() {
@@ -28,7 +26,7 @@ var BlinkingIndicator = GObject.registerClass(
             transition.set_duration(3000);
             transition.set_repeat_count(-1);
             // Unfortunately auto.reverse does not work well (buggy = not smooth)
-            transition.set_auto_reverse(true);
+            // transition.set_auto_reverse(true);
             transition.add_transition(pt);
             let doNotDisturb = !this._settings.get_boolean('show-banners');
             this.icon_name = doNotDisturb
@@ -85,14 +83,6 @@ var MsStatusArea = GObject.registerClass(
                 0
             );
             this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
-            // this.dateMenu._indicator.bind_property(
-            //     'visible',
-            //     this.dateMenu.indicatorPad,
-            //     'visible',
-            //     GObject.BindingFlags.SYNC_CREATE |
-            //     GObject.BindingFlags.INVERT_BOOLEAN
-            // );
-            // this.dateMenu.box.add_child(this.dateMenu.indicatorPad);
             this.oldIndicator = this.dateMenu._indicator;
             this.dateMenu.box.remove_child(this.oldIndicator);
             this.dateMenu._indicator = new BlinkingIndicator();
@@ -267,13 +257,6 @@ var MsStatusArea = GObject.registerClass(
         }
         onDisable() {
             Me.disconnect(this.disableConnect);
-            // this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
-            // this.dateMenu._indicator.bind_property(
-            //     'visible',
-            //     this.dateMenu.indicatorPad,
-            //     'visible',
-            //     GObject.BindingFlags.SYNC_CREATE
-            // );
             this.dateMenu.box.remove_child(this.dateMenu._indicator);
             this.dateMenu._indicator.destroy();
             this.dateMenu.box.add_child(this.oldIndicator);
