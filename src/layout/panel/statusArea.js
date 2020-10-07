@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, Gio, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const MessagesIndicator = imports.ui.dateMenu.MessagesIndicator;
 
