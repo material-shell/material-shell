@@ -13,6 +13,10 @@ const {
 const { MsPanel } = Me.imports.src.layout.panel.panel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const {
+    VerticalPanelPositionEnum,
+    HorizontalPanelPositionEnum,
+} = Me.imports.src.manager.msThemeManager;
 
 /* exported MsMain */
 var MsMain = GObject.registerClass(
@@ -241,9 +245,9 @@ var MsMain = GObject.registerClass(
         updatePanelVisibilities() {
             [
                 this.primaryMonitorContainer.panel,
-                this.primaryMonitorContainer.topBarSpacer,
+                this.primaryMonitorContainer.horizontalPanelSpacer,
                 ...this.monitorsContainer.map(
-                    (container) => container.topBarSpacer
+                    (container) => container.horizontalPanelSpacer
                 ),
             ].forEach((actor) => {
                 actor.visible = this.panelsVisible;
@@ -310,22 +314,34 @@ var MonitorContainer = GObject.registerClass(
             super._init(params);
             this.bgGroup = bgGroup;
 
-            this.topBarSpacer = new St.Widget({});
+            this.horizontalPanelSpacer = new St.Widget({});
             this.setMonitor(monitor);
-            Me.msThemeManager.connect('panel-size-changed', () => {
-                this.topBarSpacer.set_height(
-                    Me.msThemeManager.getPanelSize(this.monitor.index)
-                );
-            });
-            this.add_child(this.topBarSpacer);
+
+            this.add_child(this.horizontalPanelSpacer);
             this.setFullscreen(
                 global.display.get_monitor_in_fullscreen(monitor.index)
             );
+            const panelSizePositionSignal = Me.msThemeManager.connect(
+                'panel-size-changed',
+                () => {
+                    this.queue_relayout();
+                }
+            );
+            const horizontalPanelPositionSignal = Me.msThemeManager.connect(
+                'horizontal-panel-position-changed',
+                () => {
+                    this.queue_relayout();
+                }
+            );
+            this.connect('destroy', () => {
+                Me.msThemeManager.disconnect(panelSizePositionSignal);
+                Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
+            });
         }
 
         setFullscreen(monitorIsFullscreen) {
             this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
-            this.topBarSpacer.visible =
+            this.horizontalPanelSpacer.visible =
                 Me.layout.panelsVisible && !monitorIsFullscreen;
         }
 
@@ -348,22 +364,41 @@ var MonitorContainer = GObject.registerClass(
             this.monitor = monitor;
             this.set_size(monitor.width, monitor.height);
             this.set_position(monitor.x, monitor.y);
-            this.topBarSpacer.set_size(
-                monitor.width,
-                Me.msThemeManager.getPanelSize(monitor.index)
-            );
             this.bgManager = new Background.BackgroundManager({
                 container: this.bgGroup,
                 monitorIndex: monitor.index,
             });
         }
 
+        allocateHorizontalPanelSpacer(box, flags) {
+            let panelPosition = Me.msThemeManager.horizontalPanelPosition;
+            const panelHeight = Me.msThemeManager.getPanelSize(
+                this.monitor.index
+            );
+
+            let horizontalPanelSpacerBox = new Clutter.ActorBox();
+            horizontalPanelSpacerBox.x1 = box.x1;
+
+            horizontalPanelSpacerBox.x2 = box.x2;
+            horizontalPanelSpacerBox.y1 =
+                panelPosition === HorizontalPanelPositionEnum.TOP
+                    ? box.y1
+                    : box.y2 - panelHeight;
+            horizontalPanelSpacerBox.y2 =
+                horizontalPanelSpacerBox.y1 + panelHeight;
+            Allocate(
+                this.horizontalPanelSpacer,
+                horizontalPanelSpacerBox,
+                flags
+            );
+        }
+
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
-            if (this.topBarSpacer) {
-                AllocatePreferredSize(this.topBarSpacer, flags);
+            if (this.horizontalPanelSpacer) {
+                this.allocateHorizontalPanelSpacer();
             }
             if (this.msWorkspaceActor) {
                 let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -398,6 +433,15 @@ var PrimaryMonitorContainer = GObject.registerClass(
                     );
                 }
                 this.msWorkspaceActor.msWorkspace.refreshFocus();
+            });
+            const verticalPanelPositionSignal = Me.msThemeManager.connect(
+                'vertical-panel-position-changed',
+                () => {
+                    this.queue_relayout();
+                }
+            );
+            this.connect('destroy', () => {
+                Me.msThemeManager.disconnect(verticalPanelPositionSignal);
             });
         }
 
@@ -465,26 +509,41 @@ var PrimaryMonitorContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let panelBox = new Clutter.ActorBox();
+            let panelPosition = Me.msThemeManager.verticalPanelPosition;
             if (this.panel) {
-                panelBox.x1 = box.x1;
-                panelBox.x2 = this.panel.get_preferred_width(-1)[1];
+                const panelWidth = this.panel.get_preferred_width(-1)[1];
+                panelBox.x1 =
+                    panelPosition === VerticalPanelPositionEnum.LEFT
+                        ? box.x1
+                        : box.x2 - panelWidth;
+                panelBox.x2 = panelBox.x1 + panelWidth;
                 panelBox.y1 = box.y1;
                 panelBox.y2 = this.panel.get_preferred_height(-1)[1];
                 Allocate(this.panel, panelBox, flags);
             }
-            if (this.topBarSpacer) {
-                AllocatePreferredSize(this.topBarSpacer, flags);
+            if (this.horizontalPanelSpacer) {
+                this.allocateHorizontalPanelSpacer(box, flags);
             }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
-            msWorkspaceActorBox.x1 =
-                this.panel && this.panel.visible ? panelBox.x2 : box.x1;
+            msWorkspaceActorBox.x1 = box.x1;
             msWorkspaceActorBox.x2 = box.x2;
             msWorkspaceActorBox.y1 = box.y1;
             msWorkspaceActorBox.y2 = box.y2;
+            if (this.panel && this.panel.visible) {
+                if (panelPosition === VerticalPanelPositionEnum.LEFT) {
+                    msWorkspaceActorBox.x1 =
+                        msWorkspaceActorBox.x1 + panelBox.get_width();
+                } else {
+                    msWorkspaceActorBox.x2 =
+                        msWorkspaceActorBox.x2 - panelBox.get_width();
+                }
+            }
             this.get_children()
                 .filter(
-                    (actor) => actor != this.panel && actor != this.topBarSpacer
+                    (actor) =>
+                        actor != this.panel &&
+                        actor != this.horizontalPanelSpacer
                 )
                 .forEach((child) => {
                     Allocate(child, msWorkspaceActorBox, flags);

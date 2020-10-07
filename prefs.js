@@ -37,6 +37,8 @@ function buildPrefsWidget() {
 
     theme.addSetting('theme', WidgetType.COMBO);
     theme.addSetting('primary-color', WidgetType.COLOR);
+    theme.addSetting('vertical-panel-position', WidgetType.COMBO);
+    theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
     theme.addSetting('panel-size', WidgetType.INT);
     theme.addSetting('panel-opacity', WidgetType.INT);
     theme.addSetting('panel-icon-style', WidgetType.COMBO);

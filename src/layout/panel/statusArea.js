@@ -5,7 +5,7 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { reparentActor } = Me.imports.src.utils.index;
-
+const { VerticalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(
     {
@@ -193,7 +193,10 @@ var MsStatusArea = GObject.registerClass(
                     menuData.menu._boxPointer.oldArrowSideFunction =
                         menuData.menu._boxPointer._calculateArrowSide;
                     menuData.menu._boxPointer._calculateArrowSide = function () {
-                        return St.Side.LEFT;
+                        return Me.msThemeManager.verticalPanelPosition ===
+                            VerticalPanelPositionEnum.LEFT
+                            ? St.Side.LEFT
+                            : St.Side.RIGHT;
                     };
                 }
             });
