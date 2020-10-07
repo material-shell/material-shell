@@ -14,7 +14,7 @@ const {
     MsWorkspaceCategory,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 const { getSettings } = Me.imports.src.utils.settings;
-
+const { HorizontalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
 /* exported MsWorkspace */
 var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
@@ -487,18 +487,30 @@ var MsWorkspaceActor = GObject.registerClass(
             let contentBox = new Clutter.ActorBox();
             contentBox.x2 = box.get_width();
             contentBox.y2 = box.get_height();
+            let panelPosition = Me.msThemeManager.horizontalPanelPosition;
+            const panelHeight = this.panel.get_preferred_height(-1)[1];
             let panelBox = new Clutter.ActorBox();
             panelBox.x1 = contentBox.x1;
             panelBox.x2 = contentBox.x2;
-            panelBox.y1 = contentBox.y1;
-            panelBox.y2 = panelBox.y1 + this.panel.get_preferred_height(-1)[1];
+
+            panelBox.y1 =
+                panelPosition === HorizontalPanelPositionEnum.TOP
+                    ? contentBox.y1
+                    : contentBox.y2 - panelHeight;
+            panelBox.y2 = panelBox.y1 + panelHeight;
             Allocate(this.panel, panelBox, flags);
             let containerBox = new Clutter.ActorBox();
             containerBox.x1 = contentBox.x1;
             containerBox.x2 = contentBox.x2;
-            containerBox.y1 =
-                this.panel && this.panel.visible ? panelBox.y2 : contentBox.y1;
+            containerBox.y1 = contentBox.y1;
             containerBox.y2 = contentBox.y2;
+            if (this.panel && this.panel.visible) {
+                if (panelPosition === HorizontalPanelPositionEnum.TOP) {
+                    containerBox.y1 = containerBox.y1 + panelHeight;
+                } else {
+                    containerBox.y2 = containerBox.y2 - panelHeight;
+                }
+            }
             Allocate(this.tileableContainer, containerBox, flags);
         }
     }

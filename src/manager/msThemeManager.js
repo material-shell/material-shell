@@ -6,7 +6,17 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
-/* exported PanelIconStyleEnum, MsThemeManager */
+/* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, MsThemeManager */
+
+const VerticalPanelPositionEnum = {
+    LEFT: 0,
+    RIGHT: 1,
+};
+
+const HorizontalPanelPositionEnum = {
+    TOP: 0,
+    BOTTOM: 1,
+};
 
 var PanelIconStyleEnum = {
     HYBRID: 0,
@@ -33,6 +43,20 @@ var MsThemeManager = class MsThemeManager extends MsManager {
             this.primary = schema.get_string('primary-color');
             this.regenerateStylesheet();
         });
+        this.observe(
+            this.themeSettings,
+            'changed::vertical-panel-position',
+            () => {
+                this.emit('vertical-panel-position-changed');
+            }
+        );
+        this.observe(
+            this.themeSettings,
+            'changed::horizontal-panel-position',
+            () => {
+                this.emit('horizontal-panel-position-changed');
+            }
+        );
         this.observe(this.themeSettings, 'changed::panel-opacity', () => {
             this.regenerateStylesheet();
         });
@@ -48,6 +72,14 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
             this.emit('panel-icon-style-changed');
         });
+    }
+
+    get verticalPanelPosition() {
+        return this.themeSettings.get_enum('vertical-panel-position');
+    }
+
+    get horizontalPanelPosition() {
+        return this.themeSettings.get_enum('horizontal-panel-position');
     }
 
     get panelOpacity() {

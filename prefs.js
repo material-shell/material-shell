@@ -28,7 +28,7 @@ function buildPrefsWidget() {
     const hotkeysTab = new HotkeysTab(
         'org.gnome.shell.extensions.materialshell.bindings'
     );
-    tabsContainer.addTab('Hotkeys', hotkeysTab);
+    tabsContainer.addHotkeysTab('Hotkeys', hotkeysTab);
 
     const theme = new SettingCategory(
         'Theme',
@@ -37,6 +37,8 @@ function buildPrefsWidget() {
 
     theme.addSetting('theme', WidgetType.COMBO);
     theme.addSetting('primary-color', WidgetType.COLOR);
+    theme.addSetting('vertical-panel-position', WidgetType.COMBO);
+    theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
     theme.addSetting('panel-size', WidgetType.INT);
     theme.addSetting('panel-opacity', WidgetType.INT);
     theme.addSetting('panel-icon-style', WidgetType.COMBO);
@@ -109,8 +111,16 @@ var TabsContainer = GObject.registerClass(
             super._init({
                 orientation: Gtk.Orientation.VERTICAL,
             });
-            this.stack = new Gtk.Stack({ transition_type: 6 });
-            this.stackSwitcher = new Gtk.StackSwitcher();
+            this.stack = new Gtk.Stack({
+                transition_type: 6,
+                margin_left: 16,
+                margin_right: 16,
+                margin_bottom: 16,
+            });
+            this.stackSwitcher = new Gtk.StackSwitcher({
+                margin_left: 16,
+                margin_right: 16,
+            });
             this.stackSwitcher.set_stack(this.stack);
             this.pack_start(this.stackSwitcher, false, false, 0);
             this.pack_start(this.stack, true, true, 0);
@@ -118,6 +128,61 @@ var TabsContainer = GObject.registerClass(
 
         addTab(title, tab) {
             this.stack.add_titled(tab, title, title);
+        }
+
+        addHotkeysTab(title, treeView) {
+            // Add some padding to TreeView
+            const cssProvider = new Gtk.CssProvider();
+            const style = `
+                .tree-view {
+                    padding-left: 16px;
+                    padding-right: 16px;
+                }
+            `;
+            cssProvider.load_from_data(style);
+            Gtk.StyleContext.add_provider_for_screen(
+                Gdk.Screen.get_default(),
+                cssProvider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            );
+            const styleContext = treeView.get_style_context();
+            styleContext.add_class('tree-view');
+
+            // Search for action and hotkeys
+            treeView.set_enable_search(true);
+            treeView.set_search_column(1);
+            treeView.set_search_equal_func((model, column, key, iter) => {
+                const index = model.get_value(iter, 0);
+                const action = model.get_value(iter, 1).toLowerCase();
+                const keys = treeView.settings
+                    .get_strv(index)[0]
+                    .replace(/\>/gi, '+')
+                    .replace(/\</gi, '')
+                    .toLowerCase();
+                if (
+                    action.includes(key.toLowerCase()) ||
+                    keys.includes(key.toLowerCase())
+                ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+
+            // Move search widget to top (it is hidden in Float layout)
+            treeView.set_search_position_func((treeView, search) => {
+                let window = this.get_toplevel();
+                let [x, y] = window.get_position();
+                let [width, height] = window.get_size();
+                search.move(x + width / 2 + 64, y);
+            });
+
+            // Grab focus for keyboard navigation and search
+            treeView.connect('realize', () => {
+                treeView.grab_focus();
+            });
+
+            this.stack.add_titled(treeView, title, title);
         }
     }
 );
@@ -228,7 +293,7 @@ var HotkeysTab = GObject.registerClass(
             );
 
             const hotkeyColumn = new Gtk.TreeViewColumn({
-                title: 'hotkeys',
+                title: 'Hotkeys',
                 min_width: 200,
             });
             hotkeyColumn.pack_end(cellAccelRenderer, false);
@@ -264,9 +329,9 @@ var SettingCategory = GObject.registerClass(
                     label: `<span size="large">${title}</span>`,
                     xalign: 0,
                     use_markup: true,
-                    margin_left: 16,
+                    margin_left: 0,
                     margin_top: 16,
-                    margin_bottom: 16,
+                    margin_bottom: 8,
                 })
             );
             this.add(titleRow);
@@ -281,14 +346,14 @@ var SettingCategory = GObject.registerClass(
                 xalign: 0,
                 use_markup: true,
                 margin_top: 8,
-                margin_left: 24,
+                margin_left: 8,
             });
             const descriptionLabel = new Gtk.Label({
                 label: `<span size="small">${description}</span>`,
                 xalign: 0,
                 use_markup: true,
                 margin_top: 8,
-                margin_left: 24,
+                margin_left: 8,
                 margin_bottom: 8,
             });
             const labelsVBox = new Gtk.VBox();
