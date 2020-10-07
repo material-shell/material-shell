@@ -11,30 +11,6 @@ const {
 /* exported HalfLayout */
 var HalfLayout = GObject.registerClass(
     class HalfLayout extends BaseTilingLayout {
-        _init(msWorkspace) {
-            super._init(msWorkspace);
-            this.mainPortion = new ResizablePortion();
-        }
-        alterTileable(tileable) {
-            super.alterTileable(tileable);
-            const index = this.tileableListVisible.indexOf(tileable);
-            if (index < 0) return;
-            if (index < 2) {
-                this.mainPortion.push(true);
-            }
-            if (index == 2) {
-                this.mainPortion.children[1].split();
-            }
-            if (index > 2) {
-                this.mainPortion.children[1].push();
-            }
-            Me.logFocus('alterTileable', index);
-        }
-
-        restoreTileable(tileable) {
-            super.restoreTileable(tileable);
-        }
-
         tileTileable(tileable, box, index, siblingLength) {
             if (box.get_width() > box.get_height()) {
                 this.tileTileableHorizontal(
