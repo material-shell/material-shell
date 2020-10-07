@@ -314,7 +314,9 @@ var MonitorContainer = GObject.registerClass(
             super._init(params);
             this.bgGroup = bgGroup;
 
-            this.horizontalPanelSpacer = new St.Widget({});
+            this.horizontalPanelSpacer = new St.Widget({
+                style_class: 'HorizontalSpacer',
+            });
             this.setMonitor(monitor);
 
             this.add_child(this.horizontalPanelSpacer);
@@ -366,9 +368,9 @@ var MonitorContainer = GObject.registerClass(
                 panelHeight
             );
             this.horizontalPanelSpacer.set_position(
-                this.monitor.x,
+                0,
                 panelPosition === HorizontalPanelPositionEnum.TOP
-                    ? this.monitor.y
+                    ? 0
                     : this.monitor.height - panelHeight
             );
         }
