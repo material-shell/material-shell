@@ -152,7 +152,11 @@ var HotKeysModule = class HotKeysModule {
                         activeMsWorkspace.tileableFocused,
                         nextMsWorkspace
                     );
-                    Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+
+                    if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                    }
+
                     nextMsWorkspace.activate();
                 }
                 return;
@@ -178,16 +182,33 @@ var HotKeysModule = class HotKeysModule {
             () => {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 if (
-                    (activeMsWorkspace ===
-                        Me.msWorkspaceManager.primaryMsWorkspaces[
-                            Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
-                        ] &&
-                        activeMsWorkspace.msWindowList.length === 1) ||
                     activeMsWorkspace.tileableFocused ===
-                        activeMsWorkspace.appLauncher
+                    activeMsWorkspace.appLauncher
                 ) {
                     return;
                 }
+                if (
+                    activeMsWorkspace ===
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
+                    ]
+                ) {
+                    if (activeMsWorkspace.msWindowList.length === 1) {
+                        if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                            const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+
+                            Me.msWorkspaceManager.setWindowToMsWorkspace(
+                                activeMsWorkspace.tileableFocused,
+                                nextMsWorkspace
+                            );
+
+                            Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                            nextMsWorkspace.activate();
+                        }
+                        return;
+                    }
+                }
+
                 const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                     activeMsWorkspace
                 );
