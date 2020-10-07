@@ -398,7 +398,7 @@ var MonitorContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             if (this.horizontalPanelSpacer) {
-                this.allocateHorizontalPanelSpacer();
+                this.allocateHorizontalPanelSpacer(box, flags);
             }
             if (this.msWorkspaceActor) {
                 let msWorkspaceActorBox = new Clutter.ActorBox();
