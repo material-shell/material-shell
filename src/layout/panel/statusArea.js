@@ -1,11 +1,53 @@
 /** Gnome libs imports */
-const { St, GObject, Clutter } = imports.gi;
+const { St, Gio, GObject, Clutter } = imports.gi;
 const Main = imports.ui.main;
+const MessagesIndicator = imports.ui.dateMenu.MessagesIndicator;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { reparentActor } = Me.imports.src.utils.index;
 const { VerticalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
+
+var BlinkingIndicator = GObject.registerClass(
+    class BlinkingIndicator extends MessagesIndicator {
+        _init() {
+            super._init();
+            this.visible = true;
+            log('*** material-shell.statusArea | actor: ' + (this instanceof Clutter.Actor));
+
+        }
+
+        _sync() {
+            let pt = new Clutter.PropertyTransition({ property_name: 'opacity' });
+            pt.set_from(100);
+            pt.set_to(180);
+            pt.set_duration(3000);
+            pt.set_progress_mode(Clutter.AnimationMode.EASE_IN_OUT);
+
+            let transition = new Clutter.TransitionGroup();
+            transition.set_duration(3000);
+            transition.set_repeat_count(-1);
+            // Unfortunately auto.reverse does not work well (buggy = not smooth)
+            transition.set_auto_reverse(true);
+            transition.add_transition(pt);
+            let doNotDisturb = !this._settings.get_boolean('show-banners');
+            this.icon_name = doNotDisturb
+                ? 'notifications-disabled-symbolic'
+                : 'message-indicator-symbolic';
+            if (this._count > 0 && !doNotDisturb) {
+                this.add_style_class_name('indicator-active');
+                this.add_transition('blink', transition);
+            } else {
+                this.remove_transition('blink');
+                this.set_opacity(255);
+                if (this.has_style_class_name('indicator-active')) {
+                    this.remove_style_class_name('indicator-active');
+                }
+            }
+        }
+    }
+);
+
 /* exported MsStatusArea */
 var MsStatusArea = GObject.registerClass(
     {
@@ -43,14 +85,18 @@ var MsStatusArea = GObject.registerClass(
                 0
             );
             this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
-            this.dateMenu._indicator.bind_property(
-                'visible',
-                this.dateMenu.indicatorPad,
-                'visible',
-                GObject.BindingFlags.SYNC_CREATE |
-                GObject.BindingFlags.INVERT_BOOLEAN
-            );
-            this.dateMenu.box.add_child(this.dateMenu.indicatorPad);
+            // this.dateMenu._indicator.bind_property(
+            //     'visible',
+            //     this.dateMenu.indicatorPad,
+            //     'visible',
+            //     GObject.BindingFlags.SYNC_CREATE |
+            //     GObject.BindingFlags.INVERT_BOOLEAN
+            // );
+            // this.dateMenu.box.add_child(this.dateMenu.indicatorPad);
+            this.oldIndicator = this.dateMenu._indicator;
+            this.dateMenu.box.remove_child(this.oldIndicator);
+            this.dateMenu._indicator = new BlinkingIndicator();
+            this.dateMenu.box.add_child(this.dateMenu._indicator);
             this.dateMenu.box.set_x_align(Clutter.ActorAlign.CENTER);
             let update = () => {
                 /**
@@ -221,14 +267,19 @@ var MsStatusArea = GObject.registerClass(
         }
         onDisable() {
             Me.disconnect(this.disableConnect);
-            this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
-            this.dateMenu._indicator.bind_property(
-                'visible',
-                this.dateMenu.indicatorPad,
-                'visible',
-                GObject.BindingFlags.SYNC_CREATE
-            );
+            // this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
+            // this.dateMenu._indicator.bind_property(
+            //     'visible',
+            //     this.dateMenu.indicatorPad,
+            //     'visible',
+            //     GObject.BindingFlags.SYNC_CREATE
+            // );
+            this.dateMenu.box.remove_child(this.dateMenu._indicator);
+            this.dateMenu._indicator.destroy();
+            this.dateMenu.box.add_child(this.oldIndicator);
+            this.dateMenu._indicator = this.oldIndicator;
             this.dateMenu.box.insert_child_at_index(this.dateMenu.indicatorPad, 0);
+            this.dateMenu._indicator = this.oldIndicator;
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();
             this.restorePanelActors();

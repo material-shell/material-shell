@@ -178,6 +178,8 @@ subtitle-1 {
     icon-size: 1.09em;
     margin-top: 4px;
     margin-bottom: 4px; }
+  #msPanel .indicator-active {
+    color: tomato; }
 
 #topPanel {
   background: rgba(63, 81, 181, 0.876);

@@ -267,6 +267,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         margin-top: 4px;
         margin-bottom: 4px;
     }
+
+    .indicator-active {
+        color: tomato;
+      }
 }
 
 #topPanel {
