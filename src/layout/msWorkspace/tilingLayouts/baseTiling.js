@@ -379,3 +379,57 @@ var BaseTilingLayout = GObject.registerClass(
         }
     }
 );
+
+var ResizablePortion = class ResizablePortion {
+    constructor(basis = 100, vertical = false, parent) {
+        this.basis = basis;
+        this.vertical = vertical;
+        this.parent = parent;
+        this.children = [];
+    }
+    get portionLength() {
+        return this.children.length
+            ? this.children.reduce(
+                  (sum, portion) => sum + portion.portionLength,
+                  0
+              )
+            : 1;
+    }
+    insert(vertical = false, basis = 100) {
+        this.children.splice(0, 0, new ResizablePortion(basis, vertical, this));
+    }
+    push(vertical = false, basis = 100) {
+        this.children.push(new ResizablePortion(basis, vertical, this));
+    }
+    split() {
+        this.push();
+        this.push();
+    }
+    shift() {
+        let child = this.children[0];
+        if (child) {
+            if (child.children.length) {
+                child.shift();
+            } else {
+                this.children.shift();
+            }
+        }
+    }
+    pop() {
+        let child = this.children[this.children.length - 1];
+        if (child) {
+            if (child.children.length) {
+                child.pop();
+            } else {
+                this.children.pop();
+            }
+        }
+    }
+    getCoordinateProportion(index) {
+        let x = 0;
+        let y = 0;
+        let width = 0;
+        let height = 0;
+        this.children.length();
+    }
+};

@@ -321,20 +321,20 @@ var MonitorContainer = GObject.registerClass(
             this.setFullscreen(
                 global.display.get_monitor_in_fullscreen(monitor.index)
             );
-            const panelSizePositionSignal = Me.msThemeManager.connect(
+            const panelSizeSignal = Me.msThemeManager.connect(
                 'panel-size-changed',
                 () => {
-                    this.queue_relayout();
+                    this.updateHorizontalSpacer();
                 }
             );
             const horizontalPanelPositionSignal = Me.msThemeManager.connect(
                 'horizontal-panel-position-changed',
                 () => {
-                    this.queue_relayout();
+                    this.updateHorizontalSpacer();
                 }
             );
             this.connect('destroy', () => {
-                Me.msThemeManager.disconnect(panelSizePositionSignal);
+                Me.msThemeManager.disconnect(panelSizeSignal);
                 Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
             });
         }
@@ -356,7 +356,22 @@ var MonitorContainer = GObject.registerClass(
             this.msWorkspaceActor = actor;
             reparentActor(this.msWorkspaceActor, this);
         }
-
+        updateHorizontalSpacer() {
+            const panelHeight = Me.msThemeManager.getPanelSize(
+                this.monitor.index
+            );
+            const panelPosition = Me.msThemeManager.horizontalPanelPosition;
+            this.horizontalPanelSpacer.set_size(
+                this.monitor.width,
+                panelHeight
+            );
+            this.horizontalPanelSpacer.set_position(
+                this.monitor.x,
+                panelPosition === HorizontalPanelPositionEnum.TOP
+                    ? this.monitor.y
+                    : this.monitor.height - panelHeight
+            );
+        }
         setMonitor(monitor) {
             if (this.bgManager) {
                 this.bgManager.destroy();
@@ -364,6 +379,7 @@ var MonitorContainer = GObject.registerClass(
             this.monitor = monitor;
             this.set_size(monitor.width, monitor.height);
             this.set_position(monitor.x, monitor.y);
+            this.updateHorizontalSpacer();
             this.bgManager = new Background.BackgroundManager({
                 container: this.bgGroup,
                 monitorIndex: monitor.index,
@@ -371,26 +387,7 @@ var MonitorContainer = GObject.registerClass(
         }
 
         allocateHorizontalPanelSpacer(box, flags) {
-            let panelPosition = Me.msThemeManager.horizontalPanelPosition;
-            const panelHeight = Me.msThemeManager.getPanelSize(
-                this.monitor.index
-            );
-
-            let horizontalPanelSpacerBox = new Clutter.ActorBox();
-            horizontalPanelSpacerBox.x1 = box.x1;
-
-            horizontalPanelSpacerBox.x2 = box.x2;
-            horizontalPanelSpacerBox.y1 =
-                panelPosition === HorizontalPanelPositionEnum.TOP
-                    ? box.y1
-                    : box.y2 - panelHeight;
-            horizontalPanelSpacerBox.y2 =
-                horizontalPanelSpacerBox.y1 + panelHeight;
-            Allocate(
-                this.horizontalPanelSpacer,
-                horizontalPanelSpacerBox,
-                flags
-            );
+            AllocatePreferredSize(this.horizontalPanelSpacer, flags);
         }
 
         vfunc_allocate(box, flags) {
