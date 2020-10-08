@@ -79,6 +79,83 @@
         Toggle the material-shell UI to simulate fullscreen
       </description>
     </key>
+    <key name="use-maximize-layout" type="as">
+      <default><![CDATA[['<Super>g']]]></default>
+      <summary>Use maximize layout</summary>
+      <description>
+        Use maximize layout
+      </description>
+    </key>
+    <key name="use-split-layout" type="as">
+      <default><![CDATA[['<Super>z']]]></default>
+      <summary>Use split layout</summary>
+      <description>
+        Use split layout
+      </description>
+    </key>
+    <key name="use-half-layout" type="as">
+      <default><![CDATA[['<Super>e']]]></default>
+      <summary>Use half layout</summary>
+      <description>
+        Use half layout
+      </description>
+    </key>
+    <key name="use-half-horizontal-layout" type="as">
+      <default><![CDATA[['<Super>r']]]></default>
+      <summary>Use half-horizontal layout</summary>
+      <description>
+        Use half-horizontal layout
+      </description>
+    </key>
+    <key name="use-half-vertical-layout" type="as">
+      <default><![CDATA[['<Super>t']]]></default>
+      <summary>Use half-vertical layout</summary>
+      <description>
+        Use half-vertical layout
+      </description>
+    </key>
+    <key name="use-grid-layout" type="as">
+      <default><![CDATA[['<Super>y']]]></default>
+      <summary>Use grid layout</summary>
+      <description>
+        Use grid layout
+      </description>
+    </key>
+    <key name="use-ratio-layout" type="as">
+      <default><![CDATA[['<Super>u']]]></default>
+      <summary>Use ratio layout</summary>
+      <description>
+        Use ratio layout
+      </description>
+    </key>
+    <key name="use-float-layout" type="as">
+      <default><![CDATA[['<Super>i']]]></default>
+      <summary>Use float layout</summary>
+      <description>
+        Use float layout
+      </description>
+    </key>
+    <key name="use-simple-layout" type="as">
+      <default><![CDATA[['<Super>k']]]></default>
+      <summary>Use simple layout</summary>
+      <description>
+        Use simple layout
+      </description>
+    </key>
+    <key name="use-simple-horizontal-layout" type="as">
+      <default><![CDATA[['<Super>o']]]></default>
+      <summary>Use simple-horizontal layout</summary>
+      <description>
+        Use simple-horizontal layout
+      </description>
+    </key>
+    <key name="use-simple-vertical-layout" type="as">
+      <default><![CDATA[['<Super>p']]]></default>
+      <summary>Use simple-vertical layout</summary>
+      <description>
+        Use simple-vertical layout
+      </description>
+    </key>
     <!-- Workspace actions -->
     <key name="previous-workspace" type="as">
       <default><![CDATA[['<Super>w']]]></default>
