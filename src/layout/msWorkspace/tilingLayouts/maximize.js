@@ -91,10 +91,12 @@ var MaximizeLayout = GObject.registerClass(
         }
 
         tileTileable(tileable, box) {
-            tileable.x = box.x1;
-            tileable.y = box.y1;
-            tileable.width = box.get_width();
-            tileable.height = box.get_height();
+            let { x, y, width, height } = this.applyGaps(box.x1, box.y1, box.get_width(), box.get_height());
+
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
 
         /*
