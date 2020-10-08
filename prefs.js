@@ -71,6 +71,7 @@ function buildPrefsWidget() {
 
     const tilingLayouts = [
         'maximize',
+        'i3wm',
         'split',
         'half',
         'half-horizontal',
