@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter, Gio, GnomeDesktop } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -35,49 +35,16 @@ var MsStatusArea = GObject.registerClass(
         }
 
         verticaliseDateMenuButton() {
-            this.dateMenu._clock.time_only = true;
-            /*this.dateMenu.set_x_expand(false);
-            this.dateMenu.set_y_expand(false); */
-            this.dateMenu.box = this.dateMenu.get_child_at_index(0);
-            this.dateMenu.indicatorPad = this.dateMenu.box.get_child_at_index(
-                0
-            );
-            this.dateMenu.box.remove_child(this.dateMenu.indicatorPad);
-            this.dateMenu.box.set_x_align(Clutter.ActorAlign.CENTER);
-            let update = () => {
-                /**
-                 * Format clock display to fit into the vertical panel
-                 * Place each section of the clock (HH, MM, AM/PM) onto its own line
-                 *
-                 * Deliberately separates HH:MM into distinct sections
-                 */
-                let clockSections = this.dateMenu._clock.clock
-                    .replace(/∶/g, ' ')
-                    .split(' ');
-                if (!clockSections[0]) clockSections.shift();
-                const markup = clockSections
-                    .map((section) => `<span>${section}</span>`)
-                    .join('\n');
-                this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
-            };
-            update();
-            this.dateMenuSignal = this.dateMenu._clock.connect(
-                'notify::clock',
-                update
-            );
+            this.originalDateMenuBox = this.dateMenu._clockDisplay.get_parent();
+            this.dateMenu.remove_child(this.originalDateMenuBox);
+            this.msDateMenuBox = new MsDateMenuBox(this.dateMenu);
+            this.dateMenu.add_child(this.msDateMenuBox);
         }
 
         unVerticaliseDateMenuButton() {
-            this.dateMenu.set_x_expand(true);
-            this.dateMenu.set_y_expand(true);
-            this.dateMenu.box.set_x_align(Clutter.ActorAlign.FILL);
-            this.dateMenu._clock.time_only = false;
-            this.dateMenu._clock.disconnect(this.dateMenuSignal);
-            this.dateMenu._clockDisplay.text = this.dateMenu._clock.clock;
-            this.dateMenu.box.insert_child_at_index(
-                this.dateMenu.indicatorPad,
-                0
-            );
+            this.msDateMenuBox.destroy();
+            delete this.msDateMenuBox;
+            this.dateMenu.add_child(this.originalDateMenuBox);
         }
 
         stealPanelActors() {
@@ -217,6 +184,113 @@ var MsStatusArea = GObject.registerClass(
             this.restorePanelMenuSide();
             this.restorePanelActors();
             this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
+        }
+    }
+);
+
+var MsDateMenuBox = GObject.registerClass(
+    {
+        GTypeName: 'MsDateMenuBox',
+    },
+    class MsDateMenuBox extends St.Widget {
+        _init(dateMenu) {
+            super._init({
+                x_align: Clutter.ActorAlign.CENTER,
+                layout_manager: new Clutter.BinLayout(),
+            });
+            this.dateMenu = dateMenu;
+
+            this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
+
+            this.clockLabel = new St.Label({});
+
+            this.notificationIcon = new St.Icon({
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/bell-symbolic.svg`
+                ),
+            });
+
+            this.notificationIconRing = new St.Icon({
+                style_class: 'primary',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/bell-ring-symbolic.svg`
+                ),
+            });
+
+            this.iconDisplay = new Clutter.Actor();
+            this.iconDisplay.add_child(this.notificationIcon);
+            this.iconDisplay.add_child(this.notificationIconRing);
+            if (Me.msThemeManager.clockHorizontal) {
+                this.add_child(this.iconDisplay);
+            } else {
+                this.add_child(this.clockLabel);
+            }
+
+            Me.msThemeManager.connect('clock-horizontal-changed', () => {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.remove_child(this.clockLabel);
+                    this.add_child(this.iconDisplay);
+                } else {
+                    this.remove_child(this.iconDisplay);
+                    this.add_child(this.clockLabel);
+                }
+                this.updateVisibility();
+            });
+
+            this.updateVisibility();
+            this.updateClock();
+            this.dateMenuSignal = this._wallClock.connect(
+                'notify::clock',
+                this.updateClock.bind(this)
+            );
+
+            dateMenu._indicator.connect(
+                'notify::visible',
+                this.updateVisibility.bind(this)
+            );
+
+            this.connect('destroy', () => {
+                this._wallClock.disconnect(this.dateMenuSignal);
+            });
+        }
+
+        updateClock() {
+            /**
+             * Format clock display to fit into the vertical panel
+             * Place each section of the clock (HH, MM, AM/PM) onto its own line
+             *
+             * Deliberately separates HH:MM into distinct sections
+             */
+            let clockSections = this._wallClock.clock
+                .replace(/∶/g, ' ')
+                .split(' ');
+            if (!clockSections[0]) clockSections.shift();
+            const markup = clockSections
+                .map((section) => `<span>${section}</span>`)
+                .join('\n');
+            this.clockLabel.clutter_text.set_markup(markup);
+            this.updateVisibility();
+        }
+
+        updateVisibility() {
+            if (this.dateMenu._indicator.visible) {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.notificationIcon.hide();
+                    this.notificationIconRing.show();
+                } else {
+                    if (this.clockLabel.has_style_class_name('primary')) return;
+                    this.clockLabel.add_style_class_name('primary');
+                }
+            } else {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.notificationIcon.show();
+                    this.notificationIconRing.hide();
+                } else {
+                    if (!this.clockLabel.has_style_class_name('primary'))
+                        return;
+                    this.clockLabel.remove_style_class_name('primary');
+                }
+            }
         }
     }
 );

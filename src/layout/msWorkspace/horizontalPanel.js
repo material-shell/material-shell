@@ -1,18 +1,19 @@
 /** Gnome libs imports */
-const { GObject, St, Clutter } = imports.gi;
+const { GObject, St, Clutter, GnomeDesktop, Shell } = imports.gi;
+const DND = imports.ui.dnd;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
+const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
 const { TaskBar, TaskBarItem } = Me.imports.src.widget.taskBar;
 
-/* exported TopPanel */
-var TopPanel = GObject.registerClass(
-    class TopPanel extends St.BoxLayout {
+/* exported HorizontalPanel */
+var HorizontalPanel = GObject.registerClass(
+    class HorizontalPanel extends St.BoxLayout {
         _init(msWorkspace) {
             super._init({
-                name: 'topPanel',
+                name: 'horizontalPanel',
             });
             this._delegate = this;
             this.msWorkspace = msWorkspace;
@@ -38,13 +39,51 @@ var TopPanel = GObject.registerClass(
 
             this.add_child(this.taskBar);
             this.add_child(this.tilingButton);
-
+            Me.msThemeManager.connect('clock-horizontal-changed', () => {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.createClock();
+                } else {
+                    this.removeClock();
+                }
+            });
+            if (Me.msThemeManager.clockHorizontal) {
+                this.createClock();
+            }
             Me.msThemeManager.connect('panel-size-changed', () => {
                 this.tilingIcon.set_icon_size(
                     Me.msThemeManager.getPanelSizeNotScaled() / 2
                 );
                 this.queue_relayout();
             });
+        }
+
+        createClock() {
+            this.clockLabel = new St.Label({
+                style_class: 'clock-label',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+
+            this.clockBin = new St.BoxLayout({});
+
+            this.clockBin.add_child(this.clockLabel);
+            this._wallClock = new GnomeDesktop.WallClock();
+            const updateClock = () => {
+                this.clockLabel.text = this._wallClock.clock;
+            };
+            this.signalClock = this._wallClock.connect(
+                'notify::clock',
+                updateClock
+            );
+            updateClock();
+            this.insert_child_at_index(this.clockBin, 1);
+        }
+
+        removeClock() {
+            if (!this.clockBin) return;
+            this.clockBin.destroy();
+            delete this.clockBin;
+            this._wallClock.disconnect(this.signalClock);
+            delete this._wallClock;
         }
 
         handleDragOver(source) {
@@ -73,18 +112,30 @@ var TopPanel = GObject.registerClass(
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
+            let clockWidth = this.clockBin
+                ? this.clockBin.get_preferred_width(-1)[1]
+                : 0;
             let taskBarBox = new Clutter.ActorBox();
             taskBarBox.x1 = contentBox.x1;
             taskBarBox.x2 = Math.max(
-                contentBox.x2 - this.tilingButton.width,
+                contentBox.x2 - this.tilingButton.width - clockWidth,
                 0
             );
             taskBarBox.y1 = contentBox.y1;
             taskBarBox.y2 = contentBox.y2;
             Allocate(this.taskBar, taskBarBox, flags);
 
+            if (this.clockBin) {
+                let clockBox = new Clutter.ActorBox();
+                clockBox.x1 = taskBarBox.x2;
+                clockBox.x2 = contentBox.x2 - this.tilingButton.width;
+                clockBox.y1 = contentBox.y1;
+                clockBox.y2 = contentBox.y2;
+                Allocate(this.clockBin, clockBox, flags);
+            }
+
             let tilingButtonBox = new Clutter.ActorBox();
-            tilingButtonBox.x1 = taskBarBox.x2;
+            tilingButtonBox.x1 = contentBox.x2 - this.tilingButton.width;
             tilingButtonBox.x2 = contentBox.x2;
             tilingButtonBox.y1 = contentBox.y1;
             tilingButtonBox.y2 = contentBox.y2;

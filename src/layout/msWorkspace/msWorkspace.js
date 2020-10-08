@@ -7,7 +7,8 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const TopPanel = Me.imports.src.widget.topPanelWidget.TopPanel;
+const HorizontalPanel =
+    Me.imports.src.layout.msWorkspace.horizontalPanel.HorizontalPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { reparentActor } = Me.imports.src.utils.index;
 const {
@@ -462,7 +463,7 @@ var MsWorkspaceActor = GObject.registerClass(
                 //background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
             });
 
-            this.panel = new TopPanel(msWorkspace);
+            this.panel = new HorizontalPanel(msWorkspace);
             this.add_child(this.tileableContainer);
             this.add_child(this.panel);
             this.updateUI();

@@ -10,7 +10,7 @@ const {
     Allocate,
     AllocatePreferredSize,
 } = Me.imports.src.utils.compatibility;
-const { MsPanel } = Me.imports.src.layout.panel.panel;
+const { MsPanel } = Me.imports.src.layout.verticalPanel.verticalPanel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const {

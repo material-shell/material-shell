@@ -1,6 +1,7 @@
 const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),
@@ -44,7 +45,10 @@ function buildPrefsWidget() {
     theme.addSetting('panel-icon-style', WidgetType.COMBO);
     theme.addSetting('taskbar-item-style', WidgetType.COMBO);
     theme.addSetting('surface-opacity', WidgetType.INT);
-    theme.addSetting('blur-background', WidgetType.BOOLEAN);
+    if (!ShellVersionMatch('3.34')) {
+        theme.addSetting('blur-background', WidgetType.BOOLEAN);
+    }
+    theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
 
     settingsTab.addCategory(theme);
 
