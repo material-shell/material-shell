@@ -3,6 +3,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     MaximizeLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
+const { I3wmLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.i3wm;
 const { SplitLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.split;
 const { FloatLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.float;
 const custom = Me.imports.src.layout.msWorkspace.tilingLayouts.custom;
@@ -17,6 +18,7 @@ const { GridLayout } = custom.grid;
 
 const layouts = [
     MaximizeLayout,
+    I3wmLayout,
     SplitLayout,
     GridLayout,
     HalfLayout,

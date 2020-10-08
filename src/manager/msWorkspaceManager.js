@@ -25,6 +25,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
+
         WorkspaceTracker.prototype._oldCheckWorkspaces =
             WorkspaceTracker.prototype._checkWorkspaces;
         WorkspaceTracker.prototype._checkWorkspaces = function () {
