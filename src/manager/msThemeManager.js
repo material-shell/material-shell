@@ -72,6 +72,9 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
             this.emit('panel-icon-style-changed');
         });
+        this.observe(this.themeSettings, 'changed::clock-horizontal', () => {
+            this.emit('clock-horizontal-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -100,6 +103,10 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     get blurBackground() {
         return this.themeSettings.get_boolean('blur-background');
+    }
+
+    get clockHorizontal() {
+        return this.themeSettings.get_boolean('clock-horizontal');
     }
 
     getPanelSize(monitorIndex) {

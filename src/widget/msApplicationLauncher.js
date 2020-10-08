@@ -89,18 +89,19 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             this.appButtonList = [];
             this.currentButtonFocused = null;
+            this.clockLabel = new St.Label({
+                style_class: 'headline-6 text-medium-emphasis margin-right-x2',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
             this.dateLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis',
                 y_align: Clutter.ActorAlign.CENTER,
-                x_expand: true,
             });
-            this.clockLabel = new St.Label({
-                style_class: 'headline-6 text-medium-emphasis',
-                y_align: Clutter.ActorAlign.CENTER,
+            this.clockBin = new St.BoxLayout({
+                x_align: Clutter.ActorAlign.CENTER,
             });
-            this.clockBin = new St.BoxLayout({});
-            this.clockBin.add_child(this.dateLabel);
             this.clockBin.add_child(this.clockLabel);
+            this.clockBin.add_child(this.dateLabel);
             this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
             const updateClock = () => {
                 this.clockLabel.text = this._wallClock.clock;

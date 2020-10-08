@@ -1,4 +1,5 @@
 @import 'typography';
+@import 'margins';
 $theme: 'dark' !default;
 $color-primary: #3f51b5; // Don't change this value since it's dynamically changed by the theme Manager
 $ripple: rgba(255, 255, 255, 0.12);
@@ -255,25 +256,24 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         text-align: center;
         min-height: 20px;
     }
-
-    .clock-display {
-        * {
-            padding: 4px 0px !important;
-        }
-    }
     .system-status-icon {
         height: 20px;
         icon-size: 1.09em;
         margin-top: 4px;
         margin-bottom: 4px;
     }
-    MsNotificationIcon {
-        height: 24px;
-        width: 24px;
-        margin: 12px;
+    MsDateMenuBox {
         StIcon {
-            height: 24px;
-            width: 24px;
+            padding: 14px;
+            height: 20px;
+            width: 20px;
+            .primary {
+                color: $color-primary;
+            }
+        }
+        StLabel {
+            margin: 8px 0px;
+
             .primary {
                 color: $color-primary;
             }
@@ -281,7 +281,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 
-#topPanel {
+#horizontalPanel {
     background: rgba(getBackgroundColor($theme), $panel-opacity);
     $topPanelTheme: $theme;
 
@@ -370,6 +370,13 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
                 icon-size: 18px;
             }
         }
+    }
+    .clock-label {
+        @include foreground-medium-emphasis($theme);
+        @extend .subtitle-2;
+        margin-top: 3px;
+        margin-right: 16px;
+        margin-left: 16px;
     }
 }
 
