@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter, Gio } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -35,10 +35,13 @@ var MsStatusArea = GObject.registerClass(
         }
 
         verticaliseDateMenuButton() {
-            this.dateMenu._clock.time_only = true;
+            //this.dateMenu._clock.time_only = true;
             /*this.dateMenu.set_x_expand(false);
             this.dateMenu.set_y_expand(false); */
-            this.dateMenu.box = this.dateMenu.get_child_at_index(0);
+            this.dateMenu.box = this.dateMenu._clockDisplay.get_parent();
+            this.dateMenu.remove_child(this.dateMenu.box);
+            this.msNotificationIcon = new MsNotificationIcon(this.dateMenu);
+            this.dateMenu.add_child(this.msNotificationIcon);
             this.dateMenu.indicatorPad = this.dateMenu.box.get_child_at_index(
                 0
             );
@@ -58,7 +61,7 @@ var MsStatusArea = GObject.registerClass(
                 const markup = clockSections
                     .map((section) => `<span>${section}</span>`)
                     .join('\n');
-                this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
+                //this.dateMenu._clockDisplay.clutter_text.set_markup(markup);
             };
             update();
             this.dateMenuSignal = this.dateMenu._clock.connect(
@@ -217,6 +220,36 @@ var MsStatusArea = GObject.registerClass(
             this.restorePanelMenuSide();
             this.restorePanelActors();
             this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
+        }
+    }
+);
+
+var MsNotificationIcon = GObject.registerClass(
+    {
+        GTypeName: 'MsNotificationIcon',
+    },
+    class MsNotificationIcon extends St.Widget {
+        _init(dateMenu) {
+            super._init();
+            this.icon = new St.Icon({
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/bell-symbolic.svg`
+                ),
+            });
+            this.pulsingIcon = new St.Icon({
+                style_class: 'primary',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/bell-ring-symbolic.svg`
+                ),
+            });
+            this.add_child(this.icon);
+            this.add_child(this.pulsingIcon);
+            dateMenu._indicator.bind_property(
+                'visible',
+                this.pulsingIcon,
+                'visible',
+                GObject.BindingFlags.SYNC_CREATE
+            );
         }
     }
 );

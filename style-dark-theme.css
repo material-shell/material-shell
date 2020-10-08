@@ -142,6 +142,15 @@ subtitle-1 {
     icon-size: 1.09em;
     margin-top: 4px;
     margin-bottom: 4px; }
+  #msPanel MsNotificationIcon {
+    height: 24px;
+    width: 24px;
+    margin: 12px; }
+    #msPanel MsNotificationIcon StIcon {
+      height: 24px;
+      width: 24px; }
+      #msPanel MsNotificationIcon StIcon .primary {
+        color: #3f51b5; }
 
 #topPanel {
   background: rgba(25, 25, 25, 0.876);

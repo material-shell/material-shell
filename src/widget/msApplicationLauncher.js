@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St } = imports.gi;
+const { Clutter, GObject, St, GnomeDesktop, Shell } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -89,6 +89,33 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             this.appButtonList = [];
             this.currentButtonFocused = null;
+            this.dateLabel = new St.Label({
+                style_class: 'headline-6 text-medium-emphasis',
+                y_align: Clutter.ActorAlign.CENTER,
+                x_expand: true,
+            });
+            this.clockLabel = new St.Label({
+                style_class: 'headline-6 text-medium-emphasis',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+            this.clockBin = new St.BoxLayout({});
+            this.clockBin.add_child(this.dateLabel);
+            this.clockBin.add_child(this.clockLabel);
+            this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
+            const updateClock = () => {
+                this.clockLabel.text = this._wallClock.clock;
+                const date = new Date();
+                /* Translators: This is a time format for a date in
+           long format */
+                let dateFormat = Shell.util_translate_time_string(
+                    N_('%A %B %-d')
+                );
+                this.dateLabel.text = date.toLocaleFormat(dateFormat);
+            };
+
+            this._wallClock.connect('notify::clock', updateClock);
+            updateClock();
+
             this.inputLayout = new St.BoxLayout({});
             this.searchIcon = new St.Icon({
                 style_class: 'search-entry-icon',
@@ -196,7 +223,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
                 return Clutter.EVENT_PROPAGATE;
             });
-
+            this.add_child(this.clockBin);
             this.add_child(this.inputContainer);
             this.container = new St.Widget();
             this.container.add_style_class_name('surface');
@@ -349,10 +376,13 @@ var MsApplicationButtonContainer = GObject.registerClass(
             const containerPadding =
                 16 * global.display.get_monitor_scale(this.monitor.index);
             let expandButtonHeight = 0;
+            const clockHeight =
+                64 * global.display.get_monitor_scale(this.monitor.index);
             const searchHeight =
                 48 * global.display.get_monitor_scale(this.monitor.index);
             const searchMargin =
                 24 * global.display.get_monitor_scale(this.monitor.index);
+
             const availableWidth =
                 contentBox.get_width() - containerPadding * 2;
 
@@ -361,7 +391,9 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 containerPadding * 2 -
                 expandButtonHeight -
                 searchHeight -
-                searchMargin;
+                searchMargin -
+                clockHeight;
+
             const numberOfButtons = this.filteredAppButtonList.length;
             this.numberOfColumn = Math.floor(availableWidth / this.buttonSize);
             const maxNumberOfRow = Math.floor(
@@ -386,19 +418,31 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         containerPadding * 2 +
                         expandButtonHeight +
                         searchHeight +
-                        searchMargin)) /
+                        searchMargin +
+                        clockHeight)) /
                 2;
+            const clockBox = new Clutter.ActorBox();
+            clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
+            clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
+            clockBox.y1 = contentBox.y1 + verticalOffset;
+            clockBox.y2 = clockBox.y1 + clockHeight;
+            Allocate(this.clockBin, clockBox, flags);
+
             const searchBox = new Clutter.ActorBox();
             searchBox.x1 = contentBox.x1 + horizontalOffset;
             searchBox.x2 = contentBox.x2 - horizontalOffset;
-            searchBox.y1 = contentBox.y1 + verticalOffset;
+            searchBox.y1 = contentBox.y1 + verticalOffset + clockHeight;
             searchBox.y2 = searchBox.y1 + searchHeight;
             Allocate(this.inputContainer, searchBox, flags);
             const containerBox = new Clutter.ActorBox();
             containerBox.x1 = contentBox.x1 + horizontalOffset;
             containerBox.x2 = contentBox.x2 - horizontalOffset;
             containerBox.y1 =
-                contentBox.y1 + verticalOffset + searchHeight + searchMargin;
+                contentBox.y1 +
+                verticalOffset +
+                searchHeight +
+                searchMargin +
+                clockHeight;
             containerBox.y2 = contentBox.y2 - verticalOffset;
             Allocate(this.container, containerBox, flags);
 

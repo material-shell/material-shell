@@ -267,6 +267,18 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         margin-top: 4px;
         margin-bottom: 4px;
     }
+    MsNotificationIcon {
+        height: 24px;
+        width: 24px;
+        margin: 12px;
+        StIcon {
+            height: 24px;
+            width: 24px;
+            .primary {
+                color: $color-primary;
+            }
+        }
+    }
 }
 
 #topPanel {
