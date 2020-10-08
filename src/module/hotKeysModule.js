@@ -225,6 +225,42 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
+        [...Array(10).keys()].forEach((workspaceIndex) => {
+            const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `move-window-to-workspace-${
+                workspaceIndex + 1
+            }`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                if (
+                    activeMsWorkspace.tileableFocused ===
+                    activeMsWorkspace.appLauncher
+                ) {
+                    return;
+                }
+
+                if (
+                    activeMsWorkspace ===
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
+                    ]
+                ) {
+                    return;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        workspaceIndex
+                    ];
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
+                nextMsWorkspace.activate();
+            });
+        });
+
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
