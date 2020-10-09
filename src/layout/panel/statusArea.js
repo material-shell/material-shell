@@ -13,28 +13,30 @@ var BlinkingIndicator = GObject.registerClass(
         _init() {
             super._init();
             this.visible = true;
+
+            this.pt = new Clutter.PropertyTransition({ property_name: 'opacity' });
+            this.pt.set_from(100);
+            this.pt.set_to(180);
+            this.pt.set_duration(3000);
+            this.pt.set_progress_mode(Clutter.AnimationMode.EASE_IN_OUT);
+
+            this.transition = new Clutter.TransitionGroup();
+            this.transition.set_duration(3000);
+            this.transition.set_repeat_count(-1);
+            // Unfortunately auto.reverse does not work well (buggy = not smooth)
+            // transition.set_auto_reverse(true);
+            this.transition.add_transition(this.pt);
         }
 
         _sync() {
-            let pt = new Clutter.PropertyTransition({ property_name: 'opacity' });
-            pt.set_from(100);
-            pt.set_to(180);
-            pt.set_duration(3000);
-            pt.set_progress_mode(Clutter.AnimationMode.EASE_IN_OUT);
-
-            let transition = new Clutter.TransitionGroup();
-            transition.set_duration(3000);
-            transition.set_repeat_count(-1);
-            // Unfortunately auto.reverse does not work well (buggy = not smooth)
-            // transition.set_auto_reverse(true);
-            transition.add_transition(pt);
+            log('*** material-shell.statusArea | count: ' + this._count);
             let doNotDisturb = !this._settings.get_boolean('show-banners');
             this.icon_name = doNotDisturb
                 ? 'notifications-disabled-symbolic'
                 : 'message-indicator-symbolic';
             if (this._count > 0 && !doNotDisturb) {
                 this.add_style_class_name('indicator-active');
-                this.add_transition('blink', transition);
+                this.add_transition('blink', this.transition);
             } else {
                 this.remove_transition('blink');
                 this.set_opacity(255);
