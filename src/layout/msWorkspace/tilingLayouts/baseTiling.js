@@ -21,6 +21,7 @@ var BaseTilingLayout = GObject.registerClass(
             );
             this.msWorkspace = msWorkspace;
             this.themeSettings = getSettings('theme');
+            this.tileableLastList = [];
             this.signals = [];
             this.registerToSignals();
 
@@ -178,10 +179,8 @@ var BaseTilingLayout = GObject.registerClass(
             const enteringTileableList = tileableList.filter(
                 (tileable) => !oldTileableList.includes(tileable)
             );
-            const leavingTileableList = oldTileableList.filter(
-                (tileable) =>
-                    !tileableList.includes(tileable) &&
-                    Me.msWindowManager.msWindowList.includes(tileable)
+            const leavingTileableList = this.tileableLastList.filter(
+                (tileable) => !tileableList.includes(tileable)
             );
 
             enteringTileableList.forEach((tileable) => {
@@ -198,6 +197,7 @@ var BaseTilingLayout = GObject.registerClass(
                 this.hideAppLauncher();
             }
 
+            this.tileableLastList = [...tileableList];
             this.tileAll();
 
             this.layout_changed();

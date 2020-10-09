@@ -50,8 +50,8 @@ var SplitLayout = GObject.registerClass(
             );
         }
 
-        onTileableListChanged(msWorkspace, newWindows, oldWindows) {
-            super.onTileableListChanged(msWorkspace, newWindows, oldWindows);
+        onTileableListChanged(tileableList, oldTileableList) {
+            super.onTileableListChanged(tileableList, oldTileableList);
             this.updateActiveTileableListFromFocused();
             this.refreshVisibleActors();
         }
