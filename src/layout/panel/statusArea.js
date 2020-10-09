@@ -11,34 +11,38 @@ const { VerticalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
 var BlinkingIndicator = GObject.registerClass(
     class BlinkingIndicator extends MessagesIndicator {
         _init() {
-            super._init();
-            this.visible = true;
-
-            this.pt = new Clutter.PropertyTransition({ property_name: 'opacity' });
-            this.pt.set_from(100);
-            this.pt.set_to(180);
-            this.pt.set_duration(3000);
-            this.pt.set_progress_mode(Clutter.AnimationMode.EASE_IN_OUT);
+            const pt = new Clutter.PropertyTransition({
+                property_name: 'opacity',
+            });
+            pt.set_from(100);
+            pt.set_to(180);
+            pt.set_duration(3000);
+            pt.set_progress_mode(Clutter.AnimationMode.EASE_IN_OUT);
 
             this.transition = new Clutter.TransitionGroup();
             this.transition.set_duration(3000);
             this.transition.set_repeat_count(-1);
             // Unfortunately auto.reverse does not work well (buggy = not smooth)
             // transition.set_auto_reverse(true);
-            this.transition.add_transition(this.pt);
+            this.transition.add_transition(pt);
+
+            super._init();
+            this.visible = true;
         }
 
         _sync() {
-            log('*** material-shell.statusArea | count: ' + this._count);
             let doNotDisturb = !this._settings.get_boolean('show-banners');
             this.icon_name = doNotDisturb
                 ? 'notifications-disabled-symbolic'
                 : 'message-indicator-symbolic';
             if (this._count > 0 && !doNotDisturb) {
                 this.add_style_class_name('indicator-active');
+                if (this.get_transition('blink')) return;
                 this.add_transition('blink', this.transition);
             } else {
-                this.remove_transition('blink');
+                if (this.get_transition('blink')) {
+                    this.remove_transition('blink');
+                }
                 this.set_opacity(255);
                 if (this.has_style_class_name('indicator-active')) {
                     this.remove_style_class_name('indicator-active');
@@ -264,7 +268,6 @@ var MsStatusArea = GObject.registerClass(
             this.dateMenu.box.add_child(this.oldIndicator);
             this.dateMenu._indicator = this.oldIndicator;
             this.dateMenu.box.insert_child_at_index(this.dateMenu.indicatorPad, 0);
-            this.dateMenu._indicator = this.oldIndicator;
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();
             this.restorePanelActors();
