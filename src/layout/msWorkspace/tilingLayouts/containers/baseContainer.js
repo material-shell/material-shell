@@ -7,7 +7,6 @@ class BaseContainer {
     constructor(layout) {
         this.layout = layout;
 
-        this.validatedContained = [];
         this.contained = [];
 
         this.definingBoxes = false;
@@ -44,9 +43,12 @@ class BaseContainer {
 
         for (let index = 0; index < this.contained.length; index++) {
             const possibleContainer = this.contained[index];
+            let subBox = {};
 
             if (possibleContainer instanceof BaseContainer) {
-                this.tileTileable(possibleContainer, this.box, index, this.contained.length);
+                this.tileTileable(subBox, this.box, index, this.contained.length);
+
+                possibleContainer.defineContainerBoxes(subBox);
             }
         }
 
@@ -76,41 +78,36 @@ class BaseContainer {
         return false;
     }
 
-    checkContained() {
-        for (let index = 0; index < this.contained.length; index++) {
-            const contained = this.contained[index];
-
-            if (contained instanceof BaseContainer) {
-                contained.checkContained();
-
-                if (contained.contained.length === 0) {
-                    this.contained.splice(index--, 1);
-                }
-
-                continue;
-            }
-
-            if (!this.validatedContained.includes(contained)) {
-                this.contained.splice(index--, 1);
-            }
-        }
-
-        this.validatedContained = [];
-    }
-
-    addDeepTileable(tileable) {
-        for (let i = this.contained.length - 1; i >= 0; i--) {
-            const possibleContainer = this.contained[i];
+    addTileable(tileable) {
+        for (let index = this.contained.length - 1; index >= 0; index--) {
+            const possibleContainer = this.contained[index];
 
             if (possibleContainer instanceof BaseContainer) {
-                possibleContainer.addDeepTileable(tileable);
+                possibleContainer.addTileable(tileable);
 
                 return;
             }
         }
 
         this.contained.push(tileable);
-        this.validatedContained.push(tileable);
+    }
+
+    removeTileable(tileable) {
+        for (let index = 0; index < this.contained.length; index++) {
+            const possibleTile = this.contained[index];
+
+            if (possibleTile === tileable) {
+                this.contained.splice(index, 1);
+
+                return;
+            }
+
+            if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
+                possibleTile.removeTileable(tileable);
+
+                return;
+            }
+        }
     }
 
     containerTileTileable(tileable) {
@@ -125,6 +122,8 @@ class BaseContainer {
 
             if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
                 possibleTile.containerTileTileable(tileable);
+
+                return;
             }
         }
     }

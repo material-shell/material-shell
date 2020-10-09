@@ -19,14 +19,41 @@ var I3wmLayout = GObject.registerClass(
             this.container = new SimpleHorizontal(this);
         }
 
-        addContainedTileables() {
-            for (const tileable of this.tileableListVisible) {
-                if (!this.container.containsTileable(tileable)) {
-                    this.container.addDeepTileable(tileable);
-                }
+        alterTileable(tileable) {
+            super.alterTileable(tileable);
+
+            if (
+                tileable !== this.msWorkspace.appLauncher ||
+                tileable === this.msWorkspace.tileableFocused
+            ) {
+                this.container.addTileable(tileable);
             }
 
-            this.container.checkContained();
+            if (this.container.contained.length == 2) {
+                this.container.addTileable(new SimpleVertical(this))
+            }
+
+            if (this.container.contained.length == 3 && this.container.contained[2].contained.length == 2) {
+                this.container.addTileable(new SimpleHorizontal(this))
+            }
+        }
+
+        restoreTileable(tileable) {
+            super.restoreTileable(tileable);
+
+            this.container.removeTileable(tileable);
+        }
+
+        showAppLauncher() {
+            super.showAppLauncher();
+
+            this.container.addTileable(this.msWorkspace.appLauncher);
+        }
+
+        hideAppLauncher() {
+            super.hideAppLauncher();
+
+            this.container.removeTileable(this.msWorkspace.appLauncher);
         }
 
         defineContainerBoxes(box) {
@@ -46,8 +73,6 @@ var I3wmLayout = GObject.registerClass(
             }
             box = box || this.tileableContainer.allocation;
 
-            this.addContainedTileables();
-            log(this.container.contained.length);
             if (box) {
                 this.defineContainerBoxes(box);
                 super.tileAll(box);
