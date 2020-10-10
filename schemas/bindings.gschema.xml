@@ -80,77 +80,77 @@
       </description>
     </key>
     <key name="use-maximize-layout" type="as">
-      <default><![CDATA[['<Super>g']]]></default>
+      <default><![CDATA[['<Shift><Super>m']]]></default>
       <summary>Use maximize layout</summary>
       <description>
         Use maximize layout
       </description>
     </key>
     <key name="use-split-layout" type="as">
-      <default><![CDATA[['<Super>z']]]></default>
+      <default><![CDATA[['<Shift><Super>s']]]></default>
       <summary>Use split layout</summary>
       <description>
         Use split layout
       </description>
     </key>
     <key name="use-half-layout" type="as">
-      <default><![CDATA[['<Super>e']]]></default>
+      <default><![CDATA[['<Shift><Super>h']]]></default>
       <summary>Use half layout</summary>
       <description>
         Use half layout
       </description>
     </key>
     <key name="use-half-horizontal-layout" type="as">
-      <default><![CDATA[['<Super>r']]]></default>
+      <default><![CDATA[['<Shift><Super>j']]]></default>
       <summary>Use half-horizontal layout</summary>
       <description>
         Use half-horizontal layout
       </description>
     </key>
     <key name="use-half-vertical-layout" type="as">
-      <default><![CDATA[['<Super>t']]]></default>
+      <default><![CDATA[['<Shift><Super>k']]]></default>
       <summary>Use half-vertical layout</summary>
       <description>
         Use half-vertical layout
       </description>
     </key>
     <key name="use-grid-layout" type="as">
-      <default><![CDATA[['<Super>y']]]></default>
+      <default><![CDATA[['<Shift><Super>g']]]></default>
       <summary>Use grid layout</summary>
       <description>
         Use grid layout
       </description>
     </key>
     <key name="use-ratio-layout" type="as">
-      <default><![CDATA[['<Super>u']]]></default>
+      <default><![CDATA[['<Shift><Super>r']]]></default>
       <summary>Use ratio layout</summary>
       <description>
         Use ratio layout
       </description>
     </key>
     <key name="use-float-layout" type="as">
-      <default><![CDATA[['<Super>i']]]></default>
+      <default><![CDATA[['<Shift><Super>f']]]></default>
       <summary>Use float layout</summary>
       <description>
         Use float layout
       </description>
     </key>
     <key name="use-simple-layout" type="as">
-      <default><![CDATA[['<Super>k']]]></default>
+      <default><![CDATA[['<Shift><Super>d']]]></default>
       <summary>Use simple layout</summary>
       <description>
         Use simple layout
       </description>
     </key>
     <key name="use-simple-horizontal-layout" type="as">
-      <default><![CDATA[['<Super>o']]]></default>
+      <default><![CDATA[['<Shift><Super>c']]]></default>
       <summary>Use simple-horizontal layout</summary>
       <description>
         Use simple-horizontal layout
       </description>
     </key>
     <key name="use-simple-vertical-layout" type="as">
-      <default><![CDATA[['<Super>p']]]></default>
+      <default><![CDATA[['<Shift><Super>v']]]></default>
       <summary>Use simple-vertical layout</summary>
       <description>
         Use simple-vertical layout
