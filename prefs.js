@@ -57,6 +57,7 @@ function buildPrefsWidget() {
         'org.gnome.shell.extensions.materialshell.tweaks'
     );
 
+    tweaks.addSetting('use-i3wm-workspace', WidgetType.BOOLEAN);
     tweaks.addSetting('cycle-through-windows', WidgetType.BOOLEAN);
     tweaks.addSetting('cycle-through-workspaces', WidgetType.BOOLEAN);
     tweaks.addSetting('disable-notifications', WidgetType.BOOLEAN);
@@ -71,7 +72,6 @@ function buildPrefsWidget() {
 
     const tilingLayouts = [
         'maximize',
-        'i3wm',
         'split',
         'half',
         'half-horizontal',

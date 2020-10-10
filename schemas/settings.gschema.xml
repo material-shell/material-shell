@@ -80,6 +80,11 @@
     </key>
   </schema>
   <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
+    <key name="use-i3wm-workspace" type="b">
+      <default>false</default>
+      <summary>Use i3wm workspace management</summary>
+      <description>All windows are managed like under i3wm</description>
+    </key>
     <key name="cycle-through-windows" type="b" >
       <default>false</default>
       <summary>Cycle through windows</summary>

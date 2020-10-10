@@ -5,6 +5,7 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
+const { MsI3wmWorkspace } = Me.imports.src.layout.msWorkspace.msI3wmWorkspace;
 const { MsManager } = Me.imports.src.manager.msManager;
 const { WorkspaceTracker } = imports.ui.windowManager;
 const { getSettings } = Me.imports.src.utils.settings;
@@ -421,7 +422,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     createNewMsWorkspace(monitor, initialState) {
-        let msWorkspace = new MsWorkspace(this, monitor, initialState);
+        /* let msWorkspace = this.settings.get_boolean('use-i3wm-workspace')
+            ? new MsI3wmWorkspace(this, monitor, initialState)
+            : new MsWorkspace(this, monitor, initialState); */
+
+        // TODO : Temp
+        let msWorkspace = this.firstI3
+            ? new MsWorkspace(this, monitor, initialState)
+            : new MsI3wmWorkspace(this, monitor, initialState);
+        this.firstI3 = true;
+
         msWorkspace.connect('tileableList-changed', (_) => {
             this.stateChanged();
         });

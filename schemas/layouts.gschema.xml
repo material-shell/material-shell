@@ -5,11 +5,6 @@
       <summary>Maximize layout</summary>
       <description>Maximize all windows</description>
     </key>
-    <key name="i3wm" type="b">
-      <default>false</default>
-      <summary>i3wm layout</summary>
-      <description>All windows are managed like in i3wmç</description>
-    </key>
     <key name="split" type="b">
       <default>true</default>
       <summary>Split layout</summary>
