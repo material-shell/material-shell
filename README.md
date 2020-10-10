@@ -152,8 +152,10 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 | Distribution | Install via | Command |
 | :----------- | :---------- | :------ |
 | Manjaro      | PACMAN      | `pacman -S gnome-shell-extension-material-shell` |
-| Arch Linux   | AUR         | `yay -S gnome-shell-extension-material-shell-git` |
+| Arch Linux   | AUR         | From latest master: `yay -S gnome-shell-extension-material-shell-git` |
+| Arch Linux   | AUR         | From latest release: `yay -S gnome-shell-extension-material-shell` |
 | Fedora       | DNF         | `sudo dnf install gnome-shell-extension-material-shell` |
+| NixOS        | nix         | `nix-env -i gnome-shell-extension-material-shell` |
 | Others       | source      | `git clone https://github.com/material-shell/material-shell.git ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo` |
 
 (We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
