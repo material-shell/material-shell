@@ -7,8 +7,8 @@ const {
     BaseTilingLayout,
     ResizablePortion,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { SimpleHorizontal } = Me.imports.src.layout.msWorkspace.tilingLayouts.containers.simpleHorizontal;
-const { SimpleVertical } = Me.imports.src.layout.msWorkspace.tilingLayouts.containers.simpleVertical;
+const { SimpleHorizontalLayout } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleHorizontal;
+const { SimpleVerticalLayout } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleVertical;
 
 /* exported I3wmLayout */
 var I3wmLayout = GObject.registerClass(
@@ -16,7 +16,7 @@ var I3wmLayout = GObject.registerClass(
         _init(msWorkspace) {
             super._init(msWorkspace);
 
-            this.container = new SimpleHorizontal(this);
+            this.container = new SimpleHorizontalLayout(this);
         }
 
         alterTileable(tileable) {
@@ -30,11 +30,11 @@ var I3wmLayout = GObject.registerClass(
             }
 
             if (this.container.contained.length == 2) {
-                this.container.addTileable(new SimpleVertical(this))
+                this.container.addTileable(new SimpleVerticalLayout(this))
             }
 
             if (this.container.contained.length == 3 && this.container.contained[2].contained.length == 2) {
-                this.container.addTileable(new SimpleHorizontal(this))
+                this.container.addTileable(new SimpleHorizontalLayout(this))
             }
         }
 
@@ -81,6 +81,14 @@ var I3wmLayout = GObject.registerClass(
 
         tileTileable(tileable) {
             this.container.containerTileTileable(tileable);
+        }
+
+        moveTileableLeft(tileable) {
+            if (!this.container.containsTileable(tileable)) {
+                return;
+            }
+
+            this.container.moveTileableLeft(tileable, tileableList);
         }
     }
 );

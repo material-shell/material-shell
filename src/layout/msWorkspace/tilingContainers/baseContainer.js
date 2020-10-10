@@ -78,6 +78,24 @@ class BaseContainer {
         return false;
     }
 
+    isFirstTileable(tileable) {
+        if (this.contained.length === 0) {
+            return;
+        }
+
+        const firstTilable = this.contained[0];
+
+        if (firstTilable instanceof BaseContainer) {
+            return firstTilable.isFirstTileable(tileable);
+        }
+
+        return firstTilable === tileable;
+    }
+
+    isLastTileable(tileable) {
+        return this.contained[0] === tileable;
+    }
+
     addTileable(tileable) {
         for (let index = this.contained.length - 1; index >= 0; index--) {
             const possibleContainer = this.contained[index];
@@ -105,12 +123,34 @@ class BaseContainer {
             if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
                 possibleTile.removeTileable(tileable);
 
+                if (possibleTile.contained.length === 0) {
+                    this.contained.splice(index, 1);
+                }
+
                 return;
             }
         }
     }
 
     containerTileTileable(tileable) {
+        for (let index = 0; index < this.contained.length; index++) {
+            const possibleTile = this.contained[index];
+
+            if (possibleTile === tileable) {
+                this.tileTileable(tileable, this.box, index, this.contained.length);
+
+                return;
+            }
+
+            if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
+                possibleTile.containerTileTileable(tileable);
+
+                return;
+            }
+        }
+    }
+
+    moveTileableLeft(tileable) {
         for (let index = 0; index < this.contained.length; index++) {
             const possibleTile = this.contained[index];
 
