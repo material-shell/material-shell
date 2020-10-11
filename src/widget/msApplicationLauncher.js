@@ -16,6 +16,7 @@ const MAX_DUMMY_LENGTH = 16;
 var MsApplicationLauncher = GObject.registerClass(
     {
         GTypeName: 'MsApplicationLauncher',
+        CssName: 'MsApplicationLauncher',
     },
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
