@@ -304,7 +304,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         highlightButtonAbove() {
             let currentIndex = this.getCurrentIndex();
-            if (currentIndex > this.numberOfColumn) {
+            if (currentIndex > this.numberOfColumn - 1) {
                 const nextButton = this.filteredAppButtonList[
                     currentIndex - this.numberOfColumn
                 ];
