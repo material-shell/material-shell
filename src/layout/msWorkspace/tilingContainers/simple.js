@@ -6,8 +6,8 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { BaseContainer } = Me.imports.src.layout.msWorkspace.tilingContainers.baseContainer;
 
-/* exported SimpleLayout */
-class SimpleLayout extends BaseContainer {
+/* exported SimpleContainer */
+class SimpleContainer extends BaseContainer {
     tileTileable(tileable, box, index, siblingLength) {
         if (box.width > box.height) {
             this.tileTileableHorizontal(

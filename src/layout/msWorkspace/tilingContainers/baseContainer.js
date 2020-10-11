@@ -2,7 +2,7 @@
 const { Gio, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 
-/* exported BaseTilingLayout */
+/* exported BaseContainer */
 class BaseContainer {
     constructor(layout) {
         this.layout = layout;
@@ -56,8 +56,8 @@ class BaseContainer {
     }
 
     containsContainers() {
-        for (const possibleTile of this.contained) {
-            if (possibleTile instanceof BaseContainer) {
+        for (const possibleTileable of this.contained) {
+            if (possibleTileable instanceof BaseContainer) {
                 return true;
             }
         }
@@ -65,11 +65,11 @@ class BaseContainer {
         return false;
     }
 
-    containsTileable(tileable) {
-        for (const possibleTile of this.contained) {
+    containsTileable(tileable, notDeep) {
+        for (const possibleTileable of this.contained) {
             if (
-                (possibleTile === tileable) ||
-                (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable))
+                (possibleTileable === tileable) ||
+                (possibleTileable instanceof BaseContainer && !notDeep && possibleTileable.containsTileable(tileable))
             ) {
                 return true;
             }
@@ -80,7 +80,7 @@ class BaseContainer {
 
     isFirstTileable(tileable) {
         if (this.contained.length === 0) {
-            return;
+            return false;
         }
 
         const firstTilable = this.contained[0];
@@ -93,15 +93,30 @@ class BaseContainer {
     }
 
     isLastTileable(tileable) {
-        return this.contained[0] === tileable;
+        if (this.contained.length === 0) {
+            return false;
+        }
+
+        const lastTilable = this.contained[this.contained.length - 1];
+
+        if (lastTilable instanceof BaseContainer) {
+            return lastTilable.isLastTileable(tileable);
+        }
+
+        return lastTilable === tileable;
     }
 
-    addTileable(tileable) {
+    addTileableFirst(tileable) {
+        this.contained.unshift(tileable);
+    }
+
+    addTileableLast(tileable) {
+        // TODO: to remove after layout managed.
         for (let index = this.contained.length - 1; index >= 0; index--) {
             const possibleContainer = this.contained[index];
 
             if (possibleContainer instanceof BaseContainer) {
-                possibleContainer.addTileable(tileable);
+                possibleContainer.addTileableLast(tileable);
 
                 return;
             }
@@ -112,19 +127,27 @@ class BaseContainer {
 
     removeTileable(tileable) {
         for (let index = 0; index < this.contained.length; index++) {
-            const possibleTile = this.contained[index];
+            const possibleTileable = this.contained[index];
 
-            if (possibleTile === tileable) {
+            if (possibleTileable === tileable) {
                 this.contained.splice(index, 1);
 
                 return;
             }
 
-            if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
-                possibleTile.removeTileable(tileable);
+            if (possibleTileable instanceof BaseContainer && possibleTileable.containsTileable(tileable)) {
+                possibleTileable.removeTileable(tileable);
 
-                if (possibleTile.contained.length === 0) {
+                if (possibleTileable.contained.length === 0) {
                     this.contained.splice(index, 1);
+
+                    return;
+                }
+
+                // If the sub container contains only one tileable and it is a container,
+                // replace our sub container by its contained container.
+                if (possibleTileable.contained.length === 1 && possibleTileable.contained[0] instanceof BaseContainer) {
+                    this.contained[index] = possibleTileable.contained[0];
                 }
 
                 return;
@@ -134,37 +157,113 @@ class BaseContainer {
 
     containerTileTileable(tileable) {
         for (let index = 0; index < this.contained.length; index++) {
-            const possibleTile = this.contained[index];
+            const possibleTileable = this.contained[index];
 
-            if (possibleTile === tileable) {
+            if (possibleTileable === tileable) {
                 this.tileTileable(tileable, this.box, index, this.contained.length);
 
                 return;
             }
 
-            if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
-                possibleTile.containerTileTileable(tileable);
+            if (possibleTileable instanceof BaseContainer && possibleTileable.containsTileable(tileable)) {
+                possibleTileable.containerTileTileable(tileable);
 
                 return;
             }
         }
     }
 
-    moveTileableLeft(tileable) {
-        for (let index = 0; index < this.contained.length; index++) {
-            const possibleTile = this.contained[index];
+    moveTileableLeft(tileable, tileableList) {
+        const tileableIndex = tileableList.indexOf(tileable);
 
-            if (possibleTile === tileable) {
-                this.tileTileable(tileable, this.box, index, this.contained.length);
+        if (tileableIndex === -1) return tileableList;
 
-                return;
+        if (!this.containsTileable(tileable, true)) {
+            for (let index = 0; index < this.contained.length; index++) {
+                const possibleContainer = this.contained[index];
+
+                if ((possibleContainer instanceof BaseContainer) && possibleContainer.containsTileable(tileable)) {
+                    if (possibleContainer.contained[0] === tileable) {
+                        possibleContainer.contained.shift();
+
+                        this.contained.splice(index, 0, tileable);
+
+                        return tileableList;
+                    }
+
+                    return possibleContainer.moveTileableLeft(tileable, tileableList);
+                }
             }
 
-            if (possibleTile instanceof BaseContainer && possibleTile.containsTileable(tileable)) {
-                possibleTile.containerTileTileable(tileable);
-
-                return;
-            }
+            return tileableList;
         }
+
+        if (tileableIndex > 0 && tileable != this.layout.msWorkspace.appLauncher) {
+            const containedIndex = this.contained.indexOf(tileable);
+            const possibleContainer = this.contained[containedIndex - 1];
+
+            if (possibleContainer instanceof BaseContainer) {
+                this.removeTileable(containedIndex);
+
+                possibleContainer.addTileableLast(tileable);
+
+                return tileableList;
+            }
+
+            this.contained[containedIndex - 1] = tileable;
+            this.contained[containedIndex] = possibleContainer;
+
+            tileableList[tileableIndex - 1] = tileable;
+            tileableList[tileableIndex] = possibleContainer;
+        }
+
+        return tileableList;
+    }
+
+    moveTileableRight(tileable, tileableList) {
+        const tileableIndex = tileableList.indexOf(tileable);
+
+        if (tileableIndex === -1) return tileableList;
+
+        if (!this.containsTileable(tileable, true)) {
+            for (let index = 0; index < this.contained.length; index++) {
+                const possibleContainer = this.contained[index];
+
+                if ((possibleContainer instanceof BaseContainer) && possibleContainer.containsTileable(tileable)) {
+                    if (possibleContainer.contained[possibleContainer.contained.length - 1] === tileable) {
+                        possibleContainer.contained.pop();
+
+                        this.contained.splice(index + 1, 0, tileable);
+
+                        return tileableList;
+                    }
+
+                    return possibleContainer.moveTileableRight(tileable, tileableList);
+                }
+            }
+
+            return tileableList;
+        }
+
+        if (tileableIndex < tileableList.length && tileable != this.layout.msWorkspace.appLauncher) {
+            const containedIndex = this.contained.indexOf(tileable);
+            const possibleContainer = this.contained[containedIndex + 1];
+
+            if (possibleContainer instanceof BaseContainer) {
+                this.removeTileable(tileable);
+
+                possibleContainer.addTileableFirst(tileable);
+
+                return tileableList;
+            }
+
+            this.contained[containedIndex] = possibleContainer;
+            this.contained[containedIndex + 1] = tileable;
+
+            tileableList[tileableIndex] = possibleContainer;
+            tileableList[tileableIndex + 1] = tileable;
+        }
+
+        return tileableList;
     }
 };

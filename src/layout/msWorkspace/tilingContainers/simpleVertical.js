@@ -4,10 +4,10 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension()
-const { SimpleLayout } = Me.imports.src.layout.msWorkspace.tilingContainers.simple;
+const { SimpleContainer } = Me.imports.src.layout.msWorkspace.tilingContainers.simple;
 
-/* exported SimpleVerticalLayout */
-class SimpleVerticalLayout extends SimpleLayout {
+/* exported SimpleVerticalContainer */
+class SimpleVerticalContainer extends SimpleContainer {
     tileTileable(tileable, box, index, siblingLength) {
         this.tileTileableVertical(tileable, box, index, siblingLength);
     }

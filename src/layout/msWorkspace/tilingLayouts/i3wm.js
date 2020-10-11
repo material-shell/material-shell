@@ -3,12 +3,10 @@ const { Clutter, GObject } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseTilingLayout,
-    ResizablePortion,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { SimpleHorizontalLayout } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleHorizontal;
-const { SimpleVerticalLayout } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleVertical;
+const { BaseContainer } = Me.imports.src.layout.msWorkspace.tilingContainers.baseContainer;
+const { BaseTilingLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+const { SimpleHorizontalContainer } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleHorizontal;
+const { SimpleVerticalContainer } = Me.imports.src.layout.msWorkspace.tilingContainers.simpleVertical;
 
 /* exported I3wmLayout */
 var I3wmLayout = GObject.registerClass(
@@ -16,7 +14,10 @@ var I3wmLayout = GObject.registerClass(
         _init(msWorkspace) {
             super._init(msWorkspace);
 
-            this.container = new SimpleHorizontalLayout(this);
+            this.defaultContainer = SimpleHorizontalContainer;
+
+            const Container = this.defaultContainer;
+            this.container = new Container(this);
         }
 
         alterTileable(tileable) {
@@ -26,15 +27,15 @@ var I3wmLayout = GObject.registerClass(
                 tileable !== this.msWorkspace.appLauncher ||
                 tileable === this.msWorkspace.tileableFocused
             ) {
-                this.container.addTileable(tileable);
+                this.container.addTileableLast(tileable);
             }
-
+            // TODO: To remove.
             if (this.container.contained.length == 2) {
-                this.container.addTileable(new SimpleVerticalLayout(this))
+                this.container.addTileableLast(new SimpleVerticalContainer(this))
             }
 
             if (this.container.contained.length == 3 && this.container.contained[2].contained.length == 2) {
-                this.container.addTileable(new SimpleHorizontalLayout(this))
+                this.container.addTileableLast(new SimpleHorizontalContainer(this))
             }
         }
 
@@ -47,7 +48,7 @@ var I3wmLayout = GObject.registerClass(
         showAppLauncher() {
             super.showAppLauncher();
 
-            this.container.addTileable(this.msWorkspace.appLauncher);
+            this.container.addTileableLast(this.msWorkspace.appLauncher);
         }
 
         hideAppLauncher() {
@@ -83,12 +84,54 @@ var I3wmLayout = GObject.registerClass(
             this.container.containerTileTileable(tileable);
         }
 
-        moveTileableLeft(tileable) {
+        moveTileableLeft(tileable, tileableList) {
             if (!this.container.containsTileable(tileable)) {
-                return;
+                return tileableList;
             }
 
-            this.container.moveTileableLeft(tileable, tileableList);
+            if (tileableList.length > 0 && tileableList[0] === tileable) {
+                this.container.removeTileable(tileable);
+                this.container.addTileableLast(tileable);
+
+                tileableList.splice(0, 1);
+                tileableList.push(tileable);
+
+                return tileableList;
+            }
+
+            return this.container.moveTileableLeft(tileable, tileableList);
+        }
+
+        moveTileableRight(tileable, tileableList) {
+            if (!this.container.containsTileable(tileable)) {
+                return tileableList;
+            }
+
+            if (tileableList.length === 1) {
+                const oldContainer = this.container;
+                const Container = this.defaultContainer;
+
+                this.container = new Container(this);
+                this.container.addTileableFirst(oldContainer.contained[0]);
+
+                return tileableList;
+            }
+
+            if (tileableList.length > 0 && (
+                (tileableList[tileableList.length - 1] === tileable) ||
+                (tileableList[tileableList.length - 1] === this.msWorkspace.appLauncher && tileableList[tileableList.length - 2] === tileable)
+            ) && !(this.container.contained[this.container.contained.length - 1] instanceof BaseContainer))
+            {
+                this.container.removeTileable(tileable);
+                this.container.addTileableFirst(tileable);
+
+                tileableList.splice(tileableList.length - 1, 1);
+                tileableList.unshift(tileable);
+
+                return tileableList;
+            }
+
+            return this.container.moveTileableRight(tileable, tileableList);
         }
     }
 );

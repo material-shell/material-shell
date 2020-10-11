@@ -36,12 +36,26 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         /* this.layout.setTilingContainer(container); */
     }
 
+    swapTileable(firstTileable, secondTileable) {
+        // Not supported here.
+    }
+
     swapTileableLeft(tileable) {
-        this.tilingLayout.moveTileableLeft(tileable);
+        const oldTileableList = this.tileableList;
+        const newTileableList = this.tilingLayout.moveTileableLeft(tileable, [...this.tileableList]);
+        this.tileableList = newTileableList;
+
+        this.emit('tileableList-changed', oldTileableList, newTileableList);
+        this.focusTileable(tileable);
     }
 
     swapTileableRight(tileable) {
-        this.tilingLayout.moveTileableRight(tileable);
+        const oldTileableList = this.tileableList;
+        const newTileableList = this.tilingLayout.moveTileableRight(tileable, [...this.tileableList]);
+        this.tileableList = newTileableList;
+
+        this.emit('tileableList-changed', oldTileableList, newTileableList);
+        this.focusTileable(tileable);
     }
 
     setTilingLayout(layout) {
