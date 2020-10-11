@@ -567,17 +567,19 @@ var MsApplicationButtonContainer = GObject.registerClass(
 var MsApplicationButton = GObject.registerClass(
     class MsApplicationButton extends MatButton {
         _init(app, buttonSize) {
+            this.app = app;
+            this.buttonSize = buttonSize;
+            super._init({
+                dummy: this.app ? false : true,
+            });
             this.layout = new St.BoxLayout({
                 vertical: true,
-                width: buttonSize,
-                height: buttonSize,
+                width: this.buttonSize,
+                height: this.buttonSize,
                 clip_to_allocation: true,
             });
-            this.layout.set_style('padding:12px;');
 
             if (app) {
-                super._init({});
-                this.app = app;
                 this.icon = this.app.create_icon_texture(72);
                 this.title = new St.Label({
                     text: this.app.get_name(),
@@ -587,11 +589,8 @@ var MsApplicationButton = GObject.registerClass(
                 });
                 this.layout.add_child(this.icon);
                 this.layout.add_child(this.title);
-            } else {
-                super._init({
-                    dummy: true,
-                });
             }
+            this.layout.set_style('padding:12px;');
             this.set_child(this.layout);
         }
     }
