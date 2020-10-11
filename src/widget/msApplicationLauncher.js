@@ -25,9 +25,29 @@ var MsApplicationLauncher = GObject.registerClass(
             });
             this.msWorkspace = msWorkspace;
             this.add_style_class_name('surface-darker');
+            this.appListContainer = null;
+            this.initAppListContainer();
+            Me.msThemeManager.connect('clock-app-launcher-changed', () =>{
+                this.appListContainer.destroy();
+                this.initAppListContainer();
+            });
+            this.connect('key-focus-in', () => {
+                this.appListContainer.inputContainer.grab_key_focus();
+            });
+            this.connect('parent-set', () => {
+                if (this.msWorkspace.tileableFocused === this) {
+                    this.grab_key_focus();
+                }
+            });
+            this.connect('key-focus-out', () => {
+                //this._searchResults.highlightDefault(false);
+            });
 
+        }
+
+        initAppListContainer() {
             this.appListContainer = new MsApplicationButtonContainer(
-                msWorkspace
+                this.msWorkspace
             );
             this.add_child(this.appListContainer);
             AppsManager.getApps().forEach((app) => {
@@ -53,17 +73,6 @@ var MsApplicationLauncher = GObject.registerClass(
                 );
                 this.appListContainer.addDummyButton(button);
             }
-            this.connect('key-focus-in', () => {
-                this.appListContainer.inputContainer.grab_key_focus();
-            });
-            this.connect('parent-set', () => {
-                if (this.msWorkspace.tileableFocused === this) {
-                    this.grab_key_focus();
-                }
-            });
-            this.connect('key-focus-out', () => {
-                //this._searchResults.highlightDefault(false);
-            });
         }
 
         vfunc_allocate(box, flags) {
