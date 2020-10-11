@@ -30,7 +30,10 @@ var MsApplicationLauncher = GObject.registerClass(
             );
             this.add_child(this.appListContainer);
             AppsManager.getApps().forEach((app) => {
-                const button = new MsApplicationButton(app);
+                const button = new MsApplicationButton(
+                    app,
+                    this.appListContainer.buttonSize
+                );
                 button.connect('clicked', () => {
                     const msWindow = Me.msWindowManager.createNewMsWindow(
                         app.id
@@ -244,13 +247,15 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.add_child(this.expandButton); */
         }
 
-        get monitor() {
-            return this.msWorkspace.monitor;
+        get monitorScale() {
+            return global.display.get_monitor_scale(
+                this.msWorkspace.monitor.index
+                );
         }
         get buttonSize() {
             return (
                 BUTTON_SIZE *
-                global.display.get_monitor_scale(this.monitor.index)
+                this.monitorScale
             );
         }
         reset() {
@@ -374,15 +379,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
             if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
-            const containerPadding =
-                16 * global.display.get_monitor_scale(this.monitor.index);
-            let expandButtonHeight = 0;
-            const clockHeight =
-                64 * global.display.get_monitor_scale(this.monitor.index);
-            const searchHeight =
-                48 * global.display.get_monitor_scale(this.monitor.index);
-            const searchMargin =
-                24 * global.display.get_monitor_scale(this.monitor.index);
+            const containerPadding = 16 * this.monitorScale;
+            const clockHeight = 64 * this.monitorScale;
+            const searchHeight = 48 * this.monitorScale;
+            const searchMargin = 24 * this.monitorScale;
 
             const availableWidth =
                 contentBox.get_width() - containerPadding * 2;
@@ -390,7 +390,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             const availableHeight =
                 contentBox.get_height() -
                 containerPadding * 2 -
-                expandButtonHeight -
                 searchHeight -
                 searchMargin -
                 clockHeight;
@@ -404,8 +403,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 numberOfButtons / this.numberOfColumn
             );
             this.numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
-            expandButtonHeight =
-                this.numberOfRow === numberOfRowNeeded ? 0 : expandButtonHeight;
             this.maxIndex = this.numberOfColumn * this.numberOfRow - 1;
 
             const horizontalOffset =
@@ -417,7 +414,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 (contentBox.get_height() -
                     (this.buttonSize * this.numberOfRow +
                         containerPadding * 2 +
-                        expandButtonHeight +
                         searchHeight +
                         searchMargin +
                         clockHeight)) /
@@ -481,7 +477,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 const expandButtonBox = new Clutter.ActorBox();
                 expandButtonBox.x1 = containerBox.x1;
                 expandButtonBox.x2 = containerBox.x2;
-                expandButtonBox.y1 = containerBox.y2 - expandButtonHeight;
+                expandButtonBox.y1 = containerBox.y2;
                 expandButtonBox.y2 = containerBox.y2;
                 //this.expandButton.allocate(expandButtonBox, flags);
             } else {
@@ -513,9 +509,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
 var MsApplicationButton = GObject.registerClass(
     class MsApplicationButton extends MatButton {
-        _init(app) {
+        _init(app, buttonSize) {
             super._init({});
             this.app = app;
+            this.buttonSize = buttonSize;
             this.icon = this.app.create_icon_texture(72);
             this.title = new St.Label({
                 text: this.app.get_name(),
@@ -525,8 +522,8 @@ var MsApplicationButton = GObject.registerClass(
             });
             this.layout = new St.BoxLayout({
                 vertical: true,
-                width: BUTTON_SIZE,
-                height: BUTTON_SIZE,
+                width: this.buttonSize,
+                height: this.buttonSize,
                 clip_to_allocation: true,
             });
             this.layout.set_style('padding:12px;');
