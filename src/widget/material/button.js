@@ -22,9 +22,11 @@ var MatButton = GObject.registerClass(
             delete params.primary;
             const child = params.child;
             delete params.child;
+            const isDummy = params.dummy ? params.dummy : false;
+            delete params.dummy;
             Object.assign(params, {
-                reactive: true,
-                track_hover: true,
+                reactive: !isDummy,
+                track_hover: !isDummy,
                 clip_to_allocation: true,
             });
             super._init(params);
@@ -35,6 +37,7 @@ var MatButton = GObject.registerClass(
             if (isPrimary) {
                 this.add_style_class_name('primary');
             }
+            if (isDummy) return;
 
             this.connect('event', (actor, event) => {
                 let eventType = event.type();

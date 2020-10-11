@@ -12,6 +12,7 @@ const { MatButton } = Me.imports.src.widget.material.button;
 /* exported MsApplicationLauncher */
 
 const BUTTON_SIZE = 124;
+const MAX_DUMMY_LENGTH = 16;
 var MsApplicationLauncher = GObject.registerClass(
     {
         GTypeName: 'MsApplicationLauncher',
@@ -45,6 +46,13 @@ var MsApplicationLauncher = GObject.registerClass(
                 this.appListContainer.addAppButton(button);
             });
             this.appListContainer.initFilteredAppButtonList();
+            for (let i = 0; i < MAX_DUMMY_LENGTH; i++) {
+                const button = new MsApplicationButton(
+                    null,
+                    this.appListContainer.buttonSize
+                );
+                this.appListContainer.addDummyButton(button);
+            }
             this.connect('key-focus-in', () => {
                 this.appListContainer.inputContainer.grab_key_focus();
             });
@@ -92,6 +100,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             super._init({});
             this.msWorkspace = msWorkspace;
             this.appButtonList = [];
+            this.dummyButtonList = [];
             this.currentButtonFocused = null;
             this.clockLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis margin-right-x2',
@@ -378,6 +387,11 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.add_child(button);
         }
 
+        addDummyButton(button) {
+            this.dummyButtonList.push(button);
+            this.add_child(button);
+        }
+
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
             if (!this.get_parent().visible) return;
@@ -451,7 +465,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             for (let y = 0; y < this.numberOfRow; y++) {
                 for (let x = 0; x < this.numberOfColumn; x++) {
                     index = x + this.numberOfColumn * y;
-                    if (index < this.filteredAppButtonList.length) {
+                    if (index < numberOfButtons) {
                         let button = this.filteredAppButtonList[index];
                         const buttonBox = new Clutter.ActorBox();
                         buttonBox.x1 =
@@ -469,23 +483,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     }
                 }
             }
-            if (index < this.filteredAppButtonList.length - 1) {
+            if (index < numberOfButtons - 1) {
                 for (
-                    index = index + 1;
-                    index < this.filteredAppButtonList.length;
-                    index++
+                    let i = index + 1;
+                    i < numberOfButtons;
+                    i++
                 ) {
-                    this.filteredAppButtonList[index].visible = false;
+                    this.filteredAppButtonList[i].visible = false;
                 }
-                //this.expandButton.visible = true;
-                const expandButtonBox = new Clutter.ActorBox();
-                expandButtonBox.x1 = containerBox.x1;
-                expandButtonBox.x2 = containerBox.x2;
-                expandButtonBox.y1 = containerBox.y2;
-                expandButtonBox.y2 = containerBox.y2;
-                //this.expandButton.allocate(expandButtonBox, flags);
-            } else {
-                //this.expandButton.visible = false;
             }
 
             //hide other buttons
@@ -514,25 +519,33 @@ var MsApplicationButtonContainer = GObject.registerClass(
 var MsApplicationButton = GObject.registerClass(
     class MsApplicationButton extends MatButton {
         _init(app, buttonSize) {
-            super._init({});
-            this.app = app;
-            this.buttonSize = buttonSize;
-            this.icon = this.app.create_icon_texture(72);
-            this.title = new St.Label({
-                text: this.app.get_name(),
-                x_align: Clutter.ActorAlign.CENTER,
-                style_class: 'subtitle-2',
-                style: 'margin-top:12px',
-            });
             this.layout = new St.BoxLayout({
                 vertical: true,
-                width: this.buttonSize,
-                height: this.buttonSize,
+                width: buttonSize,
+                height: buttonSize,
                 clip_to_allocation: true,
             });
             this.layout.set_style('padding:12px;');
-            this.layout.add_child(this.icon);
-            this.layout.add_child(this.title);
+
+            if (app) {
+                log('*** msApplicationLauncher | app: ' + app.get_name);
+                super._init({});
+                this.app = app;
+                this.icon = this.app.create_icon_texture(72);
+                this.title = new St.Label({
+                    text: this.app.get_name(),
+                    x_align: Clutter.ActorAlign.CENTER,
+                    style_class: 'subtitle-2',
+                    style: 'margin-top:12px',
+                });
+                this.layout.add_child(this.icon);
+                this.layout.add_child(this.title);
+            } else {
+                log('*** msApplicationLauncher | dummy');
+                super._init({
+                    dummy: true,
+                });
+            }
             this.set_child(this.layout);
         }
     }
