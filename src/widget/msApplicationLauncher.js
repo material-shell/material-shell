@@ -102,33 +102,36 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.appButtonList = [];
             this.dummyButtonList = [];
             this.currentButtonFocused = null;
-            this.clockLabel = new St.Label({
-                style_class: 'headline-6 text-medium-emphasis margin-right-x2',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.dateLabel = new St.Label({
-                style_class: 'headline-6 text-medium-emphasis',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.clockBin = new St.BoxLayout({
-                x_align: Clutter.ActorAlign.CENTER,
-            });
-            this.clockBin.add_child(this.clockLabel);
-            this.clockBin.add_child(this.dateLabel);
-            this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
-            const updateClock = () => {
-                this.clockLabel.text = this._wallClock.clock;
-                const date = new Date();
-                /* Translators: This is a time format for a date in
-           long format */
-                let dateFormat = Shell.util_translate_time_string(
-                    N_('%A %B %-d')
-                );
-                this.dateLabel.text = date.toLocaleFormat(dateFormat);
-            };
+            if (Me.msThemeManager.clockAppLauncher) {
+                this.clockLabel = new St.Label({
+                    style_class: 'headline-6 text-medium-emphasis margin-right-x2',
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+                this.dateLabel = new St.Label({
+                    style_class: 'headline-6 text-medium-emphasis',
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+                this.clockBin = new St.BoxLayout({
+                    x_align: Clutter.ActorAlign.CENTER,
+                });
+                this.clockBin.add_child(this.clockLabel);
+                this.clockBin.add_child(this.dateLabel);
+                this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
+                const updateClock = () => {
+                    this.clockLabel.text = this._wallClock.clock;
+                    const date = new Date();
+                    /* Translators: This is a time format for a date in
+               long format */
+                    let dateFormat = Shell.util_translate_time_string(
+                        N_('%A %B %-d')
+                    );
+                    this.dateLabel.text = date.toLocaleFormat(dateFormat);
+                };
 
-            this._wallClock.connect('notify::clock', updateClock);
-            updateClock();
+                this._wallClock.connect('notify::clock', updateClock);
+                updateClock();
+                this.add_child(this.clockBin);
+            }
 
             this.inputLayout = new St.BoxLayout({});
             this.searchIcon = new St.Icon({
@@ -237,7 +240,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
                 return Clutter.EVENT_PROPAGATE;
             });
-            this.add_child(this.clockBin);
             this.add_child(this.inputContainer);
             this.container = new St.Widget();
             this.container.add_style_class_name('surface');
@@ -401,7 +403,9 @@ var MsApplicationButtonContainer = GObject.registerClass(
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerPadding = 16 * this.monitorScale;
-            const clockHeight = 64 * this.monitorScale;
+            const clockHeight =
+                (Me.msThemeManager.clockAppLauncher ? 64 : 0) *
+                this.monitorScale;
             const searchHeight = 48 * this.monitorScale;
             const searchMargin = 24 * this.monitorScale;
 
@@ -442,12 +446,15 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         searchMargin +
                         clockHeight)) /
                 2;
-            const clockBox = new Clutter.ActorBox();
-            clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
-            clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
-            clockBox.y1 = contentBox.y1 + verticalOffset;
-            clockBox.y2 = clockBox.y1 + clockHeight;
-            Allocate(this.clockBin, clockBox, flags);
+
+            if (Me.msThemeManager.clockAppLauncher) {
+                const clockBox = new Clutter.ActorBox();
+                clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
+                clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
+                clockBox.y1 = contentBox.y1 + verticalOffset;
+                clockBox.y2 = clockBox.y1 + clockHeight;
+                Allocate(this.clockBin, clockBox, flags);
+            }
 
             const searchBox = new Clutter.ActorBox();
             searchBox.x1 = contentBox.x1 + horizontalOffset;

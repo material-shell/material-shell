@@ -109,6 +109,10 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         return this.themeSettings.get_boolean('clock-horizontal');
     }
 
+    get clockAppLauncher() {
+        return this.themeSettings.get_boolean('clock-app-launcher');
+    }
+
     getPanelSize(monitorIndex) {
         return (
             this.themeSettings.get_int('panel-size') *
