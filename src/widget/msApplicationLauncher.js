@@ -149,7 +149,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this._text = this.inputContainer.clutter_text;
             this._text.connect('text-changed', () => {
                 this.updateFilteredAppButtonList();
-                this.highlightButton(this.filteredAppButtonList[0]);
+                this.highlightInitialButton();
             });
             this._text.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
@@ -365,7 +365,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         // Set starting button as focused
         highlightInitialButton() {
-            if (this.filteredAppButtonList) {
+            if (
+                this.filteredAppButtonList &&
+                this.filteredAppButtonList.length > 0
+            ) {
                 this.highlightButton(this.filteredAppButtonList[0]);
             }
         }
@@ -420,8 +423,11 @@ var MsApplicationButtonContainer = GObject.registerClass(
             const numberOfRowNeeded = Math.ceil(
                 numberOfButtons / this.numberOfColumn
             );
-            this.numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
-            this.maxIndex = this.numberOfColumn * this.numberOfRow - 1;
+            this.maxIndex =
+                this.numberOfColumn *
+                    Math.min(maxNumberOfRow, numberOfRowNeeded) -
+                1;
+            this.numberOfRow = maxNumberOfRow;
 
             const horizontalOffset =
                 (contentBox.get_width() -
@@ -462,33 +468,29 @@ var MsApplicationButtonContainer = GObject.registerClass(
             Allocate(this.container, containerBox, flags);
 
             let index;
+            let indexDummy = 0;
             for (let y = 0; y < this.numberOfRow; y++) {
                 for (let x = 0; x < this.numberOfColumn; x++) {
                     index = x + this.numberOfColumn * y;
+                    let button;
                     if (index < numberOfButtons) {
-                        let button = this.filteredAppButtonList[index];
-                        const buttonBox = new Clutter.ActorBox();
-                        buttonBox.x1 =
-                            containerBox.x1 +
-                            this.buttonSize * x +
-                            containerPadding;
-                        buttonBox.x2 = buttonBox.x1 + this.buttonSize;
-                        buttonBox.y1 =
-                            containerBox.y1 +
-                            this.buttonSize * y +
-                            containerPadding;
-                        buttonBox.y2 = buttonBox.y1 + this.buttonSize;
-                        button.visible = true;
-                        Allocate(button, buttonBox, flags);
+                        button = this.filteredAppButtonList[index];
+                    } else {
+                        button = this.dummyButtonList[indexDummy];
+                        indexDummy++;
                     }
+                    this.allocateButton(
+                        button,
+                        containerBox,
+                        containerPadding,
+                        x,
+                        y,
+                        flags
+                    );
                 }
             }
             if (index < numberOfButtons - 1) {
-                for (
-                    let i = index + 1;
-                    i < numberOfButtons;
-                    i++
-                ) {
+                for (let i = index + 1; i < numberOfButtons; i++) {
                     this.filteredAppButtonList[i].visible = false;
                 }
             }
@@ -499,19 +501,48 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     return !this.filteredAppButtonList.includes(button);
                 })
                 .forEach((button) => {
-                    const hiddenBox = new Clutter.ActorBox();
-                    hiddenBox.x1 = contentBox.x1;
-                    hiddenBox.x2 = contentBox.x1;
-                    hiddenBox.y1 = contentBox.x1;
-                    hiddenBox.y2 = contentBox.x1;
-                    Allocate(button, hiddenBox, flags);
-                    button.visible = false;
+                    this.hideButton(button, contentBox, flags);
                 });
+
+            while (indexDummy < this.dummyButtonList.length) {
+                this.hideButton(
+                    this.dummyButtonList[indexDummy],
+                    containerBox,
+                    flags
+                );
+                indexDummy++;
+            }
 
             // Reset focused button to position zero if hidden
             if (this.currentButtonFocused) {
                 this.getCurrentIndex();
             }
+        }
+
+        allocateButton(button, containerBox, containerPadding, x, y, flags) {
+            const buttonBox = new Clutter.ActorBox();
+            buttonBox.x1 =
+                containerBox.x1 +
+                this.buttonSize * x +
+                containerPadding;
+            buttonBox.x2 = buttonBox.x1 + this.buttonSize;
+            buttonBox.y1 =
+                containerBox.y1 +
+                this.buttonSize * y +
+                containerPadding;
+            buttonBox.y2 = buttonBox.y1 + this.buttonSize;
+            button.visible = true;
+            Allocate(button, buttonBox, flags);
+        }
+
+        hideButton(button, contentBox, flags) {
+            const hiddenBox = new Clutter.ActorBox();
+            hiddenBox.x1 = contentBox.x1;
+            hiddenBox.x2 = contentBox.x1;
+            hiddenBox.y1 = contentBox.x1;
+            hiddenBox.y2 = contentBox.x1;
+            Allocate(button, hiddenBox, flags);
+            button.visible = false;
         }
     }
 );
@@ -528,7 +559,6 @@ var MsApplicationButton = GObject.registerClass(
             this.layout.set_style('padding:12px;');
 
             if (app) {
-                log('*** msApplicationLauncher | app: ' + app.get_name);
                 super._init({});
                 this.app = app;
                 this.icon = this.app.create_icon_texture(72);
@@ -541,7 +571,6 @@ var MsApplicationButton = GObject.registerClass(
                 this.layout.add_child(this.icon);
                 this.layout.add_child(this.title);
             } else {
-                log('*** msApplicationLauncher | dummy');
                 super._init({
                     dummy: true,
                 });
