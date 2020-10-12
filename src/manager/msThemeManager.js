@@ -1,5 +1,6 @@
 /** Gnome libs imports */
 const { GLib, Gio, St } = imports.gi;
+const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -200,11 +201,16 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     async regenerateStylesheet() {
-        await this.buildThemeStylesheetToFile(this.themeFile);
         this.unloadStylesheet();
+        // this.themeContext.set_theme(new St.Theme());
+        await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
-        this.themeContext.set_theme(new St.Theme());
-        this.themeContext.set_theme(this.theme);
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.themeContext.set_theme(this.theme);
+            Main.reloadThemeResource();
+            Main.loadTheme();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     unloadStylesheet() {
