@@ -234,7 +234,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         case Clutter.KEY_Left:
                             if (
                                 this.currentButtonFocused !=
-                                this.filteredAppButtonList[0]
+                                this.filteredAppButtonListBuffer[0] &&
+                                this.getCurrentIndex() > -1
                             ) {
                                 this.highlightPreviousButton();
                                 return Clutter.EVENT_STOP;
@@ -281,15 +282,22 @@ var MsApplicationButtonContainer = GObject.registerClass(
             );
         }
         reset() {
-            this.inputContainer.set_text('');
+            if (this.inputContainer.get_text().length) {
+                this.inputContainer.set_text('');
+                this._text.cursor_position = -1;
+                return;
+            }
+            this.updateFilteredAppButtonList();
         }
 
         initFilteredAppButtonList() {
             this.filteredAppButtonList = this.appButtonList;
+            this.filteredAppButtonListBuffer = this.appButtonList;
+            this.startIndex = 0;
         }
 
         updateFilteredAppButtonList() {
-            this.filteredAppButtonList = this.appButtonList.filter((button) => {
+            this.filteredAppButtonListBuffer = this.appButtonList.filter((button) => {
                 let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
                 let regex = new RegExp(this.inputContainer.get_text(), 'i');
                 if (regex.test(stringToSearch)) {
@@ -300,6 +308,92 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     return false;
                 }
             });
+            this.filteredAppButtonList = [];
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            let index = 0;
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+                ) {
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[index]
+                    );
+                    index++;
+                }
+            this.startIndex = 0;
+        }
+
+        scrollFilteredAppButtonListUp() {
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            if (
+                this.startIndex + maxButtons >
+                this.filteredAppButtonListBuffer.length - 1
+            ) {
+                return false;
+            }
+            const maxColumns = this.numberOfColumn;
+            let index = 0;
+            let showIndex;
+            this.startIndex += maxColumns;
+            while (index < this.startIndex) {
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[index]
+                ) {
+                    this.filteredAppButtonListBuffer[index].visible = false;
+                }
+                index++;
+            }
+            this.filteredAppButtonList = [];
+            index = 0;
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+            ) {
+                showIndex = this.startIndex + index;
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[showIndex]
+                ){
+                    this.filteredAppButtonListBuffer[showIndex].visible = true;
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[showIndex]
+                    );
+                }
+                index++;
+            }
+            return true;
+        }
+
+        scrollFilteredAppButtonListDown() {
+            const maxColumns = this.numberOfColumn;
+            if (
+                this.startIndex - maxColumns < 0
+            ) {
+                return false;
+            }
+            let index = 0;
+            let showIndex;
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            this.startIndex -= maxColumns;
+            this.filteredAppButtonList = [];
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+            ) {
+                showIndex = this.startIndex + index;
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[showIndex]
+                ){
+                    this.filteredAppButtonListBuffer[showIndex].visible = true;
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[showIndex]
+                    );
+                }
+                index++;
+            }
+            return true;
         }
 
         // Get current focused button index, resets to 0 if value is invalid
@@ -315,9 +409,16 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         highlightNextButton() {
             let currentIndex = this.getCurrentIndex();
-            if (currentIndex < 0 || currentIndex == this.maxIndex) {
+            if (currentIndex < 0) {
                 return;
-            } else if (currentIndex < this.filteredAppButtonList.length - 1) {
+            } else if (currentIndex == this.maxIndex) {
+                if (this.scrollFilteredAppButtonListUp()) {
+                    currentIndex -= this.numberOfColumn;
+                } else {
+                    return;
+                }
+            }
+            if (currentIndex < this.filteredAppButtonList.length - 1) {
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex + 1]
                 );
@@ -330,36 +431,48 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex - 1]
                 );
+            } else if (currentIndex === 0) {
+                if (this.scrollFilteredAppButtonListDown()) {
+                    currentIndex += this.numberOfColumn - 1;
+                    this.highlightButton(
+                        this.filteredAppButtonList[currentIndex]
+                    );
+                }
             }
         }
 
         highlightButtonAbove() {
             let currentIndex = this.getCurrentIndex();
-            if (currentIndex > this.numberOfColumn - 1) {
-                const nextButton = this.filteredAppButtonList[
-                    currentIndex - this.numberOfColumn
-                ];
-                if (nextButton) {
-                    this.highlightButton(nextButton);
+            if (currentIndex < this.numberOfColumn) {
+                if (this.scrollFilteredAppButtonListDown()) {
+                    currentIndex += this.numberOfColumn;
                 }
+            }
+            const nextButton = this.filteredAppButtonList[
+                currentIndex - this.numberOfColumn
+            ];
+            if (nextButton) {
+                this.highlightButton(nextButton);
             }
         }
 
         highlightButtonBelow() {
             let currentIndex = this.getCurrentIndex();
-            if (
-                currentIndex < 0 ||
-                currentIndex + this.numberOfColumn > this.maxIndex
-            ) {
+            if (currentIndex < 0) {
                 return;
-            } else {
-                const nextButton = this.filteredAppButtonList[
-                    currentIndex + this.numberOfColumn
-                ];
-
-                if (nextButton) {
-                    this.highlightButton(nextButton);
+            } else if (currentIndex + this.numberOfColumn > this.maxIndex) {
+                if (this.scrollFilteredAppButtonListUp()) {
+                    currentIndex -= this.numberOfColumn;
+                } else {
+                    return;
                 }
+            }
+            const nextButton = this.filteredAppButtonList[
+                currentIndex + this.numberOfColumn
+            ];
+
+            if (nextButton) {
+                this.highlightButton(nextButton);
             }
         }
 
@@ -431,7 +544,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             const numberOfButtons = this.filteredAppButtonList.length;
             this.numberOfColumn = Math.floor(availableWidth / this.buttonSize);
-            const maxNumberOfRow = Math.floor(
+            this.numberOfRow = Math.floor(
                 availableHeight / this.buttonSize
             );
             const numberOfRowNeeded = Math.ceil(
@@ -439,9 +552,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
             );
             this.maxIndex =
                 this.numberOfColumn *
-                    Math.min(maxNumberOfRow, numberOfRowNeeded) -
+                    Math.min(this.numberOfRow, numberOfRowNeeded) -
                 1;
-            this.numberOfRow = maxNumberOfRow;
 
             const horizontalOffset =
                 (contentBox.get_width() -
@@ -486,10 +598,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             let index;
             let indexDummy = 0;
+            let button;
             for (let y = 0; y < this.numberOfRow; y++) {
                 for (let x = 0; x < this.numberOfColumn; x++) {
                     index = x + this.numberOfColumn * y;
-                    let button;
                     if (index < numberOfButtons) {
                         button = this.filteredAppButtonList[index];
                     } else {
