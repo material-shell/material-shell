@@ -20,6 +20,24 @@ var I3wmLayout = GObject.registerClass(
             this.container = new Container(this);
         }
 
+        setTilingContainer(container) {
+            const tileableFocused = this.msWorkspace.tileableFocused;
+
+            this.changeTileableContainer(tileableFocused, container);
+        }
+
+        changeTileableContainer(tileable, container) {
+            if (this.container.isFirstTileable(tileable, true)) {
+                container.contained = this.container.contained;
+                this.container = container;
+                this.layout_changed();
+
+                return;
+            }
+
+            this.container.changeTileableContainer(tileable, container);
+        }
+
         alterTileable(tileable) {
             super.alterTileable(tileable);
 
@@ -77,6 +95,22 @@ var I3wmLayout = GObject.registerClass(
             if (box) {
                 this.defineContainerBoxes(box);
                 super.tileAll(box);
+
+                log('--------------');
+                const desc = function (container, space) {
+                    log(space, container.constructor.key);
+
+                    for (let index = 0; index < container.contained.length; index++) {
+                        const tileable = container.contained[index];
+
+                        if (tileable instanceof BaseContainer) {
+                            desc(tileable, space + '  ');
+                        } else {
+                            log(space, 'element');
+                        }
+                    }
+                };
+                desc(this.container, '');
             }
         }
 

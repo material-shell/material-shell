@@ -23,7 +23,7 @@ class SimpleContainer extends BaseContainer {
 
     tileTileableHorizontal(tileable, box, index, siblingLength) {
         let { x, y, width, height } = this.applyGaps(
-            box.x + (index * box.width) / siblingLength,
+            box.x + ((index * box.width) / siblingLength),
             box.y,
             box.width / siblingLength,
             box.height
@@ -38,7 +38,7 @@ class SimpleContainer extends BaseContainer {
     tileTileableVertical(tileable, box, index, siblingLength) {
         let { x, y, width, height } = this.applyGaps(
             box.x,
-            (index * box.height) / siblingLength,
+            box.y + ((index * box.height) / siblingLength),
             box.width,
             box.height / siblingLength
         );
@@ -49,3 +49,5 @@ class SimpleContainer extends BaseContainer {
         tileable.height = height;
     }
 };
+
+SimpleContainer.key = 'simple';

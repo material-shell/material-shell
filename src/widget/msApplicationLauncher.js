@@ -104,14 +104,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.clockBin.add_child(this.dateLabel);
             this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
             const updateClock = () => {
-                this.clockLabel.text = this._wallClock.clock;
+                /* this.clockLabel.text = this._wallClock.clock; */
                 const date = new Date();
                 /* Translators: This is a time format for a date in
            long format */
                 let dateFormat = Shell.util_translate_time_string(
                     N_('%A %B %-d')
                 );
-                this.dateLabel.text = date.toLocaleFormat(dateFormat);
+                /* this.dateLabel.text = date.toLocaleFormat(dateFormat); */
             };
 
             this._wallClock.connect('notify::clock', updateClock);

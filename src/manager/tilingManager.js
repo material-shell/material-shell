@@ -9,6 +9,9 @@ const {
     MaximizeLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.maximize;
 const {
+    TilingContainerByKey,
+} = Me.imports.src.layout.msWorkspace.tilingContainers.containers;
+const {
     TilingLayoutByKey,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
 const { MsManager } = Me.imports.src.manager.msManager;
@@ -95,6 +98,32 @@ var TilingManager = class TilingManager extends MsManager {
         }
     }
 
+    getNextLayoutKey(currentLayoutKey, direction) {
+        if (!this.availableLayouts.includes(currentLayoutKey)) {
+            currentLayoutKey = this.availableLayouts[0];
+        }
+        let nextIndex = this.availableLayouts.indexOf(currentLayoutKey) + direction;
+        if (nextIndex < 0) {
+            nextIndex += this.availableLayouts.length;
+        }
+        nextIndex = nextIndex % this.availableLayouts.length;
+        // Get the next layout available
+        return this.availableLayouts[nextIndex];
+    }
+
+    getContainerByKey(key) {
+        // If the layout is not in the available layouts return the first available
+        if (!this.availableLayouts.includes(key)) {
+            key = this.availableLayouts[0];
+        }
+        return TilingContainerByKey[key];
+    }
+
+    getNextContainer(currentContainer, direction) {
+        // And returns it
+        return TilingContainerByKey[this.getNextLayoutKey(currentContainer.constructor.key, direction)];
+    }
+
     getLayoutByKey(key) {
         // If the layout is not in the available layouts return the first available
         if (!this.availableLayouts.includes(key)) {
@@ -104,19 +133,7 @@ var TilingManager = class TilingManager extends MsManager {
     }
 
     getNextLayout(currentLayout, direction) {
-        let { key } = currentLayout.constructor;
-        if (!this.availableLayouts.includes(key)) {
-            key = this.availableLayouts[0];
-        }
-        let nextIndex = this.availableLayouts.indexOf(key) + direction;
-        if (nextIndex < 0) {
-            nextIndex += this.availableLayouts.length;
-        }
-        nextIndex = nextIndex % this.availableLayouts.length;
-        // Get the next layout available
-        const newKey = this.availableLayouts[nextIndex];
-        // And returns it
-        return TilingLayoutByKey[newKey];
+        return TilingLayoutByKey[this.getNextLayoutKey(currentLayout.constructor.key, direction)];
     }
 
     getFilteredWindows(windows) {

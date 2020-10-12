@@ -14,10 +14,18 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         super(msWorkspaceManager, monitor, initialState)
 
         this.setTilingLayout();
+
+        this.tilingLayout.hideAppLauncher();
+        this.tileableList.splice(this.tileableList.indexOf(this.appLauncher), 1);
     }
 
-    nextTiling() {
-        // Not supported here.
+    nextTiling(direction) {
+        const Container = Me.tilingManager.getNextContainer(
+            this.tilingLayout.container,
+            direction
+        );
+
+        this.tilingLayout.setTilingContainer(Container);
     }
 
     setTileableBefore(tileableToMove, tileableRelative) {
@@ -33,7 +41,9 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
     }
 
     setTilingContainer(container) {
-        /* this.layout.setTilingContainer(container); */
+        const Container = Me.tilingManager.getContainerByKey(container);
+
+        this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
     }
 
     swapTileable(firstTileable, secondTileable) {

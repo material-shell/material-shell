@@ -12,3 +12,5 @@ class SimpleVerticalContainer extends SimpleContainer {
         this.tileTileableVertical(tileable, box, index, siblingLength);
     }
 };
+
+SimpleVerticalContainer.key = 'simple-vertical';

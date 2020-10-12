@@ -12,3 +12,5 @@ class SimpleHorizontalContainer extends SimpleContainer {
         this.tileTileableHorizontal(tileable, box, index, siblingLength);
     }
 };
+
+SimpleHorizontalContainer.key = 'simple-horizontal';
