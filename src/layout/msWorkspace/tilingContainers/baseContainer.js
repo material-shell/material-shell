@@ -110,8 +110,25 @@ class BaseContainer {
         this.contained.unshift(tileable);
     }
 
+    addTileableAfter(tileable, referencedTileable) {
+        for (let index = this.contained.length - 1; index >= 0; index--) {
+            const possibleReference = this.contained[index];
+
+            if (possibleContainer instanceof BaseContainer) {
+                possibleContainer.addTileableAfter(tileable, referencedTileable);
+
+                return;
+            }
+
+            if (possibleReference === referencedTileable) {
+                this.contained.splice(index, 0, tileable);
+
+                return;
+            }
+        }
+    }
+
     addTileableLast(tileable) {
-        // TODO: to remove after layout managed.
         for (let index = this.contained.length - 1; index >= 0; index--) {
             const possibleContainer = this.contained[index];
 
@@ -151,6 +168,20 @@ class BaseContainer {
                 }
 
                 return;
+            }
+        }
+    }
+
+    getTileableContainer(tileable) {
+        if (this.containsTileable(tileable, true)) {
+            return this;
+        }
+
+        for (let index = 0; index < this.contained.length; index++) {
+            const possibleContainer = this.contained[index];
+
+            if (possibleContainer instanceof BaseContainer && possibleContainer.containsTileable(tileable)) {
+                return possibleContainer.getTileableContainer(tileable);
             }
         }
     }

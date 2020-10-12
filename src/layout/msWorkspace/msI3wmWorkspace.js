@@ -13,19 +13,32 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
     constructor(msWorkspaceManager, monitor, initialState) {
         super(msWorkspaceManager, monitor, initialState)
 
-        this.setTilingLayout();
+        this.tilingLayout.onDestroy();
+        this.tilingLayout = new I3wmLayout(this);
+
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(
+            this.tilingLayout
+        );
+
+        this.emit('tiling-layout-changed');
 
         this.tilingLayout.hideAppLauncher();
         this.tileableList.splice(this.tileableList.indexOf(this.appLauncher), 1);
     }
 
+    focusTileable(tileable, forced) {
+        this.precedentFocusedTileable = this.tileableFocused;
+
+        super.focusTileable(tileable, forced);
+    }
+
     nextTiling(direction) {
         const Container = Me.tilingManager.getNextContainer(
-            this.tilingLayout.container,
+            this.tilingLayout.getFocusedContainer(),
             direction
         );
 
-        this.tilingLayout.setTilingContainer(Container);
+        this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
     }
 
     setTileableBefore(tileableToMove, tileableRelative) {
@@ -69,20 +82,7 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
     }
 
     setTilingLayout(layout) {
-        if (layout) {
-            this.setTilingContainer(layout);
-
-            return;
-        }
-
-        this.tilingLayout.onDestroy();
-        this.tilingLayout = new I3wmLayout(this);
-
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(
-            this.tilingLayout
-        );
-
-        this.emit('tiling-layout-changed');
+        this.setTilingContainer(layout);
     }
 
     shouldPanelBeVisible() {

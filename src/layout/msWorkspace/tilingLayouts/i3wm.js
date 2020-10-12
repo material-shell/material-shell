@@ -26,6 +26,10 @@ var I3wmLayout = GObject.registerClass(
             this.changeTileableContainer(tileableFocused, container);
         }
 
+        getFocusedContainer() {
+            return this.container.getTileableContainer(this.msWorkspace.tileableFocused);
+        }
+
         changeTileableContainer(tileable, container) {
             if (this.container.isFirstTileable(tileable, true)) {
                 container.contained = this.container.contained;
@@ -45,15 +49,11 @@ var I3wmLayout = GObject.registerClass(
                 tileable !== this.msWorkspace.appLauncher ||
                 tileable === this.msWorkspace.tileableFocused
             ) {
-                this.container.addTileableLast(tileable);
-            }
-            // TODO: To remove.
-            if (this.container.contained.length == 2) {
-                this.container.addTileableLast(new SimpleVerticalContainer(this))
-            }
-
-            if (this.container.contained.length == 3 && this.container.contained[2].contained.length == 2) {
-                this.container.addTileableLast(new SimpleHorizontalContainer(this))
+/*                 if (this.msWorkspace.precedentFocusedTileable) {
+                    this.container.addTileableAfter(tileable, this.msWorkspace.precedentFocusedTileable);
+                } else { */
+                    this.container.addTileableLast(tileable);
+                /* } */
             }
         }
 
