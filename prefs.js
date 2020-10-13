@@ -59,6 +59,7 @@ function buildPrefsWidget() {
 
     tweaks.addSetting('cycle-through-windows', WidgetType.BOOLEAN);
     tweaks.addSetting('cycle-through-workspaces', WidgetType.BOOLEAN);
+    tweaks.addSetting('open-windows-after-focus', WidgetType.BOOLEAN);
     tweaks.addSetting('disable-notifications', WidgetType.BOOLEAN);
     tweaks.addSetting('enable-persistence', WidgetType.BOOLEAN);
 

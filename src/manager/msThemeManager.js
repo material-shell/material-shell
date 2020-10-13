@@ -43,6 +43,12 @@ var MsThemeManager = class MsThemeManager extends MsManager {
             this.primary = schema.get_string('primary-color');
             this.regenerateStylesheet();
         });
+        this.observe(this.themeSettings, 'changed::show-vertical-panel', () => {
+            this.emit('show-vertical-panel-changed');
+        });
+        this.observe(this.themeSettings, 'changed::show-horizontal-panel', () => {
+            this.emit('show-horizontal-panel-changed');
+        });
         this.observe(
             this.themeSettings,
             'changed::vertical-panel-position',

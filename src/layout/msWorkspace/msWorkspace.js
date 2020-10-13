@@ -130,16 +130,18 @@ var MsWorkspace = class MsWorkspace {
         }
 
         const oldTileableList = [...this.tileableList];
-        this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
+
+        if (this.msWorkspaceActor && getSettings('tweaks').get_boolean('open-windows-after-focus')) {
+            this.tileableList.splice(this.focusedIndex + 1, 0, msWindow);
+        } else {
+            this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
+        }
+
         if (focus) {
             this.focusTileable(msWindow);
         }
         this.msWorkspaceActor.updateUI();
         await this.emitTileableListChangedOnce(oldTileableList);
-        /*  // Focusing window if the window comes from a drag and drop
-        // or if there's no focused window
-        if (window.grabbed || !this.windowFocused) {
-        } */
     }
 
     async removeMsWindow(msWindow) {
