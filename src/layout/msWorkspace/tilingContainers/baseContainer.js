@@ -2,10 +2,16 @@
 const { Gio, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /* exported BaseContainer */
 class BaseContainer {
     constructor(layout) {
         this.layout = layout;
+        this.icon = Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+        );
 
         this.contained = [];
 

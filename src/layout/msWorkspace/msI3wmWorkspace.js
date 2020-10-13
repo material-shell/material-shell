@@ -35,6 +35,12 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         }
     }
 
+    refreshContainerIcon() {
+        const container = this.tilingLayout.getFocusedContainer();
+
+        this.msWorkspaceActor.panel.tilingIcon.gicon = container.icon;
+    }
+
     nextTiling(direction) {
         const Container = Me.tilingManager.getNextContainer(
             this.tilingLayout.getFocusedContainer(),
@@ -42,6 +48,19 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         );
 
         this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
+        this.refreshContainerIcon();
+    }
+
+    setTilingContainer(containerKey) {
+        const Container = Me.tilingManager.getContainerByKey(containerKey);
+
+        this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
+        this.refreshContainerIcon();
+    }
+
+    setTilingLayout(layout) {
+        this.setTilingContainer(layout);
+        this.emit('tiling-layout-changed');
     }
 
     setTileableBefore(tileableToMove, tileableRelative) {
@@ -50,17 +69,6 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
 
     setTileableAfter(tileableToMove, tileableRelative) {
         // Not supported here.
-    }
-
-    swapTileable(firstTileable, secondTileable) {
-        // Not supported here.
-    }
-
-    setTilingContainer(container) {
-        const Container = Me.tilingManager.getContainerByKey(container);
-
-        this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
-        this.emit('tiling-layout-changed');
     }
 
     swapTileable(firstTileable, secondTileable) {
@@ -87,32 +95,9 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         this.emit('tiling-layout-changed');
     }
 
-    setTilingLayout(layout) {
-        this.setTilingContainer(layout);
-        this.emit('tiling-layout-changed');
-    }
+    focusTileable(tileable, forced) {
+        super.focusTileable(tileable, forced);
 
-    async addMsWindow(msWindow, focus = false) {
-        if (!msWindow || (msWindow.msWorkspace && msWindow.msWorkspace === this)) {
-            return;
-        }
-
-        msWindow.setMsWorkspace(this);
-
-        if (this.msWorkspaceActor && !msWindow.dragged) {
-            reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
-        }
-
-        const oldTileableList = [...this.tileableList];
-        let index = this.tileableList.indexOf(this.tileableFocused);
-
-        this.tileableList.splice(index + 1, 0, msWindow);
-
-        if (focus) {
-            this.focusTileable(msWindow);
-        }
-
-        this.msWorkspaceActor.updateUI();
-        await this.emitTileableListChangedOnce(oldTileableList);
+        this.refreshContainerIcon();
     }
 };
