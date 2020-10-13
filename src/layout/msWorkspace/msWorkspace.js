@@ -130,7 +130,8 @@ var MsWorkspace = class MsWorkspace {
         }
 
         const oldTileableList = [...this.tileableList];
-        this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
+        const hasAppLauncher = this.tileableList[this.tileableList.length - 1] === this.appLauncher;
+        this.tileableList.splice(this.tileableList.length - hasAppLauncher, 0, msWindow);
         if (focus) {
             this.focusTileable(msWindow);
         }
@@ -153,6 +154,7 @@ var MsWorkspace = class MsWorkspace {
             this.focusedIndex--;
         } else if (
             this.focusedIndex === this.tileableList.length - 1 &&
+            this.tileableList[this.focusedIndex] === this.appLauncher &&
             this.tileableList.length > 1
         ) {
             this.focusedIndex--;

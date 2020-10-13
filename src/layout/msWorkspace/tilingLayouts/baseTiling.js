@@ -122,6 +122,7 @@ var BaseTilingLayout = GObject.registerClass(
                 box.x2 = this.tileableContainer.allocation.get_width();
                 box.y2 = this.tileableContainer.allocation.get_height();
             }
+
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(

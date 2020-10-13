@@ -10,20 +10,23 @@ class BaseContainer {
         this.contained = [];
 
         this.definingBoxes = false;
-
-        this.x = 0;
-        this.y = 0;
-        this.width = 0;
-        this.height = 0;
+        this.box = {};
     }
 
-    get box() {
-        return {
-            x: this.x,
-            y: this.y,
-            width: this.width,
-            height: this.height,
-        };
+    set x(x) {
+        this.box.x = x;
+    }
+
+    set y(y) {
+        this.box.y = y;
+    }
+
+    set width(width) {
+        this.box.width = width;
+    }
+
+    set height(height) {
+        this.box.height = height;
     }
 
     applyGaps(x, y, width, height) {
@@ -129,14 +132,12 @@ class BaseContainer {
     }
 
     addTileableLast(tileable) {
-        for (let index = this.contained.length - 1; index >= 0; index--) {
-            const possibleContainer = this.contained[index];
+        const possibleContainer = this.contained[this.contained.length - 1];
 
-            if (possibleContainer instanceof BaseContainer) {
-                possibleContainer.addTileableLast(tileable);
+        if (possibleContainer instanceof BaseContainer) {
+            possibleContainer.addTileableLast(tileable);
 
-                return;
-            }
+            return;
         }
 
         this.contained.push(tileable);

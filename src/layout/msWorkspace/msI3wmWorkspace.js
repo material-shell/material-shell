@@ -23,7 +23,14 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         this.emit('tiling-layout-changed');
 
         this.tilingLayout.hideAppLauncher();
-        this.tileableList.splice(this.tileableList.indexOf(this.appLauncher), 1);
+
+        const possibleAppLauncher = this.tileableList[this.tileableList.length - 1];
+
+        if (possibleAppLauncher === this.appLauncher) {
+            this.tileableList.pop();
+
+            this.emit('tileableList-changed', this.tilingLayout, [...this.tileableList, this.appLauncher]);
+        }
     }
 
     focusTileable(tileable, forced) {
@@ -57,6 +64,7 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         const Container = Me.tilingManager.getContainerByKey(container);
 
         this.tilingLayout.setTilingContainer(new Container(this.tilingLayout));
+        this.emit('tiling-layout-changed');
     }
 
     swapTileable(firstTileable, secondTileable) {
@@ -70,6 +78,7 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
 
         this.emit('tileableList-changed', oldTileableList, newTileableList);
         this.focusTileable(tileable);
+        this.emit('tiling-layout-changed');
     }
 
     swapTileableRight(tileable) {
@@ -79,10 +88,12 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
 
         this.emit('tileableList-changed', oldTileableList, newTileableList);
         this.focusTileable(tileable);
+        this.emit('tiling-layout-changed');
     }
 
     setTilingLayout(layout) {
         this.setTilingContainer(layout);
+        this.emit('tiling-layout-changed');
     }
 
     shouldPanelBeVisible() {
