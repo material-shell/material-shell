@@ -114,17 +114,17 @@ class BaseContainer {
     }
 
     addTileableAfter(tileable, referencedTileable) {
-        for (let index = this.contained.length - 1; index >= 0; index--) {
+        for (let index = 0; index < this.contained.length; index++) {
             const possibleReference = this.contained[index];
 
-            if (possibleContainer instanceof BaseContainer) {
-                possibleContainer.addTileableAfter(tileable, referencedTileable);
+            if (possibleReference instanceof BaseContainer && possibleReference.containsTileable(referencedTileable)) {
+                possibleReference.addTileableAfter(tileable, referencedTileable);
 
                 return;
             }
 
             if (possibleReference === referencedTileable) {
-                this.contained.splice(index, 0, tileable);
+                this.contained.splice(index + 1, 0, tileable);
 
                 return;
             }
@@ -189,7 +189,11 @@ class BaseContainer {
 
     changeTileableContainer(tileable, container) {
         // The top tileable of a container cannot be contained again.
-        if (this.contained.length > 0 && this.contained[0] === tileable) {
+        if (this.contained.length > 1 && this.contained[0] === tileable) {
+            container.contained = [tileable];
+            this.contained[0] = container;
+            this.layout.layout_changed();
+
             return;
         }
 
@@ -204,7 +208,7 @@ class BaseContainer {
             }
 
             if (possibleTileable instanceof BaseContainer && possibleTileable.containsTileable(tileable)) {
-                if (possibleTileable.isFirstTileable(tileable, true)) {
+                if (possibleTileable.isFirstTileable(tileable, true) && possibleTileable.contained.length === 1) {
                     container.contained = possibleTileable.contained;
                     this.contained[index] = container;
                     this.layout.layout_changed();
@@ -256,7 +260,11 @@ class BaseContainer {
                         return tileableList;
                     }
 
-                    return possibleContainer.moveTileableLeft(tileable, tileableList);
+                    tileableList = possibleContainer.moveTileableLeft(tileable, tileableList);
+
+                    if (possibleContainer.contained.length === 1 && possibleContainer.contained[0] instanceof BaseContainer) {
+                        this.contained[index] = possibleContainer.contained[0];
+                    }
                 }
             }
 
@@ -270,7 +278,7 @@ class BaseContainer {
             if (possibleContainer instanceof BaseContainer) {
                 this.removeTileable(tileable);
 
-                possibleContainer.addTileableLast(tileable);
+                possibleContainer.addTileableLast(tileable, true);
 
                 return tileableList;
             }
@@ -304,7 +312,11 @@ class BaseContainer {
                         return tileableList;
                     }
 
-                    return possibleContainer.moveTileableRight(tileable, tileableList);
+                    tileableList = possibleContainer.moveTileableRight(tileable, tileableList);
+
+                    if (possibleContainer.contained.length === 1 && possibleContainer.contained[0] instanceof BaseContainer) {
+                        this.contained[index] = possibleContainer.contained[0];
+                    }
                 }
             }
 
@@ -318,7 +330,7 @@ class BaseContainer {
             if (possibleContainer instanceof BaseContainer) {
                 this.removeTileable(tileable);
 
-                possibleContainer.addTileableFirst(tileable);
+                possibleContainer.addTileableFirst(tileable, true);
 
                 return tileableList;
             }

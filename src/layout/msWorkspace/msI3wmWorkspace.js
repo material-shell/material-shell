@@ -7,6 +7,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace
 const { I3wmLayout } = Me.imports.src.layout.msWorkspace.tilingLayouts.i3wm
+const { reparentActor } = Me.imports.src.utils.index;
 
 /* exported MsI3Workspace */
 var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
@@ -24,19 +25,14 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
 
         this.tilingLayout.hideAppLauncher();
 
-        const possibleAppLauncher = this.tileableList[this.tileableList.length - 1];
+        const appLauncherIndex = this.tileableList.indexOf(this.appLauncher);
 
-        if (possibleAppLauncher === this.appLauncher) {
-            this.tileableList.pop();
+        if (appLauncherIndex > -1) {
+            const oldTileableList = [...this.tileableList];
+            this.tileableList.splice(appLauncherIndex, 1);
 
-            this.emit('tileableList-changed', this.tilingLayout, [...this.tileableList, this.appLauncher]);
+            this.emit('tileableList-changed', this.tileableList, oldTileableList);
         }
-    }
-
-    focusTileable(tileable, forced) {
-        this.precedentFocusedTileable = this.tileableFocused;
-
-        super.focusTileable(tileable, forced);
     }
 
     nextTiling(direction) {
@@ -96,7 +92,27 @@ var MsI3wmWorkspace = class MsI3wmWorkspace extends MsWorkspace {
         this.emit('tiling-layout-changed');
     }
 
-    shouldPanelBeVisible() {
-        return false;
+    async addMsWindow(msWindow, focus = false) {
+        if (!msWindow || (msWindow.msWorkspace && msWindow.msWorkspace === this)) {
+            return;
+        }
+
+        msWindow.setMsWorkspace(this);
+
+        if (this.msWorkspaceActor && !msWindow.dragged) {
+            reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
+        }
+
+        const oldTileableList = [...this.tileableList];
+        let index = this.tileableList.indexOf(this.tileableFocused);
+
+        this.tileableList.splice(index + 1, 0, msWindow);
+
+        if (focus) {
+            this.focusTileable(msWindow);
+        }
+
+        this.msWorkspaceActor.updateUI();
+        await this.emitTileableListChangedOnce(oldTileableList);
     }
 };

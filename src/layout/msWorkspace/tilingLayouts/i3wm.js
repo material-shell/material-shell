@@ -14,9 +14,8 @@ var I3wmLayout = GObject.registerClass(
         _init(msWorkspace) {
             super._init(msWorkspace);
 
-            this.defaultContainer = SimpleHorizontalContainer;
-
-            const Container = this.defaultContainer;
+            const defaultLayoutKey = this.msWorkspace.defaultLayoutKey;
+            const Container = Me.tilingManager.getContainerByKey(defaultLayoutKey);
             this.container = new Container(this);
         }
 
@@ -32,8 +31,14 @@ var I3wmLayout = GObject.registerClass(
 
         changeTileableContainer(tileable, container) {
             if (this.container.isFirstTileable(tileable, true)) {
-                container.contained = this.container.contained;
-                this.container = container;
+                container.contained = [tileable];
+
+                if (this.container.contained.length > 1) {
+                    this.container.contained[0] = container;
+                } else {
+                    this.container = container;
+                }
+
                 this.layout_changed();
 
                 return;
@@ -49,10 +54,10 @@ var I3wmLayout = GObject.registerClass(
                 tileable !== this.msWorkspace.appLauncher ||
                 tileable === this.msWorkspace.tileableFocused
             ) {
-                return this.container.addTileableLast(tileable);
+                const tileableIndex = this.msWorkspace.tileableList.indexOf(tileable);
 
-                if (this.msWorkspace.precedentFocusedTileable) {
-                    this.container.addTileableAfter(tileable, this.msWorkspace.precedentFocusedTileable);
+                if (tileableIndex > 0) {
+                    this.container.addTileableAfter(tileable, this.msWorkspace.tileableList[tileableIndex - 1]);
                 } else {
                     this.container.addTileableLast(tileable);
                 }
@@ -98,7 +103,7 @@ var I3wmLayout = GObject.registerClass(
                 this.defineContainerBoxes(box);
                 super.tileAll(box);
 
-                /* log('--------------');
+                log('--------------');
                 const desc = function (container, space) {
                     log(space, container.constructor.key);
 
@@ -112,7 +117,7 @@ var I3wmLayout = GObject.registerClass(
                         }
                     }
                 };
-                desc(this.container, ''); */
+                desc(this.container, '');
             }
         }
 
@@ -135,7 +140,13 @@ var I3wmLayout = GObject.registerClass(
                 return tileableList;
             }
 
-            return this.container.moveTileableLeft(tileable, tileableList);
+            tileableList = this.container.moveTileableLeft(tileable, tileableList);
+
+            if (this.container.contained.length === 0 && this.container.contained[0] instanceof BaseContainer) {
+                this.container = this.container.contained[0];
+            }
+
+            return tileableList;
         }
 
         moveTileableRight(tileable, tileableList) {
@@ -167,7 +178,13 @@ var I3wmLayout = GObject.registerClass(
                 return tileableList;
             }
 
-            return this.container.moveTileableRight(tileable, tileableList);
+            tileableList = this.container.moveTileableRight(tileable, tileableList);
+
+            if (this.container.contained.length === 0 && this.container.contained[0] instanceof BaseContainer) {
+                this.container = this.container.contained[0];
+            }
+
+            return tileableList;
         }
     }
 );

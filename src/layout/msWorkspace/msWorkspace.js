@@ -59,9 +59,9 @@ var MsWorkspace = class MsWorkspace {
         }
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
-        let defaultLayout = getSettings('layouts').get_string('default-layout');
+        this.defaultLayoutKey = getSettings('layouts').get_string('default-layout');
         const Layout = Me.tilingManager.getLayoutByKey(
-            initialState ? initialState.tilingLayout : defaultLayout
+            initialState ? initialState.tilingLayout : this.defaultLayoutKey
         );
 
         this.tilingLayout = new Layout(this);
