@@ -582,6 +582,7 @@ var WorkspaceButton = GObject.registerClass(
                         await source.emit('drag-dropped');
                         await tileable.msWorkspace.removeMsWindow(tileable);
                         await this.msWorkspace.addMsWindow(tileable, true);
+                        Me.logFocus('[DEBUG]', `stateChanged from acceptDrop`);
                         this.msWorkspaceManager.stateChanged();
                         this.msWorkspace.activate();
                     })();
