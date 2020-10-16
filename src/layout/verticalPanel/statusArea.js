@@ -244,7 +244,7 @@ var MsDateMenuBox = GObject.registerClass(
                 this.updateClock.bind(this)
             );
 
-            dateMenu._indicator.connect(
+            (dateMenu._indicator.actor || dateMenu._indicator).connect(
                 'notify::visible',
                 this.updateVisibility.bind(this)
             );
