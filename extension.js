@@ -61,7 +61,7 @@ function enable() {
         //Load persistent data
         Me.stateManager.loadRegistry(() => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
-            Me.tilingManager = new TilingManager();
+            Me.layoutManager = new TilingManager();
             Me.msWindowManager = new MsWindowManager();
             Me.msWorkspaceManager = new MsWorkspaceManager();
             Me.msNotificationManager = new MsNotificationManager();
@@ -121,7 +121,7 @@ function disable() {
     modules.reverse().forEach((module) => {
         module.destroy();
     });
-    Me.tilingManager.destroy();
+    Me.layoutManager.destroy();
     Me.msWorkspaceManager.destroy();
     Me.msWindowManager.destroy();
 

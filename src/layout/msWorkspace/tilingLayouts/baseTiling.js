@@ -292,9 +292,9 @@ var BaseTilingLayout = GObject.registerClass(
 
         applyGaps(x, y, width, height) {
             // Reduces box size according to gap setting
-            const gap = Me.tilingManager.gap;
-            const screenGap = Me.tilingManager.screenGap;
-            const useScreenGap = Me.tilingManager.useScreenGap;
+            const gap = Me.layoutManager.gap;
+            const screenGap = Me.layoutManager.screenGap;
+            const useScreenGap = Me.layoutManager.useScreenGap;
 
             if (
                 (!gap && (!useScreenGap || !screenGap)) ||

@@ -16,71 +16,93 @@ const {
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 const { getSettings } = Me.imports.src.utils.settings;
 const { HorizontalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
+
 /* exported MsWorkspace */
 var MsWorkspace = class MsWorkspace {
-    constructor(msWorkspaceManager, monitor, initialState) {
+    constructor(msWorkspaceManager, monitor, state) {
         this.msWorkspaceManager = msWorkspaceManager;
-        // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
-        this.external =
-            initialState && initialState.external
-                ? initialState.external
-                : monitor.index !== Main.layoutManager.primaryIndex;
         this.setMonitor(monitor);
+        this._state = state || {
+            // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
+            external: this.monitor.index !== Main.layoutManager.primaryIndex,
+            focusedIndex: 0,
+            forcedCategory: null,
+            msWindowList: [],
+            layoutKeyList: Me.layoutManager.defaultLayoutKeyList,
+            layoutKey: Me.layoutManager.defaultLayoutKey,
+        };
 
-        this.tileableList = [];
-        // First add AppLauncher since windows are inserted before it otherwise the order is a mess
         this.appLauncher = new MsApplicationLauncher(this);
-        this.tileableList.push(this.appLauncher);
+
+        // First add AppLauncher since windows are inserted before it otherwise the order is a mess
+        this.tileableList = [this.appLauncher];
+
         this.msWorkspaceCategory = new MsWorkspaceCategory(
             this,
-            initialState && initialState.forcedCategory
+            this.state.forcedCategory
         );
-        this.focusedIndex = initialState ? initialState.focusedIndex : 0;
-        if (initialState) {
-            initialState.msWindowList.forEach((msWindowData) => {
-                this.addMsWindow(
-                    Me.msWindowManager.createNewMsWindow(
-                        msWindowData.appId,
-                        msWindowData.metaWindowIdentifier,
-                        null,
-                        msWindowData.persistent
-                            ? msWindowData.persistent
-                            : null,
-                        {
-                            x: msWindowData.x,
-                            y: msWindowData.y,
-                            width: msWindowData.width,
-                            height: msWindowData.height,
-                        }
-                    )
-                );
-            });
-            this.msWorkspaceCategory.determineCategory();
-        }
+
+        this._state.msWindowList.forEach((msWindowData) => {
+            this.addMsWindow(
+                Me.msWindowManager.createNewMsWindow(
+                    msWindowData.appId,
+                    msWindowData.metaWindowIdentifier,
+                    null,
+                    msWindowData.persistent ? msWindowData.persistent : null,
+                    {
+                        x: msWindowData.x,
+                        y: msWindowData.y,
+                        width: msWindowData.width,
+                        height: msWindowData.height,
+                    }
+                )
+            );
+        });
+
+        this.msWorkspaceCategory.determineCategory();
+
+        const LayoutConstructor = Me.layoutManager.getLayoutByKey(
+            this.state.layoutKey
+        );
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
-        let defaultLayout = getSettings('layouts').get_string('default-layout');
-        const Layout = Me.tilingManager.getLayoutByKey(
-            initialState ? initialState.tilingLayout : defaultLayout
-        );
-
-        this.tilingLayout = new Layout(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(
-            this.tilingLayout
-        );
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.layout = new LayoutConstructor(this);
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.determineCategory();
         });
     }
 
     destroy() {
-        this.tilingLayout.onDestroy();
+        this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
             delete this.msWorkspaceActor;
         }
         this.destroyed = true;
+    }
+
+    get focusedIndex() {
+        return this._state.focusedIndex;
+    }
+
+    set focusedIndex(index) {
+        this._state.focusedIndex = index;
+    }
+
+    get state() {
+        this._state.msWindowList = this.tileableList
+            .filter((tileable) => {
+                return tileable instanceof MsWindow;
+            })
+            .filter((msWindow) => {
+                return !msWindow.app.is_window_backed();
+            })
+            .map((msWindow) => {
+                return msWindow.state;
+            });
+        return this._state;
     }
 
     get tileableFocused() {
@@ -297,28 +319,21 @@ var MsWorkspace = class MsWorkspace {
     }
 
     nextTiling(direction) {
-        this.tilingLayout.onDestroy();
-        const Layout = Me.tilingManager.getNextLayout(
-            this.tilingLayout,
-            direction
-        );
-        this.tilingLayout = new Layout(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(
-            this.tilingLayout
-        );
+        this.layout.onDestroy();
+        const Layout = Me.layoutManager.getNextLayout(this.layout, direction);
+        this.layout = new Layout(this);
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
 
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
         this.emit('tiling-layout-changed');
     }
 
     setTilingLayout(layout) {
-        this.tilingLayout.onDestroy();
-        const Layout = Me.tilingManager.getLayoutByKey(layout);
-        this.tilingLayout = new Layout(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(
-            this.tilingLayout
-        );
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.tilingLayout.icon;
+        this.layout.onDestroy();
+        const Layout = Me.layoutManager.getLayoutByKey(layout);
+        this.layout = new Layout(this);
+        this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
+        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
         this.emit('tiling-layout-changed');
     }
 
@@ -407,33 +422,6 @@ var MsWorkspace = class MsWorkspace {
         } else {
             //this.focusTileable(null);
         }
-    }
-
-    getState() {
-        return {
-            external: this.external,
-            tilingLayout: this.tilingLayout.constructor.key,
-            msWindowList: this.tileableList
-                .filter((tileable) => {
-                    return tileable instanceof MsWindow;
-                })
-                .filter((msWindow) => {
-                    return !msWindow.app.is_window_backed();
-                })
-                .map((msWindow) => {
-                    return {
-                        appId: msWindow.app.get_id(),
-                        metaWindowIdentifier: msWindow.metaWindowIdentifier,
-                        persistent: msWindow._persistent,
-                        x: msWindow.x,
-                        y: msWindow.y,
-                        width: msWindow.width,
-                        height: msWindow.height,
-                    };
-                }),
-            focusedIndex: this.focusedIndex,
-            forcedCategory: this.msWorkspaceCategory.forcedCategory,
-        };
     }
 
     setMonitor(monitor) {

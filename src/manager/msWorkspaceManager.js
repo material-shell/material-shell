@@ -374,7 +374,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             // try to find an unused external msWorkspace for this external Monitor
             let msWorkspace = this.msWorkspaceList.find((msWorkspace) => {
                 return (
-                    msWorkspace.external &&
+                    msWorkspace.state.external &&
                     !Main.layoutManager.monitors.includes(msWorkspace.monitor)
                 );
             });
@@ -581,7 +581,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 return msWorkspace.msWindowList.length;
             })
             .map((msWorkspace) => {
-                return msWorkspace.getState();
+                return msWorkspace.state;
             });
         this.currentState = workspacesState;
         Me.logFocus(

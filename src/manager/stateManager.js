@@ -22,13 +22,19 @@ var StateManager = class StateManager {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
 
+        this.state = this.updateState(
+            JSON.parse(global.get_persistent_state('s', 'material-shell-state'))
+        );
+        if (this.state) {
+            return callback(this.state);
+        }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             this.stateFile.load_contents_async(null, (obj, res) => {
                 let [success, contents] = obj.load_contents_finish(res);
                 if (success) {
                     try {
-                        this.state = JSON.parse(
-                            imports.byteArray.toString(contents)
+                        this.state = this.updateState(
+                            JSON.parse(imports.byteArray.toString(contents))
                         );
                     } catch {
                         this.state = {};
@@ -37,9 +43,32 @@ var StateManager = class StateManager {
                 callback(this.state);
             });
         } else {
+            this.state = {};
             callback(this.state);
         }
     }
+
+    updateState(state) {
+        if (state) {
+            const workspacesState = state['workspaces-state'];
+            if (workspacesState) {
+                // in old version the workspaces was split in 2 different array
+                workspacesState = workspacesState.msWorkspaceList || [
+                    ...workspacesState.primaryWorkspaceList,
+                    ...workspacesState.externalWorkspaces,
+                ];
+
+                workspacesState.msWorkspaceList.map((msWorkspaceState) => {
+                    msWorkspaceState.layoutKey =
+                        msWorkspaceState.layoutKey ||
+                        msWorkspaceState.tilingLayout;
+                    return msWorkspaceState;
+                });
+            }
+        }
+        return state;
+    }
+
     saveRegistry() {
         let json = JSON.stringify(this.state);
         let contents = new GLib.Bytes(json);

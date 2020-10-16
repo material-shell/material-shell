@@ -72,6 +72,18 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        get state() {
+            return {
+                appId: this.app.get_id(),
+                metaWindowIdentifier: this.metaWindowIdentifier,
+                persistent: this._persistent,
+                x: this.x,
+                y: this.y,
+                width: this.width,
+                height: this.height,
+            };
+        }
+
         get metaWindow() {
             return (
                 this._metaWindow ||
@@ -124,8 +136,7 @@ var MsWindow = GObject.registerClass(
             if (!this.msWorkspace) return false;
             return (
                 (this.msWorkspace &&
-                    this.msWorkspace.tilingLayout.constructor.key ===
-                        'float') ||
+                    this.msWorkspace.layout.constructor.key === 'float') ||
                 (this.metaWindow && this.metaWindow.fullscreen)
             );
         }
