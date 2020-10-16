@@ -454,6 +454,31 @@ var SettingCategory = GObject.registerClass(
     }
 );
 
+function cssHexString(css) {
+    let rrggbb = '#';
+    let start;
+    for (let loop = 0; loop < 3; loop++) {
+        let end = 0;
+        let xx = '';
+        for (let loop = 0; loop < 2; loop++) {
+            while (true) {
+                let x = css.slice(end, end + 1);
+                if (x == '(' || x == ',' || x == ')') break;
+                end++;
+            }
+            if (loop == 0) {
+                end++;
+                start = end;
+            }
+        }
+        xx = parseInt(css.slice(start, end)).toString(16);
+        if (xx.length == 1) xx = `0${xx}`;
+        rrggbb += xx;
+        css = css.slice(end);
+    }
+    return rrggbb;
+}
+
 function getDefaultLayoutComboBox(tilingLayouts, setting) {
     let widget = new Gtk.ComboBoxText();
     let refreshComboBox = () => {
