@@ -273,7 +273,9 @@ var MsDateMenuBox = GObject.registerClass(
         }
 
         updateVisibility() {
-            if (this.dateMenu._indicator.visible) {
+            let indicatorActor =
+                this.dateMenu._indicator.actor || this.dateMenu._indicator;
+            if (indicatorActor.visible) {
                 if (Me.msThemeManager.clockHorizontal) {
                     this.notificationIcon.hide();
                     this.notificationIconRing.show();
