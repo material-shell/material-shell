@@ -244,7 +244,8 @@ var MsDateMenuBox = GObject.registerClass(
                 this.updateClock.bind(this)
             );
 
-            dateMenu._indicator.connect(
+            // Before 3.36 _indicator was just a class with an actor as property
+            (dateMenu._indicator.actor || dateMenu._indicator).connect(
                 'notify::visible',
                 this.updateVisibility.bind(this)
             );
@@ -273,7 +274,9 @@ var MsDateMenuBox = GObject.registerClass(
         }
 
         updateVisibility() {
-            if (this.dateMenu._indicator.visible) {
+            let indicatorActor =
+                this.dateMenu._indicator.actor || this.dateMenu._indicator;
+            if (indicatorActor.visible) {
                 if (Me.msThemeManager.clockHorizontal) {
                     this.notificationIcon.hide();
                     this.notificationIconRing.show();
