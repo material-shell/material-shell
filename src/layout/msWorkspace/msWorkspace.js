@@ -130,11 +130,12 @@ var MsWorkspace = class MsWorkspace {
         }
 
         const oldTileableList = [...this.tileableList];
+        const focusedTileable = this.tileableList[this.focusedIndex];
 
-        if (this.msWorkspaceActor && getSettings('tweaks').get_boolean('open-windows-after-focus')) {
-            this.tileableList.splice(this.focusedIndex + 1, 0, msWindow);
+        if (!focusedTileable || focusedTileable === this.appLauncher || msWindow === this.appLauncher) {
+            this.tileableList.splice(this.tileableList.length - 2, 0, msWindow);
         } else {
-            this.tileableList.splice(this.tileableList.length - 1, 0, msWindow);
+            this.tileableList.splice(this.focusedIndex + 1, 0, msWindow);
         }
 
         if (focus) {

@@ -90,11 +90,6 @@
       <summary>Cycle through workspaces</summary>
       <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
     </key>
-    <key name="open-windows-after-focus" type="b">
-      <default>false</default>
-      <summary>Open windows after focused window</summary>
-      <description>Open a new windows after the focused one, or add it to the stack</description>
-    </key>
     <key name="disable-notifications" type="b">
       <default>false</default>
       <summary>Disable Material Shell notifications</summary>
