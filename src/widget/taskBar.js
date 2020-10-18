@@ -598,16 +598,16 @@ let TileableItem = GObject.registerClass(
             this.setStyle();
             this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
+            this.closeIcon = new St.Icon({
+                style_class: 'task-small-icon',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/close-symbolic.svg`
+                ),
+            })
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
-                child: new St.Icon({
-                    style_class: 'task-small-icon',
-                    gicon: Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/close-symbolic.svg`
-                    ),
-                }),
+                child: this.closeIcon,
             });
-
             this.closeButton.connect('clicked', () => {
                 this.emit('close-clicked');
             });
@@ -646,6 +646,12 @@ let TileableItem = GObject.registerClass(
             this.icon.style_class = 'app-icon';
             this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
             this.startIconContainer.set_child(this.icon);
+            this.persistentIcon.set_icon_size(
+                Me.msThemeManager.getPanelSizeNotScaled() / 2
+            );
+            this.closeIcon.set_icon_size(
+                Me.msThemeManager.getPanelSizeNotScaled() / 2
+            );
             this.queue_relayout();
         }
 
@@ -699,14 +705,29 @@ let IconTaskBarItem = GObject.registerClass(
             this.icon = new St.Icon({
                 gicon,
                 style_class: 'app-icon',
+                icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
             this.container.set_child(this.icon);
+        }
+        buildIcon(height) {
+            this.iconSize = height;
+            this.icon.set_icon_size(
+                Me.msThemeManager.getPanelSizeNotScaled() / 2
+            );
+            this.queue_relayout();
         }
         /**
          * Just the panel width
          */
         vfunc_get_preferred_width(_forHeight) {
             return [_forHeight, _forHeight];
+        }
+
+        vfunc_allocate(box, flags) {
+            if (!this.icon || this.iconSize != box.get_height()) {
+                this.buildIcon(box.get_height());
+            }
+            super.vfunc_allocate(box, flags);
         }
     }
 );

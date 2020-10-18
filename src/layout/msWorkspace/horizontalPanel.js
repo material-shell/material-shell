@@ -49,12 +49,14 @@ var HorizontalPanel = GObject.registerClass(
             if (Me.msThemeManager.clockHorizontal) {
                 this.createClock();
             }
-            Me.msThemeManager.connect('panel-size-changed', () => {
-                this.tilingIcon.set_icon_size(
-                    Me.msThemeManager.getPanelSizeNotScaled() / 2
-                );
-                this.queue_relayout();
-            });
+        }
+
+        buildIcon(height) {
+            this.iconSize = height;
+            this.tilingIcon.set_icon_size(
+                Me.msThemeManager.getPanelSizeNotScaled() / 2
+            );
+            this.queue_relayout();
         }
 
         createClock() {
@@ -110,6 +112,9 @@ var HorizontalPanel = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
+            if (!this.tilingIcon || this.iconSize != box.get_height()) {
+                this.buildIcon(box.get_height());
+            }
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             let clockWidth = this.clockBin
