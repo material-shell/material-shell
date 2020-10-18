@@ -95,11 +95,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             // Delete empty workspaces except for the last one; do it from the end
             // to avoid index changes
             for (i = lastIndex; i >= 0; i--) {
-                if (emptyWorkspaces[i] && i != lastEmptyIndex)
+                if (emptyWorkspaces[i] && i != lastEmptyIndex) {
+                    Me.logFocus(
+                        '[DEBUG]',
+                        `Remove workspace because it's empty`
+                    );
                     workspaceManager.remove_workspace(
                         this._workspaces[i],
                         global.get_current_time()
                     );
+                }
             }
 
             this._checkWorkspacesId = 0;
