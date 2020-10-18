@@ -528,7 +528,7 @@ let TileableItem = GObject.registerClass(
                 `Make this fully persistent`,
                 () => {
                     this.tileable.persistent = true;
-                    this.endIconContainer.set_child(this.peristentIcon);
+                    this.endIconContainer.set_child(this.persistentIcon);
                     this.makePersistentAction.hide();
                     this.unmakePersistentAction.show();
                 },
@@ -612,14 +612,14 @@ let TileableItem = GObject.registerClass(
                 this.emit('close-clicked');
             });
 
-            this.peristentIcon = new St.Icon({
+            this.persistentIcon = new St.Icon({
                 style_class: 'task-small-icon',
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/pin-symbolic.svg`
                 ),
             });
             if (this.tileable._persistent) {
-                this.endIconContainer.set_child(this.peristentIcon);
+                this.endIconContainer.set_child(this.persistentIcon);
             } else {
                 this.endIconContainer.set_child(this.closeButton);
             }
