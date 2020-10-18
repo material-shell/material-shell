@@ -6,7 +6,10 @@ const DND = imports.ui.dnd;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
-const { TaskBar, TaskBarItem } = Me.imports.src.widget.taskBar;
+const {
+    TaskBar,
+    TaskBarItem,
+} = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
 
 /* exported HorizontalPanel */
 var HorizontalPanel = GObject.registerClass(

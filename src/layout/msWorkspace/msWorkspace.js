@@ -7,8 +7,9 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const HorizontalPanel =
-    Me.imports.src.layout.msWorkspace.horizontalPanel.HorizontalPanel;
+const {
+    HorizontalPanel,
+} = Me.imports.src.layout.msWorkspace.horizontalPanel.horizontalPanel;
 const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
 const { reparentActor } = Me.imports.src.utils.index;
 const {

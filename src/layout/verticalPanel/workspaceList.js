@@ -8,7 +8,10 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
+const {
+    DropPlaceholder,
+    TaskBarItem,
+} = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
