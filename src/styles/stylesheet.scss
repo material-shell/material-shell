@@ -264,7 +264,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
     MsDateMenuBox {
         StIcon {
-            padding: 14px;
+            padding-top: 14px;
+            padding-bottom: 14px;
             height: 20px;
             width: 20px;
             .primary {
