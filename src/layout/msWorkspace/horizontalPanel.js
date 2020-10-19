@@ -70,14 +70,16 @@ var HorizontalPanel = GObject.registerClass(
             );
             updateClock();
             this.insert_child_at_index(this.clockBin, 1);
+            this.clockLabel.connect('destroy', () => {
+                this._wallClock.disconnect(this.signalClock);
+                delete this._wallClock;
+            });
         }
 
         removeClock() {
             if (!this.clockBin) return;
             this.clockBin.destroy();
             delete this.clockBin;
-            this._wallClock.disconnect(this.signalClock);
-            delete this._wallClock;
         }
 
         handleDragOver(source) {
