@@ -641,17 +641,13 @@ let TileableItem = GObject.registerClass(
 
         buildIcon(height) {
             if (this.icon) this.icon.destroy();
-            this.referenceSize = height;
-            this.icon = this.app.create_icon_texture(this.referenceSize / 2);
+            this.lastHeight = height;
+            this.icon = this.app.create_icon_texture(height / 2);
             this.icon.style_class = 'app-icon';
-            this.icon.set_size(this.referenceSize / 2, this.referenceSize / 2);
+            this.icon.set_size(height / 2, height / 2);
             this.startIconContainer.set_child(this.icon);
-            this.persistentIcon.set_icon_size(
-                Me.msThemeManager.getPanelSizeNotScaled() / 2
-            );
-            this.closeIcon.set_icon_size(
-                Me.msThemeManager.getPanelSizeNotScaled() / 2
-            );
+            this.persistentIcon.set_icon_size(height / 2);
+            this.closeIcon.set_icon_size(height / 2);
             this.queue_relayout();
         }
 
@@ -681,7 +677,7 @@ let TileableItem = GObject.registerClass(
             }
         }
         vfunc_allocate(box, flags) {
-            if (!this.icon || this.referenceSize != box.get_height()) {
+            if (!this.icon || this.lastHeight != box.get_height()) {
                 this.buildIcon(box.get_height());
             }
             super.vfunc_allocate(box, flags);
@@ -719,7 +715,7 @@ let IconTaskBarItem = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             if (
-                !this.icon ||
+                this.icon &&
                 this.icon.get_icon_size() != box.get_height() / 2
             ) {
                 this.icon.set_icon_size(box.get_height() / 2);

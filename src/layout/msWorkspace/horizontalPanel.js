@@ -104,7 +104,7 @@ var HorizontalPanel = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             if (
-                !this.tilingIcon ||
+                this.tilingIcon &&
                 this.tilingIcon.get_icon_size() != box.get_height() / 2
             ) {
                 this.tilingIcon.set_icon_size(box.get_height() / 2);
