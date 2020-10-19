@@ -49,12 +49,6 @@ var HorizontalPanel = GObject.registerClass(
             if (Me.msThemeManager.clockHorizontal) {
                 this.createClock();
             }
-            Me.msThemeManager.connect('panel-size-changed', () => {
-                this.tilingIcon.set_icon_size(
-                    Me.msThemeManager.getPanelSizeNotScaled() / 2
-                );
-                this.queue_relayout();
-            });
         }
 
         createClock() {
@@ -109,6 +103,12 @@ var HorizontalPanel = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
+            if (
+                this.tilingIcon &&
+                this.tilingIcon.get_icon_size() != box.get_height() / 2
+            ) {
+                this.tilingIcon.set_icon_size(box.get_height() / 2);
+            }
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);

@@ -199,6 +199,11 @@ var MsDateMenuBox = GObject.registerClass(
                 layout_manager: new Clutter.BinLayout(),
             });
             this.dateMenu = dateMenu;
+             // Before 3.36 _indicator was just a class with an actor as property
+            this.indicatorActor =
+                this.dateMenu._indicator instanceof Clutter.Actor
+                    ? this.dateMenu._indicator
+                    : this.dateMenu._indicator.actor;
 
             this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
 
@@ -244,8 +249,7 @@ var MsDateMenuBox = GObject.registerClass(
                 this.updateClock.bind(this)
             );
 
-            // Before 3.36 _indicator was just a class with an actor as property
-            (dateMenu._indicator.actor || dateMenu._indicator).connect(
+            this.indicatorActor.connect(
                 'notify::visible',
                 this.updateVisibility.bind(this)
             );
@@ -274,9 +278,7 @@ var MsDateMenuBox = GObject.registerClass(
         }
 
         updateVisibility() {
-            let indicatorActor =
-                this.dateMenu._indicator.actor || this.dateMenu._indicator;
-            if (indicatorActor.visible) {
+            if (this.indicatorActor.visible) {
                 if (Me.msThemeManager.clockHorizontal) {
                     this.notificationIcon.hide();
                     this.notificationIconRing.show();
