@@ -646,8 +646,10 @@ let TileableItem = GObject.registerClass(
             this.icon.style_class = 'app-icon';
             this.icon.set_size(height / 2, height / 2);
             this.startIconContainer.set_child(this.icon);
-            this.persistentIcon.set_icon_size(height / 2);
-            this.closeIcon.set_icon_size(height / 2);
+            let smallIconSize = Math.max(Math.round(height / 3), 18);
+            this.persistentIcon.set_icon_size(smallIconSize);
+            this.closeIcon.set_icon_size(smallIconSize);
+            this.queue_relayout();
         }
 
         setActive(active) {
