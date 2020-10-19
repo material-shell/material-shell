@@ -4,6 +4,7 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
@@ -202,7 +203,12 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     async regenerateStylesheet() {
         this.unloadStylesheet();
-        // this.themeContext.set_theme(new St.Theme());
+
+        if (ShellVersionMatch('3.34')) {
+            //TODO The new code may prevent crashes on 3.34 without this, needs testing
+            // This loads an empty theme, cleaning all nodes but causes top panel flash
+            this.themeContext.set_theme(new St.Theme());
+        }
         await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
