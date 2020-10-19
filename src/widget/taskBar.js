@@ -603,7 +603,7 @@ let TileableItem = GObject.registerClass(
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/close-symbolic.svg`
                 ),
-            })
+            });
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
                 child: this.closeIcon,
@@ -641,10 +641,10 @@ let TileableItem = GObject.registerClass(
 
         buildIcon(height) {
             if (this.icon) this.icon.destroy();
-            this.iconSize = height;
-            this.icon = this.app.create_icon_texture(this.iconSize / 2);
+            this.referenceSize = height;
+            this.icon = this.app.create_icon_texture(this.referenceSize / 2);
             this.icon.style_class = 'app-icon';
-            this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
+            this.icon.set_size(this.referenceSize / 2, this.referenceSize / 2);
             this.startIconContainer.set_child(this.icon);
             this.persistentIcon.set_icon_size(
                 Me.msThemeManager.getPanelSizeNotScaled() / 2
@@ -681,7 +681,7 @@ let TileableItem = GObject.registerClass(
             }
         }
         vfunc_allocate(box, flags) {
-            if (!this.icon || this.iconSize != box.get_height()) {
+            if (!this.icon || this.referenceSize != box.get_height()) {
                 this.buildIcon(box.get_height());
             }
             super.vfunc_allocate(box, flags);
@@ -709,13 +709,7 @@ let IconTaskBarItem = GObject.registerClass(
             });
             this.container.set_child(this.icon);
         }
-        buildIcon(height) {
-            this.iconSize = height;
-            this.icon.set_icon_size(
-                Me.msThemeManager.getPanelSizeNotScaled() / 2
-            );
-            this.queue_relayout();
-        }
+
         /**
          * Just the panel width
          */
@@ -724,8 +718,11 @@ let IconTaskBarItem = GObject.registerClass(
         }
 
         vfunc_allocate(box, flags) {
-            if (!this.icon || this.iconSize != box.get_height()) {
-                this.buildIcon(box.get_height());
+            if (
+                !this.icon ||
+                this.icon.get_icon_size() != box.get_height() / 2
+            ) {
+                this.icon.set_icon_size(box.get_height() / 2);
             }
             super.vfunc_allocate(box, flags);
         }
