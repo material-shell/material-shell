@@ -312,13 +312,11 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         );
         // Add empty workspace at the end
         if (Meta.prefs_get_dynamic_workspaces()) {
-            global.get_current_time()
             const workspace = this.workspaceManager.append_new_workspace(
-        );
                 false,
-        this.setupNewWorkspace(workspace);
                 global.get_current_time()
             );
+
             this.setupNewWorkspace(workspace);
         }
 
