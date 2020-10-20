@@ -23,6 +23,7 @@ var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, state) {
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
+        Me.log(JSON.stringify(state));
         this._state = state || {
             // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
             external: this.monitor.index !== Main.layoutManager.primaryIndex,
@@ -66,10 +67,9 @@ var MsWorkspace = class MsWorkspace {
             this.state.layoutKey
         );
 
-        this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.layout = new LayoutConstructor(this);
+        this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.determineCategory();
         });
@@ -319,22 +319,28 @@ var MsWorkspace = class MsWorkspace {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    nextTiling(direction) {
+    nextLayout(direction) {
         this.layout.onDestroy();
-        const Layout = Me.layoutManager.getNextLayout(this.layout, direction);
-        this.layout = new Layout(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
 
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
-        this.emit('tiling-layout-changed');
+        let { key } = this.layout.constructor;
+        if (!this.state.layoutKeyList.includes(key)) {
+            key = this.state.layoutKeyList[0];
+        }
+        let nextIndex = this.state.layoutKeyList.indexOf(key) + direction;
+        if (nextIndex < 0) {
+            nextIndex += this.state.layoutKeyList.length;
+        }
+        nextIndex = nextIndex % this.state.layoutKeyList.length;
+        // Get the next layout available
+        const newKey = this.state.layoutKeyList[nextIndex];
+        this.setLayoutByKey(newKey);
     }
 
-    setTilingLayout(layout) {
+    setLayoutByKey(layoutKey) {
         this.layout.onDestroy();
-        const Layout = Me.layoutManager.getLayoutByKey(layout);
+        const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
         this.layout = new Layout(this);
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
-        this.msWorkspaceActor.panel.tilingIcon.gicon = this.layout.icon;
         this.emit('tiling-layout-changed');
     }
 

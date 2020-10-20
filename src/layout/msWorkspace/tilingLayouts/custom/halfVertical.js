@@ -17,3 +17,4 @@ var HalfVerticalLayout = GObject.registerClass(
 );
 
 HalfVerticalLayout.key = 'half-vertical';
+HalfVerticalLayout.label = 'Half vertical';

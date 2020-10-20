@@ -28,10 +28,10 @@ const layouts = [
     HalfHorizontalLayout,
     HalfVerticalLayout,
     RatioLayout,
-    FloatLayout,
     SimpleLayout,
     SimpleHorizontalLayout,
     SimpleVerticalLayout,
+    FloatLayout,
 ];
 
 var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
@@ -44,6 +44,7 @@ var TilingManager = class TilingManager extends MsManager {
     constructor() {
         super();
         this.workspaceManager = global.workspace_manager;
+        this.layoutList = layouts;
         this.layoutsSettings = getSettings('layouts');
 
         this.observe(this.layoutsSettings, 'changed::gap', (schema) => {

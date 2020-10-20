@@ -142,3 +142,4 @@ var MaximizeLayout = GObject.registerClass(
 );
 
 MaximizeLayout.key = 'maximize';
+MaximizeLayout.label = 'Maximize';

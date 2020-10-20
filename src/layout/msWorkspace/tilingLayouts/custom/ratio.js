@@ -76,3 +76,4 @@ var RatioLayout = GObject.registerClass(
 );
 
 RatioLayout.key = 'ratio';
+RatioLayout.label = 'Ratio';

@@ -88,3 +88,4 @@ var HalfLayout = GObject.registerClass(
 );
 
 HalfLayout.key = 'half';
+HalfLayout.label = 'Half';

@@ -15,17 +15,20 @@ const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
 /* exported StateManager */
 var StateManager = class StateManager {
     constructor() {
-        this.state = {};
+        this.state = { tutu: 'hey' };
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
     loadRegistry(callback) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
-
-        this.state = this.updateState(
-            JSON.parse(global.get_persistent_state('s', 'material-shell-state'))
+        const serializedState = global.get_persistent_state(
+            's',
+            'material-shell-state'
         );
-        if (this.state) {
+        if (serializedState) {
+            this.state = this.updateState(
+                JSON.parse(serializedState.deep_unpack())
+            );
             return callback(this.state);
         }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
@@ -36,7 +39,8 @@ var StateManager = class StateManager {
                         this.state = this.updateState(
                             JSON.parse(imports.byteArray.toString(contents))
                         );
-                    } catch {
+                    } catch (e) {
+                        Me.log(e);
                         this.state = {};
                     }
                 }
@@ -53,7 +57,7 @@ var StateManager = class StateManager {
             const workspacesState = state['workspaces-state'];
             if (workspacesState) {
                 // in old version the workspaces was split in 2 different array
-                workspacesState = workspacesState.msWorkspaceList || [
+                workspacesState.msWorkspaceList = workspacesState.msWorkspaceList || [
                     ...workspacesState.primaryWorkspaceList,
                     ...workspacesState.externalWorkspaces,
                 ];

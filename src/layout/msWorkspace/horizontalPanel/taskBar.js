@@ -19,7 +19,7 @@ let dragData = null;
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(msWorkspace) {
+        _init(msWorkspace, panelMenuManager) {
             super._init({
                 name: 'taskBar',
                 x_expand: true,
@@ -50,7 +50,7 @@ var TaskBar = GObject.registerClass(
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menuManager = panelMenuManager;
             this.updateItems();
             this._animateActiveIndicator();
         }
