@@ -199,7 +199,7 @@ var MsDateMenuBox = GObject.registerClass(
                 layout_manager: new Clutter.BinLayout(),
             });
             this.dateMenu = dateMenu;
-             // Before 3.36 _indicator was just a class with an actor as property
+            // Before 3.36 _indicator was just a class with an actor as property
             this.indicatorActor =
                 this.dateMenu._indicator instanceof Clutter.Actor
                     ? this.dateMenu._indicator
@@ -223,11 +223,9 @@ var MsDateMenuBox = GObject.registerClass(
             });
 
             this.dndIcon = new St.Icon({
-                icon_name: 'notifications-disabled-symbolic',
-                icon_size: 18,
-                visible: false,
-                y_expand: true,
-                y_align: Clutter.ActorAlign.CENTER,
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/bell-off-symbolic.svg`
+                ),
             });
 
             this._settings = new Gio.Settings({
