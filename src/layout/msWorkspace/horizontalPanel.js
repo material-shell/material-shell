@@ -78,8 +78,9 @@ var HorizontalPanel = GObject.registerClass(
 
         removeClock() {
             if (!this.clockBin) return;
+            this.remove_child(this.clockBin);
             this.clockBin.destroy();
-            delete this.clockBin;
+            this.clockBin = null;
         }
 
         handleDragOver(source) {
