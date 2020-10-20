@@ -640,6 +640,9 @@ var WorkspaceButtonIcon = GObject.registerClass(
             Me.msThemeManager.connect('panel-icon-style-changed', () => {
                 this.buildIcons();
             });
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.buildIcons();
+            });
         }
 
         buildIcons() {

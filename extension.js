@@ -21,7 +21,7 @@ const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
-    monitorChangedId;
+    splashscreenCalled;
 let splashScreens = [];
 
 // eslint-disable-next-line no-unused-vars
@@ -35,6 +35,7 @@ function init() {
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
     Me.locked = false;
+    splashscreenCalled = false;
     //St.set_slow_down_factor(10);
     global.display.connect('closing', () => {
         Me.closing = true;
@@ -97,27 +98,28 @@ function loaded(disconnect) {
     Me.locked = false;
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
-    // When monitorMe.msNotificationManagers changed we reload the extension completely by disabling and reEnabling it
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-        hideSplashScreens();
-    });
-    log('----------------');
+    if (splashscreenCalled) {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+    log('--------------------');
     log('END EXTENSION LOADED');
-    log('----------------');
+    log('--------------------');
 }
 
 // eslint-disable-next-line no-unused-vars
 function disable() {
-    log('----------------');
+    log('-----------------');
     log('DISABLE EXTENSION');
-    log('----------------');
+    log('-----------------');
     if (Main.sessionMode.currentMode === 'unlock-dialog') {
         Me.locked = true;
     }
     Me.disableInProgress = true;
     if (!modules) return;
     Me.emit('extension-disable');
-    Main.layoutManager.disconnect(monitorChangedId);
     modules.reverse().forEach((module) => {
         module.destroy();
     });
@@ -130,11 +132,14 @@ function disable() {
     disableIncompatibleExtensionsModule.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
+    log('---------------------');
     log('END DISABLE EXTENSION');
+    log('---------------------');
 }
 
 function showSplashScreens() {
     log('show splashscreen');
+    splashscreenCalled = true;
     Main.layoutManager.monitors.forEach((monitor) => {
         let icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
@@ -151,23 +156,27 @@ function showSplashScreens() {
             width: monitor.width,
             height: monitor.height,
         });
+        Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
-    });
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
-        hideSplashScreens();
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
+            hideSplashScreens();
+        });
     });
 }
 
 function hideSplashScreens() {
+    if (splashScreens.length < 1) return;
     splashScreens.forEach((splashscreen) => {
         splashscreen.ease({
             opacity: 0,
             duration: 800,
             transition: 'easeInQuad',
             onComplete: () => {
+                Main.layoutManager.removeChrome(splashscreen);
                 splashscreen.destroy();
             },
         });
     });
     splashScreens = [];
+    splashscreenCalled = false;
 }

@@ -114,7 +114,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 this.dateLabel.text = date.toLocaleFormat(dateFormat);
             };
 
-            this._wallClock.connect('notify::clock', updateClock);
+            this.signalClock = this._wallClock.connect(
+                'notify::clock',
+                updateClock
+            );
+            this.clockLabel.connect('destroy', () => {
+                this._wallClock.disconnect(this.signalClock);
+                delete this._wallClock;
+            });
             updateClock();
 
             this.inputLayout = new St.BoxLayout({});
