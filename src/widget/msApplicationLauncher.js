@@ -721,15 +721,10 @@ var MsApplicationButton = GObject.registerClass(
                 this._showTooltipId = 0;
                 this._tooltip = null;
                 this.title.connect('notify::hover', () => {
-                    let isEllipsized;
-                    try {
-                        isEllipsized = this.title
-                            .get_clutter_text()
-                            .get_layout()
-                            .is_ellipsized();
-                    } catch {
-                        //placeholder
-                    }
+                    let isEllipsized = this.title
+                        .get_clutter_text()
+                        .get_layout()
+                        .is_ellipsized();
                     if (isEllipsized) this._onTitleHover(this.title);
                 });
             }
