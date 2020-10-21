@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, GnomeDesktop, Shell } = imports.gi;
+const { Clutter, GLib, GObject, St, GnomeDesktop, Shell } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -705,12 +705,87 @@ var MsApplicationButton = GObject.registerClass(
                     x_align: Clutter.ActorAlign.CENTER,
                     style_class: 'subtitle-2',
                     style: 'margin-top:12px',
+                    reactive: true,
+                    track_hover: true,
                 });
                 this.layout.add_child(this.icon);
                 this.layout.add_child(this.title);
+                this._showTooltipId = 0;
+                this._tooltip = null;
+                this.title.connect('notify::hover', () => {
+                    let isEllipsized;
+                    try {
+                        isEllipsized = this.title
+                            .get_clutter_text()
+                            .get_layout()
+                            .is_ellipsized();
+                    } catch {
+                        //placeholder
+                    }
+                    if (isEllipsized) this._onTitleHover(this.title);
+                });
             }
             this.layout.set_style('padding:12px;');
             this.set_child(this.layout);
+        }
+
+        _onTitleHover(actor) {
+            if (actor.get_hover()) {
+                if (this._showTooltipId === 0) {
+                    this._showTooltipId = GLib.timeout_add(
+                        GLib.PRIORITY_DEFAULT,
+                        300,
+                        () => {
+                            this.showTooltip(actor);
+                            this._showTooltipId = 0;
+                            return GLib.SOURCE_REMOVE;
+                        }
+                    );
+                }
+            } else {
+                if (this._showTooltipId > 0) {
+                    GLib.source_remove(this._showTooltipId);
+                    this._showTooltipId = 0;
+                }
+                this.hideTooltip();
+            }
+        }
+        showTooltip(actor) {
+            this._tooltip = new St.Label({
+                style_class: 'application-launcher-tooltip',
+            });
+            this._tooltip.set_opacity(0);
+            this._tooltip.set_text(actor.get_text());
+
+            Main.layoutManager.addChrome(this._tooltip);
+
+            // Center tooltip, move 18px down
+            let [stageX, stageY] = actor.get_transformed_position();
+            let y = stageY + 18;
+            let x =
+                stageX +
+                actor.get_width() / 2 -
+                this._tooltip.get_width() / 2;
+            this._tooltip.set_position(x, y);
+
+            this._tooltip.ease({
+                opacity: 255,
+                duration: 500,
+                transition: 'easeInQuad',
+            });
+        }
+        hideTooltip() {
+            if (!this._tooltip) return;
+            this._tooltip.ease({
+                opacity: 0,
+                duration: 500,
+                transition: 'easeOutQuad',
+                onComplete: () => {
+                    Main.layoutManager.removeChrome(this._tooltip);
+                    this._tooltip.destroy();
+                    this._tooltip = null;
+                },
+            });
         }
     }
 );

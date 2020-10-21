@@ -271,6 +271,14 @@ MsApplicationLauncher * .search-entry {
 MsApplicationLauncher * .search-entry-icon {
   color: rgba(255, 255, 255, 0.6); }
 
+.application-launcher-tooltip {
+  color: rgba(255, 255, 255, 0.87);
+  background: rgba(18, 18, 18, 0.987);
+  border: 1px solid rgba(255, 255, 255, 0.87);
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-align: center; }
+
 .surface {
   background: rgba(25, 25, 25, 0.987); }
 

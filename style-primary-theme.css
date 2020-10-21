@@ -336,6 +336,17 @@ MsApplicationLauncher * .search-entry {
 .dark-primaryMsApplicationLauncher * .search-entry-icon {
   color: rgba(255, 255, 255, 0.6); }
 
+.application-launcher-tooltip {
+  background: rgba(44, 57, 127, 0.987);
+  border: 1px solid rgba(255, 255, 255, 0.87);
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-align: center; }
+  .light-primary.application-launcher-tooltip {
+    color: rgba(0, 0, 0, 0.87); }
+  .dark-primary.application-launcher-tooltip {
+    color: rgba(255, 255, 255, 0.87); }
+
 .surface {
   background: rgba(63, 81, 181, 0.987); }
 

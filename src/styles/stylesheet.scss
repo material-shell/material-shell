@@ -15,6 +15,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     @if ($bgColor== 'dark') {
         @return rgba(255, 255, 255, $opacity);
     }
+
+    @if ($bgColor== 'primary') {
+        @return rgba(255, 255, 255, $opacity);
+    }
 }
 
 @mixin foreground($theme, $opacity) {
@@ -430,6 +434,17 @@ MsApplicationLauncher {
         @include foreground-medium-emphasis($theme);
     }
 }
+
+.application-launcher-tooltip {
+    @include foreground-high-emphasis($theme);
+    background: rgba(
+        getDarkerColor(getBackgroundColor($theme)),
+        $surface-opacity
+    );
+    border: 1px solid getForegroundColor($theme, 0.87);
+    border-radius: 4px;
+    padding: 2px 8px;
+    text-align: center; }
 
 .surface {
     background: rgba(getBackgroundColor($theme), $surface-opacity);
