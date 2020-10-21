@@ -138,15 +138,17 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     this.dateLabel.text = date.toLocaleFormat(dateFormat);
                 };
 
-            this.signalClock = this._wallClock.connect(
-                'notify::clock',
-                updateClock
-            );
-            this.clockLabel.connect('destroy', () => {
-                this._wallClock.disconnect(this.signalClock);
-                delete this._wallClock;
-            });
-            updateClock();
+                this.signalClock = this._wallClock.connect(
+                    'notify::clock',
+                    updateClock
+                );
+                this.clockLabel.connect('destroy', () => {
+                    this._wallClock.disconnect(this.signalClock);
+                    delete this._wallClock;
+                });
+                updateClock();
+                this.add_child(this.clockBin);
+            }
 
             this.inputLayout = new St.BoxLayout({});
             this.searchIcon = new St.Icon({
