@@ -50,6 +50,7 @@ var LayoutSwitcher = GObject.registerClass(
         buildMenu() {
             if (this.menu) this.menu.destroy();
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.menu.actor.add_style_class_name('horizontal-panel-menu');
             this.menu.actor.hide();
             Object.entries(TilingLayoutByKey).forEach(
                 ([layoutKey, layoutConstructor]) => {
@@ -173,12 +174,32 @@ var LayoutMenuItem = GObject.registerClass(
         setEditable(editable) {
             this.editable = editable;
             if (this.editable) {
-                this.show();
-                this._statusBin.show();
+                this._statusBin.ease({
+                    opacity: 255,
+                    duration: 300,
+                });
+                if (this.height === 0) {
+                    this.height = -1;
+                    let height = this.height;
+                    this.height = 0;
+                    this.ease({
+                        height: height,
+                        duration: 300,
+                        onComplete: () => {
+                            this.height = -1;
+                        },
+                    });
+                }
             } else {
-                this._statusBin.hide();
+                this._statusBin.ease({
+                    opacity: 0,
+                    duration: 300,
+                });
                 if (!this.state) {
-                    this.hide();
+                    this.ease({
+                        height: 0,
+                        duration: 300,
+                    });
                 }
             }
         }

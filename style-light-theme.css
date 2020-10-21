@@ -45,7 +45,7 @@ subtitle-1 {
   font-size: 12pt;
   letter-spacing: 0.5px; }
 
-.body-2 {
+.body-2, .no-theme .popup-menu .popup-menu-content .popup-menu-item {
   font-family: "Roboto", sans-serif;
   font-size: 10.5pt;
   letter-spacing: 0.25px; }
@@ -267,11 +267,83 @@ MsApplicationLauncher .search-entry {
   background: white;
   border-radius: 48px; }
 
-.surface {
+.surface, .no-theme .popup-menu .popup-menu-content .popup-menu-item.selected {
   background: rgba(255, 255, 255, 0.987); }
 
-.surface-lighter {
+.surface-lighter, .no-theme .popup-menu .popup-menu-content .popup-submenu-menu-item:open, .no-theme #calendarArea .calendar,
+.no-theme #calendarArea .message,
+.no-theme #calendarArea .events-button,
+.no-theme #calendarArea .datemenu-today-button,
+.no-theme #calendarArea .world-clocks-button,
+.no-theme #calendarArea .weather-button,
+.no-theme #calendarArea .events-section-title {
   background: rgba(255, 255, 255, 0.987); }
 
-.surface-darker {
+.surface-darker, .no-theme .popup-menu .popup-menu-content {
   background: rgba(179, 179, 179, 0.987); }
+
+.popup-menu {
+  margin: 0;
+  -boxpointer-gap: 0px; }
+  .popup-menu .popup-menu-content {
+    margin: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-radius: 4px;
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4); }
+  .popup-menu.panel-menu .popup-menu-content {
+    border-radius: 0px 4px 4px 0px; }
+  .popup-menu.horizontal-panel-menu .popup-menu-content {
+    margin-top: 1px;
+    border-radius: 0px 0px 4px 4px; }
+
+.popup-menu-boxpointer,
+.candidate-popup-boxpointer {
+  -arrow-border-radius: 0;
+  -arrow-border-width: 0;
+  -arrow-border-color: transparent;
+  -arrow-base: 0;
+  -arrow-rise: 0;
+  -arrow-background-color: transparent; }
+
+.no-theme .popup-menu .popup-menu-content .popup-menu-item {
+  font-weight: 400;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+  .no-theme .popup-menu .popup-menu-content .popup-menu-item .popup-menu-icon {
+    icon-size: 20px;
+    margin-right: 10px;
+    color: rgba(0, 0, 0, 0.6); }
+  .no-theme .popup-menu .popup-menu-content .popup-menu-item StLabel {
+    padding: 0;
+    padding-top: 1.5px;
+    color: rgba(0, 0, 0, 0.87); }
+
+.no-theme .popup-menu .popup-menu-content .popup-separator-menu-item {
+  padding: 0;
+  spacing: 0px; }
+  .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item .popup-separator-menu-item-separator {
+    margin: 8px 0px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.04); }
+  .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item StLabel {
+    padding: 0;
+    margin: 8px 10px;
+    color: rgba(0, 0, 0, 0.38); }
+  .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item .popup-menu-ornament {
+    width: 0;
+    padding: 0;
+    margin: 0; }
+
+.no-theme .popup-menu .popup-menu-content .popup-sub-menu {
+  background: rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12); }
+
+.no-theme #calendarArea .calendar,
+.no-theme #calendarArea .message,
+.no-theme #calendarArea .events-button,
+.no-theme #calendarArea .datemenu-today-button,
+.no-theme #calendarArea .world-clocks-button,
+.no-theme #calendarArea .weather-button,
+.no-theme #calendarArea .events-section-title {
+  border: 0px; }

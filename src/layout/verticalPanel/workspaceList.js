@@ -432,6 +432,7 @@ var WorkspaceButton = GObject.registerClass(
 
         buildMenu() {
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+            this.menu.actor.add_style_class_name('panel-menu');
             this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
             );

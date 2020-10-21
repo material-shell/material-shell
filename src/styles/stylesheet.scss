@@ -442,3 +442,102 @@ MsApplicationLauncher {
         $surface-opacity
     );
 }
+
+.popup-menu {
+    margin: 0;
+    -boxpointer-gap: 0px;
+    .popup-menu-content {
+        margin: 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        border-radius: 4px;
+        box-shadow: $shadow;
+    }
+    &.panel-menu {
+        .popup-menu-content {
+            border-radius: 0px 4px 4px 0px;
+        }
+    }
+    &.horizontal-panel-menu {
+        .popup-menu-content {
+            margin-top: 1px;
+            border-radius: 0px 0px 4px 4px;
+        }
+    }
+}
+
+.popup-menu-boxpointer,
+.candidate-popup-boxpointer {
+    -arrow-border-radius: 0;
+    -arrow-border-width: 0;
+    -arrow-border-color: transparent;
+    -arrow-base: 0;
+    -arrow-rise: 0;
+    -arrow-background-color: transparent;
+}
+
+// If there is no custom theme loaded we can override adwaita to provide better material theme
+.no-theme {
+    .popup-menu {
+        .popup-menu-content {
+            @extend .surface-darker;
+            .popup-menu-item {
+                font-weight: 400;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                @extend .body-2;
+                .popup-menu-icon {
+                    icon-size: 20px;
+                    margin-right: 10px;
+                    @include foreground-medium-emphasis($theme);
+                }
+                StLabel {
+                    padding: 0;
+                    padding-top: 1.5px;
+                    @include foreground-high-emphasis($theme);
+                }
+                &.selected {
+                    @extend .surface;
+                }
+            }
+            .popup-separator-menu-item {
+                padding: 0;
+                spacing: 0px;
+                .popup-separator-menu-item-separator {
+                    margin: 8px 0px;
+                    padding: 0;
+                    @include hover($theme);
+                }
+                StLabel {
+                    padding: 0;
+                    margin: 8px 10px;
+                    @include foreground-disabled($theme);
+                }
+                .popup-menu-ornament {
+                    width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            .popup-sub-menu {
+                background: rgba(0, 0, 0, 0.12);
+                box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+            }
+            .popup-submenu-menu-item:open {
+                @extend .surface-lighter;
+            }
+        }
+    }
+    #calendarArea {
+        .calendar,
+        .message,
+        .events-button,
+        .datemenu-today-button,
+        .world-clocks-button,
+        .weather-button,
+        .events-section-title {
+            @extend .surface-lighter;
+            border: 0px;
+        }
+    }
+}

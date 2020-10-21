@@ -521,6 +521,7 @@ let TileableItem = GObject.registerClass(
                 });
             }
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.menu.actor.add_style_class_name('horizontal-panel-menu');
             /* this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
             ); */
