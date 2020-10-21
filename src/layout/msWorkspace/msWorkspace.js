@@ -36,6 +36,7 @@ var MsWorkspace = class MsWorkspace {
             initialState && initialState.forcedCategory
         );
         this.focusedIndex = initialState ? initialState.focusedIndex : 0;
+        this.previousIndex = this.focusedIndex;
         if (initialState) {
             initialState.msWindowList.forEach((msWindowData) => {
                 this.addMsWindow(
@@ -246,14 +247,34 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusAppLauncher() {
-        this.focusTileable(this.tileableList[this.tileableList.length - 1]);
+        if (
+            !this.tileableList ||
+            this.tileableList.length < 2 ||
+            this.focusTileable === this.appLauncher
+        ) {
+            return;
+        }
+        this.focusTileable(this.appLauncher);
+    }
+
+    focusPrevious() {
+        if (!this.tileableList || this.tileableList.length < 2) return;
+        if (
+            this.focusedIndex !== this.previousIndex &&
+            this.previousIndex < this.tileableList.length
+        ) {
+            this.focusTileable(this.tileableList[this.previousIndex]);
+        }
     }
 
     focusTileable(tileable, forced) {
-        if (tileable === this.tileableFocused && !forced) {
+        if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
         const oldTileableFocused = this.tileableFocused;
+        if (tileable !== this.tileableFocused) {
+            this.previousIndex = this.focusedIndex;
+        }
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
         if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
             if (tileable instanceof MsWindow) {
