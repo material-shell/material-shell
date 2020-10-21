@@ -263,9 +263,13 @@ subtitle-1 {
     padding: 24px;
     color: rgba(255, 255, 255, 0.87); }
 
-MsApplicationLauncher .search-entry {
+MsApplicationLauncher * .search-entry {
+  color: rgba(255, 255, 255, 0.6);
   background: #191919;
   border-radius: 48px; }
+
+MsApplicationLauncher * .search-entry-icon {
+  color: rgba(255, 255, 255, 0.6); }
 
 .surface {
   background: rgba(25, 25, 25, 0.987); }

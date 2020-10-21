@@ -12,9 +12,11 @@ const { MatButton } = Me.imports.src.widget.material.button;
 /* exported MsApplicationLauncher */
 
 const BUTTON_SIZE = 124;
+const MAX_DUMMY_LENGTH = 16;
 var MsApplicationLauncher = GObject.registerClass(
     {
         GTypeName: 'MsApplicationLauncher',
+        CssName: 'MsApplicationLauncher',
     },
     class MsApplicationLauncher extends St.Widget {
         _init(msWorkspace) {
@@ -24,22 +26,11 @@ var MsApplicationLauncher = GObject.registerClass(
             });
             this.msWorkspace = msWorkspace;
             this.add_style_class_name('surface-darker');
-
-            this.appListContainer = new MsApplicationButtonContainer(
-                msWorkspace
-            );
-            this.add_child(this.appListContainer);
-            AppsManager.getApps().forEach((app) => {
-                const button = new MsApplicationButton(app);
-                button.connect('clicked', () => {
-                    const msWindow = Me.msWindowManager.createNewMsWindow(
-                        app.id
-                    );
-                    this.msWorkspace.addMsWindow(msWindow);
-                    Me.msWindowManager.openAppForMsWindow(msWindow);
-                    this.appListContainer.reset();
-                });
-                this.appListContainer.addAppButton(button);
+            this.appListContainer = null;
+            this.initAppListContainer();
+            Me.msThemeManager.connect('clock-app-launcher-changed', () =>{
+                this.appListContainer.destroy();
+                this.initAppListContainer();
             });
             this.connect('key-focus-in', () => {
                 this.appListContainer.inputContainer.grab_key_focus();
@@ -52,6 +43,37 @@ var MsApplicationLauncher = GObject.registerClass(
             this.connect('key-focus-out', () => {
                 //this._searchResults.highlightDefault(false);
             });
+
+        }
+
+        initAppListContainer() {
+            this.appListContainer = new MsApplicationButtonContainer(
+                this.msWorkspace
+            );
+            this.add_child(this.appListContainer);
+            AppsManager.getApps().forEach((app) => {
+                const button = new MsApplicationButton(
+                    app,
+                    this.appListContainer.buttonSize
+                );
+                button.connect('clicked', () => {
+                    const msWindow = Me.msWindowManager.createNewMsWindow(
+                        app.id
+                    );
+                    this.msWorkspace.addMsWindow(msWindow);
+                    Me.msWindowManager.openAppForMsWindow(msWindow);
+                    this.appListContainer.reset();
+                });
+                this.appListContainer.addAppButton(button);
+            });
+            this.appListContainer.initFilteredAppButtonList();
+            for (let i = 0; i < MAX_DUMMY_LENGTH; i++) {
+                const button = new MsApplicationButton(
+                    null,
+                    this.appListContainer.buttonSize
+                );
+                this.appListContainer.addDummyButton(button);
+            }
         }
 
         vfunc_allocate(box, flags) {
@@ -88,31 +110,33 @@ var MsApplicationButtonContainer = GObject.registerClass(
             super._init({});
             this.msWorkspace = msWorkspace;
             this.appButtonList = [];
+            this.dummyButtonList = [];
             this.currentButtonFocused = null;
-            this.clockLabel = new St.Label({
-                style_class: 'headline-6 text-medium-emphasis margin-right-x2',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.dateLabel = new St.Label({
-                style_class: 'headline-6 text-medium-emphasis',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.clockBin = new St.BoxLayout({
-                x_align: Clutter.ActorAlign.CENTER,
-            });
-            this.clockBin.add_child(this.clockLabel);
-            this.clockBin.add_child(this.dateLabel);
-            this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
-            const updateClock = () => {
-                this.clockLabel.text = this._wallClock.clock;
-                const date = new Date();
-                /* Translators: This is a time format for a date in
-           long format */
-                let dateFormat = Shell.util_translate_time_string(
-                    N_('%A %B %-d')
-                );
-                this.dateLabel.text = date.toLocaleFormat(dateFormat);
-            };
+            if (Me.msThemeManager.clockAppLauncher) {
+                this.clockLabel = new St.Label({
+                    style_class: 'headline-6 text-medium-emphasis margin-right-x2',
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+                this.dateLabel = new St.Label({
+                    style_class: 'headline-6 text-medium-emphasis',
+                    y_align: Clutter.ActorAlign.CENTER,
+                });
+                this.clockBin = new St.BoxLayout({
+                    x_align: Clutter.ActorAlign.CENTER,
+                });
+                this.clockBin.add_child(this.clockLabel);
+                this.clockBin.add_child(this.dateLabel);
+                this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
+                const updateClock = () => {
+                    this.clockLabel.text = this._wallClock.clock;
+                    const date = new Date();
+                    /* Translators: This is a time format for a date in
+               long format */
+                    let dateFormat = Shell.util_translate_time_string(
+                        N_('%A %B %-d')
+                    );
+                    this.dateLabel.text = date.toLocaleFormat(dateFormat);
+                };
 
             this.signalClock = this._wallClock.connect(
                 'notify::clock',
@@ -143,7 +167,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this._text = this.inputContainer.clutter_text;
             this._text.connect('text-changed', () => {
                 this.updateFilteredAppButtonList();
-                this.highlightButton(this.filteredAppButtonList[0]);
+                this.highlightInitialButton();
             });
             this._text.connect('key-press-event', (entry, event) => {
                 let symbol = event.get_key_symbol();
@@ -215,7 +239,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         case Clutter.KEY_Left:
                             if (
                                 this.currentButtonFocused !=
-                                this.filteredAppButtonList[0]
+                                this.filteredAppButtonListBuffer[0] &&
+                                this.getCurrentIndex() > -1
                             ) {
                                 this.highlightPreviousButton();
                                 return Clutter.EVENT_STOP;
@@ -231,7 +256,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
                 return Clutter.EVENT_PROPAGATE;
             });
-            this.add_child(this.clockBin);
             this.add_child(this.inputContainer);
             this.container = new St.Widget();
             this.container.add_style_class_name('surface');
@@ -251,21 +275,34 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.add_child(this.expandButton); */
         }
 
-        get monitor() {
-            return this.msWorkspace.monitor;
+        get monitorScale() {
+            return global.display.get_monitor_scale(
+                this.msWorkspace.monitor.index
+                );
         }
         get buttonSize() {
             return (
                 BUTTON_SIZE *
-                global.display.get_monitor_scale(this.monitor.index)
+                this.monitorScale
             );
         }
         reset() {
-            this.inputContainer.set_text('');
+            if (this.inputContainer.get_text().length) {
+                this.inputContainer.set_text('');
+                this._text.cursor_position = -1;
+                return;
+            }
+            this.updateFilteredAppButtonList();
+        }
+
+        initFilteredAppButtonList() {
+            this.filteredAppButtonList = this.appButtonList;
+            this.filteredAppButtonListBuffer = this.appButtonList;
+            this.startIndex = 0;
         }
 
         updateFilteredAppButtonList() {
-            this.filteredAppButtonList = this.appButtonList.filter((button) => {
+            this.filteredAppButtonListBuffer = this.appButtonList.filter((button) => {
                 let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
                 let regex = new RegExp(this.inputContainer.get_text(), 'i');
                 if (regex.test(stringToSearch)) {
@@ -276,6 +313,92 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     return false;
                 }
             });
+            this.filteredAppButtonList = [];
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            let index = 0;
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+                ) {
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[index]
+                    );
+                    index++;
+                }
+            this.startIndex = 0;
+        }
+
+        scrollFilteredAppButtonListUp() {
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            if (
+                this.startIndex + maxButtons >
+                this.filteredAppButtonListBuffer.length - 1
+            ) {
+                return false;
+            }
+            const maxColumns = this.numberOfColumn;
+            let index = 0;
+            let showIndex;
+            this.startIndex += maxColumns;
+            while (index < this.startIndex) {
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[index]
+                ) {
+                    this.filteredAppButtonListBuffer[index].visible = false;
+                }
+                index++;
+            }
+            this.filteredAppButtonList = [];
+            index = 0;
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+            ) {
+                showIndex = this.startIndex + index;
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[showIndex]
+                ){
+                    this.filteredAppButtonListBuffer[showIndex].visible = true;
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[showIndex]
+                    );
+                }
+                index++;
+            }
+            return true;
+        }
+
+        scrollFilteredAppButtonListDown() {
+            const maxColumns = this.numberOfColumn;
+            if (
+                this.startIndex - maxColumns < 0
+            ) {
+                return false;
+            }
+            let index = 0;
+            let showIndex;
+            const maxButtons = this.numberOfColumn * this.numberOfRow;
+            this.startIndex -= maxColumns;
+            this.filteredAppButtonList = [];
+            while (
+                index < maxButtons &&
+                index < this.filteredAppButtonListBuffer.length
+            ) {
+                showIndex = this.startIndex + index;
+                if (
+                    this.filteredAppButtonListBuffer &&
+                    this.filteredAppButtonListBuffer[showIndex]
+                ){
+                    this.filteredAppButtonListBuffer[showIndex].visible = true;
+                    this.filteredAppButtonList.push(
+                        this.filteredAppButtonListBuffer[showIndex]
+                    );
+                }
+                index++;
+            }
+            return true;
         }
 
         // Get current focused button index, resets to 0 if value is invalid
@@ -291,9 +414,16 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         highlightNextButton() {
             let currentIndex = this.getCurrentIndex();
-            if (currentIndex < 0 || currentIndex == this.maxIndex) {
+            if (currentIndex < 0) {
                 return;
-            } else if (currentIndex < this.filteredAppButtonList.length - 1) {
+            } else if (currentIndex == this.maxIndex) {
+                if (this.scrollFilteredAppButtonListUp()) {
+                    currentIndex -= this.numberOfColumn;
+                } else {
+                    return;
+                }
+            }
+            if (currentIndex < this.filteredAppButtonList.length - 1) {
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex + 1]
                 );
@@ -306,36 +436,48 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 this.highlightButton(
                     this.filteredAppButtonList[currentIndex - 1]
                 );
+            } else if (currentIndex === 0) {
+                if (this.scrollFilteredAppButtonListDown()) {
+                    currentIndex += this.numberOfColumn - 1;
+                    this.highlightButton(
+                        this.filteredAppButtonList[currentIndex]
+                    );
+                }
             }
         }
 
         highlightButtonAbove() {
             let currentIndex = this.getCurrentIndex();
-            if (currentIndex > this.numberOfColumn) {
-                const nextButton = this.filteredAppButtonList[
-                    currentIndex - this.numberOfColumn
-                ];
-                if (nextButton) {
-                    this.highlightButton(nextButton);
+            if (currentIndex < this.numberOfColumn) {
+                if (this.scrollFilteredAppButtonListDown()) {
+                    currentIndex += this.numberOfColumn;
                 }
+            }
+            const nextButton = this.filteredAppButtonList[
+                currentIndex - this.numberOfColumn
+            ];
+            if (nextButton) {
+                this.highlightButton(nextButton);
             }
         }
 
         highlightButtonBelow() {
             let currentIndex = this.getCurrentIndex();
-            if (
-                currentIndex < 0 ||
-                currentIndex + this.numberOfColumn > this.maxIndex
-            ) {
+            if (currentIndex < 0) {
                 return;
-            } else {
-                const nextButton = this.filteredAppButtonList[
-                    currentIndex + this.numberOfColumn
-                ];
-
-                if (nextButton) {
-                    this.highlightButton(nextButton);
+            } else if (currentIndex + this.numberOfColumn > this.maxIndex) {
+                if (this.scrollFilteredAppButtonListUp()) {
+                    currentIndex -= this.numberOfColumn;
+                } else {
+                    return;
                 }
+            }
+            const nextButton = this.filteredAppButtonList[
+                currentIndex + this.numberOfColumn
+            ];
+
+            if (nextButton) {
+                this.highlightButton(nextButton);
             }
         }
 
@@ -353,7 +495,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         // Set starting button as focused
         highlightInitialButton() {
-            if (this.filteredAppButtonList) {
+            if (
+                this.filteredAppButtonList &&
+                this.filteredAppButtonList.length > 0
+            ) {
                 this.highlightButton(this.filteredAppButtonList[0]);
             }
         }
@@ -373,7 +518,11 @@ var MsApplicationButtonContainer = GObject.registerClass(
         addAppButton(button) {
             this.appButtonList.push(button);
             this.add_child(button);
-            this.updateFilteredAppButtonList();
+        }
+
+        addDummyButton(button) {
+            this.dummyButtonList.push(button);
+            this.add_child(button);
         }
 
         vfunc_allocate(box, flags) {
@@ -381,15 +530,12 @@ var MsApplicationButtonContainer = GObject.registerClass(
             if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
-            const containerPadding =
-                16 * global.display.get_monitor_scale(this.monitor.index);
-            let expandButtonHeight = 0;
+            const containerPadding = 16 * this.monitorScale;
             const clockHeight =
-                64 * global.display.get_monitor_scale(this.monitor.index);
-            const searchHeight =
-                48 * global.display.get_monitor_scale(this.monitor.index);
-            const searchMargin =
-                24 * global.display.get_monitor_scale(this.monitor.index);
+                (Me.msThemeManager.clockAppLauncher ? 64 : 0) *
+                this.monitorScale;
+            const searchHeight = 48 * this.monitorScale;
+            const searchMargin = 24 * this.monitorScale;
 
             const availableWidth =
                 contentBox.get_width() - containerPadding * 2;
@@ -397,23 +543,22 @@ var MsApplicationButtonContainer = GObject.registerClass(
             const availableHeight =
                 contentBox.get_height() -
                 containerPadding * 2 -
-                expandButtonHeight -
                 searchHeight -
                 searchMargin -
                 clockHeight;
 
             const numberOfButtons = this.filteredAppButtonList.length;
             this.numberOfColumn = Math.floor(availableWidth / this.buttonSize);
-            const maxNumberOfRow = Math.floor(
+            this.numberOfRow = Math.floor(
                 availableHeight / this.buttonSize
             );
             const numberOfRowNeeded = Math.ceil(
                 numberOfButtons / this.numberOfColumn
             );
-            this.numberOfRow = Math.min(maxNumberOfRow, numberOfRowNeeded);
-            expandButtonHeight =
-                this.numberOfRow === numberOfRowNeeded ? 0 : expandButtonHeight;
-            this.maxIndex = this.numberOfColumn * this.numberOfRow - 1;
+            this.maxIndex =
+                this.numberOfColumn *
+                    Math.min(this.numberOfRow, numberOfRowNeeded) -
+                1;
 
             const horizontalOffset =
                 (contentBox.get_width() -
@@ -424,17 +569,19 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 (contentBox.get_height() -
                     (this.buttonSize * this.numberOfRow +
                         containerPadding * 2 +
-                        expandButtonHeight +
                         searchHeight +
                         searchMargin +
                         clockHeight)) /
                 2;
-            const clockBox = new Clutter.ActorBox();
-            clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
-            clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
-            clockBox.y1 = contentBox.y1 + verticalOffset;
-            clockBox.y2 = clockBox.y1 + clockHeight;
-            Allocate(this.clockBin, clockBox, flags);
+
+            if (Me.msThemeManager.clockAppLauncher) {
+                const clockBox = new Clutter.ActorBox();
+                clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
+                clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
+                clockBox.y1 = contentBox.y1 + verticalOffset;
+                clockBox.y2 = clockBox.y1 + clockHeight;
+                Allocate(this.clockBin, clockBox, flags);
+            }
 
             const searchBox = new Clutter.ActorBox();
             searchBox.x1 = contentBox.x1 + horizontalOffset;
@@ -455,44 +602,31 @@ var MsApplicationButtonContainer = GObject.registerClass(
             Allocate(this.container, containerBox, flags);
 
             let index;
+            let indexDummy = 0;
+            let button;
             for (let y = 0; y < this.numberOfRow; y++) {
                 for (let x = 0; x < this.numberOfColumn; x++) {
                     index = x + this.numberOfColumn * y;
-                    if (index < this.filteredAppButtonList.length) {
-                        let button = this.filteredAppButtonList[index];
-                        const buttonBox = new Clutter.ActorBox();
-                        buttonBox.x1 =
-                            containerBox.x1 +
-                            this.buttonSize * x +
-                            containerPadding;
-                        buttonBox.x2 = buttonBox.x1 + this.buttonSize;
-                        buttonBox.y1 =
-                            containerBox.y1 +
-                            this.buttonSize * y +
-                            containerPadding;
-                        buttonBox.y2 = buttonBox.y1 + this.buttonSize;
-                        button.visible = true;
-                        Allocate(button, buttonBox, flags);
+                    if (index < numberOfButtons) {
+                        button = this.filteredAppButtonList[index];
+                    } else {
+                        button = this.dummyButtonList[indexDummy];
+                        indexDummy++;
                     }
+                    this.allocateButton(
+                        button,
+                        containerBox,
+                        containerPadding,
+                        x,
+                        y,
+                        flags
+                    );
                 }
             }
-            if (index < this.filteredAppButtonList.length - 1) {
-                for (
-                    index = index + 1;
-                    index < this.filteredAppButtonList.length;
-                    index++
-                ) {
-                    this.filteredAppButtonList[index].visible = false;
+            if (index < numberOfButtons - 1) {
+                for (let i = index + 1; i < numberOfButtons; i++) {
+                    this.filteredAppButtonList[i].visible = false;
                 }
-                //this.expandButton.visible = true;
-                const expandButtonBox = new Clutter.ActorBox();
-                expandButtonBox.x1 = containerBox.x1;
-                expandButtonBox.x2 = containerBox.x2;
-                expandButtonBox.y1 = containerBox.y2 - expandButtonHeight;
-                expandButtonBox.y2 = containerBox.y2;
-                //this.expandButton.allocate(expandButtonBox, flags);
-            } else {
-                //this.expandButton.visible = false;
             }
 
             //hide other buttons
@@ -501,44 +635,79 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     return !this.filteredAppButtonList.includes(button);
                 })
                 .forEach((button) => {
-                    const hiddenBox = new Clutter.ActorBox();
-                    hiddenBox.x1 = contentBox.x1;
-                    hiddenBox.x2 = contentBox.x1;
-                    hiddenBox.y1 = contentBox.x1;
-                    hiddenBox.y2 = contentBox.x1;
-                    Allocate(button, hiddenBox, flags);
-                    button.visible = false;
+                    this.hideButton(button, contentBox, flags);
                 });
+
+            while (indexDummy < this.dummyButtonList.length) {
+                this.hideButton(
+                    this.dummyButtonList[indexDummy],
+                    containerBox,
+                    flags
+                );
+                indexDummy++;
+            }
 
             // Reset focused button to position zero if hidden
             if (this.currentButtonFocused) {
                 this.getCurrentIndex();
             }
         }
+
+        allocateButton(button, containerBox, containerPadding, x, y, flags) {
+            const buttonBox = new Clutter.ActorBox();
+            buttonBox.x1 =
+                containerBox.x1 +
+                this.buttonSize * x +
+                containerPadding;
+            buttonBox.x2 = buttonBox.x1 + this.buttonSize;
+            buttonBox.y1 =
+                containerBox.y1 +
+                this.buttonSize * y +
+                containerPadding;
+            buttonBox.y2 = buttonBox.y1 + this.buttonSize;
+            button.visible = true;
+            Allocate(button, buttonBox, flags);
+        }
+
+        hideButton(button, contentBox, flags) {
+            const hiddenBox = new Clutter.ActorBox();
+            hiddenBox.x1 = contentBox.x1;
+            hiddenBox.x2 = contentBox.x1;
+            hiddenBox.y1 = contentBox.x1;
+            hiddenBox.y2 = contentBox.x1;
+            Allocate(button, hiddenBox, flags);
+            button.visible = false;
+        }
     }
 );
 
 var MsApplicationButton = GObject.registerClass(
     class MsApplicationButton extends MatButton {
-        _init(app) {
-            super._init({});
+        _init(app, buttonSize) {
             this.app = app;
-            this.icon = this.app.create_icon_texture(72);
-            this.title = new St.Label({
-                text: this.app.get_name(),
-                x_align: Clutter.ActorAlign.CENTER,
-                style_class: 'subtitle-2',
-                style: 'margin-top:12px',
+            this.buttonSize = buttonSize;
+            super._init({
+                dummy: this.app ? false : true,
             });
             this.layout = new St.BoxLayout({
                 vertical: true,
-                width: BUTTON_SIZE,
-                height: BUTTON_SIZE,
+                width: this.buttonSize,
+                height: this.buttonSize,
                 clip_to_allocation: true,
             });
+
+            if (app) {
+                this.icon = this.app.create_icon_texture(72);
+                this.title = new St.Label({
+                    text: this.app.get_name(),
+                    x_align: Clutter.ActorAlign.CENTER,
+                    style_class: 'subtitle-2',
+                    style: 'margin-top:12px',
+                });
+                this.layout.add_child(this.icon);
+                this.layout.add_child(this.title);
+            }
             this.layout.set_style('padding:12px;');
-            this.layout.add_child(this.icon);
-            this.layout.add_child(this.title);
             this.set_child(this.layout);
         }
     }

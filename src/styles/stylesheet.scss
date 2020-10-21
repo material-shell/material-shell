@@ -421,9 +421,13 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 MsApplicationLauncher {
-    .search-entry {
+    * .search-entry {
+        @include foreground-medium-emphasis($theme);
         @include background($theme);
         border-radius: 48px;
+    }
+    * .search-entry-icon {
+        @include foreground-medium-emphasis($theme);
     }
 }
 
