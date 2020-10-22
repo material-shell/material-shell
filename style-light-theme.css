@@ -347,3 +347,27 @@ MsApplicationLauncher .search-entry {
 .no-theme #calendarArea .weather-button,
 .no-theme #calendarArea .events-section-title {
   border: 0px; }
+
+LayoutSwitcher > StBin {
+  padding: 8px 0;
+  margin-right: 8px; }
+
+MatNumberPicker {
+  background: #b3b3b3;
+  border-radius: 10000px; }
+  MatNumberPicker StButton {
+    background: white;
+    width: 32px; }
+    MatNumberPicker StButton StIcon {
+      margin: 8px; }
+    MatNumberPicker StButton:first-child {
+      border-radius: 32px 0 0 32px; }
+    MatNumberPicker StButton:last-child {
+      border-radius: 0 32px 32px 0; }
+    MatNumberPicker StButton:hover {
+      background: white; }
+    MatNumberPicker StButton:active {
+      background: white; }
+  MatNumberPicker StLabel {
+    margin-left: 8px;
+    margin-right: 8px; }

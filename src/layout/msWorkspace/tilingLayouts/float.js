@@ -83,5 +83,5 @@ var FloatLayout = GObject.registerClass(
     }
 );
 
-FloatLayout.key = 'float';
+FloatLayout.state = { key: 'float' };
 FloatLayout.label = 'Float';

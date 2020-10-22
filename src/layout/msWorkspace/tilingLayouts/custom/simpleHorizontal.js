@@ -16,5 +16,5 @@ var SimpleHorizontalLayout = GObject.registerClass(
     }
 );
 
-SimpleHorizontalLayout.key = 'simple-horizontal';
+SimpleHorizontalLayout.state = { key: 'simple-horizontal' };
 SimpleHorizontalLayout.label = 'Simple horizontal';

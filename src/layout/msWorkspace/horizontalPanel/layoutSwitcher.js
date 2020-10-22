@@ -15,35 +15,50 @@ var LayoutSwitcher = GObject.registerClass(
     {
         GTypeName: 'LayoutSwitcher',
     },
-    class LayoutSwitcher extends MatPanelButton {
+    class LayoutSwitcher extends St.BoxLayout {
         _init(msWorkspace, panelMenuManager) {
+            super._init({});
+            this.layoutQuickWidgetBin = new St.Bin({
+                style_class: 'layout-quick-widget-bin',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
             this.tilingIcon = new St.Icon({
                 style_class: 'mat-panel-button-icon',
             });
-            super._init({
+            this.switcherButton = new MatPanelButton({
                 child: this.tilingIcon,
                 style_class: 'mat-panel-button',
                 can_focus: true,
                 track_hover: true,
             });
+            this.add_child(this.layoutQuickWidgetBin);
+            this.add_child(this.switcherButton);
 
             this.msWorkspace = msWorkspace;
             this.menuManager = panelMenuManager;
 
-            this.connect('clicked', (actor, button) => {
+            this.switcherButton.connect('clicked', (actor, button) => {
                 // Go in reverse direction on right click (button: 3)
                 //msWorkspace.nextLayout(button === 3 ? -1 : 1);
                 this.menu.toggle();
             });
-            this.updateLayoutIcon();
+            this.updateLayoutWidget();
             this.msWorkspace.connect(
                 'tiling-layout-changed',
-                this.updateLayoutIcon.bind(this)
+                this.updateLayoutWidget.bind(this)
             );
             this.buildMenu();
         }
 
-        updateLayoutIcon() {
+        updateLayoutWidget() {
+            this.layoutQuickWidgetBin.remove_all_children();
+            let quickWidget = this.msWorkspace.layout.buildQuickWidget();
+            if (quickWidget) {
+                this.layoutQuickWidgetBin.set_child(quickWidget);
+                this.layoutQuickWidgetBin.show();
+            } else {
+                this.layoutQuickWidgetBin.hide();
+            }
             this.tilingIcon.gicon = this.msWorkspace.layout.icon;
         }
 
@@ -57,9 +72,9 @@ var LayoutSwitcher = GObject.registerClass(
                     this.menu.addMenuItem(
                         new LayoutMenuItem(
                             layoutConstructor,
-                            this.msWorkspace.state.layoutKeyList.includes(
-                                layoutKey
-                            )
+                            this.msWorkspace.state.layoutStateList.find(
+                                (layoutState) => layoutState.key === layoutKey
+                            ) != null
                         )
                     );
                 }
@@ -75,22 +90,27 @@ var LayoutSwitcher = GObject.registerClass(
         }
 
         addLayout(layoutKey) {
-            if (this.msWorkspace.state.layoutKeyList.includes(layoutKey))
+            if (
+                this.msWorkspace.state.layoutStateList.find(
+                    (layoutState) => layoutState.key === layoutKey
+                ) != null
+            )
                 return true;
 
             // Add the layout in the right order
             const wantedIndex = Me.layoutManager.layoutList.findIndex(
                 (layout) => {
-                    return layoutKey === layout.key;
+                    return layoutKey === layout.state.key;
                 }
             );
-            if (wantedIndex > this.msWorkspace.state.layoutKeyList.length) {
-                this.msWorkspace.state.layoutKeyList.push(layoutKey);
+            const newState = Me.layoutManager.getLayoutByKey(layoutKey).state;
+            if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
+                this.msWorkspace.state.layoutStateList.push(newState);
             } else {
-                this.msWorkspace.state.layoutKeyList.splice(
+                this.msWorkspace.state.layoutStateList.splice(
                     wantedIndex,
                     0,
-                    layoutKey
+                    newState
                 );
             }
             Me.msWorkspaceManager.stateChanged();
@@ -98,13 +118,18 @@ var LayoutSwitcher = GObject.registerClass(
         }
 
         removeLayout(layoutKey) {
-            if (this.msWorkspace.state.layoutKeyList.length === 1) return false;
-            if (!this.msWorkspace.state.layoutKeyList.includes(layoutKey))
+            if (this.msWorkspace.state.layoutStateList.length === 1)
+                return false;
+            if (
+                !this.msWorkspace.state.layoutStateList.find(
+                    (layoutState) => layoutState.key === layoutKey
+                ) != null
+            )
                 return true;
-            const index = this.msWorkspace.state.layoutKeyList.indexOf(
-                layoutKey
+            const index = this.msWorkspace.state.layoutStateList.findIndex(
+                (layoutState) => layoutState.key === layoutKey
             );
-            this.msWorkspace.state.layoutKeyList.splice(index, 1);
+            this.msWorkspace.state.layoutStateList.splice(index, 1);
             Me.msWorkspaceManager.stateChanged();
 
             return true;
@@ -130,7 +155,7 @@ var LayoutMenuItem = GObject.registerClass(
             this._icon = new St.Icon({
                 style_class: 'popup-menu-icon',
                 gicon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/tiling/${layoutConstructor.key}-symbolic.svg`
+                    `${Me.path}/assets/icons/tiling/${layoutConstructor.state.key}-symbolic.svg`
                 ),
                 x_align: Clutter.ActorAlign.END,
             });
@@ -144,13 +169,13 @@ var LayoutMenuItem = GObject.registerClass(
 
         activate(event) {
             if (!this.editable) {
-                this.layoutSwitcher.setLayout(this.layoutConstructor.key);
-                super.activate(event);
+                this.layoutSwitcher.setLayout(this.layoutConstructor.state.key);
+                this.emit('activate', event);
             } else {
                 if (this.state) {
                     if (
                         this.layoutSwitcher.removeLayout(
-                            this.layoutConstructor.key
+                            this.layoutConstructor.state.key
                         )
                     ) {
                         this.toggle();
@@ -158,7 +183,7 @@ var LayoutMenuItem = GObject.registerClass(
                 } else {
                     if (
                         this.layoutSwitcher.addLayout(
-                            this.layoutConstructor.key
+                            this.layoutConstructor.state.key
                         )
                     ) {
                         this.toggle();

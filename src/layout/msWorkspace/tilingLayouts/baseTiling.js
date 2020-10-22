@@ -15,9 +15,10 @@ const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
-        _init(msWorkspace) {
+        _init(msWorkspace, state = {}) {
+            this.state = Object.assign({}, this.constructor.state, state);
             this.icon = Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+                `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
             this.themeSettings = getSettings('theme');
@@ -257,28 +258,6 @@ var BaseTilingLayout = GObject.registerClass(
             });
         }
 
-        /* moveAndResizeActor(
-            actor,
-            x,
-            y,
-            width,
-            height,
-            animate = true,
-            gaps = true
-        ) {
-            actor.show();
-            if (gaps) {
-                ({ x, y, width, height } = this.applyGaps(x, y, width, height));
-            }
-            if (animate) {
-                this.animateSetPosition(actor, x, y);
-                this.animateSetSize(actor, width, height);
-            } else {
-                actor.set_position(x, y);
-                actor.set_size(width, height);
-            }
-        } */
-
         getWorkspaceBounds() {
             const box = this.msWorkspace.msWorkspaceActor.tileableContainer
                 .allocation;
@@ -336,6 +315,10 @@ var BaseTilingLayout = GObject.registerClass(
                 height -= halfGap;
             }
             return { x, y, width, height };
+        }
+
+        buildQuickWidget() {
+            // return a widget to add to the panel
         }
 
         vfunc_get_preferred_width(container, forHeight) {

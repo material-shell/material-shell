@@ -20,19 +20,27 @@ const { HorizontalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
 
 /* exported MsWorkspace */
 var MsWorkspace = class MsWorkspace {
-    constructor(msWorkspaceManager, monitor, state) {
+    constructor(msWorkspaceManager, monitor, state = {}) {
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
         Me.log(JSON.stringify(state));
-        this._state = state || {
-            // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
-            external: this.monitor.index !== Main.layoutManager.primaryIndex,
-            focusedIndex: 0,
-            forcedCategory: null,
-            msWindowList: [],
-            layoutKeyList: Me.layoutManager.defaultLayoutKeyList,
-            layoutKey: Me.layoutManager.defaultLayoutKey,
-        };
+        this._state = Object.assign(
+            {
+                // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
+                external:
+                    this.monitor.index !== Main.layoutManager.primaryIndex,
+                focusedIndex: 0,
+                forcedCategory: null,
+                msWindowList: [],
+                layoutStateList: Me.layoutManager.defaultLayoutKeyList.map(
+                    (layoutKey) => {
+                        return Me.layoutManager.getLayoutByKey(layoutKey).state;
+                    }
+                ),
+                layoutKey: Me.layoutManager.defaultLayoutKey,
+            },
+            state
+        );
 
         this.appLauncher = new MsApplicationLauncher(this);
 
@@ -103,6 +111,14 @@ var MsWorkspace = class MsWorkspace {
             .map((msWindow) => {
                 return msWindow.state;
             });
+        if (this.layout) {
+            this._state.layoutStateList[
+                this._state.layoutStateList.findIndex(
+                    (layoutState) => layoutState.key === this.layout.state.key
+                )
+            ] = this.layout.state;
+        }
+
         return this._state;
     }
 
@@ -322,24 +338,36 @@ var MsWorkspace = class MsWorkspace {
     nextLayout(direction) {
         this.layout.onDestroy();
 
-        let { key } = this.layout.constructor;
-        if (!this.state.layoutKeyList.includes(key)) {
-            key = this.state.layoutKeyList[0];
+        let { key } = this.layout.constructor.state;
+        if (
+            !this.state.layoutStateList.find(
+                (layoutState) => layoutState.key === key
+            )
+        ) {
+            key = this.state.layoutStateList[0].key;
         }
-        let nextIndex = this.state.layoutKeyList.indexOf(key) + direction;
+        let nextIndex =
+            this.state.layoutStateList.findIndex(
+                (layoutState) => layoutState.key === key
+            ) + direction;
         if (nextIndex < 0) {
-            nextIndex += this.state.layoutKeyList.length;
+            nextIndex += this.state.layoutStateList.length;
         }
-        nextIndex = nextIndex % this.state.layoutKeyList.length;
+        nextIndex = nextIndex % this.state.layoutStateList.length;
         // Get the next layout available
-        const newKey = this.state.layoutKeyList[nextIndex];
-        this.setLayoutByKey(newKey);
+        const newLayoutState = this.state.layoutStateList[nextIndex];
+        this.setLayoutByKey(newLayoutState.key);
     }
 
     setLayoutByKey(layoutKey) {
         this.layout.onDestroy();
         const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
-        this.layout = new Layout(this);
+        this.layout = new Layout(
+            this,
+            this.state.layoutStateList.find(
+                (layoutState) => layoutState.key === layoutKey
+            )
+        );
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
         this.emit('tiling-layout-changed');
     }

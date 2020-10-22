@@ -542,3 +542,43 @@ MsApplicationLauncher {
         }
     }
 }
+
+LayoutSwitcher {
+    & > StBin {
+        padding: 8px 0;
+        margin-right: 8px;
+    }
+}
+
+MatNumberPicker {
+    background: getDarkerColor(getBackgroundColor($theme));
+    //This is a hack because percentage is not handled yet
+    border-radius: 10000px;
+    StButton {
+        background: getLighterColor(getBackgroundColor($theme));
+        width: 32px;
+        StIcon {
+            margin: 8px;
+        }
+        &:first-child {
+            border-radius: 32px 0 0 32px;
+        }
+        &:last-child {
+            border-radius: 0 32px 32px 0;
+        }
+        &:hover {
+            background: getLighterColor(
+                getLighterColor(getBackgroundColor($theme))
+            );
+        }
+        &:active {
+            background: getLighterColor(
+                getLighterColor(getLighterColor(getBackgroundColor($theme)))
+            );
+        }
+    }
+    StLabel {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+}

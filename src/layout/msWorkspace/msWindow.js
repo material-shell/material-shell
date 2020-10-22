@@ -136,7 +136,7 @@ var MsWindow = GObject.registerClass(
             if (!this.msWorkspace) return false;
             return (
                 (this.msWorkspace &&
-                    this.msWorkspace.layout.constructor.key === 'float') ||
+                    this.msWorkspace.layout.state.key === 'float') ||
                 (this.metaWindow && this.metaWindow.fullscreen)
             );
         }

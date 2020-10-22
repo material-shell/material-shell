@@ -12,8 +12,8 @@ const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 /* exported MaximizeLayout */
 var MaximizeLayout = GObject.registerClass(
     class MaximizeLayout extends BaseTilingLayout {
-        _init(msWorkspace) {
-            super._init(msWorkspace);
+        _init(msWorkspace, state) {
+            super._init(msWorkspace, state);
             this.translationAnimator = new TranslationAnimator();
             this.translationAnimator.connect('transition-completed', () => {
                 this.endTransition();
@@ -141,5 +141,5 @@ var MaximizeLayout = GObject.registerClass(
     }
 );
 
-MaximizeLayout.key = 'maximize';
+MaximizeLayout.state = { key: 'maximize' };
 MaximizeLayout.label = 'Maximize';

@@ -35,7 +35,7 @@ const layouts = [
 ];
 
 var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
-    layoutsByKey[layout.key] = layout;
+    layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
 }, {});
 
@@ -82,7 +82,7 @@ var TilingManager = class TilingManager extends MsManager {
 
     get defaultLayoutKeyList() {
         return layouts
-            .map((layout) => layout.key)
+            .map((layout) => layout.state.key)
             .filter((layoutKey) => this.layoutsSettings.get_boolean(layoutKey));
     }
 
