@@ -158,9 +158,10 @@ function showSplashScreens() {
         });
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
-            hideSplashScreens();
-        });
+    });
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
+        hideSplashScreens();
+        return GLib.SOURCE_REMOVE;
     });
 }
 
