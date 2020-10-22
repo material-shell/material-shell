@@ -332,7 +332,6 @@ MsApplicationLauncher .search-entry {
 .surface-lighter, .no-theme .popup-menu .popup-menu-content .popup-submenu-menu-item:open, .no-theme #calendarArea .calendar,
 .no-theme #calendarArea .message,
 .no-theme #calendarArea .events-button,
-.no-theme #calendarArea .datemenu-today-button,
 .no-theme #calendarArea .world-clocks-button,
 .no-theme #calendarArea .weather-button,
 .no-theme #calendarArea .events-section-title {
@@ -348,14 +347,14 @@ MsApplicationLauncher .search-entry {
     margin: 0;
     padding-top: 8px;
     padding-bottom: 8px;
-    border-radius: 4px; }
+    border-radius: 8px; }
   .popup-menu.panel-menu .popup-menu-content {
     margin-top: 20px;
-    border-radius: 0px 4px 4px 0px;
+    border-radius: 0px 8px 8px 0px;
     box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4); }
   .popup-menu.horizontal-panel-menu .popup-menu-content {
     margin-left: 20px;
-    border-radius: 0px 0px 4px 4px;
+    border-radius: 0px 0px 8px 8px;
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4); }
 
 .popup-menu-boxpointer,
@@ -415,7 +414,6 @@ MsApplicationLauncher .search-entry {
 .no-theme #calendarArea .calendar,
 .no-theme #calendarArea .message,
 .no-theme #calendarArea .events-button,
-.no-theme #calendarArea .datemenu-today-button,
 .no-theme #calendarArea .world-clocks-button,
 .no-theme #calendarArea .weather-button,
 .no-theme #calendarArea .events-section-title {
