@@ -20,7 +20,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.isPersistenceEnabled = this.settings.get_boolean(
             'enable-persistence'
         );
-        this.categoryList = Me.stateManager.getState('categoryList') || [];
         this.metaWindowFocused = null;
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
@@ -64,6 +63,10 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
 
             let msWindowList = global.ms.msWindowManager.msWindowList;
+            Me.logFocus(
+                '[DEBUG]',
+                `Check amond the ${msWindowList.length} msWindows in which workspace they are `
+            );
             for (i = 0; i < msWindowList.length; i++) {
                 let msWindow = msWindowList[i];
 

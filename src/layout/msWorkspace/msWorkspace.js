@@ -41,7 +41,7 @@ var MsWorkspace = class MsWorkspace {
 
         this.msWorkspaceCategory = new MsWorkspaceCategory(
             this,
-            this.state.forcedCategory
+            this._state.forcedCategory
         );
 
         this._state.msWindowList.forEach((msWindowData) => {

@@ -123,9 +123,6 @@ var LayoutSwitcher = GObject.registerClass(
 );
 
 var LayoutMenuItem = GObject.registerClass(
-    {
-        Signals: { toggled: { param_types: [GObject.TYPE_BOOLEAN] } },
-    },
     class LayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
         _init(layoutConstructor, active, params) {
             super._init(layoutConstructor.label, active, params);
@@ -174,10 +171,30 @@ var LayoutMenuItem = GObject.registerClass(
         setEditable(editable) {
             this.editable = editable;
             if (this.editable) {
-                this._statusBin.ease({
-                    opacity: 255,
-                    duration: 300,
-                });
+                this.setSwitcherVisible(true);
+                this.setVisible(true);
+            } else {
+                this.setSwitcherVisible(false);
+                if (!this.state) {
+                    this.setVisible(false);
+                }
+            }
+        }
+
+        setSwitcherVisible(visible) {
+            if (!this.mapped) {
+                return (this._statusBin.opacity = visible ? 255 : 0);
+            }
+            this._statusBin.ease({
+                opacity: visible ? 255 : 0,
+                duration: 300,
+            });
+        }
+        setVisible(visible) {
+            if (!this.mapped) {
+                return (this.height = visible ? -1 : 0);
+            }
+            if (visible) {
                 if (this.height === 0) {
                     this.height = -1;
                     let height = this.height;
@@ -191,24 +208,15 @@ var LayoutMenuItem = GObject.registerClass(
                     });
                 }
             } else {
-                this._statusBin.ease({
-                    opacity: 0,
+                this.ease({
+                    height: 0,
                     duration: 300,
                 });
-                if (!this.state) {
-                    this.ease({
-                        height: 0,
-                        duration: 300,
-                    });
-                }
             }
         }
     }
 );
 var LayoutsToggle = GObject.registerClass(
-    {
-        Signals: { toggled: { param_types: [GObject.TYPE_BOOLEAN] } },
-    },
     class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
         _init(menu, params) {
             const editText = _('Tweak available layout');
@@ -228,8 +236,6 @@ var LayoutsToggle = GObject.registerClass(
 
         activate(event) {
             this.toggleEditMode();
-            return;
-            super.activate(event);
         }
 
         toggleEditMode() {

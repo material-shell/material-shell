@@ -10,12 +10,12 @@ const { MsManager } = Me.imports.src.manager.msManager;
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, MsThemeManager */
 
-const VerticalPanelPositionEnum = {
+var VerticalPanelPositionEnum = {
     LEFT: 0,
     RIGHT: 1,
 };
 
-const HorizontalPanelPositionEnum = {
+var HorizontalPanelPositionEnum = {
     TOP: 0,
     BOTTOM: 1,
 };
