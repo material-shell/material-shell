@@ -51,13 +51,17 @@ var TaskBar = GObject.registerClass(
             this.windowFocused = null;
             this.items = [];
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.updateItems();
-            this._animateActiveIndicator();
+            this.onTileableListChange();
         }
 
+        // Avoid problmes with animation, see below
         onTileableListChange() {
             this.updateItems();
             this._animateActiveIndicator();
+            if (this.items[this.msWorkspace.focusedIndex])
+                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
+                    'active'
+            );
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
@@ -79,7 +83,6 @@ var TaskBar = GObject.registerClass(
             if (!nextItem) return;
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
-
             this._animateActiveIndicator();
             nextItem.setActive(true);
         }
@@ -92,7 +95,7 @@ var TaskBar = GObject.registerClass(
                         const item = new TileableItem(tileable);
                         this.menuManager.addMenu(item.menu);
                         item.connect('left-clicked', (_) => {
-                            this.msWorkspace.focusTileable(tileable);
+                            this.msWorkspace.focusTileable(tileable, true);
                         });
                         item.connect('middle-clicked', (_) => {
                             tileable.kill();
@@ -166,10 +169,7 @@ var TaskBar = GObject.registerClass(
 
                         item.connect('drag-dropped', this.reparentDragItem);
                         item.connect('notify::width', () => {
-                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                this._animateActiveIndicator();
-                                return GLib.SOURCE_REMOVE;
-                            });
+                            this._animateActiveIndicator();
                         });
                         this.taskButtonContainer.add_child(item);
                         return item;
@@ -183,15 +183,15 @@ var TaskBar = GObject.registerClass(
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
                         });
+                        // Needed to properly activate it the first time it is shown
+                        item.connect('notify::width', () => {
+                            this._animateActiveIndicator();
+                        });
                         this.taskButtonContainer.add_child(item);
                         return item;
                     }
                 }
             );
-            if (this.items[this.msWorkspace.focusedIndex])
-                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
-                    'active'
-                );
         }
 
         updateCurrentTaskBar() {
@@ -284,22 +284,19 @@ var TaskBar = GObject.registerClass(
             let taskBarItem = this.getTaskBarItemOfTileable(
                 this.msWorkspace.tileableFocused
             );
-            if (
-                this.taskBarItemSignal &&
-                this.items.includes(this.taskBarItemSignal.from)
-            ) {
-                this.taskBarItemSignal.from.disconnect(
-                    this.taskBarItemSignal.id
-                );
-            }
-            if (!taskBarItem) {
-                return;
-            }
-
-            if (!this.mapped) return;
+            if (!taskBarItem || !this.mapped) return;
             if (!this.taskActiveIndicator.width) {
                 this.taskActiveIndicator.scale_x = 1;
-                this.taskActiveIndicator.width = taskBarItem.width;
+                this.taskActiveIndicator.x = taskBarItem.x;
+                if (taskBarItem.width < 0) {
+                    // Postpone if taskBarItem was not mapped yet
+                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+                        this._animateActiveIndicator();
+                        return GLib.SOURCE_REMOVE;
+                    });
+                } else {
+                    this.taskActiveIndicator.width = taskBarItem.width;
+                }
             } else {
                 this.taskActiveIndicator.ease({
                     translation_x: taskBarItem.x,
