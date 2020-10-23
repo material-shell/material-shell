@@ -113,7 +113,7 @@ var LayoutSwitcher = GObject.registerClass(
                     newState
                 );
             }
-            Me.msWorkspaceManager.stateChanged();
+            Me.stateManager.stateChanged();
             return true;
         }
 
@@ -130,7 +130,7 @@ var LayoutSwitcher = GObject.registerClass(
                 (layoutState) => layoutState.key === layoutKey
             );
             this.msWorkspace.state.layoutStateList.splice(index, 1);
-            Me.msWorkspaceManager.stateChanged();
+            Me.stateManager.stateChanged();
 
             return true;
         }

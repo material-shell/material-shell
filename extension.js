@@ -18,6 +18,8 @@ const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
+const { getSettings } = Me.imports.src.utils.settings;
+
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
@@ -60,18 +62,22 @@ function enable() {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         //Load persistent data
-        Me.stateManager.loadRegistry(() => {
+        Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
             Me.layoutManager = new TilingManager();
             Me.msWindowManager = new MsWindowManager();
-            Me.msWorkspaceManager = new MsWorkspaceManager();
+            Me.msWorkspaceManager = new MsWorkspaceManager(
+                state['workspaces-state']
+            );
             Me.msNotificationManager = new MsNotificationManager();
             modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();
             }
-            Me.msWorkspaceManager.restorePreviousState();
+            if (getSettings('tweaks').get_boolean('enable-persistence')) {
+                Me.msWorkspaceManager.restorePreviousState();
+            }
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {

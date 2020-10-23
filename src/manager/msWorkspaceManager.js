@@ -11,15 +11,19 @@ const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWorkspaceManager */
 var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
-    constructor() {
+    constructor(state = {}) {
         super();
         this.workspaceManager = global.workspace_manager;
+        this._state = Object.assign(
+            {
+                msWorkspaceList: [],
+                primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),
+            },
+            state
+        );
         this.windowTracker = Shell.WindowTracker.get_default();
         this.msWorkspaceList = [];
         this.settings = getSettings('tweaks');
-        this.isPersistenceEnabled = this.settings.get_boolean(
-            'enable-persistence'
-        );
         this.metaWindowFocused = null;
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
@@ -63,10 +67,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
 
             let msWindowList = global.ms.msWindowManager.msWindowList;
-            Me.logFocus(
-                '[DEBUG]',
-                `Check amond the ${msWindowList.length} msWindows in which workspace they are `
-            );
             for (i = 0; i < msWindowList.length; i++) {
                 let msWindow = msWindowList[i];
 
@@ -113,17 +113,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this._checkWorkspacesId = 0;
             return false;
         };
-
-        this.observe(this.settings, 'changed::enable-persistence', (schema) => {
-            this.isPersistenceEnabled = schema.get_boolean(
-                'enable-persistence'
-            );
-            if (this.isPersistenceEnabled) {
-                this.saveCurrentState();
-            } else {
-                Me.stateManager.setState('workspaces-state');
-            }
-        });
 
         this.observe(Main.layoutManager, 'monitors-changed', () => {
             this.onMonitorsChanged();
@@ -211,24 +200,17 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     restorePreviousState() {
-        // Make sure nothing is restored if state persistence is disabled
-        if (this.isPersistenceEnabled) {
-            this.currentState = Me.stateManager.getState('workspaces-state');
-        } else {
-            this.currentState = undefined;
-        }
-
         this.restoringState = true;
         Me.logFocus('[DEBUG]', 'Restoring previous state');
         Me.logFocus('[DEBUG]', 'Step 1 Remove empty workspace if any');
         this.removeEmptyWorkspaces();
 
-        let msWorkspaceListToRestore = this.currentState
-            ? this.currentState.msWorkspaceList
-                ? [...this.currentState.msWorkspaceList]
+        let msWorkspaceListToRestore = this._state
+            ? this._state.msWorkspaceList
+                ? [...this._state.msWorkspaceList]
                 : [
-                      ...this.currentState.primaryWorkspaceList,
-                      ...this.currentState.externalWorkspaces,
+                      ...this._state.primaryWorkspaceList,
+                      ...this._state.externalWorkspaces,
                   ]
             : [];
 
@@ -308,15 +290,12 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.setupNewWorkspace(workspace);
 
         // Activate the saved workspace, if valid
-        if (
-            this.currentState &&
-            this.currentState.primaryWorkspaceActiveIndex
-        ) {
+        if (this._state && this._state.primaryWorkspaceActiveIndex) {
             Me.logFocus(
                 '[DEBUG]',
-                `Finally try to activate the previous active MsWorkspace: ${this.currentState.primaryWorkspaceActiveIndex}`
+                `Finally try to activate the previous active MsWorkspace: ${this._state.primaryWorkspaceActiveIndex}`
             );
-            const savedIndex = this.currentState.primaryWorkspaceActiveIndex;
+            const savedIndex = this._state.primaryWorkspaceActiveIndex;
             if (savedIndex && savedIndex < this.workspaceManager.n_workspaces) {
                 this.workspaceManager
                     .get_workspace_by_index(savedIndex)
@@ -496,7 +475,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.stateChanged();
         });
         msWorkspace.connect('tiling-layout-changed', (_) => {
-            this.saveCurrentState();
+            Me.stateManager.stateChanged();
         });
         msWorkspace.connect('readyToBeClosed', () => {
             let index = this.primaryMsWorkspaces.indexOf(msWorkspace);
@@ -540,22 +519,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     closeMsWorkspace(msWorkspace) {}
 
     stateChanged() {
-        if (
-            this.restoringState ||
-            this.updatingMonitors ||
-            this.stateChangedTriggered ||
-            Me.disableInProgress
-        )
-            return;
-
-        Me.logFocus('[DEBUG]', `Inside stateChanged`);
-        this.stateChangedTriggered = true;
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.workspaceTracker._checkWorkspaces();
-            this.saveCurrentState();
-            this.stateChangedTriggered = false;
-            return GLib.SOURCE_REMOVE;
-        });
+        if (this.restoringState || this.updatingMonitors) return;
+        this.workspaceTracker._checkWorkspaces();
+        Me.stateManager.stateChanged();
     }
     setMsWorkspaceAt(msWorkspaceToMove, toIndex) {
         let sourceIndex = this.msWorkspaceList.indexOf(msWorkspaceToMove);
@@ -575,28 +541,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.emit('dynamic-super-workspaces-changed');
     }
 
-    saveCurrentState() {
-        // Avoid unnecessary work
-        if (!this.isPersistenceEnabled || !Me.loaded || Me.disableInProgress)
-            return;
-
-        const workspacesState = {
-            msWorkspaceList: [],
-            primaryWorkspaceActiveIndex: this.workspaceManager.get_active_workspace_index(),
-        };
-        workspacesState.msWorkspaceList = this.msWorkspaceList
+    get state() {
+        this._state.msWorkspaceList = this.msWorkspaceList
             .filter((msWorkspace) => {
                 return msWorkspace.msWindowList.length;
             })
             .map((msWorkspace) => {
                 return msWorkspace.state;
             });
-        this.currentState = workspacesState;
-        Me.logFocus(
-            '[DEBUG]',
-            `saveCurrentState (${workspacesState.msWorkspaceList.length} different workspaces)`
-        );
-        Me.stateManager.setState('workspaces-state', workspacesState);
+        this._state.primaryWorkspaceActiveIndex = this.workspaceManager.get_active_workspace_index();
+        return this._state;
     }
 
     refreshMsWorkspaceUI() {

@@ -51,7 +51,10 @@ var MsWorkspace = class MsWorkspace {
             this,
             this._state.forcedCategory
         );
-
+        Me.logFocus('layoutKey', this._state.layoutKey);
+        const LayoutConstructor = Me.layoutManager.getLayoutByKey(
+            this._state.layoutKey
+        );
         this._state.msWindowList.forEach((msWindowData) => {
             this.addMsWindow(
                 Me.msWindowManager.createNewMsWindow(
@@ -70,10 +73,6 @@ var MsWorkspace = class MsWorkspace {
         });
 
         this.msWorkspaceCategory.determineCategory();
-
-        const LayoutConstructor = Me.layoutManager.getLayoutByKey(
-            this.state.layoutKey
-        );
 
         this.layout = new LayoutConstructor(this);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
@@ -117,6 +116,7 @@ var MsWorkspace = class MsWorkspace {
                     (layoutState) => layoutState.key === this.layout.state.key
                 )
             ] = this.layout.state;
+            this._state.layoutKey = this.layout.state.key;
         }
 
         return this._state;
