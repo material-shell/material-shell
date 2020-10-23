@@ -519,9 +519,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     closeMsWorkspace(msWorkspace) {}
 
     stateChanged() {
-        if (this.restoringState || this.updatingMonitors) return;
-        this.workspaceTracker._checkWorkspaces();
-        Me.stateManager.stateChanged();
+        if (
+            this.restoringState ||
+            this.updatingMonitors ||
+            this.stateChangedTriggered
+        )
+            return;
+        this.stateChangedTriggered = true;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.workspaceTracker._checkWorkspaces();
+            Me.stateManager.stateChanged();
+            this.stateChangedTriggered = false;
+            return GLib.SOURCE_REMOVE;
+        });
     }
     setMsWorkspaceAt(msWorkspaceToMove, toIndex) {
         let sourceIndex = this.msWorkspaceList.indexOf(msWorkspaceToMove);
