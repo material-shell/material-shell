@@ -28,7 +28,7 @@ var MsApplicationLauncher = GObject.registerClass(
             this.add_style_class_name('surface-darker');
             this.appListContainer = null;
             this.initAppListContainer();
-            Me.msThemeManager.connect('clock-app-launcher-changed', () =>{
+            Me.msThemeManager.connect('clock-app-launcher-changed', () => {
                 this.appListContainer.destroy();
                 this.initAppListContainer();
             });
@@ -43,7 +43,6 @@ var MsApplicationLauncher = GObject.registerClass(
             this.connect('key-focus-out', () => {
                 //this._searchResults.highlightDefault(false);
             });
-
         }
 
         initAppListContainer() {
@@ -114,7 +113,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.currentButtonFocused = null;
             if (Me.msThemeManager.clockAppLauncher) {
                 this.clockLabel = new St.Label({
-                    style_class: 'headline-6 text-medium-emphasis margin-right-x2',
+                    style_class:
+                        'headline-6 text-medium-emphasis margin-right-x2',
                     y_align: Clutter.ActorAlign.CENTER,
                 });
                 this.dateLabel = new St.Label({
@@ -126,7 +126,9 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 });
                 this.clockBin.add_child(this.clockLabel);
                 this.clockBin.add_child(this.dateLabel);
-                this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
+                this._wallClock = new GnomeDesktop.WallClock({
+                    time_only: true,
+                });
                 const updateClock = () => {
                     this.clockLabel.text = this._wallClock.clock;
                     const date = new Date();
@@ -241,7 +243,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         case Clutter.KEY_Left:
                             if (
                                 this.currentButtonFocused !=
-                                this.filteredAppButtonListBuffer[0] &&
+                                    this.filteredAppButtonListBuffer[0] &&
                                 this.getCurrentIndex() > -1
                             ) {
                                 this.highlightPreviousButton();
@@ -280,13 +282,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
         get monitorScale() {
             return global.display.get_monitor_scale(
                 this.msWorkspace.monitor.index
-                );
+            );
         }
         get buttonSize() {
-            return (
-                BUTTON_SIZE *
-                this.monitorScale
-            );
+            return BUTTON_SIZE * this.monitorScale;
         }
         reset() {
             //Go back to the previous window if ESC is pressed and nothing is selected
@@ -294,7 +293,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 this.inputContainer.get_text() === '' &&
                 this.currentButtonFocused === null
             ) {
-                this.msWorkspace.focusPrevious();
+                this.msWorkspace.focusPrecedentTileable();
                 return;
             }
             if (this.inputContainer.get_text().length) {
@@ -312,29 +311,31 @@ var MsApplicationButtonContainer = GObject.registerClass(
         }
 
         updateFilteredAppButtonList() {
-            this.filteredAppButtonListBuffer = this.appButtonList.filter((button) => {
-                let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
-                let regex = new RegExp(this.inputContainer.get_text(), 'i');
-                if (regex.test(stringToSearch)) {
-                    button.visible = true;
-                    return true;
-                } else {
-                    button.visible = false;
-                    return false;
+            this.filteredAppButtonListBuffer = this.appButtonList.filter(
+                (button) => {
+                    let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
+                    let regex = new RegExp(this.inputContainer.get_text(), 'i');
+                    if (regex.test(stringToSearch)) {
+                        button.visible = true;
+                        return true;
+                    } else {
+                        button.visible = false;
+                        return false;
+                    }
                 }
-            });
+            );
             this.filteredAppButtonList = [];
             const maxButtons = this.numberOfColumn * this.numberOfRow;
             let index = 0;
             while (
                 index < maxButtons &&
                 index < this.filteredAppButtonListBuffer.length
-                ) {
-                    this.filteredAppButtonList.push(
-                        this.filteredAppButtonListBuffer[index]
-                    );
-                    index++;
-                }
+            ) {
+                this.filteredAppButtonList.push(
+                    this.filteredAppButtonListBuffer[index]
+                );
+                index++;
+            }
             this.startIndex = 0;
         }
 
@@ -369,7 +370,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 if (
                     this.filteredAppButtonListBuffer &&
                     this.filteredAppButtonListBuffer[showIndex]
-                ){
+                ) {
                     this.filteredAppButtonListBuffer[showIndex].visible = true;
                     this.filteredAppButtonList.push(
                         this.filteredAppButtonListBuffer[showIndex]
@@ -382,9 +383,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         scrollFilteredAppButtonListDown() {
             const maxColumns = this.numberOfColumn;
-            if (
-                this.startIndex - maxColumns < 0
-            ) {
+            if (this.startIndex - maxColumns < 0) {
                 return false;
             }
             let index = 0;
@@ -400,7 +399,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 if (
                     this.filteredAppButtonListBuffer &&
                     this.filteredAppButtonListBuffer[showIndex]
-                ){
+                ) {
                     this.filteredAppButtonListBuffer[showIndex].visible = true;
                     this.filteredAppButtonList.push(
                         this.filteredAppButtonListBuffer[showIndex]
@@ -559,9 +558,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             const numberOfButtons = this.filteredAppButtonList.length;
             this.numberOfColumn = Math.floor(availableWidth / this.buttonSize);
-            this.numberOfRow = Math.floor(
-                availableHeight / this.buttonSize
-            );
+            this.numberOfRow = Math.floor(availableHeight / this.buttonSize);
             const numberOfRowNeeded = Math.ceil(
                 numberOfButtons / this.numberOfColumn
             );
@@ -586,8 +583,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
             if (Me.msThemeManager.clockAppLauncher) {
                 const clockBox = new Clutter.ActorBox();
-                clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
-                clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
+                clockBox.x1 =
+                    contentBox.x1 + horizontalOffset + containerPadding;
+                clockBox.x2 =
+                    contentBox.x2 - horizontalOffset - containerPadding;
                 clockBox.y1 = contentBox.y1 + verticalOffset;
                 clockBox.y2 = clockBox.y1 + clockHeight;
                 Allocate(this.clockBin, clockBox, flags);
@@ -666,14 +665,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
         allocateButton(button, containerBox, containerPadding, x, y, flags) {
             const buttonBox = new Clutter.ActorBox();
             buttonBox.x1 =
-                containerBox.x1 +
-                this.buttonSize * x +
-                containerPadding;
+                containerBox.x1 + this.buttonSize * x + containerPadding;
             buttonBox.x2 = buttonBox.x1 + this.buttonSize;
             buttonBox.y1 =
-                containerBox.y1 +
-                this.buttonSize * y +
-                containerPadding;
+                containerBox.y1 + this.buttonSize * y + containerPadding;
             buttonBox.y2 = buttonBox.y1 + this.buttonSize;
             button.visible = true;
             Allocate(button, buttonBox, flags);
@@ -766,9 +761,7 @@ var MsApplicationButton = GObject.registerClass(
             let [stageX, stageY] = actor.get_transformed_position();
             let y = stageY + 18;
             let x =
-                stageX +
-                actor.get_width() / 2 -
-                this._tooltip.get_width() / 2;
+                stageX + actor.get_width() / 2 - this._tooltip.get_width() / 2;
             this._tooltip.set_position(x, y);
 
             this._tooltip.ease({
