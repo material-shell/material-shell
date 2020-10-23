@@ -435,16 +435,17 @@ MsApplicationLauncher {
     }
 }
 
-.application-launcher-tooltip {
-    @include foreground-high-emphasis($theme);
-    background: rgba(
-        getDarkerColor(getBackgroundColor($theme)),
-        $surface-opacity
+MatTooltip {
+    @include foreground-high-emphasis('dark');
+    background-color: getDarkerColor(
+        getDarkerColor(getBackgroundColor('dark'))
     );
-    border: 1px solid getForegroundColor($theme, 0.87);
     border-radius: 4px;
-    padding: 2px 8px;
-    text-align: center; }
+    padding: 0px 8px;
+    min-height: 24px;
+    @extend .caption;
+    text-align: center;
+}
 
 .surface {
     background: rgba(getBackgroundColor($theme), $surface-opacity);

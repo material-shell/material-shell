@@ -92,12 +92,14 @@ var MsApplicationLauncher = GObject.registerClass(
                 contentBox.get_width() * 0.8,
                 workArea.width / 2
             );
-            containerBox.x1 =
-                contentBox.x1 + (contentBox.get_width() - containerWidth) / 2;
-            containerBox.x2 =
-                contentBox.x2 - (contentBox.get_width() - containerWidth) / 2;
-            containerBox.y1 = contentBox.y1 + 0.1 * minSize;
-            containerBox.y2 = contentBox.y2 - 0.1 * minSize;
+            containerBox.x1 = Math.round(
+                contentBox.x1 + (contentBox.get_width() - containerWidth) / 2
+            );
+            containerBox.x2 = Math.round(
+                contentBox.x2 - (contentBox.get_width() - containerWidth) / 2
+            );
+            containerBox.y1 = Math.round(contentBox.y1 + 0.1 * minSize);
+            containerBox.y2 = Math.round(contentBox.y2 - 0.1 * minSize);
             Allocate(this.appListContainer, containerBox, flags);
         }
     }
@@ -622,14 +624,16 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         button = this.dummyButtonList[indexDummy];
                         indexDummy++;
                     }
-                    this.allocateButton(
-                        button,
-                        containerBox,
-                        containerPadding,
-                        x,
-                        y,
-                        flags
-                    );
+                    if (button) {
+                        this.allocateButton(
+                            button,
+                            containerBox,
+                            containerPadding,
+                            x,
+                            y,
+                            flags
+                        );
+                    }
                 }
             }
             if (index < numberOfButtons - 1) {
@@ -708,80 +712,14 @@ var MsApplicationButton = GObject.registerClass(
                     x_align: Clutter.ActorAlign.CENTER,
                     style_class: 'subtitle-2',
                     style: 'margin-top:12px',
-                    reactive: true,
-                    track_hover: true,
                 });
                 this.layout.add_child(this.icon);
                 this.layout.add_child(this.title);
-                this._showTooltipId = 0;
-                this._tooltip = null;
-                this.title.connect('notify::hover', () => {
-                    let isEllipsized = this.title
-                        .get_clutter_text()
-                        .get_layout()
-                        .is_ellipsized();
-                    if (isEllipsized) this._onTitleHover(this.title);
-                });
+
+                Me.tooltipManager.add(this.title, { relativeActor: this });
             }
             this.layout.set_style('padding:12px;');
             this.set_child(this.layout);
-        }
-
-        _onTitleHover(actor) {
-            if (actor.get_hover()) {
-                if (this._showTooltipId === 0) {
-                    this._showTooltipId = GLib.timeout_add(
-                        GLib.PRIORITY_DEFAULT,
-                        300,
-                        () => {
-                            this.showTooltip(actor);
-                            this._showTooltipId = 0;
-                            return GLib.SOURCE_REMOVE;
-                        }
-                    );
-                }
-            } else {
-                if (this._showTooltipId > 0) {
-                    GLib.source_remove(this._showTooltipId);
-                    this._showTooltipId = 0;
-                }
-                this.hideTooltip();
-            }
-        }
-        showTooltip(actor) {
-            this._tooltip = new St.Label({
-                style_class: 'application-launcher-tooltip',
-            });
-            this._tooltip.set_opacity(0);
-            this._tooltip.set_text(actor.get_text());
-
-            Main.layoutManager.addChrome(this._tooltip);
-
-            // Center tooltip, move 18px down
-            let [stageX, stageY] = actor.get_transformed_position();
-            let y = stageY + 18;
-            let x =
-                stageX + actor.get_width() / 2 - this._tooltip.get_width() / 2;
-            this._tooltip.set_position(x, y);
-
-            this._tooltip.ease({
-                opacity: 255,
-                duration: 500,
-                transition: 'easeInQuad',
-            });
-        }
-        hideTooltip() {
-            if (!this._tooltip) return;
-            this._tooltip.ease({
-                opacity: 0,
-                duration: 500,
-                transition: 'easeOutQuad',
-                onComplete: () => {
-                    Main.layoutManager.removeChrome(this._tooltip);
-                    this._tooltip.destroy();
-                    this._tooltip = null;
-                },
-            });
         }
     }
 );

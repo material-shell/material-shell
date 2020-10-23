@@ -16,6 +16,8 @@ const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
+const { TooltipManager } = Me.imports.src.manager.tooltipManager;
+
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
 let disableIncompatibleExtensionsModule,
@@ -62,6 +64,7 @@ function enable() {
         //Load persistent data
         Me.stateManager.loadRegistry(() => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
+            Me.tooltipManager = new TooltipManager();
             Me.tilingManager = new TilingManager();
             Me.msWindowManager = new MsWindowManager();
             Me.msWorkspaceManager = new MsWorkspaceManager();
