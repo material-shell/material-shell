@@ -23,6 +23,7 @@ var TaskBar = GObject.registerClass(
             super._init({
                 name: 'taskBar',
                 x_expand: true,
+                reactive: true,
             });
             this._delegate = this;
             this.taskActiveIndicator = new St.Widget({
@@ -46,6 +47,18 @@ var TaskBar = GObject.registerClass(
                     }
                 ),
             ];
+
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspace.focusNextTileable();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspace.focusPreviousTileable();
+
+                        break;
+                }
+            });
 
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;

@@ -11,7 +11,7 @@ const {
 const { OverrideModule } = Me.imports.src.module.overrideModule;
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-const { TilingManager } = Me.imports.src.manager.tilingManager;
+const { LayoutManager } = Me.imports.src.manager.layoutManager;
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
@@ -64,7 +64,7 @@ function enable() {
         //Load persistent data
         Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
-            Me.layoutManager = new TilingManager();
+            Me.layoutManager = new LayoutManager();
             Me.msWindowManager = new MsWindowManager();
             Me.msWorkspaceManager = new MsWorkspaceManager(
                 state['workspaces-state']

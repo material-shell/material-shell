@@ -25,6 +25,7 @@ var WorkspaceList = GObject.registerClass(
             super._init({
                 clip_to_allocation: true,
                 style_class: 'workspace-list',
+                reactive: true,
             });
             this._delegate = this;
 
@@ -92,6 +93,16 @@ var WorkspaceList = GObject.registerClass(
                     );
                 }
             );
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspaceManager.activatePreviousMsWorkspace();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspaceManager.activateNextMsWorkspace();
+                        break;
+                }
+            });
         }
 
         buildButtons() {

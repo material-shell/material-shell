@@ -701,4 +701,30 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(metaWindow.window_type);
     }
+
+    activateNextMsWorkspace() {
+        let currentIndex = this.workspaceManager.get_active_workspace_index();
+        if (currentIndex < this.workspaceManager.n_workspaces - 1) {
+            this.primaryMsWorkspaces[currentIndex + 1].activate();
+            return;
+        }
+
+        if (this.shouldCycleWorkspacesNavigation()) {
+            this.primaryMsWorkspaces[0].activate();
+        }
+    }
+
+    activatePreviousMsWorkspace() {
+        let currentIndex = this.workspaceManager.get_active_workspace_index();
+        if (currentIndex > 0) {
+            this.primaryMsWorkspaces[currentIndex - 1].activate();
+            return;
+        }
+
+        if (this.shouldCycleWorkspacesNavigation()) {
+            this.primaryMsWorkspaces[
+                this.workspaceManager.n_workspaces - 1
+            ].activate();
+        }
+    }
 };

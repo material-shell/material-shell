@@ -8,7 +8,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
-const { TilingLayoutByKey } = Me.imports.src.manager.tilingManager;
+const { TilingLayoutByKey } = Me.imports.src.manager.layoutManager;
 
 /* exported LayoutSwitcher */
 var LayoutSwitcher = GObject.registerClass(
@@ -30,6 +30,16 @@ var LayoutSwitcher = GObject.registerClass(
                 style_class: 'mat-panel-button',
                 can_focus: true,
                 track_hover: true,
+            });
+            this.switcherButton.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspace.nextLayout(1);
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspace.nextLayout(-1);
+                        break;
+                }
             });
             this.add_child(this.layoutQuickWidgetBin);
             this.add_child(this.switcherButton);

@@ -39,8 +39,8 @@ var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
     return layoutsByKey;
 }, {});
 
-/* exported TilingManager */
-var TilingManager = class TilingManager extends MsManager {
+/* exported LayoutManager */
+var LayoutManager = class LayoutManager extends MsManager {
     constructor() {
         super();
         this.workspaceManager = global.workspace_manager;
