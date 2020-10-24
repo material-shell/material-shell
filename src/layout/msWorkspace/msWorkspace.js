@@ -23,7 +23,6 @@ var MsWorkspace = class MsWorkspace {
     constructor(msWorkspaceManager, monitor, state = {}) {
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
-        Me.log(JSON.stringify(state));
         this._state = Object.assign(
             {
                 // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
@@ -97,6 +96,7 @@ var MsWorkspace = class MsWorkspace {
 
     set focusedIndex(index) {
         this._state.focusedIndex = index;
+        Me.stateManager.stateChanged();
     }
 
     get state() {
