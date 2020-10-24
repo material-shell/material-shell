@@ -22,8 +22,9 @@ var MatButton = GObject.registerClass(
             delete params.primary;
             const child = params.child;
             delete params.child;
-
             Object.assign(params, {
+                reactive: true,
+                track_hover: true,
                 clip_to_allocation: true,
             });
             super._init(params);
