@@ -583,7 +583,7 @@ var MsApplicationButtonContainer = GObject.registerClass(
                         clockHeight)) /
                 2;
 
-            if (Me.msThemeManager.clockAppLauncher) {
+            if (this.clockBin) {
                 const clockBox = new Clutter.ActorBox();
                 clockBox.x1 =
                     contentBox.x1 + horizontalOffset + containerPadding;
