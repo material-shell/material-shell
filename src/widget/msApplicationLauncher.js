@@ -12,7 +12,6 @@ const { MatButton } = Me.imports.src.widget.material.button;
 /* exported MsApplicationLauncher */
 
 const BUTTON_SIZE = 124;
-const MAX_DUMMY_LENGTH = 16;
 var MsApplicationLauncher = GObject.registerClass(
     {
         GTypeName: 'MsApplicationLauncher',
@@ -66,13 +65,6 @@ var MsApplicationLauncher = GObject.registerClass(
                 this.appListContainer.addAppButton(button);
             });
             this.appListContainer.initFilteredAppButtonList();
-            for (let i = 0; i < MAX_DUMMY_LENGTH; i++) {
-                const button = new MsApplicationButton(
-                    null,
-                    this.appListContainer.buttonSize
-                );
-                this.appListContainer.addDummyButton(button);
-            }
         }
 
         vfunc_allocate(box, flags) {
@@ -111,7 +103,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             super._init({});
             this.msWorkspace = msWorkspace;
             this.appButtonList = [];
-            this.dummyButtonList = [];
             this.currentButtonFocused = null;
             if (Me.msThemeManager.clockAppLauncher) {
                 this.clockLabel = new St.Label({
@@ -267,18 +258,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.container.add_style_class_name('surface');
             this.container.set_style('border-radius:16px;');
             this.add_child(this.container);
-            /* this.expandButton = new MatButton({
-                x_align: Clutter.ActorAlign.CENTER,
-                y_align: Clutter.ActorAlign.CENTER,
-                child: new St.Label({
-                    text: 'VIEW ALL APPLICATIONS',
-                    style_class: 'body-2',
-                }),
-            });
-            this.expandButton.add_style_class_name('surface-lighter');
-            this.expandButton.set_style('border-radius: 0,0 ,16px, 16px;');
-
-            this.add_child(this.expandButton); */
         }
 
         get monitorScale() {
@@ -531,11 +510,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
             this.add_child(button);
         }
 
-        addDummyButton(button) {
-            this.dummyButtonList.push(button);
-            this.add_child(button);
-        }
-
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
             if (!this.get_parent().visible) return;
@@ -613,26 +587,24 @@ var MsApplicationButtonContainer = GObject.registerClass(
             Allocate(this.container, containerBox, flags);
 
             let index;
-            let indexDummy = 0;
-            let button;
             for (let y = 0; y < this.numberOfRow; y++) {
                 for (let x = 0; x < this.numberOfColumn; x++) {
                     index = x + this.numberOfColumn * y;
-                    if (index < numberOfButtons) {
-                        button = this.filteredAppButtonList[index];
-                    } else {
-                        button = this.dummyButtonList[indexDummy];
-                        indexDummy++;
-                    }
-                    if (button) {
-                        this.allocateButton(
-                            button,
-                            containerBox,
-                            containerPadding,
-                            x,
-                            y,
-                            flags
-                        );
+                    if (index < this.filteredAppButtonList.length) {
+                        let button = this.filteredAppButtonList[index];
+                        const buttonBox = new Clutter.ActorBox();
+                        buttonBox.x1 =
+                            containerBox.x1 +
+                            this.buttonSize * x +
+                            containerPadding;
+                        buttonBox.x2 = buttonBox.x1 + this.buttonSize;
+                        buttonBox.y1 =
+                            containerBox.y1 +
+                            this.buttonSize * y +
+                            containerPadding;
+                        buttonBox.y2 = buttonBox.y1 + this.buttonSize;
+                        button.visible = true;
+                        Allocate(button, buttonBox, flags);
                     }
                 }
             }
@@ -651,31 +623,10 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     this.hideButton(button, contentBox, flags);
                 });
 
-            while (indexDummy < this.dummyButtonList.length) {
-                this.hideButton(
-                    this.dummyButtonList[indexDummy],
-                    containerBox,
-                    flags
-                );
-                indexDummy++;
-            }
-
             // Reset focused button to position zero if hidden
             if (this.currentButtonFocused) {
                 this.getCurrentIndex();
             }
-        }
-
-        allocateButton(button, containerBox, containerPadding, x, y, flags) {
-            const buttonBox = new Clutter.ActorBox();
-            buttonBox.x1 =
-                containerBox.x1 + this.buttonSize * x + containerPadding;
-            buttonBox.x2 = buttonBox.x1 + this.buttonSize;
-            buttonBox.y1 =
-                containerBox.y1 + this.buttonSize * y + containerPadding;
-            buttonBox.y2 = buttonBox.y1 + this.buttonSize;
-            button.visible = true;
-            Allocate(button, buttonBox, flags);
         }
 
         hideButton(button, contentBox, flags) {
@@ -695,9 +646,7 @@ var MsApplicationButton = GObject.registerClass(
         _init(app, buttonSize) {
             this.app = app;
             this.buttonSize = buttonSize;
-            super._init({
-                dummy: this.app ? false : true,
-            });
+            super._init({});
             this.layout = new St.BoxLayout({
                 vertical: true,
                 width: this.buttonSize,
