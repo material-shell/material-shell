@@ -35,4 +35,5 @@ var GridLayout = GObject.registerClass(
     }
 );
 
-GridLayout.key = 'grid';
+GridLayout.state = { key: 'grid' };
+GridLayout.label = 'Grid';

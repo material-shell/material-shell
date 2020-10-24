@@ -25,7 +25,7 @@ var RatioLayout = GObject.registerClass(
         }
 
         tile(box, index, last) {
-            const ratio = Me.tilingManager.ratio;
+            const ratio = Me.layoutManager.ratio;
             let areaBox = {
                 x: box.x1,
                 y: box.y1,
@@ -75,4 +75,5 @@ var RatioLayout = GObject.registerClass(
     }
 );
 
-RatioLayout.key = 'ratio';
+RatioLayout.state = { key: 'ratio' };
+RatioLayout.label = 'Ratio';

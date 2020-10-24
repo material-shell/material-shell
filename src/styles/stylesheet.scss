@@ -442,3 +442,144 @@ MsApplicationLauncher {
         $surface-opacity
     );
 }
+
+.popup-menu {
+    margin: 0;
+    -boxpointer-gap: 0px;
+    .popup-menu-content {
+        margin: 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        border-radius: 8px;
+    }
+    &.panel-menu {
+        .popup-menu-content {
+            margin-top: 20px; // space for shadow
+            border-radius: 0px 8px 8px 0px;
+            box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
+        }
+    }
+    &.horizontal-panel-menu {
+        .popup-menu-content {
+            margin-left: 20px; // space for shadow
+            border-radius: 0px 0px 8px 8px;
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+
+.popup-menu-boxpointer,
+.candidate-popup-boxpointer {
+    -arrow-border-radius: 0;
+    -arrow-border-width: 0px;
+    -arrow-border-color: transparent;
+    -arrow-base: 0px;
+    -arrow-rise: 0px;
+    -arrow-background-color: transparent;
+}
+
+// If there is no custom theme loaded we can override adwaita to provide better material theme
+.no-theme {
+    .popup-menu {
+        .popup-menu-content {
+            background: getDarkerColor(getBackgroundColor('dark'));
+
+            .popup-menu-item {
+                font-weight: 400;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                @extend .body-2;
+                .popup-menu-icon {
+                    icon-size: 20px;
+                    margin-right: 10px;
+                    @include foreground-medium-emphasis('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    padding-top: 1.5px;
+                    @include foreground-high-emphasis('dark');
+                }
+                &.selected {
+                    @extend .surface;
+                }
+            }
+            .popup-separator-menu-item {
+                padding: 0;
+                spacing: 0px;
+                .popup-separator-menu-item-separator {
+                    margin: 8px 0px;
+                    padding: 0;
+                    @include hover('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    margin: 8px 10px;
+                    @include foreground-disabled('dark');
+                }
+                .popup-menu-ornament {
+                    width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            .popup-sub-menu {
+                background: rgba(0, 0, 0, 0.12);
+                box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+            }
+            .popup-submenu-menu-item:open {
+                @extend .surface-lighter;
+            }
+        }
+    }
+    #calendarArea {
+        .calendar,
+        .message,
+        .events-button,
+        .world-clocks-button,
+        .weather-button,
+        .events-section-title {
+            background: getLighterColor(getBackgroundColor('dark'));
+            border: 0px;
+        }
+    }
+}
+
+LayoutSwitcher {
+    & > StBin {
+        padding: 8px 0;
+        margin-right: 8px;
+    }
+}
+
+MatNumberPicker {
+    background: getDarkerColor(getBackgroundColor($theme));
+    //This is a hack because percentage is not handled yet
+    border-radius: 10000px;
+    StButton {
+        background: getLighterColor(getBackgroundColor($theme));
+        width: 32px;
+        StIcon {
+            margin: 8px;
+        }
+        &:first-child {
+            border-radius: 32px 0 0 32px;
+        }
+        &:last-child {
+            border-radius: 0 32px 32px 0;
+        }
+        &:hover {
+            background: getLighterColor(
+                getLighterColor(getBackgroundColor($theme))
+            );
+        }
+        &:active {
+            background: getLighterColor(
+                getLighterColor(getLighterColor(getBackgroundColor($theme)))
+            );
+        }
+    }
+    StLabel {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+}

@@ -19,10 +19,11 @@ let dragData = null;
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(msWorkspace) {
+        _init(msWorkspace, panelMenuManager) {
             super._init({
                 name: 'taskBar',
                 x_expand: true,
+                reactive: true,
             });
             this._delegate = this;
             this.taskActiveIndicator = new St.Widget({
@@ -47,10 +48,22 @@ var TaskBar = GObject.registerClass(
                 ),
             ];
 
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspace.focusNextTileable();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspace.focusPreviousTileable();
+
+                        break;
+                }
+            });
+
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menuManager = panelMenuManager;
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -347,7 +360,7 @@ var TaskBar = GObject.registerClass(
     }
 );
 
-let TaskBarItem = GObject.registerClass(
+var TaskBarItem = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
@@ -521,6 +534,7 @@ let TileableItem = GObject.registerClass(
                 });
             }
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.menu.actor.add_style_class_name('horizontal-panel-menu');
             /* this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
             ); */

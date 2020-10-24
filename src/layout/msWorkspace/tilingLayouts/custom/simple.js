@@ -51,4 +51,5 @@ var SimpleLayout = GObject.registerClass(
     }
 );
 
-SimpleLayout.key = 'simple';
+SimpleLayout.state = { key: 'simple' };
+SimpleLayout.label = 'Simple';
