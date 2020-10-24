@@ -445,45 +445,24 @@ MsApplicationLauncher {
 
 .popup-menu {
     margin: 0;
-    -boxpointer-gap: 0px;
-    .popup-menu-content {
-        margin: 0;
-        padding-top: 8px;
-        padding-bottom: 8px;
-        border-radius: 8px;
-    }
-    &.panel-menu {
-        .popup-menu-content {
-            margin-top: 20px; // space for shadow
-            border-radius: 0px 8px 8px 0px;
-            box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
-        }
-    }
-    &.horizontal-panel-menu {
-        .popup-menu-content {
-            margin-left: 20px; // space for shadow
-            border-radius: 0px 0px 8px 8px;
-            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
-        }
-    }
 }
-
-.popup-menu-boxpointer,
-.candidate-popup-boxpointer {
-    -arrow-border-radius: 0;
-    -arrow-border-width: 0px;
-    -arrow-border-color: transparent;
-    -arrow-base: 0px;
-    -arrow-rise: 0px;
-    -arrow-background-color: transparent;
-}
-
 // If there is no custom theme loaded we can override adwaita to provide better material theme
 .no-theme {
     .popup-menu {
+        margin: 0;
+        -boxpointer-gap: 0px;
+        -arrow-border-radius: 0;
+        -arrow-border-width: 0px;
+        -arrow-border-color: transparent;
+        -arrow-base: 0px;
+        -arrow-rise: 0px;
+        -arrow-background-color: transparent;
         .popup-menu-content {
             background: getDarkerColor(getBackgroundColor('dark'));
-
+            margin: 0;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 8px;
             .popup-menu-item {
                 font-weight: 400;
                 padding-top: 10px;
@@ -528,6 +507,24 @@ MsApplicationLauncher {
             }
             .popup-submenu-menu-item:open {
                 @extend .surface-lighter;
+            }
+        }
+        &.panel-menu {
+            border-radius: 0px 8px 8px 0px;
+
+            .popup-menu-content {
+                margin-top: 20px; // space for shadow
+                border-radius: 0px 8px 8px 0px;
+                box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+        &.horizontal-panel-menu {
+            border-radius: 0px 0px 8px 8px;
+
+            .popup-menu-content {
+                margin-left: 20px; // space for shadow
+                border-radius: 0px 0px 8px 8px;
+                box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
             }
         }
     }
