@@ -30,6 +30,8 @@ var TaskBar = GObject.registerClass(
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
+            this.taskActiveIndicatorWaitId = 0;
+            this.taskActiveIndicatorAnimateId = 0;
             this.taskButtonContainer = new Clutter.Actor({
                 layout_manager: new Clutter.BoxLayout(),
             });
@@ -64,13 +66,17 @@ var TaskBar = GObject.registerClass(
             this.windowFocused = null;
             this.items = [];
             this.menuManager = panelMenuManager;
-            this.updateItems();
-            this._animateActiveIndicator();
+            this.onTileableListChange();
         }
 
+        // Avoid problems with animation, see below
         onTileableListChange() {
             this.updateItems();
             this._animateActiveIndicator();
+            if (this.items[this.msWorkspace.focusedIndex])
+                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
+                    'active'
+            );
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
@@ -92,7 +98,6 @@ var TaskBar = GObject.registerClass(
             if (!nextItem) return;
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
-
             this._animateActiveIndicator();
             nextItem.setActive(true);
         }
@@ -105,7 +110,7 @@ var TaskBar = GObject.registerClass(
                         const item = new TileableItem(tileable);
                         this.menuManager.addMenu(item.menu);
                         item.connect('left-clicked', (_) => {
-                            this.msWorkspace.focusTileable(tileable);
+                            this.msWorkspace.focusTileable(tileable, true);
                         });
                         item.connect('middle-clicked', (_) => {
                             tileable.kill();
@@ -179,10 +184,7 @@ var TaskBar = GObject.registerClass(
 
                         item.connect('drag-dropped', this.reparentDragItem);
                         item.connect('notify::width', () => {
-                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                this._animateActiveIndicator();
-                                return GLib.SOURCE_REMOVE;
-                            });
+                            this._animateActiveIndicator();
                         });
                         this.taskButtonContainer.add_child(item);
                         return item;
@@ -196,15 +198,15 @@ var TaskBar = GObject.registerClass(
                         item.connect('left-clicked', (_) => {
                             this.msWorkspace.focusTileable(tileable);
                         });
+                        // Needed to properly activate it if it is the only item
+                        item.connect('notify::width', () => {
+                            this._animateActiveIndicator();
+                        });
                         this.taskButtonContainer.add_child(item);
                         return item;
                     }
                 }
             );
-            if (this.items[this.msWorkspace.focusedIndex])
-                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
-                    'active'
-                );
         }
 
         updateCurrentTaskBar() {
@@ -297,33 +299,83 @@ var TaskBar = GObject.registerClass(
             let taskBarItem = this.getTaskBarItemOfTileable(
                 this.msWorkspace.tileableFocused
             );
+
             if (
-                this.taskBarItemSignal &&
-                this.items.includes(this.taskBarItemSignal.from)
+                !taskBarItem ||
+                !this.taskActiveIndicator.visible ||
+                !this.mapped
             ) {
-                this.taskBarItemSignal.from.disconnect(
-                    this.taskBarItemSignal.id
-                );
-            }
-            if (!taskBarItem) {
                 return;
             }
 
-            if (!this.mapped) return;
-            if (!this.taskActiveIndicator.width) {
+            if (this.taskActiveIndicator.width < 1) {
                 this.taskActiveIndicator.scale_x = 1;
-                this.taskActiveIndicator.width = taskBarItem.width;
+                if (taskBarItem.width < 1) {
+                    // Postpone if taskBarItem was not mapped yet
+                    this.taskActiveIndicatorWaitId = GLib.timeout_add(
+                        GLib.PRIORITY_DEFAULT,
+                        50,
+                        () => {
+                            this.taskActiveIndicatorWaitId = 0;
+                            this._animateActiveIndicator();
+                            return GLib.SOURCE_REMOVE;
+                        }
+                    );
+                } else {
+                    this.taskActiveIndicator.width = taskBarItem.width;
+                }
+            }
+            if (
+                this.taskActiveIndicatorWaitId > 0 ||
+                this.taskActiveIndicatorAnimateId > 0
+            ) {
+                return;
             } else {
-                this.taskActiveIndicator.ease({
-                    translation_x: taskBarItem.x,
-                    scale_x: taskBarItem.width / this.taskActiveIndicator.width,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.taskActiveIndicator.scale_x = 1;
-                        this.taskActiveIndicator.width = taskBarItem.width;
-                    },
-                });
+                let counter = 0;
+                this.taskActiveIndicatorAnimateId = GLib.timeout_add(
+                    GLib.PRIORITY_HIGH_IDLE,
+                    50,
+                    () => {
+                        // Make sure it is the correct item
+                        const taskBarItem = this.getTaskBarItemOfTileable(
+                            this.msWorkspace.tileableFocused
+                        );
+                        let notReady = false;
+                        this.items.forEach((item, i) => {
+                            if (
+                                !item ||
+                                item.width < 1 ||
+                                (item.x < 1 && i > 0)
+                            ) {
+                                notReady = true;
+                            }
+                        });
+                        if (notReady && counter < 20) {
+                            // Try again
+                            counter++;
+                            return GLib.SOURCE_CONTINUE;
+                        } else if (!taskBarItem || counter > 19) {
+                            // Abort
+                            this.taskActiveIndicatorAnimateId = 0;
+                            return GLib.SOURCE_REMOVE;
+                        }
+                        this.taskActiveIndicator.ease({
+                            translation_x: taskBarItem.x,
+                            scale_x:
+                                taskBarItem.width /
+                                this.taskActiveIndicator.width,
+                            duration: 250,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            onComplete: () => {
+                                this.taskActiveIndicator.scale_x = 1;
+                                this.taskActiveIndicator.width =
+                                    taskBarItem.width;
+                            },
+                        });
+                        this.taskActiveIndicatorAnimateId = 0;
+                        return GLib.SOURCE_REMOVE;
+                    }
+                );
             }
         }
 
@@ -356,6 +408,14 @@ var TaskBar = GObject.registerClass(
             this.msWorkspaceSignals.forEach((signal) =>
                 this.msWorkspace.disconnect(signal)
             );
+            if (this.taskActiveIndicatorWaitId) {
+                GLib.source_remove(this.taskActiveIndicatorWaitId);
+                delete this.taskActiveIndicatorWaitId;
+            }
+            if (this.taskActiveIndicatorAnimateId) {
+                GLib.source_remove(this.taskActiveIndicatorAnimateId);
+                delete this.taskActiveIndicatorAnimateId;
+            }
         }
     }
 );
