@@ -5,8 +5,7 @@ const Util = imports.misc.util;
 
 var updateTitleBarVisibility = function (metaWindow) {
     let msWorkspaceIsInFloatLayout =
-        metaWindow.msWindow.msWorkspace.tilingLayout.constructor.key ===
-        'float';
+        metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
     let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
     if (
         !metaWindow.titleBarVisible ||

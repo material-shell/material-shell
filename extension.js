@@ -11,7 +11,7 @@ const {
 const { OverrideModule } = Me.imports.src.module.overrideModule;
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-const { TilingManager } = Me.imports.src.manager.tilingManager;
+const { LayoutManager } = Me.imports.src.manager.layoutManager;
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
@@ -20,6 +20,8 @@ const { TooltipManager } = Me.imports.src.manager.tooltipManager;
 
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
+const { getSettings } = Me.imports.src.utils.settings;
+
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
@@ -62,19 +64,23 @@ function enable() {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         //Load persistent data
-        Me.stateManager.loadRegistry(() => {
+        Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
             Me.tooltipManager = new TooltipManager();
-            Me.tilingManager = new TilingManager();
+            Me.layoutManager = new LayoutManager();
             Me.msWindowManager = new MsWindowManager();
-            Me.msWorkspaceManager = new MsWorkspaceManager();
+            Me.msWorkspaceManager = new MsWorkspaceManager(
+                state['workspaces-state']
+            );
             Me.msNotificationManager = new MsNotificationManager();
             modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();
             }
-            Me.msWorkspaceManager.restorePreviousState();
+            if (getSettings('tweaks').get_boolean('enable-persistence')) {
+                Me.msWorkspaceManager.restorePreviousState();
+            }
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
@@ -126,7 +132,7 @@ function disable() {
     modules.reverse().forEach((module) => {
         module.destroy();
     });
-    Me.tilingManager.destroy();
+    Me.layoutManager.destroy();
     Me.msWorkspaceManager.destroy();
     Me.msWindowManager.destroy();
 

@@ -16,4 +16,5 @@ var HalfHorizontalLayout = GObject.registerClass(
     }
 );
 
-HalfHorizontalLayout.key = 'half-horizontal';
+HalfHorizontalLayout.state = { key: 'half-horizontal' };
+HalfHorizontalLayout.label = 'Half horizontal';

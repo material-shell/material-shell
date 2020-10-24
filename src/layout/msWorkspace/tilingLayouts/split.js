@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { GObject } = imports.gi;
+const { GObject, St } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -7,16 +7,16 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
 
 // TODO: Make this configurable
-const WINDOW_PER_SCREEN = 2;
 const WINDOW_SLIDE_TWEEN_TIME = 250;
 
 /* exported SplitLayout */
 var SplitLayout = GObject.registerClass(
     class SplitLayout extends BaseTilingLayout {
-        _init(msWorkspace) {
-            super._init(msWorkspace);
+        _init(msWorkspace, state) {
+            super._init(msWorkspace, state);
             this.updateActiveTileableListFromFocused();
             this.vertical = this.monitor.width < this.monitor.height;
             this.translationAnimator = new TranslationAnimator();
@@ -41,12 +41,14 @@ var SplitLayout = GObject.registerClass(
                 0,
                 Math.min(
                     this.msWorkspace.focusedIndex,
-                    this.msWorkspace.tileableList.length - WINDOW_PER_SCREEN - 1
+                    this.msWorkspace.tileableList.length -
+                        this.state.nbOfColumns -
+                        1
                 )
             );
             this.activeTileableList = this.msWorkspace.tileableList.slice(
                 this.baseIndex,
-                this.baseIndex + WINDOW_PER_SCREEN
+                this.baseIndex + this.state.nbOfColumns
             );
         }
 
@@ -82,13 +84,13 @@ var SplitLayout = GObject.registerClass(
             const oldTileableList = this.activeTileableList;
             if (oldIndex < newIndex) {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
-                    newIndex - WINDOW_PER_SCREEN + 1,
+                    newIndex - this.state.nbOfColumns + 1,
                     newIndex + 1
                 );
             } else {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
                     newIndex,
-                    newIndex + WINDOW_PER_SCREEN
+                    newIndex + this.state.nbOfColumns
                 );
             }
             this.baseIndex = this.msWorkspace.tileableList.indexOf(
@@ -129,43 +131,43 @@ var SplitLayout = GObject.registerClass(
                 tileable.y = box.y1;
                 tileable.width = box.get_width();
                 tileable.height = box.get_height();
-           } else {
-               let x, y, width, height;
-               let verticalPortion = this.vertical
-                   ? box.get_height() / WINDOW_PER_SCREEN
-                   : box.get_height();
-               let horizontalPortion = this.vertical
-                   ? box.get_width()
-                   : box.get_width() / WINDOW_PER_SCREEN;
-               if (this.activeTileableList.includes(tileable)) {
-                   let activeIndex = this.activeTileableList.indexOf(tileable);
-                   if (this.vertical) {
-                       x = box.x1;
-                       y = box.y1 + activeIndex * verticalPortion;
-                   } else {
-                       x = box.x1 + activeIndex * horizontalPortion;
-                       y = box.y1;
-                   }
-               } else {
-                   x = box.x1;
-                   y = box.y1;
-               }
+            } else {
+                let x, y, width, height;
+                let verticalPortion = this.vertical
+                    ? box.get_height() / this.state.nbOfColumns
+                    : box.get_height();
+                let horizontalPortion = this.vertical
+                    ? box.get_width()
+                    : box.get_width() / this.state.nbOfColumns;
+                if (this.activeTileableList.includes(tileable)) {
+                    let activeIndex = this.activeTileableList.indexOf(tileable);
+                    if (this.vertical) {
+                        x = box.x1;
+                        y = box.y1 + activeIndex * verticalPortion;
+                    } else {
+                        x = box.x1 + activeIndex * horizontalPortion;
+                        y = box.y1;
+                    }
+                } else {
+                    x = box.x1;
+                    y = box.y1;
+                }
 
-               width = horizontalPortion;
-               height = verticalPortion;
+                width = horizontalPortion;
+                height = verticalPortion;
 
-               let {
-                   x: gapX,
-                   y: gapY,
-                   width: gapWidth,
-                   height: gapHeight,
-               } = this.applyGaps(x, y, width, height);
+                let {
+                    x: gapX,
+                    y: gapY,
+                    width: gapWidth,
+                    height: gapHeight,
+                } = this.applyGaps(x, y, width, height);
 
-               tileable.x = gapX;
-               tileable.y = gapY;
-               tileable.width = gapWidth;
-               tileable.height = gapHeight;
-           }
+                tileable.x = gapX;
+                tileable.y = gapY;
+                tileable.width = gapWidth;
+                tileable.height = gapHeight;
+            }
         }
 
         /*
@@ -195,12 +197,12 @@ var SplitLayout = GObject.registerClass(
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height() /
-                            WINDOW_PER_SCREEN
+                            this.state.nbOfColumns
                     );
                 } else {
                     actor.set_width(
                         this.tileableContainer.allocation.get_width() /
-                            WINDOW_PER_SCREEN
+                            this.state.nbOfColumns
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
@@ -218,7 +220,19 @@ var SplitLayout = GObject.registerClass(
             this.tileableContainer.remove_child(this.translationAnimator);
             this.refreshVisibleActors();
         }
+
+        buildQuickWidget() {
+            const widget = new MatNumberPicker(this.state.nbOfColumns, {
+                min: 2,
+            });
+            widget.connect('changed', (_, newValue) => {
+                this.state.nbOfColumns = newValue;
+                this.tileAll();
+            });
+            return widget;
+        }
     }
 );
 
-SplitLayout.key = 'split';
+SplitLayout.state = { key: 'split', nbOfColumns: 2 };
+SplitLayout.label = 'Split';

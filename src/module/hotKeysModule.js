@@ -65,34 +65,12 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.PREVIOUS_WORKSPACE,
             () => {
-                let currentIndex = this.workspaceManager.get_active_workspace_index();
-                if (currentIndex > 0) {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        currentIndex - 1
-                    ].activate();
-                    return;
-                }
-
-                if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        this.workspaceManager.n_workspaces - 1
-                    ].activate();
-                }
+                Me.msWorkspaceManager.activatePreviousMsWorkspace();
             }
         );
 
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WORKSPACE, () => {
-            let currentIndex = this.workspaceManager.get_active_workspace_index();
-            if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    currentIndex + 1
-                ].activate();
-                return;
-            }
-
-            if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
-            }
+            Me.msWorkspaceManager.activateNextMsWorkspace();
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
@@ -153,8 +131,13 @@ var HotKeysModule = class HotKeysModule {
                         nextMsWorkspace
                     );
 
-                    if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                    if (
+                        !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
+                    ) {
+                        Me.msWorkspaceManager.setMsWorkspaceAt(
+                            nextMsWorkspace,
+                            0
+                        );
                     }
 
                     nextMsWorkspace.activate();
@@ -194,15 +177,21 @@ var HotKeysModule = class HotKeysModule {
                     ]
                 ) {
                     if (activeMsWorkspace.msWindowList.length === 1) {
-                        if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                            const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+                        if (
+                            Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
+                        ) {
+                            const nextMsWorkspace =
+                                Me.msWorkspaceManager.msWorkspaceList[0];
 
                             Me.msWorkspaceManager.setWindowToMsWorkspace(
                                 activeMsWorkspace.tileableFocused,
                                 nextMsWorkspace
                             );
 
-                            Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                            Me.msWorkspaceManager.setMsWorkspaceAt(
+                                nextMsWorkspace,
+                                0
+                            );
                             nextMsWorkspace.activate();
                         }
                         return;
@@ -229,14 +218,14 @@ var HotKeysModule = class HotKeysModule {
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                msWorkspace.nextTiling(1);
+                msWorkspace.nextLayout(1);
             }
         );
         this.actionNameToActionMap.set(
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                msWorkspace.nextTiling(-1);
+                msWorkspace.nextLayout(-1);
             }
         );
 
@@ -306,10 +295,10 @@ var HotKeysModule = class HotKeysModule {
     }
 
     destroy() {
-        this.actionIdToNameMap.forEach(key => {
-                Main.wm.removeKeybinding(key);
-                this.actionIdToNameMap.delete(key);
-            });
+        this.actionIdToNameMap.forEach((key) => {
+            Main.wm.removeKeybinding(key);
+            this.actionIdToNameMap.delete(key);
+        });
         if (this.connectId) {
             global.window_manager.disconnect(this.connectId);
         }
