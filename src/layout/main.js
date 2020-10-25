@@ -182,9 +182,8 @@ var MsMain = GObject.registerClass(
                             this.monitorsContainer.push(container);
                             this.add_child(container);
                         }
-                    }
-                    // if there are less external monitors
-                    else if (externalMonitorsDiff < 0) {
+                        // if there are less external monitors
+                    } else if (externalMonitorsDiff < 0) {
                         for (
                             let i = 0;
                             i < Math.abs(externalMonitorsDiff);
@@ -224,7 +223,7 @@ var MsMain = GObject.registerClass(
             });
         }
 
-        onSwitchWorkspace(from, to) {
+        onSwitchWorkspace(_from, _to) {
             this.onMsWorkspacesChanged();
         }
 
@@ -284,6 +283,7 @@ var MsMain = GObject.registerClass(
             Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
 
+        // eslint-disable-next-line camelcase
         add_child(actor) {
             super.add_child(actor);
             this.set_child_above_sibling(this.aboveContainer, null);

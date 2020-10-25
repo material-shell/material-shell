@@ -36,13 +36,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(
             global.display,
             'window-demands-attention',
-            (_, metaWindow) => {}
+            (_, _metaWindow) => {}
         );
 
         this.observe(
             global.display,
             'window-marked-urgent',
-            (_, metaWindow) => {}
+            (_, _metaWindow) => {}
         );
     }
 
@@ -72,9 +72,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     onNewMetaWindow(metaWindow) {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
-        metaWindow.get_compositor_private().connect('first-frame', (params) => {
-            metaWindow.firstFrameDrawn = true;
-        });
+        metaWindow
+            .get_compositor_private()
+            .connect('first-frame', (_params) => {
+                metaWindow.firstFrameDrawn = true;
+            });
 
         if (!this._handleWindow(metaWindow)) {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */

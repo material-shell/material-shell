@@ -102,7 +102,7 @@ var MsWindow = GObject.registerClass(
 
         set persistent(boolean) {
             this._persistent = boolean;
-            Me.logFocus('[DEBUG]', `stateChanged from set Persistent`);
+            Me.logFocus('[DEBUG]', 'stateChanged from set Persistent');
             Me.stateManager.stateChanged();
         }
 
@@ -210,11 +210,13 @@ var MsWindow = GObject.registerClass(
             });
         }
 
+        // eslint-disable-next-line camelcase
         set_position(x, y) {
             if (this.followMetaWindow) return;
             super.set_position(x, y);
         }
 
+        // eslint-disable-next-line camelcase
         set_size(width, height) {
             if (this.followMetaWindow) return;
             super.set_size(width, height);

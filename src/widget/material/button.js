@@ -98,6 +98,7 @@ var MatButton = GObject.registerClass(
             }
         }
 
+        // eslint-disable-next-line camelcase
         set_child(child) {
             if (!child) return;
             if (this.child) {

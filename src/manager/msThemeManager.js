@@ -182,7 +182,7 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     async writeContentToFile(content, file) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _) => {
             const contentBytes = new GLib.Bytes(content);
             file.replace_async(
                 null,

@@ -47,7 +47,7 @@ var LayoutSwitcher = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             this.menuManager = panelMenuManager;
 
-            this.switcherButton.connect('clicked', (actor, button) => {
+            this.switcherButton.connect('clicked', (_actor, _button) => {
                 // Go in reverse direction on right click (button: 3)
                 //msWorkspace.nextLayout(button === 3 ? -1 : 1);
                 this.menu.toggle();
@@ -269,7 +269,7 @@ var LayoutsToggle = GObject.registerClass(
             this.editable = false;
         }
 
-        activate(event) {
+        activate(_event) {
             this.toggleEditMode();
         }
 

@@ -196,7 +196,7 @@ var WorkspaceList = GObject.registerClass(
             });
         }
 
-        handleDragOver(source, actor, x, y) {
+        handleDragOver(source, _actor, _x, _y) {
             if (source instanceof WorkspaceButton) {
                 // Needed for dragging over tasks
                 if (!this.tempDragData.draggedOverByChild) {
@@ -599,7 +599,7 @@ var WorkspaceButton = GObject.registerClass(
                             tileable,
                             this.msWorkspace
                         );
-                        Me.logFocus('[DEBUG]', `stateChanged from acceptDrop`);
+                        Me.logFocus('[DEBUG]', 'stateChanged from acceptDrop');
                         this.msWorkspaceManager.stateChanged();
                         this.msWorkspace.activate();
                     })();
@@ -614,7 +614,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the parent width
          */
-        vfunc_get_preferred_width(forHeight) {
+        vfunc_get_preferred_width(_forHeight) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -624,7 +624,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the child height
          */
-        vfunc_get_preferred_height(forWidth) {
+        vfunc_get_preferred_height(_forWidth) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
