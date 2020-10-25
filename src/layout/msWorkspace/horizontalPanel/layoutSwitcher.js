@@ -128,17 +128,19 @@ var LayoutSwitcher = GObject.registerClass(
         }
 
         removeLayout(layoutKey) {
+            Me.logFocus('removeLayout');
             if (this.msWorkspace.state.layoutStateList.length === 1)
                 return false;
             if (
-                !this.msWorkspace.state.layoutStateList.find(
+                this.msWorkspace.state.layoutStateList.find(
                     (layoutState) => layoutState.key === layoutKey
-                ) != null
+                ) === null
             )
                 return true;
             const index = this.msWorkspace.state.layoutStateList.findIndex(
                 (layoutState) => layoutState.key === layoutKey
             );
+            Me.logFocus('index to remove', index);
             this.msWorkspace.state.layoutStateList.splice(index, 1);
             Me.stateManager.stateChanged();
 
