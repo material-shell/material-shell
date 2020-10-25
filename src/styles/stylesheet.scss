@@ -147,8 +147,16 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     @include foreground-as-background($theme, 0.38);
 }
 
+.text-high-emphasis {
+    @include foreground-high-emphasis($theme);
+}
+
 .text-medium-emphasis {
     @include foreground-medium-emphasis($theme);
+}
+
+.text-disabled {
+    @include foreground-disabled($theme);
 }
 
 .workspace-active-indicator {
@@ -444,7 +452,7 @@ MsApplicationLauncher {
 }
 
 .popup-menu {
-    margin: 0;
+    margin-bottom: 0;
 }
 // If there is no custom theme loaded we can override adwaita to provide better material theme
 .no-theme {

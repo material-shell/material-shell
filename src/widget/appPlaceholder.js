@@ -32,7 +32,7 @@ var AppPlaceholder = GObject.registerClass(
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),
-                style_class: 'headline-4',
+                style_class: 'headline-4 text-high-emphasis',
             });
 
             this.callToAction = new St.Label({

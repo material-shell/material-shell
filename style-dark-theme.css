@@ -105,8 +105,14 @@ subtitle-1 {
 .margin-left-x3 {
   margin-left: 24px !important; }
 
+.text-high-emphasis {
+  color: rgba(255, 255, 255, 0.87); }
+
 .text-medium-emphasis {
   color: rgba(255, 255, 255, 0.6); }
+
+.text-disabled {
+  color: rgba(255, 255, 255, 0.38); }
 
 .workspace-active-indicator {
   background: #3f51b5;
@@ -277,7 +283,7 @@ MsApplicationLauncher .search-entry {
   background: rgba(18, 18, 18, 0.987); }
 
 .popup-menu {
-  margin: 0; }
+  margin-bottom: 0; }
 
 .no-theme .popup-menu {
   margin: 0;

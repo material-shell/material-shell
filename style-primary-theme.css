@@ -105,11 +105,23 @@ subtitle-1 {
 .margin-left-x3 {
   margin-left: 24px !important; }
 
+.light-primary.text-high-emphasis {
+  color: rgba(0, 0, 0, 0.87); }
+
+.dark-primary.text-high-emphasis {
+  color: rgba(255, 255, 255, 0.87); }
+
 .light-primary.text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
 
 .dark-primary.text-medium-emphasis {
   color: rgba(255, 255, 255, 0.6); }
+
+.light-primary.text-disabled {
+  color: rgba(0, 0, 0, 0.38); }
+
+.dark-primary.text-disabled {
+  color: rgba(255, 255, 255, 0.38); }
 
 .workspace-active-indicator {
   width: 3px; }
@@ -336,7 +348,7 @@ MsApplicationLauncher .search-entry {
   background: rgba(44, 57, 127, 0.987); }
 
 .popup-menu {
-  margin: 0; }
+  margin-bottom: 0; }
 
 .no-theme .popup-menu {
   margin: 0;
