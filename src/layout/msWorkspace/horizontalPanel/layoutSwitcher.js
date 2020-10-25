@@ -145,14 +145,14 @@ var LayoutSwitcher = GObject.registerClass(
             return true;
         }
 
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(...args) {
             if (
                 this.tilingIcon &&
                 this.tilingIcon.get_icon_size() != box.get_height() / 2
             ) {
                 this.tilingIcon.set_icon_size(box.get_height() / 2);
             }
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
     }
 );

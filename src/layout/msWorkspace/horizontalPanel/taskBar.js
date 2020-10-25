@@ -692,11 +692,11 @@ let TileableItem = GObject.registerClass(
                 this.title.text = this.app.get_name();
             }
         }
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(...args) {
             if (!this.icon || this.lastHeight != box.get_height()) {
                 this.buildIcon(box.get_height());
             }
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
         _onDestroy() {
             this.signalManager.destroy();
@@ -729,14 +729,14 @@ let IconTaskBarItem = GObject.registerClass(
             return [_forHeight, _forHeight];
         }
 
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(...args) {
             if (
                 this.icon &&
                 this.icon.get_icon_size() != box.get_height() / 2
             ) {
                 this.icon.set_icon_size(box.get_height() / 2);
             }
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
     }
 );

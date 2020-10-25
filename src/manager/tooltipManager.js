@@ -117,7 +117,7 @@ var MatTooltip = GObject.registerClass(
                 },
             });
         }
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(...args) {
             const relativeActor = this.params.relativeActor || this.sourceActor;
             let [stageX, stageY] = relativeActor.get_transformed_position();
             let x, y;
@@ -156,7 +156,7 @@ var MatTooltip = GObject.registerClass(
                 Math.max(Math.round(x + this.params.offsetX), 0),
                 Math.max(Math.round(y + this.params.offsetY), 0)
             );
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
     }
 );
