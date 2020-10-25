@@ -627,7 +627,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 currentWindowWorkspace.index()
             ];
         }
-        this.setWindowToMsWorkspace(msWindow, msWorkspace);
+        this.setWindowToMsWorkspace(msWindow, msWorkspace, true);
         Me.logFocus(
             '[DEBUG]',
             `stateChanged from addWindowToAppropriateMsWorkspace`
@@ -686,7 +686,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
-    setWindowToMsWorkspace(msWindow, newMsWorkspace) {
+    setWindowToMsWorkspace(msWindow, newMsWorkspace, insert = false) {
         let oldMsWorkspace = msWindow.msWorkspace;
 
         if (oldMsWorkspace) {
@@ -697,7 +697,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             }
         }
 
-        newMsWorkspace.addMsWindow(msWindow, true);
+        newMsWorkspace.addMsWindow(msWindow, true, insert);
         Me.logFocus('[DEBUG]', `stateChanged from setWindowToMsWorkspace`);
         this.stateChanged();
     }
