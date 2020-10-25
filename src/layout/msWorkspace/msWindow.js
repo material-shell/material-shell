@@ -773,7 +773,8 @@ var MsWindowContent = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let metaWindow = this.get_parent().metaWindow;
-            if (metaWindow) {
+            if (metaWindow && metaWindow.firstFrameDrawn) {
+                this.clone.visible = true;
                 let windowFrameRect = metaWindow.get_frame_rect();
                 let windowBufferRect = metaWindow.get_buffer_rect();
                 //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
@@ -803,6 +804,8 @@ var MsWindowContent = GObject.registerClass(
 
                     Allocate(this.clone, cloneBox, flags);
                 }
+            } else {
+                this.clone.visible = false;
             }
 
             if (this.placeholder.get_parent() === this) {
