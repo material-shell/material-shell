@@ -351,7 +351,7 @@ var TaskBar = GObject.registerClass(
                             }
                         });
                         if (notReady && counter < 20) {
-                            // Try again
+                            // Try again later
                             counter++;
                             return GLib.SOURCE_CONTINUE;
                         } else if (!taskBarItem || counter > 19) {
@@ -359,17 +359,17 @@ var TaskBar = GObject.registerClass(
                             this.taskActiveIndicatorAnimateId = 0;
                             return GLib.SOURCE_REMOVE;
                         }
+                        // taskBarItem may be destroyed, so save its values
+                        const x = taskBarItem.x;
+                        const width = taskBarItem.width;
                         this.taskActiveIndicator.ease({
-                            translation_x: taskBarItem.x,
-                            scale_x:
-                                taskBarItem.width /
-                                this.taskActiveIndicator.width,
+                            translation_x: x,
+                            scale_x: width / this.taskActiveIndicator.width,
                             duration: 250,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                             onComplete: () => {
                                 this.taskActiveIndicator.scale_x = 1;
-                                this.taskActiveIndicator.width =
-                                    taskBarItem.width;
+                                this.taskActiveIndicator.width = width;
                             },
                         });
                         this.taskActiveIndicatorAnimateId = 0;
