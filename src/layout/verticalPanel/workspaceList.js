@@ -8,7 +8,10 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
+const {
+    DropPlaceholder,
+    TaskBarItem,
+} = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
@@ -22,6 +25,7 @@ var WorkspaceList = GObject.registerClass(
             super._init({
                 clip_to_allocation: true,
                 style_class: 'workspace-list',
+                reactive: true,
             });
             this._delegate = this;
 
@@ -89,6 +93,16 @@ var WorkspaceList = GObject.registerClass(
                     );
                 }
             );
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspaceManager.activatePreviousMsWorkspace();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspaceManager.activateNextMsWorkspace();
+                        break;
+                }
+            });
         }
 
         buildButtons() {
@@ -429,6 +443,7 @@ var WorkspaceButton = GObject.registerClass(
 
         buildMenu() {
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+            this.menu.actor.add_style_class_name('panel-menu');
             this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
             );
@@ -582,6 +597,7 @@ var WorkspaceButton = GObject.registerClass(
                         await source.emit('drag-dropped');
                         await tileable.msWorkspace.removeMsWindow(tileable);
                         await this.msWorkspace.addMsWindow(tileable, true);
+                        Me.logFocus('[DEBUG]', `stateChanged from acceptDrop`);
                         this.msWorkspaceManager.stateChanged();
                         this.msWorkspace.activate();
                     })();
@@ -634,6 +650,9 @@ var WorkspaceButtonIcon = GObject.registerClass(
                 this.buildIcons();
             });
             Me.msThemeManager.connect('panel-icon-style-changed', () => {
+                this.buildIcons();
+            });
+            Me.msThemeManager.connect('panel-size-changed', () => {
                 this.buildIcons();
             });
         }

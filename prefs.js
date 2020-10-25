@@ -15,7 +15,8 @@ const WidgetType = {
     INT: 2,
     DECIMAL: 3,
     INPUT: 4,
-    CUSTOM: 5,
+    COLOR: 5,
+    CUSTOM: 6,
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -49,6 +50,7 @@ function buildPrefsWidget() {
         theme.addSetting('blur-background', WidgetType.BOOLEAN);
     }
     theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
+    theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
 
     settingsTab.addCategory(theme);
 
@@ -453,6 +455,31 @@ var SettingCategory = GObject.registerClass(
         }
     }
 );
+
+function cssHexString(css) {
+    let rrggbb = '#';
+    let start;
+    for (let loop = 0; loop < 3; loop++) {
+        let end = 0;
+        let xx = '';
+        for (let loop = 0; loop < 2; loop++) {
+            while (true) {
+                let x = css.slice(end, end + 1);
+                if (x == '(' || x == ',' || x == ')') break;
+                end++;
+            }
+            if (loop == 0) {
+                end++;
+                start = end;
+            }
+        }
+        xx = parseInt(css.slice(start, end)).toString(16);
+        if (xx.length == 1) xx = `0${xx}`;
+        rrggbb += xx;
+        css = css.slice(end);
+    }
+    return rrggbb;
+}
 
 function getDefaultLayoutComboBox(tilingLayouts, setting) {
     let widget = new Gtk.ComboBoxText();

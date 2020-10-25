@@ -72,6 +72,18 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        get state() {
+            return {
+                appId: this.app.get_id(),
+                metaWindowIdentifier: this.metaWindowIdentifier,
+                persistent: this._persistent,
+                x: this.x,
+                y: this.y,
+                width: this.width,
+                height: this.height,
+            };
+        }
+
         get metaWindow() {
             return (
                 this._metaWindow ||
@@ -90,7 +102,8 @@ var MsWindow = GObject.registerClass(
 
         set persistent(boolean) {
             this._persistent = boolean;
-            Me.msWorkspaceManager.stateChanged();
+            Me.logFocus('[DEBUG]', `stateChanged from set Persistent`);
+            Me.stateManager.stateChanged();
         }
 
         delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
@@ -123,8 +136,7 @@ var MsWindow = GObject.registerClass(
             if (!this.msWorkspace) return false;
             return (
                 (this.msWorkspace &&
-                    this.msWorkspace.tilingLayout.constructor.key ===
-                        'float') ||
+                    this.msWorkspace.layout.state.key === 'float') ||
                 (this.metaWindow && this.metaWindow.fullscreen)
             );
         }

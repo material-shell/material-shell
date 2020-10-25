@@ -19,10 +19,11 @@ let dragData = null;
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(msWorkspace) {
+        _init(msWorkspace, panelMenuManager) {
             super._init({
                 name: 'taskBar',
                 x_expand: true,
+                reactive: true,
             });
             this._delegate = this;
             this.taskActiveIndicator = new St.Widget({
@@ -47,10 +48,22 @@ var TaskBar = GObject.registerClass(
                 ),
             ];
 
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspace.focusNextTileable();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspace.focusPreviousTileable();
+
+                        break;
+                }
+            });
+
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menuManager = panelMenuManager;
             this.updateItems();
             this._animateActiveIndicator();
         }
@@ -347,7 +360,7 @@ var TaskBar = GObject.registerClass(
     }
 );
 
-let TaskBarItem = GObject.registerClass(
+var TaskBarItem = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
@@ -521,6 +534,7 @@ let TileableItem = GObject.registerClass(
                 });
             }
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.menu.actor.add_style_class_name('horizontal-panel-menu');
             /* this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
             ); */
@@ -528,7 +542,7 @@ let TileableItem = GObject.registerClass(
                 `Make this fully persistent`,
                 () => {
                     this.tileable.persistent = true;
-                    this.endIconContainer.set_child(this.peristentIcon);
+                    this.endIconContainer.set_child(this.persistentIcon);
                     this.makePersistentAction.hide();
                     this.unmakePersistentAction.show();
                 },
@@ -578,6 +592,7 @@ let TileableItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER,
             });
+            Me.tooltipManager.add(this.title, { relativeActor: this });
 
             this.signalManager = new MsManager();
             this.style = getSettings('theme').get_string('taskbar-item-style');
@@ -598,28 +613,28 @@ let TileableItem = GObject.registerClass(
             this.setStyle();
             this.connect('destroy', this._onDestroy.bind(this));
             // CLOSE BUTTON
+            this.closeIcon = new St.Icon({
+                style_class: 'task-small-icon',
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/close-symbolic.svg`
+                ),
+            });
             this.closeButton = new St.Button({
                 style_class: 'task-close-button',
-                child: new St.Icon({
-                    style_class: 'task-small-icon',
-                    gicon: Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/close-symbolic.svg`
-                    ),
-                }),
+                child: this.closeIcon,
             });
-
             this.closeButton.connect('clicked', () => {
                 this.emit('close-clicked');
             });
 
-            this.peristentIcon = new St.Icon({
+            this.persistentIcon = new St.Icon({
                 style_class: 'task-small-icon',
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/pin-symbolic.svg`
                 ),
             });
             if (this.tileable._persistent) {
-                this.endIconContainer.set_child(this.peristentIcon);
+                this.endIconContainer.set_child(this.persistentIcon);
             } else {
                 this.endIconContainer.set_child(this.closeButton);
             }
@@ -641,11 +656,14 @@ let TileableItem = GObject.registerClass(
 
         buildIcon(height) {
             if (this.icon) this.icon.destroy();
-            this.iconSize = height;
-            this.icon = this.app.create_icon_texture(this.iconSize / 2);
+            this.lastHeight = height;
+            this.icon = this.app.create_icon_texture(height / 2);
             this.icon.style_class = 'app-icon';
-            this.icon.set_size(this.iconSize / 2, this.iconSize / 2);
+            this.icon.set_size(height / 2, height / 2);
             this.startIconContainer.set_child(this.icon);
+            let smallIconSize = Math.max(Math.round(height / 3), 18);
+            this.persistentIcon.set_icon_size(smallIconSize);
+            this.closeIcon.set_icon_size(smallIconSize);
             this.queue_relayout();
         }
 
@@ -675,7 +693,7 @@ let TileableItem = GObject.registerClass(
             }
         }
         vfunc_allocate(box, flags) {
-            if (!this.icon || this.iconSize != box.get_height()) {
+            if (!this.icon || this.lastHeight != box.get_height()) {
                 this.buildIcon(box.get_height());
             }
             super.vfunc_allocate(box, flags);
@@ -699,14 +717,26 @@ let IconTaskBarItem = GObject.registerClass(
             this.icon = new St.Icon({
                 gicon,
                 style_class: 'app-icon',
+                icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
             });
             this.container.set_child(this.icon);
         }
+
         /**
          * Just the panel width
          */
         vfunc_get_preferred_width(_forHeight) {
             return [_forHeight, _forHeight];
+        }
+
+        vfunc_allocate(box, flags) {
+            if (
+                this.icon &&
+                this.icon.get_icon_size() != box.get_height() / 2
+            ) {
+                this.icon.set_icon_size(box.get_height() / 2);
+            }
+            super.vfunc_allocate(box, flags);
         }
     }
 );

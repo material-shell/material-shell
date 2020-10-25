@@ -16,4 +16,5 @@ var SimpleVerticalLayout = GObject.registerClass(
     }
 );
 
-SimpleVerticalLayout.key = 'simple-vertical';
+SimpleVerticalLayout.state = { key: 'simple-vertical' };
+SimpleVerticalLayout.label = 'Simple vertical';

@@ -11,17 +11,21 @@ const {
 const { OverrideModule } = Me.imports.src.module.overrideModule;
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-const { TilingManager } = Me.imports.src.manager.tilingManager;
+const { LayoutManager } = Me.imports.src.manager.layoutManager;
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
+const { TooltipManager } = Me.imports.src.manager.tooltipManager;
+
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
+const { getSettings } = Me.imports.src.utils.settings;
+
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
-    monitorChangedId;
+    splashscreenCalled;
 let splashScreens = [];
 
 // eslint-disable-next-line no-unused-vars
@@ -35,6 +39,7 @@ function init() {
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
     Me.locked = false;
+    splashscreenCalled = false;
     //St.set_slow_down_factor(10);
     global.display.connect('closing', () => {
         Me.closing = true;
@@ -59,18 +64,23 @@ function enable() {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         //Load persistent data
-        Me.stateManager.loadRegistry(() => {
+        Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
-            Me.tilingManager = new TilingManager();
+            Me.tooltipManager = new TooltipManager();
+            Me.layoutManager = new LayoutManager();
             Me.msWindowManager = new MsWindowManager();
-            Me.msWorkspaceManager = new MsWorkspaceManager();
+            Me.msWorkspaceManager = new MsWorkspaceManager(
+                state['workspaces-state']
+            );
             Me.msNotificationManager = new MsNotificationManager();
             modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();
             }
-            Me.msWorkspaceManager.restorePreviousState();
+            if (getSettings('tweaks').get_boolean('enable-persistence')) {
+                Me.msWorkspaceManager.restorePreviousState();
+            }
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
@@ -97,31 +107,32 @@ function loaded(disconnect) {
     Me.locked = false;
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
-    // When monitorMe.msNotificationManagers changed we reload the extension completely by disabling and reEnabling it
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-        hideSplashScreens();
-    });
-    log('----------------');
+    if (splashscreenCalled) {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+    log('--------------------');
     log('END EXTENSION LOADED');
-    log('----------------');
+    log('--------------------');
 }
 
 // eslint-disable-next-line no-unused-vars
 function disable() {
-    log('----------------');
+    log('-----------------');
     log('DISABLE EXTENSION');
-    log('----------------');
+    log('-----------------');
     if (Main.sessionMode.currentMode === 'unlock-dialog') {
         Me.locked = true;
     }
     Me.disableInProgress = true;
     if (!modules) return;
     Me.emit('extension-disable');
-    Main.layoutManager.disconnect(monitorChangedId);
     modules.reverse().forEach((module) => {
         module.destroy();
     });
-    Me.tilingManager.destroy();
+    Me.layoutManager.destroy();
     Me.msWorkspaceManager.destroy();
     Me.msWindowManager.destroy();
 
@@ -130,11 +141,14 @@ function disable() {
     disableIncompatibleExtensionsModule.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
+    log('---------------------');
     log('END DISABLE EXTENSION');
+    log('---------------------');
 }
 
 function showSplashScreens() {
     log('show splashscreen');
+    splashscreenCalled = true;
     Main.layoutManager.monitors.forEach((monitor) => {
         let icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
@@ -151,23 +165,28 @@ function showSplashScreens() {
             width: monitor.width,
             height: monitor.height,
         });
+        Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
     });
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
         hideSplashScreens();
+        return GLib.SOURCE_REMOVE;
     });
 }
 
 function hideSplashScreens() {
+    if (splashScreens.length < 1) return;
     splashScreens.forEach((splashscreen) => {
         splashscreen.ease({
             opacity: 0,
             duration: 800,
             transition: 'easeInQuad',
             onComplete: () => {
+                Main.layoutManager.removeChrome(splashscreen);
                 splashscreen.destroy();
             },
         });
     });
     splashScreens = [];
+    splashscreenCalled = false;
 }
