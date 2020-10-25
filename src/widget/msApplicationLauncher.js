@@ -54,11 +54,14 @@ var MsApplicationLauncher = GObject.registerClass(
                     app,
                     this.appListContainer.buttonSize
                 );
+                button.connect('notify::hover', () => {
+                    this.appListContainer.highlightButton(button);
+                });
                 button.connect('clicked', () => {
                     const msWindow = Me.msWindowManager.createNewMsWindow(
                         app.id
                     );
-                    this.msWorkspace.addMsWindow(msWindow);
+                    this.msWorkspace.addMsWindow(msWindow, true);
                     Me.msWindowManager.openAppForMsWindow(msWindow);
                     this.appListContainer.reset();
                 });

@@ -40,7 +40,7 @@ var MsWorkspace = class MsWorkspace {
             },
             state
         );
-
+        this.insertedMsWindow = null;
         this.appLauncher = new MsApplicationLauncher(this);
 
         // First add AppLauncher since windows are inserted before it otherwise the order is a mess
@@ -156,7 +156,7 @@ var MsWorkspace = class MsWorkspace {
         });
     }
 
-    async addMsWindow(msWindow, focus = false) {
+    async addMsWindow(msWindow, focus = false, insert = false) {
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
@@ -169,13 +169,15 @@ var MsWorkspace = class MsWorkspace {
         }
 
         const oldTileableList = [...this.tileableList];
-        const focusedTileable = this.tileableList[this.focusedIndex];
 
-        if (!focusedTileable || focusedTileable === this.appLauncher || msWindow === this.appLauncher) {
-            this.tileableList.splice(this.tileableList.length - 2, 0, msWindow);
-        } else {
-            this.tileableList.splice(this.focusedIndex + 1, 0, msWindow);
+        let insertAt = this.tileableList.length - 1;
+
+        if (insert) {
+            insertAt = this.focusedIndex + 1;
+            this.insertedMsWindow = msWindow;
         }
+
+        this.tileableList.splice(insertAt, 0, msWindow);
 
         if (focus) {
             this.focusTileable(msWindow);
@@ -203,7 +205,12 @@ var MsWorkspace = class MsWorkspace {
         // If there's no more focused msWindow on this workspace focus the last one
 
         if (tileableIsFocused) {
-            this.focusTileable(this.tileableList[this.focusedIndex], true);
+            // If the window removed as just been inserted focus previous instead of next
+            const newIndex =
+                msWindow === this.insertedMsWindow
+                    ? this.focusedIndex - 1
+                    : this.focusedIndex;
+            this.focusTileable(this.tileableList[newIndex], true);
         }
         this.msWorkspaceActor.updateUI();
         this.refreshFocus();
@@ -311,6 +318,9 @@ var MsWorkspace = class MsWorkspace {
     focusTileable(tileable, forced) {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
+        }
+        if (tileable !== this.insertedMsWindow) {
+            this.insertedMsWindow = null;
         }
         const oldTileableFocused = this.tileableFocused;
         if (tileable !== this.tileableFocused) {
