@@ -693,6 +693,7 @@ let TileableItem = GObject.registerClass(
             }
         }
         vfunc_allocate(...args) {
+            const box = args[0];
             if (!this.icon || this.lastHeight != box.get_height()) {
                 this.buildIcon(box.get_height());
             }
@@ -730,6 +731,7 @@ let IconTaskBarItem = GObject.registerClass(
         }
 
         vfunc_allocate(...args) {
+            const box = args[0];
             if (
                 this.icon &&
                 this.icon.get_icon_size() != box.get_height() / 2
