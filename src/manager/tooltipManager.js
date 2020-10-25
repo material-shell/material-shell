@@ -28,10 +28,18 @@ var TooltipManager = class TooltipManager extends MsManager {
                 }
                 actor.disconnect(leaveId);
             });
+            const leaveIdFocus = actor.connect('key-focus-out', () => {
+                left = true;
+                if (tooltip) {
+                    tooltip.remove();
+                }
+                actor.disconnect(leaveIdFocus);
+            });
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
                 if (!left) {
                     tooltip = this.createTooltip(actor, params);
                 }
+                actor.grab_key_focus();
                 return GLib.SOURCE_REMOVE;
             });
         });
