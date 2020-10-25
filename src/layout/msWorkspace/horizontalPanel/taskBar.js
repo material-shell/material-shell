@@ -592,6 +592,7 @@ let TileableItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER,
             });
+            Me.tooltipManager.add(this.title, { relativeActor: this });
 
             this.signalManager = new MsManager();
             this.style = getSettings('theme').get_string('taskbar-item-style');

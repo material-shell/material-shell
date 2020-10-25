@@ -15,6 +15,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     @if ($bgColor== 'dark') {
         @return rgba(255, 255, 255, $opacity);
     }
+
+    @if ($bgColor== 'primary') {
+        @return rgba(255, 255, 255, $opacity);
+    }
 }
 
 @mixin foreground($theme, $opacity) {
@@ -429,10 +433,26 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 MsApplicationLauncher {
-    .search-entry {
+    * .search-entry {
+        @include foreground-medium-emphasis($theme);
         @include background($theme);
         border-radius: 48px;
     }
+    * .search-entry-icon {
+        @include foreground-medium-emphasis($theme);
+    }
+}
+
+MatTooltip {
+    @include foreground-high-emphasis('dark');
+    background-color: getDarkerColor(
+        getDarkerColor(getBackgroundColor('dark'))
+    );
+    border-radius: 4px;
+    padding: 0px 8px;
+    min-height: 24px;
+    @extend .caption;
+    text-align: center;
 }
 
 .surface {

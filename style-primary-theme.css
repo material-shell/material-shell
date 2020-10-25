@@ -50,7 +50,7 @@ subtitle-1 {
   font-size: 10.5pt;
   letter-spacing: 0.25px; }
 
-.caption {
+.caption, MatTooltip {
   font-family: "Roboto", sans-serif;
   font-size: 9pt;
   letter-spacing: 0.4px; }
@@ -334,9 +334,27 @@ subtitle-1 {
     .dark-primary.mat-card .mat-card-content {
       color: rgba(255, 255, 255, 0.87); }
 
-MsApplicationLauncher .search-entry {
+MsApplicationLauncher * .search-entry {
   background: #3f51b5;
   border-radius: 48px; }
+  .light-primaryMsApplicationLauncher * .search-entry {
+    color: rgba(0, 0, 0, 0.6); }
+  .dark-primaryMsApplicationLauncher * .search-entry {
+    color: rgba(255, 255, 255, 0.6); }
+
+.light-primaryMsApplicationLauncher * .search-entry-icon {
+  color: rgba(0, 0, 0, 0.6); }
+
+.dark-primaryMsApplicationLauncher * .search-entry-icon {
+  color: rgba(255, 255, 255, 0.6); }
+
+MatTooltip {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0c0c0c;
+  border-radius: 4px;
+  padding: 0px 8px;
+  min-height: 24px;
+  text-align: center; }
 
 .surface, .no-theme .popup-menu .popup-menu-content .popup-menu-item.selected {
   background: rgba(63, 81, 181, 0.987); }

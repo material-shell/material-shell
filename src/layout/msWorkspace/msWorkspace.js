@@ -50,7 +50,7 @@ var MsWorkspace = class MsWorkspace {
             this,
             this._state.forcedCategory
         );
-        Me.logFocus('layoutKey', this._state.layoutKey);
+        this.precedentIndex = this._state.focusedIndex;
         const LayoutConstructor = Me.layoutManager.getLayoutByKey(
             this._state.layoutKey
         );
@@ -285,14 +285,34 @@ var MsWorkspace = class MsWorkspace {
     }
 
     focusAppLauncher() {
-        this.focusTileable(this.tileableList[this.tileableList.length - 1]);
+        if (
+            !this.tileableList ||
+            this.tileableList.length < 2 ||
+            this.focusTileable === this.appLauncher
+        ) {
+            return;
+        }
+        this.focusTileable(this.appLauncher);
+    }
+
+    focusPrecedentTileable() {
+        if (!this.tileableList || this.tileableList.length < 2) return;
+        if (
+            this.focusedIndex !== this.precedentIndex &&
+            this.precedentIndex < this.tileableList.length
+        ) {
+            this.focusTileable(this.tileableList[this.precedentIndex]);
+        }
     }
 
     focusTileable(tileable, forced) {
-        if (tileable === this.tileableFocused && !forced) {
+        if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
         const oldTileableFocused = this.tileableFocused;
+        if (tileable !== this.tileableFocused) {
+            this.precedentIndex = this.focusedIndex;
+        }
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
         if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
             if (tileable instanceof MsWindow) {

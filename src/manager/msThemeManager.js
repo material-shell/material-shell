@@ -88,6 +88,9 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::clock-horizontal', () => {
             this.emit('clock-horizontal-changed');
         });
+        this.observe(this.themeSettings, 'changed::clock-app-launcher', () => {
+            this.emit('clock-app-launcher-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -120,6 +123,10 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     get clockHorizontal() {
         return this.themeSettings.get_boolean('clock-horizontal');
+    }
+
+    get clockAppLauncher() {
+        return this.themeSettings.get_boolean('clock-app-launcher');
     }
 
     getPanelSize(monitorIndex) {

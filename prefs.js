@@ -15,7 +15,8 @@ const WidgetType = {
     INT: 2,
     DECIMAL: 3,
     INPUT: 4,
-    CUSTOM: 5,
+    COLOR: 5,
+    CUSTOM: 6,
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -49,6 +50,7 @@ function buildPrefsWidget() {
         theme.addSetting('blur-background', WidgetType.BOOLEAN);
     }
     theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
+    theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
 
     settingsTab.addCategory(theme);
 
