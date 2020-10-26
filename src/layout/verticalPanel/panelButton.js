@@ -25,8 +25,10 @@ var MatPanelButton = GObject.registerClass(
 
         findMonitor() {
             let [x, y] = this.get_transformed_position();
-            return global.display.get_monitor_index_for_rect(
-                new Meta.Rectangle({ x, y, width: 0, height: 0 })
+            return (
+                global.display.get_monitor_index_for_rect(
+                    new Meta.Rectangle({ x, y, width: 0, height: 0 })
+                ) || global.display.get_current_monitor()
             );
         }
 

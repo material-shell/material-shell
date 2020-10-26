@@ -30,7 +30,9 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         this.workspaceTracker = Main.wm._workspaceTracker;
         WorkspaceTracker.prototype._oldCheckWorkspaces =
             WorkspaceTracker.prototype._checkWorkspaces;
+        Me.logFocus('[DEBUG]', `Overrride _checkWorkspaces`);
         WorkspaceTracker.prototype._checkWorkspaces = function () {
+            Me.logFocus('[DEBUG]', `_checkWorkspaces`);
             let workspaceManager = global.workspace_manager;
             let i;
             let emptyWorkspaces = [];
@@ -113,6 +115,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this._checkWorkspacesId = 0;
             return false;
         };
+
+        // If a _queueCheckWorkspaces is already pending it's will would use the previous _checkWorkspaces method we need to kill it and add a new one
+        if (this.workspaceTracker._checkWorkspacesId !== 0) {
+            Me.logFocus(
+                '[DEBUG]',
+                `_checkWorkspacesId: ${this._state.primaryWorkspaceActiveIndex}`
+            );
+            Meta.later_remove(this.workspaceTracker._checkWorkspacesId);
+            this.workspaceTracker._queueCheckWorkspaces();
+        }
 
         this.observe(Main.layoutManager, 'monitors-changed', () => {
             this.onMonitorsChanged();
@@ -302,7 +314,6 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     .activate(global.get_current_time());
             }
         }
-
         delete this.restoringState;
     }
 
