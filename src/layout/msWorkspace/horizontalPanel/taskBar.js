@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Shell, Gio, GLib } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio } = imports.gi;
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -26,7 +26,7 @@ var TaskBar = GObject.registerClass(
                 reactive: true,
             });
             this._delegate = this;
-            this.taskActiveIndicator = new St.Widget({
+            this.taskActiveIndicator = new TaskActiveIndicator({
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
@@ -65,12 +65,10 @@ var TaskBar = GObject.registerClass(
             this.items = [];
             this.menuManager = panelMenuManager;
             this.updateItems();
-            this._animateActiveIndicator();
         }
 
         onTileableListChange() {
             this.updateItems();
-            this._animateActiveIndicator();
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
@@ -93,8 +91,11 @@ var TaskBar = GObject.registerClass(
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
-            this._animateActiveIndicator();
             nextItem.setActive(true);
+        }
+
+        getActiveItem() {
+            return this.items[this.msWorkspace.focusedIndex];
         }
 
         updateItems() {
@@ -178,12 +179,6 @@ var TaskBar = GObject.registerClass(
                         });
 
                         item.connect('drag-dropped', this.reparentDragItem);
-                        item.connect('notify::width', () => {
-                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                this._animateActiveIndicator();
-                                return GLib.SOURCE_REMOVE;
-                            });
-                        });
                         this.taskButtonContainer.add_child(item);
                         return item;
                     } else {
@@ -201,10 +196,9 @@ var TaskBar = GObject.registerClass(
                     }
                 }
             );
-            if (this.items[this.msWorkspace.focusedIndex])
-                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
-                    'active'
-                );
+            if (this.items[this.msWorkspace.focusedIndex]) {
+                this.items[this.msWorkspace.focusedIndex].setActive(true);
+            }
         }
 
         updateCurrentTaskBar() {
@@ -293,40 +287,6 @@ var TaskBar = GObject.registerClass(
             dropPlaceholder.resize(item.width, currentTaskBar.height);
         }
 
-        _animateActiveIndicator() {
-            let taskBarItem = this.getTaskBarItemOfTileable(
-                this.msWorkspace.tileableFocused
-            );
-            if (
-                this.taskBarItemSignal &&
-                this.items.includes(this.taskBarItemSignal.from)
-            ) {
-                this.taskBarItemSignal.from.disconnect(
-                    this.taskBarItemSignal.id
-                );
-            }
-            if (!taskBarItem) {
-                return;
-            }
-
-            if (!this.mapped) return;
-            if (!this.taskActiveIndicator.width) {
-                this.taskActiveIndicator.scale_x = 1;
-                this.taskActiveIndicator.width = taskBarItem.width;
-            } else {
-                this.taskActiveIndicator.ease({
-                    translation_x: taskBarItem.x,
-                    scale_x: taskBarItem.width / this.taskActiveIndicator.width,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.taskActiveIndicator.scale_x = 1;
-                        this.taskActiveIndicator.width = taskBarItem.width;
-                    },
-                });
-            }
-        }
-
         getTaskBarItemOfTileable(tileable) {
             return this.items.find((item) => {
                 return item.tileable === tileable;
@@ -334,21 +294,13 @@ var TaskBar = GObject.registerClass(
         }
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            let themeNode = this.get_theme_node();
-            const contentBox = themeNode.get_content_box(box);
-
             Allocate(this.taskButtonContainer, box, flags);
-
-            let taskActiveIndicatorBox = new Clutter.ActorBox();
-            taskActiveIndicatorBox.x1 = contentBox.x1;
-            taskActiveIndicatorBox.x2 =
-                contentBox.x1 +
-                this.taskActiveIndicator.get_preferred_width(-1)[0];
-            taskActiveIndicatorBox.y1 =
-                contentBox.y2 -
-                this.taskActiveIndicator.get_preferred_height(-1)[0];
-            taskActiveIndicatorBox.y2 = contentBox.y2;
-
+            let taskActiveIndicatorBox = new Clutter.ActorBox({
+                x1: this.getActiveItem().x,
+                x2: this.getActiveItem().x + this.getActiveItem().width,
+                y1: box.get_height() - this.taskActiveIndicator.height,
+                y2: box.get_height(),
+            });
             Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
         }
 
@@ -356,6 +308,34 @@ var TaskBar = GObject.registerClass(
             this.msWorkspaceSignals.forEach((signal) =>
                 this.msWorkspace.disconnect(signal)
             );
+        }
+    }
+);
+
+var TaskActiveIndicator = GObject.registerClass(
+    {
+        GTypeName: 'TaskActiveIndicator',
+    },
+    class TaskActiveIndicator extends St.Widget {
+        prepareAnimation(newAllocation) {
+            this.translation_x = this.translation_x + this.x - newAllocation.x1;
+            this.scale_x =
+                (this.width * this.scale_x) / newAllocation.get_width();
+        }
+        animate() {
+            this.ease({
+                translation_x: 0,
+                scale_x: 1,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+        }
+        vfunc_allocate(...args) {
+            if (this.width) {
+                this.prepareAnimation(args[0]);
+                this.animate();
+            }
+            super.vfunc_allocate(...args);
         }
     }
 );
