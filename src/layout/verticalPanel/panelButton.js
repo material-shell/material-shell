@@ -45,7 +45,7 @@ var MatPanelButton = GObject.registerClass(
         /**
          * Just the panel height
          */
-        vfunc_get_preferred_height(forWidth) {
+        vfunc_get_preferred_height(_forWidth) {
             return [
                 Me.msThemeManager.getPanelSize(this.monitor.index),
                 Me.msThemeManager.getPanelSize(this.monitor.index),

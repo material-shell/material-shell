@@ -39,7 +39,7 @@ var HotKeysModule = class HotKeysModule {
         this.resetStash();
         this.connectId = global.window_manager.connect(
             'switch-workspace',
-            (_, from, to) => {
+            (_, from, _to) => {
                 if (this.lastStash !== null && from != this.lastStash) {
                     this.resetStash();
                 }

@@ -100,7 +100,7 @@ var TaskBar = GObject.registerClass(
         updateItems() {
             this.items.forEach((item) => item.destroy());
             this.items = this.msWorkspace.tileableList.map(
-                (tileable, index) => {
+                (tileable, _index) => {
                     if (tileable instanceof MsWindow) {
                         const item = new TileableItem(tileable);
                         this.menuManager.addMenu(item.menu);
@@ -539,7 +539,7 @@ let TileableItem = GObject.registerClass(
                 new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
             ); */
             this.makePersistentAction = this.menu.addAction(
-                `Make this fully persistent`,
+                'Make this fully persistent',
                 () => {
                     this.tileable.persistent = true;
                     this.endIconContainer.set_child(this.persistentIcon);
@@ -552,7 +552,7 @@ let TileableItem = GObject.registerClass(
             );
 
             this.unmakePersistentAction = this.menu.addAction(
-                `Unmake this fully persistent`,
+                'Unmake this fully persistent',
                 () => {
                     this.tileable.persistent = false;
                     this.endIconContainer.set_child(this.closeButton);
@@ -569,7 +569,7 @@ let TileableItem = GObject.registerClass(
                 this.unmakePersistentAction.hide();
             }
             this.menu.addAction(
-                `Close`,
+                'Close',
                 () => {
                     this.emit('close-clicked');
                 },

@@ -151,7 +151,7 @@ var MsWorkspace = class MsWorkspace {
             this.msWindowList.map((msWindow) => {
                 return msWindow.kill();
             })
-        ).then((params) => {
+        ).then((_params) => {
             this.emit('readyToBeClosed');
         });
     }
