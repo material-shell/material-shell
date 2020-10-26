@@ -21,13 +21,20 @@ var TooltipManager = class TooltipManager extends MsManager {
         const enterId = actor.connect('enter-event', () => {
             let tooltip;
             let left = false;
-            const leaveId = actor.connect('leave-event', () => {
+            const leaveCallback = () => {
                 left = true;
                 if (tooltip) {
                     tooltip.remove();
                 }
                 actor.disconnect(leaveId);
-            });
+                global.stage.disconnect(deactivateId);
+            };
+            const leaveId = actor.connect('leave-event', leaveCallback);
+            const deactivateId = global.stage.connect(
+                'deactivate',
+                leaveCallback
+            );
+
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
                 if (!left) {
                     tooltip = this.createTooltip(actor, params);
