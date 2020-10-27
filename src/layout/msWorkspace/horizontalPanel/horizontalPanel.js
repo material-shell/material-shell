@@ -1,7 +1,8 @@
 /** Gnome libs imports */
-const { GObject, St, Clutter, GnomeDesktop, Shell } = imports.gi;
+const { Gio, GObject, St, Clutter, GnomeDesktop, Shell } = imports.gi;
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
+const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -13,6 +14,9 @@ const {
 const {
     LayoutSwitcher,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher;
+const { VerticalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
+const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
+
 /* exported HorizontalPanel */
 var HorizontalPanel = GObject.registerClass(
     class HorizontalPanel extends St.BoxLayout {
@@ -32,16 +36,78 @@ var HorizontalPanel = GObject.registerClass(
 
             this.add_child(this.taskBar);
             this.add_child(this.layoutSwitcher);
-            Me.msThemeManager.connect('clock-horizontal-changed', () => {
-                if (Me.msThemeManager.clockHorizontal) {
-                    this.createClock();
-                } else {
-                    this.removeClock();
+            const clockHorizontalSignal = Me.msThemeManager.connect(
+                'clock-horizontal-changed',
+                () => {
+                    this.toggleClock();
                 }
+            );
+            const verticalPanelPositionSignal = Me.msThemeManager.connect(
+                'vertical-panel-position-changed',
+                () => {
+                    this.toggleButton();
+                }
+            );
+            this.connect('destroy', () => {
+                Me.msThemeManager.disconnect(clockHorizontalSignal);
+                Me.msThemeManager.disconnect(verticalPanelPositionSignal);
             });
+            this.toggleClock();
+            this.toggleButton();
+        }
+
+        toggleClock() {
             if (Me.msThemeManager.clockHorizontal) {
                 this.createClock();
+            } else {
+                this.removeClock();
             }
+        }
+
+        toggleButton() {
+            if (
+                Me.msThemeManager.verticalPanelPosition ===
+                VerticalPanelPositionEnum.LEFT
+            ) {
+                this.removeSearchButton();
+            } else {
+                this.createSearchButton();
+            }
+        }
+
+        createSearchButton() {
+            // this.searchButtonBin = new St.BoxLayout({});
+            this.icon = new St.Icon({
+                gicon: Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/magnify-symbolic.svg`
+                ),
+                style_class: 'mat-panel-button-icon',
+                icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
+            });
+
+            this.searchButton = new MatPanelButton({
+                child: this.icon,
+                primary: true,
+            });
+
+            this.searchButton.connect('clicked', () => {
+                if (!Main.overview._shown) {
+                    Main.overview.show();
+                } else {
+                    Main.overview.hide();
+                }
+            });
+            // this.searchButtonBin.add_child(this.searchButton);
+            // this.searchButtonBin.add_style_class_name('msPanel');
+            this.insert_child_at_index(this.searchButton, 0);
+        }
+
+        removeSearchButton() {
+            if (!this.searchButton) return;
+            this.remove_child(this.searchButton);
+            this.searchButton.destroy();
+            this.searchButton = null;
+            this.icon = null;
         }
 
         createClock() {
@@ -62,7 +128,8 @@ var HorizontalPanel = GObject.registerClass(
                 updateClock
             );
             updateClock();
-            this.insert_child_at_index(this.clockBin, 1);
+            const clockPosition = this.get_n_children() - 2;
+            this.insert_child_at_index(this.clockBin, clockPosition);
             this.clockLabel.connect('destroy', () => {
                 this._wallClock.disconnect(this.signalClock);
                 delete this._wallClock;
@@ -105,8 +172,26 @@ var HorizontalPanel = GObject.registerClass(
             let clockWidth = this.clockBin
                 ? this.clockBin.get_preferred_width(-1)[1]
                 : 0;
+
+            if (this.icon && this.icon.height !== contentBox.heigh) {
+                this.icon.set_icon_size(
+                    Me.msThemeManager.getPanelSizeNotScaled() / 2
+                );
+            }
+            let searchButtonWidth = this.searchButton
+                ? this.searchButton.width
+                : 0;
+            if (this.searchButton) {
+                let searchButtonBox = new Clutter.ActorBox();
+                searchButtonBox.x1 = contentBox.x1;
+                searchButtonBox.x2 = contentBox.x1 + searchButtonWidth;
+                searchButtonBox.y1 = contentBox.y1;
+                searchButtonBox.y2 = contentBox.y2;
+                Allocate(this.searchButton, searchButtonBox, flags);
+            }
+
             let taskBarBox = new Clutter.ActorBox();
-            taskBarBox.x1 = contentBox.x1;
+            taskBarBox.x1 = contentBox.x1 + searchButtonWidth;
             taskBarBox.x2 = Math.max(
                 contentBox.x2 - this.layoutSwitcher.width - clockWidth,
                 0
