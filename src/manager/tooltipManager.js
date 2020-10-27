@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GLib, Clutter, GObject, Graphene } = imports.gi;
+const { St, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -100,9 +100,9 @@ var MatTooltip = GObject.registerClass(
                 opacity: 0,
                 scale_x: 0.8,
                 scale_y: 0.8,
-                pivot_point: new Graphene.Point({ x: 0.5, y: 0.5 }),
                 y_align: Clutter.ActorAlign.CENTER,
             });
+            this.set_pivot_point(0.5, 0.5);
             this.params = params;
             this.get_clutter_text().y_align = Clutter.ActorAlign.CENTER;
             this.sourceActor = sourceActor;
