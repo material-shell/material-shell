@@ -105,7 +105,7 @@ var TaskBar = GObject.registerClass(
                         const item = new TileableItem(tileable);
                         this.menuManager.addMenu(item.menu);
                         item.connect('left-clicked', (_) => {
-                            this.msWorkspace.focusTileable(tileable);
+                            this.msWorkspace.focusTileable(tileable, true);
                         });
                         item.connect('middle-clicked', (_) => {
                             tileable.kill();
