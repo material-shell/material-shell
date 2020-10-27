@@ -193,7 +193,11 @@ var MsWorkspace = class MsWorkspace {
         const oldTileableList = [...this.tileableList];
         oldTileableList.splice(tileableIndex, 1, [null]);
         this.tileableList.splice(tileableIndex, 1);
-        if (this.focusedIndex > tileableIndex) {
+        // Update the focusedIndex
+        if (
+            (tileableIsFocused && this.insertedMsWindow) ||
+            this.focusedIndex > tileableIndex
+        ) {
             this.focusedIndex--;
         } else if (
             this.focusedIndex === this.tileableList.length - 1 &&
@@ -206,11 +210,7 @@ var MsWorkspace = class MsWorkspace {
 
         if (tileableIsFocused) {
             // If the window removed as just been inserted focus previous instead of next
-            const newIndex =
-                msWindow === this.insertedMsWindow
-                    ? this.focusedIndex - 1
-                    : this.focusedIndex;
-            this.focusTileable(this.tileableList[newIndex], true);
+            this.focusTileable(this.tileableList[this.focusedIndex], true);
         }
         this.msWorkspaceActor.updateUI();
         this.refreshFocus();
