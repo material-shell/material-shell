@@ -76,7 +76,6 @@ var HorizontalPanel = GObject.registerClass(
         }
 
         createSearchButton() {
-            // this.searchButtonBin = new St.BoxLayout({});
             this.icon = new St.Icon({
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/magnify-symbolic.svg`
@@ -97,8 +96,6 @@ var HorizontalPanel = GObject.registerClass(
                     Main.overview.hide();
                 }
             });
-            // this.searchButtonBin.add_child(this.searchButton);
-            // this.searchButtonBin.add_style_class_name('msPanel');
             this.insert_child_at_index(this.searchButton, 0);
         }
 
