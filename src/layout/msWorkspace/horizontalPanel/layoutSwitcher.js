@@ -80,7 +80,7 @@ var LayoutSwitcher = GObject.registerClass(
             Object.entries(TilingLayoutByKey).forEach(
                 ([layoutKey, layoutConstructor]) => {
                     this.menu.addMenuItem(
-                        new LayoutMenuItem(
+                        new TilingLayoutMenuItem(
                             layoutConstructor,
                             this.msWorkspace.state.layoutStateList.find(
                                 (layoutState) => layoutState.key === layoutKey
@@ -158,8 +158,8 @@ var LayoutSwitcher = GObject.registerClass(
     }
 );
 
-var LayoutMenuItem = GObject.registerClass(
-    class LayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
+var TilingLayoutMenuItem = GObject.registerClass(
+    class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
         _init(layoutConstructor, active, params) {
             super._init(layoutConstructor.label, active, params);
             this.layoutConstructor = layoutConstructor;
@@ -277,7 +277,7 @@ var LayoutsToggle = GObject.registerClass(
         toggleEditMode() {
             this.editable = !this.editable;
             this.menu._getMenuItems().forEach((item) => {
-                if (item instanceof LayoutMenuItem) {
+                if (item instanceof TilingLayoutMenuItem) {
                     item.setEditable(this.editable);
                 }
             });
