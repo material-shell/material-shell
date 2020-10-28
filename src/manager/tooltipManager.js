@@ -21,46 +21,65 @@ var TooltipManager = class TooltipManager extends MsManager {
         const enterId = actor.connect('enter-event', () => {
             let tooltip;
             let left = false;
+            let timeoutId;
             const leaveCallback = () => {
                 left = true;
                 if (tooltip) {
                     tooltip.remove();
+                    tooltip = null;
                 }
-                actor.disconnect(leaveId);
+                // Cancel countdown, if any
+                if (timeoutId) {
+                    GLib.source_remove(timeoutId);
+                    timeoutId = 0;
+                }
+                if (!actorDestroyed) {
+                    actor.disconnect(leaveId);
+                    actor.disconnect(destroyId);
+                }
                 global.stage.disconnect(deactivateId);
             };
             const leaveId = actor.connect('leave-event', leaveCallback);
+            const destroyId = actor.connect('destroy', leaveCallback);
             const deactivateId = global.stage.connect(
                 'deactivate',
                 leaveCallback
             );
 
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
-                if (!left) {
-                    tooltip = this.createTooltip(actor, params);
+            timeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                200,
+                () => {
+                    timeoutId = 0;
+                    if (!left) {
+                        tooltip = this.createTooltip(actor, params);
+                    }
+                    return GLib.SOURCE_REMOVE;
                 }
-                return GLib.SOURCE_REMOVE;
-            });
+            );
         });
         Me.connect('extension-disable', () => {
             if (!actorDestroyed) {
-                actor.disconnect(enterId);
+                if (enterId) actor.disconnect(enterId);
             }
         });
     }
 
     createTooltip(actor, params) {
-        if (!params.text) {
-            if (actor instanceof St.Label || actor instanceof Clutter.Text) {
-                const clutterText =
-                    actor instanceof St.Label
-                        ? actor.get_clutter_text()
-                        : actor;
-                if (clutterText.get_layout().is_ellipsized()) {
-                    params.text = clutterText.get_text();
-                }
+
+        // If actor has text, use it instead because it may be updated
+        let actorText;
+        if (actor instanceof St.Label || actor instanceof Clutter.Text) {
+            const clutterText =
+                actor instanceof St.Label
+                    ? actor.get_clutter_text()
+                    : actor;
+            if (clutterText.get_layout().is_ellipsized()) {
+                actorText = clutterText.get_text();
             }
         }
+        if (actorText)  params.text = actorText;
+
         if (!params.text) {
             return;
         }
@@ -118,8 +137,9 @@ var MatTooltip = GObject.registerClass(
         remove() {
             this.ease({
                 opacity: 0,
-                duration: 300,
+                duration: 500,
                 onComplete: () => {
+                    Main.layoutManager.removeChrome(this);
                     this.destroy();
                 },
             });
