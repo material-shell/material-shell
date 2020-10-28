@@ -12,14 +12,18 @@ var MatPanelButton = GObject.registerClass(
         _init(params = {}) {
             super._init(params);
             this.add_style_class_name('mat-panel-button');
-            Me.msThemeManager.connect('panel-size-changed', () => {
+            const panelSizeSignal = Me.msThemeManager.connect('panel-size-changed', () => {
                 this.queue_relayout();
             });
             this.monitor = this.findMonitor();
-            Main.layoutManager.connect('monitors-changed', () => {
+            const monitorSignal = Main.layoutManager.connect('monitors-changed', () => {
                 GLib.idle_add(GLib.PRIORITY_LOW, () => {
                     this.monitor = this.findMonitor();
                 });
+            });
+            this.connect('destroy', () => {
+                Me.msThemeManager.disconnect(panelSizeSignal);
+                Main.layoutManager.disconnect(monitorSignal);
             });
         }
 
