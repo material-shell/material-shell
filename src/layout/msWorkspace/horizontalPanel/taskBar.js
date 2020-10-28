@@ -294,12 +294,15 @@ var TaskBar = GObject.registerClass(
         }
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            Allocate(this.taskButtonContainer, box, flags);
+            const themeNode = this.get_theme_node();
+            const contentBox = themeNode.get_content_box(box);
+            Allocate(this.taskButtonContainer, contentBox, flags);
+
             let taskActiveIndicatorBox = new Clutter.ActorBox({
                 x1: this.getActiveItem().x,
                 x2: this.getActiveItem().x + this.getActiveItem().width,
-                y1: box.get_height() - this.taskActiveIndicator.height,
-                y2: box.get_height(),
+                y1: contentBox.get_height() - this.taskActiveIndicator.height,
+                y2: contentBox.get_height(),
             });
             Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
         }
