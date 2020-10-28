@@ -172,7 +172,11 @@ var MsWorkspace = class MsWorkspace {
 
         let insertAt = this.tileableList.length - 1;
 
-        if (insert) {
+        // Do not insert tileable after App Launcher
+        if (
+            insert &&
+            this.tileableFocused !== this.appLauncher
+        ) {
             insertAt = this.focusedIndex + 1;
             this.insertedMsWindow = msWindow;
         }

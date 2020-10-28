@@ -28,8 +28,10 @@ var MsApplicationLauncher = GObject.registerClass(
             this.appListContainer = null;
             this.initAppListContainer();
             Me.msThemeManager.connect('clock-app-launcher-changed', () => {
-                this.appListContainer.destroy();
-                this.initAppListContainer();
+                this.restartAppListContainer();
+            });
+            Shell.AppSystem.get_default().connect('installed-changed', () => {
+                this.restartAppListContainer();
             });
             this.connect('key-focus-in', () => {
                 this.appListContainer.inputContainer.grab_key_focus();
@@ -42,6 +44,11 @@ var MsApplicationLauncher = GObject.registerClass(
             this.connect('key-focus-out', () => {
                 //this._searchResults.highlightDefault(false);
             });
+        }
+
+        restartAppListContainer() {
+            this.appListContainer.destroy();
+            this.initAppListContainer();
         }
 
         initAppListContainer() {
