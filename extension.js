@@ -25,6 +25,7 @@ const { getSettings } = Me.imports.src.utils.settings;
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
+    _splashscreenTimeoutId,
     splashscreenCalled;
 let splashScreens = [];
 
@@ -108,6 +109,10 @@ function loaded(disconnect) {
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
     if (splashscreenCalled) {
+        if (_splashscreenTimeoutId) {
+            GLib.source_remove(_splashscreenTimeoutId);
+            _splashscreenTimeoutId = 0;
+        }
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
             hideSplashScreens();
             return GLib.SOURCE_REMOVE;
@@ -132,6 +137,7 @@ function disable() {
     modules.reverse().forEach((module) => {
         module.destroy();
     });
+    Me.tooltipManager.destroy();
     Me.layoutManager.destroy();
     Me.msWorkspaceManager.destroy();
     Me.msWindowManager.destroy();
@@ -139,6 +145,7 @@ function disable() {
     Me.layout.destroy();
     Me.msThemeManager.destroy();
     disableIncompatibleExtensionsModule.destroy();
+    Me.stateManager.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
     log('---------------------');
@@ -168,10 +175,15 @@ function showSplashScreens() {
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
     });
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
-        hideSplashScreens();
-        return GLib.SOURCE_REMOVE;
-    });
+    _splashscreenTimeoutId = GLib.timeout_add(
+        GLib.PRIORITY_DEFAULT,
+        5000,
+        () => {
+            _splashscreenTimeoutId = 0;
+            hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
+        }
+    );
 }
 
 function hideSplashScreens() {
