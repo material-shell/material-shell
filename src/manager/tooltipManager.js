@@ -15,10 +15,7 @@ var TooltipManager = class TooltipManager extends MsManager {
     add(actor, params = {}) {
         let actorDestroyed = false;
         actor.set_reactive(true);
-        actor.connect('destroy', () => {
-            actorDestroyed = true;
-        });
-        const enterId = actor.connect('enter-event', () => {
+        const tooltipCallback = () => {
             let tooltip;
             let left = false;
             let timeoutId;
@@ -40,7 +37,10 @@ var TooltipManager = class TooltipManager extends MsManager {
                 global.stage.disconnect(deactivateId);
             };
             const leaveId = actor.connect('leave-event', leaveCallback);
-            const destroyId = actor.connect('destroy', leaveCallback);
+            const destroyId = actor.connect('destroy', () => {
+                actorDestroyed = true;
+                leaveCallback();
+            });
             const deactivateId = global.stage.connect(
                 'deactivate',
                 leaveCallback
@@ -57,12 +57,8 @@ var TooltipManager = class TooltipManager extends MsManager {
                     return GLib.SOURCE_REMOVE;
                 }
             );
-        });
-        Me.connect('extension-disable', () => {
-            if (!actorDestroyed) {
-                if (enterId) actor.disconnect(enterId);
-            }
-        });
+        };
+        this.observe(actor, 'enter-event', tooltipCallback);
     }
 
     createTooltip(actor, params) {
