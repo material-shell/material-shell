@@ -30,7 +30,15 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     constructor() {
         super();
         this.themeContext = St.ThemeContext.get_for_stage(global.stage);
-        this.themeContext.connect('changed', () => {
+        this.theme = this.themeContext.get_theme();
+        this.themeSettings = getSettings('theme');
+        this.themeFile = Gio.file_new_for_path(
+            `${GLib.get_user_cache_dir()}/${Me.uuid}-theme.css`
+        );
+        this.themeValue = this.themeSettings.get_string('theme');
+        this.primary = this.themeSettings.get_string('primary-color');
+
+        this.observe(this.themeContext, 'changed', () => {
             Me.log('theme changed');
             this.theme = this.themeContext.get_theme();
 
@@ -41,13 +49,6 @@ var MsThemeManager = class MsThemeManager extends MsManager {
                 Main.uiGroup.add_style_class_name('no-theme');
             }
         });
-        this.theme = this.themeContext.get_theme();
-        this.themeSettings = getSettings('theme');
-        this.themeFile = Gio.file_new_for_path(
-            `${GLib.get_user_cache_dir()}/${Me.uuid}-theme.css`
-        );
-        this.themeValue = this.themeSettings.get_string('theme');
-        this.primary = this.themeSettings.get_string('primary-color');
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
             this.themeValue = schema.get_string('theme');
             this.regenerateStylesheet();
