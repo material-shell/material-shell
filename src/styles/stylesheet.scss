@@ -470,12 +470,13 @@ MatTooltip {
         $surface-opacity
     );
 }
-
 .popup-menu {
     margin-bottom: 0;
+    -arrow-base: 0px;
+    -arrow-rise: 0px;
 }
 // If there is no custom theme loaded we can override adwaita to provide better material theme
-.no-theme {
+/* .no-theme { 
     .popup-menu {
         margin: 0;
         -boxpointer-gap: 0px;
@@ -567,7 +568,7 @@ MatTooltip {
             border: 0px;
         }
     }
-}
+} */
 
 LayoutSwitcher {
     & > StBin {

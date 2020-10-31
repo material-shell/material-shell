@@ -45,7 +45,7 @@ subtitle-1 {
   font-size: 12pt;
   letter-spacing: 0.5px; }
 
-.body-2, .no-theme .popup-menu .popup-menu-content .popup-menu-item {
+.body-2 {
   font-family: "Roboto", sans-serif;
   font-size: 10.5pt;
   letter-spacing: 0.25px; }
@@ -356,85 +356,113 @@ MatTooltip {
   min-height: 24px;
   text-align: center; }
 
-.surface, .no-theme .popup-menu .popup-menu-content .popup-menu-item.selected {
+.surface {
   background: rgba(63, 81, 181, 0.987); }
 
-.surface-lighter, .no-theme .popup-menu .popup-menu-content .popup-submenu-menu-item:open {
+.surface-lighter {
   background: rgba(112, 126, 205, 0.987); }
 
 .surface-darker {
   background: rgba(44, 57, 127, 0.987); }
 
 .popup-menu {
-  margin-bottom: 0; }
-
-.no-theme .popup-menu {
-  margin: 0;
-  -boxpointer-gap: 0px;
-  -arrow-border-radius: 0;
-  -arrow-border-width: 0px;
-  -arrow-border-color: transparent;
+  margin-bottom: 0;
   -arrow-base: 0px;
-  -arrow-rise: 0px;
-  -arrow-background-color: transparent; }
-  .no-theme .popup-menu .popup-menu-content {
-    background: #121212;
-    margin: 0;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    border-radius: 8px; }
-    .no-theme .popup-menu .popup-menu-content .popup-menu-item {
-      font-weight: 400;
-      padding-top: 10px;
-      padding-bottom: 10px; }
-      .no-theme .popup-menu .popup-menu-content .popup-menu-item .popup-menu-icon {
-        icon-size: 20px;
-        margin-right: 10px;
-        color: rgba(255, 255, 255, 0.6); }
-      .no-theme .popup-menu .popup-menu-content .popup-menu-item StLabel {
-        padding: 0;
-        padding-top: 1.5px;
-        color: rgba(255, 255, 255, 0.87); }
-    .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item {
-      padding: 0;
-      spacing: 0px; }
-      .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item .popup-separator-menu-item-separator {
-        margin: 8px 0px;
-        padding: 0;
-        background: rgba(255, 255, 255, 0.04); }
-      .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item StLabel {
-        padding: 0;
-        margin: 8px 10px;
-        color: rgba(255, 255, 255, 0.38); }
-      .no-theme .popup-menu .popup-menu-content .popup-separator-menu-item .popup-menu-ornament {
-        width: 0;
-        padding: 0;
-        margin: 0; }
-    .no-theme .popup-menu .popup-menu-content .popup-sub-menu {
-      background: rgba(0, 0, 0, 0.12);
-      box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12); }
-  .no-theme .popup-menu.panel-menu {
-    border-radius: 0px 8px 8px 0px; }
-    .no-theme .popup-menu.panel-menu .popup-menu-content {
-      margin-top: 20px;
-      border-radius: 0px 8px 8px 0px;
-      box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4); }
-  .no-theme .popup-menu.horizontal-panel-menu {
-    border-radius: 0px 0px 8px 8px; }
-    .no-theme .popup-menu.horizontal-panel-menu .popup-menu-content {
-      margin-left: 20px;
-      border-radius: 0px 0px 8px 8px;
-      box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4); }
+  -arrow-rise: 0px; }
 
-.no-theme #calendarArea .calendar,
-.no-theme #calendarArea .message,
-.no-theme #calendarArea .events-button,
-.no-theme #calendarArea .world-clocks-button,
-.no-theme #calendarArea .weather-button,
-.no-theme #calendarArea .events-section-title {
-  background: #212121;
-  border: 0px; }
+/* .no-theme { 
+    .popup-menu {
+        margin: 0;
+        -boxpointer-gap: 0px;
+        -arrow-border-radius: 0;
+        -arrow-border-width: 0px;
+        -arrow-border-color: transparent;
+        -arrow-base: 0px;
+        -arrow-rise: 0px;
+        -arrow-background-color: transparent;
+        .popup-menu-content {
+            background: getDarkerColor(getBackgroundColor('dark'));
+            margin: 0;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 8px;
+            .popup-menu-item {
+                font-weight: 400;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                @extend .body-2;
+                .popup-menu-icon {
+                    icon-size: 20px;
+                    margin-right: 10px;
+                    @include foreground-medium-emphasis('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    padding-top: 1.5px;
+                    @include foreground-high-emphasis('dark');
+                }
+                &.selected {
+                    @extend .surface;
+                }
+            }
+            .popup-separator-menu-item {
+                padding: 0;
+                spacing: 0px;
+                .popup-separator-menu-item-separator {
+                    margin: 8px 0px;
+                    padding: 0;
+                    @include hover('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    margin: 8px 10px;
+                    @include foreground-disabled('dark');
+                }
+                .popup-menu-ornament {
+                    width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            .popup-sub-menu {
+                background: rgba(0, 0, 0, 0.12);
+                box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+            }
+            .popup-submenu-menu-item:open {
+                @extend .surface-lighter;
+            }
+        }
+        &.panel-menu {
+            border-radius: 0px 8px 8px 0px;
 
+            .popup-menu-content {
+                margin-top: 20px; // space for shadow
+                border-radius: 0px 8px 8px 0px;
+                box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+        &.horizontal-panel-menu {
+            border-radius: 0px 0px 8px 8px;
+
+            .popup-menu-content {
+                margin-left: 20px; // space for shadow
+                border-radius: 0px 0px 8px 8px;
+                box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+    }
+    #calendarArea {
+        .calendar,
+        .message,
+        .events-button,
+        .world-clocks-button,
+        .weather-button,
+        .events-section-title {
+            background: getLighterColor(getBackgroundColor('dark'));
+            border: 0px;
+        }
+    }
+} */
 LayoutSwitcher > StBin {
   padding: 8px 0;
   margin-right: 8px; }
