@@ -376,6 +376,10 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         ) {
             return false;
         }
+        if (metaWindow.above) {
+            metaWindow.stick();
+            return false;
+        }
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(metaWindow.window_type);
