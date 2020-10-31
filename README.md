@@ -137,6 +137,10 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+Space` Cycle the tiling layout of the current workspace.
 * `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
+## Other Actions
+* Middle-click on a workspace closes the workspace and all applications in it.
+* Right-click on any workspace to change the icon settings for the workspaces.
+
 # Installation
 
 #### Get it in two clicks
