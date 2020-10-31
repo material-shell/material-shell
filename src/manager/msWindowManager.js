@@ -118,12 +118,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 1
             );
         }
-        if (
-            metaWindow.msWindow &&
-            metaWindow.msWindow.metaWindow === metaWindow
-        ) {
+        if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
-            msWindow.kill();
+            msWindow.metaWindowUnManaged(metaWindow);
         }
     }
 

@@ -597,9 +597,6 @@ var MsWindow = GObject.registerClass(
                 metaWindow,
                 clone,
             };
-            metaWindow.connect('unmanaged', () => {
-                this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
-            });
             metaWindow.msWindow = this;
             this.dialogs.push(dialog);
             this.add_child(clone);
@@ -659,6 +656,36 @@ var MsWindow = GObject.registerClass(
             } else {
                 this.placeholder.grab_key_focus();
             }
+        }
+
+        /**
+         * When a MetaWindow associated to this MsWindow is unManaged we remove it from the dialogs if it's a dialog or the MainMetaWindow then we kill the MsWindow only if it was the last one.
+         * @param {MetaWindow} metaWindow the MetaWindow currently unManaged
+         */
+        metaWindowUnManaged(metaWindow) {
+            const isMainMetaWindow = metaWindow === this._metaWindow;
+            const isDialogMetaWindow = this.dialogs
+                .map((dialog) => dialog.metaWindow)
+                .includes(metaWindow);
+            // If it's neither the MainMetaWindow or a Dialog we ignore but this shouldn't happen
+            if (!isMainMetaWindow && !isDialogMetaWindow) {
+                return;
+            }
+            if (isDialogMetaWindow) {
+                const dialog = this.dialogs.find(
+                    (dialog) => dialog.metaWindow === metaWindow
+                );
+                this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+            }
+            if (isMainMetaWindow) {
+                this._metaWindow = null;
+            }
+            // If there is a dialog or the mainMetaWindow we exit here
+            if (this.dialogs.length || this._metaWindow) {
+                return;
+            }
+            // Otherwise we kill the msWindow
+            this.kill();
         }
 
         kill() {
