@@ -4,7 +4,11 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
+const {
+    SetAllocation,
+    Allocate,
+    AllocatePreferredSize,
+} = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 
@@ -607,6 +611,11 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        removeDialog(dialog) {
+            this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+            dialog.clone.destroy();
+        }
+
         async onMetaWindowsChanged() {
             if (this.metaWindow) {
                 this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
@@ -675,7 +684,7 @@ var MsWindow = GObject.registerClass(
                 const dialog = this.dialogs.find(
                     (dialog) => dialog.metaWindow === metaWindow
                 );
-                this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+                this.removeDialog(dialog);
             }
             if (isMainMetaWindow) {
                 this._metaWindow = null;
@@ -803,7 +812,6 @@ var MsWindowContent = GObject.registerClass(
             box = themeNode.get_content_box(box);
             let metaWindow = this.get_parent().metaWindow;
             if (metaWindow && metaWindow.firstFrameDrawn) {
-                this.clone.visible = true;
                 let windowFrameRect = metaWindow.get_frame_rect();
                 let windowBufferRect = metaWindow.get_buffer_rect();
                 //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
@@ -834,7 +842,7 @@ var MsWindowContent = GObject.registerClass(
                     Allocate(this.clone, cloneBox, flags);
                 }
             } else {
-                this.clone.visible = false;
+                AllocatePreferredSize(this.clone, flags);
             }
 
             if (this.placeholder.get_parent() === this) {
