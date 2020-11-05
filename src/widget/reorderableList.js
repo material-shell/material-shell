@@ -15,9 +15,6 @@ var ReorderableList = GObject.registerClass(
             'actor-moved': {
                 param_types: [Clutter.Actor.$gtype, GObject.TYPE_INT],
             },
-            'foreign-drop-on-actor': {
-                param_types: [Clutter.Actor.$gtype, Clutter.Actor.$gtype],
-            },
         },
     },
     class ReorderableList extends Clutter.Actor {
@@ -43,7 +40,12 @@ var ReorderableList = GObject.registerClass(
         }
 
         makeActorDraggable(actor) {
+            actor.originalHandleDragOver = actor.handleDragOver;
+            actor.originalAcceptDrop = actor.acceptDrop;
             actor.handleDragOver = (source, _, x, y) => {
+                const originalResult = actor.originalHandleDragOver
+                    ? actor.originalHandleDragOver(source, actor, x, y)
+                    : null;
                 if (source === this.draggedActor) {
                     if (
                         actor.draggable != undefined &&
@@ -60,15 +62,18 @@ var ReorderableList = GObject.registerClass(
                     this.movePlaceholder(actorIndex + (after ? 1 : 0));
                     return DND.DragMotionResult.NO_DROP;
                 }
-                return DND.DragMotionResult.MOVE_DROP;
+
+                return originalResult || DND.DragMotionResult.MOVE_DROP;
             };
 
             actor.acceptDrop = (source) => {
                 source._draggable._dragActor.get_parent().remove_child(source);
-                if (source !== this.draggedActor) {
-                    this.emit('foreign-drop-on-actor', actor, source);
+                if (source === this.draggedActor) {
+                    return true;
                 }
-                return true;
+                return actor.originalAcceptDrop
+                    ? actor.originalAcceptDrop(source)
+                    : false;
             };
 
             actor._draggable = DND.makeDraggable(actor, {

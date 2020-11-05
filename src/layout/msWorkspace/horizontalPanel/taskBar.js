@@ -41,26 +41,6 @@ var TaskBar = GObject.registerClass(
                 }
             );
             this.taskButtonContainer.connect(
-                'foreign-drop-on-actor',
-                (_, actor, foreignActor) => {
-                    Me.logFocus('foreign-drop-on-actor', actor, foreignActor);
-                    /* if (foreignActor instanceof TaskBarItem) {
-                        const tileable = foreignActor.tileable;
-
-                        const tileableIndex = actor.msWorkspace.tileableList.indexOf(
-                            tileable
-                        );
-                        if (tileableIndex < 0 && tileable instanceof MsWindow) {
-                            Me.msWorkspaceManager.setWindowToMsWorkspace(
-                                tileable,
-                                actor.msWorkspace
-                            );
-                            actor.msWorkspace.activate();
-                        }
-                    }*/
-                }
-            );
-            this.taskButtonContainer.connect(
                 'drag-start',
                 (_, actor, foreignActor) => {
                     this.taskActiveIndicator.hide();

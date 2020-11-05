@@ -44,26 +44,7 @@ var WorkspaceList = GObject.registerClass(
                     index
                 );
             });
-            this.buttonList.connect(
-                'foreign-drop-on-actor',
-                (_, actor, foreignActor) => {
-                    Me.logFocus('foreign-drop-on-actor', actor, foreignActor);
-                    if (foreignActor instanceof TaskBarItem) {
-                        const tileable = foreignActor.tileable;
 
-                        const tileableIndex = actor.msWorkspace.tileableList.indexOf(
-                            tileable
-                        );
-                        if (tileableIndex < 0 && tileable instanceof MsWindow) {
-                            Me.msWorkspaceManager.setWindowToMsWorkspace(
-                                tileable,
-                                actor.msWorkspace
-                            );
-                            actor.msWorkspace.activate();
-                        }
-                    }
-                }
-            );
             this.add_child(this.buttonList);
 
             this.workspaceActiveIndicator = new St.Widget({
@@ -526,43 +507,28 @@ var WorkspaceButton = GObject.registerClass(
             });
         }
 
-        /* handleDragOver(source, actor, x, y) {
-            if (source instanceof WorkspaceButton && this.draggable) {
-                this.emit('drag-over', y < this.height / 2);
-                return DND.DragMotionResult.MOVE_DROP;
-            } else if (source instanceof TaskBarItem) {
+        handleDragOver(source, actor, x, y) {
+            if (source instanceof TaskBarItem) {
                 return DND.DragMotionResult.MOVE_DROP;
             }
             return DND.DragMotionResult.NO_DROP;
         }
 
         acceptDrop(source) {
-            if (source instanceof WorkspaceButton) {
-                this.emit('drag-dropped');
-                return true;
-            } else if (source instanceof TaskBarItem) {
-                const tileableIndex = this.msWorkspace.tileableList.indexOf(
-                    source.tileable
-                );
-                const tileable = source.tileable;
-                if (tileableIndex < 0 && tileable instanceof MsWindow) {
-                    (async () => {
-                        await source.emit('drag-dropped');
+            if (source instanceof TaskBarItem) {
+                if (source.tileable instanceof MsWindow) {
                         Me.msWorkspaceManager.setWindowToMsWorkspace(
-                            tileable,
+                        source.tileable,
                             this.msWorkspace
                         );
                         Me.logFocus('[DEBUG]', 'stateChanged from acceptDrop');
                         this.msWorkspaceManager.stateChanged();
                         this.msWorkspace.activate();
-                    })();
-                } else {
-                    source.emit('drag-dropped');
                 }
                 return true;
             }
             return false;
-        } */
+        }
 
         /**
          * Just the parent width
