@@ -135,8 +135,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 const updateClock = () => {
                     this.clockLabel.text = this._wallClock.clock;
                     const date = new Date();
-                    /* Translators: This is a time format for a date in
-               long format */
                     let dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
                     );

@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio, Meta, GLib } = imports.gi;
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -334,9 +334,12 @@ var TaskActiveIndicator = GObject.registerClass(
             });
         }
         vfunc_allocate(...args) {
-            if (this.width) {
+            if (this.width && this.visible) {
                 this.prepareAnimation(args[0]);
-                this.animate();
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.animate();
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             super.vfunc_allocate(...args);
         }
