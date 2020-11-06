@@ -100,8 +100,20 @@ var MsApplicationLauncher = GObject.registerClass(
             containerBox.x2 = Math.round(
                 contentBox.x2 - (contentBox.get_width() - containerWidth) / 2
             );
+
             containerBox.y1 = Math.round(contentBox.y1 + 0.1 * minSize);
             containerBox.y2 = Math.round(contentBox.y2 - 0.1 * minSize);
+
+            // Prevent odd number size to have proper font aliasing
+            containerBox.x2 =
+                containerBox.get_width() % 2 != 0
+                    ? containerBox.x2 + 1
+                    : containerBox.x2;
+            containerBox.y2 =
+                containerBox.get_height() % 2 != 0
+                    ? containerBox.y2 + 1
+                    : containerBox.y2;
+
             Allocate(this.appListContainer, containerBox, flags);
         }
     }
