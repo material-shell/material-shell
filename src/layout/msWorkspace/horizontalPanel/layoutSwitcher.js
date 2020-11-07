@@ -147,12 +147,11 @@ var LayoutSwitcher = GObject.registerClass(
 
         vfunc_allocate(...args) {
             let box = args[0];
-            if (
-                this.tilingIcon &&
-                this.tilingIcon.get_icon_size() != box.get_height() / 2
-            ) {
-                Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
-                    this.tilingIcon.set_icon_size(box.get_height() / 2);
+            const height = box.get_height() / 2;
+
+            if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.tilingIcon.set_icon_size(height);
                     return GLib.SOURCE_REMOVE;
                 });
             }
