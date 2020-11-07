@@ -79,7 +79,6 @@ var MsApplicationLauncher = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            if (!this.visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerBox = new Clutter.ActorBox();
@@ -147,8 +146,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 const updateClock = () => {
                     this.clockLabel.text = this._wallClock.clock;
                     const date = new Date();
-                    /* Translators: This is a time format for a date in
-               long format */
                     let dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
                     );
@@ -534,7 +531,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerPadding = 16 * this.monitorScale;

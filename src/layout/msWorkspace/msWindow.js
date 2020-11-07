@@ -842,13 +842,20 @@ var MsWindowContent = GObject.registerClass(
                     }
 
                     Allocate(this.clone, cloneBox, flags);
+                } else {
+                    AllocatePreferredSize(this.clone, flags);
                 }
             } else {
                 AllocatePreferredSize(this.clone, flags);
             }
 
             if (this.placeholder.get_parent() === this) {
-                this.placeholder.set_size(box.get_width(), box.get_height());
+                let height = box.get_height();
+                let width = box.get_width();
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.placeholder.set_size(width, height);
+                    return GLib.SOURCE_REMOVE;
+                });
                 Allocate(this.placeholder, box, flags);
             }
         }
