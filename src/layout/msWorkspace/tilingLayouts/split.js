@@ -227,6 +227,8 @@ var SplitLayout = GObject.registerClass(
             });
             widget.connect('changed', (_, newValue) => {
                 this.state.nbOfColumns = newValue;
+                this.updateActiveTileableListFromFocused();
+                this.refreshVisibleActors();
                 this.tileAll();
             });
             return widget;
