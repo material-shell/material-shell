@@ -211,6 +211,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         );
     }
 
+    initState() {
+        for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
+            if (!this.primaryMsWorkspaces[i]) {
+                this.setupNewWorkspace(
+                    this.workspaceManager.get_workspace_by_index(i)
+                );
+            }
+        }
+    }
+
     restorePreviousState() {
         this.restoringState = true;
         Me.logFocus('[DEBUG]', 'Restoring previous state');

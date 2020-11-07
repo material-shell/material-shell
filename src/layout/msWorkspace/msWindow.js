@@ -257,6 +257,7 @@ var MsWindow = GObject.registerClass(
                 this._metaWindow && this._metaWindow.get_compositor_private();
 
             if (
+                this.destroyed ||
                 !windowActor ||
                 !this.mapped ||
                 this.width === 0 ||
@@ -788,6 +789,7 @@ var MsWindow = GObject.registerClass(
         }
 
         _onDestroy() {
+            this.destroyed = true;
             this.unregisterOnMetaWindowSignals();
         }
     }
