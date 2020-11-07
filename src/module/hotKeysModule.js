@@ -122,6 +122,11 @@ var HotKeysModule = class HotKeysModule {
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
+                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
+                    && (!Meta.prefs_get_dynamic_workspaces() || activeMsWorkspace.msWindowList.length === 1)) {
+                    return;
+                }
+
                 const nextMsWorkspace =
                     Me.msWorkspaceManager.primaryMsWorkspaces[
                         Me.msWorkspaceManager.primaryMsWorkspaces.length - 1
@@ -169,12 +174,17 @@ var HotKeysModule = class HotKeysModule {
                 }
                 if (
                     activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        Me.msWorkspaceManager.primaryMsWorkspaces.length - (
-                            Meta.prefs_get_dynamic_workspaces() ? 2 : 1
-                        )
-                    ]
+                        Me.msWorkspaceManager.primaryMsWorkspaces[
+                            Me.msWorkspaceManager.primaryMsWorkspaces.length - (
+                                Meta.prefs_get_dynamic_workspaces() ? 2 : 1
+                            )
+                        ]
                 ) {
+                    if ((Meta.prefs_get_dynamic_workspaces() && activeMsWorkspace.msWindowList.length === 1 && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                        || (!Meta.prefs_get_dynamic_workspaces() && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())) {
+                        return;
+                    }
+
                     if (!Meta.prefs_get_dynamic_workspaces() ||
                         (activeMsWorkspace.msWindowList.length === 1 && Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
                     ) {
@@ -187,11 +197,11 @@ var HotKeysModule = class HotKeysModule {
                         );
 
                         Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+
+                        nextMsWorkspace.activate();
+
+                        return;
                     }
-
-                    nextMsWorkspace.activate();
-
-                    return;
                 }
 
                 const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(

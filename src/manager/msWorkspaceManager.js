@@ -40,9 +40,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             if (!Meta.prefs_get_dynamic_workspaces()) {
                 this._checkWorkspacesId = 0;
                 const msWorkspaceManager = global.ms.msWorkspaceManager;
-                Me.logFocus('[DEBUG]', 
-                    this._workspaces.length + ' ' + workspaceManager.get_n_workspaces() + ' ' + msWorkspaceManager.msWorkspaceList.length
-                );
+
                 while (workspaceManager.get_n_workspaces() < msWorkspaceManager.msWorkspaceList.length) {
                     const workspaceIndex = msWorkspaceManager.msWorkspaceList.length - 1;
 
@@ -590,7 +588,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     get state() {
-        this._state.msWorkspaceList = this.msWorkspaceList
+        let msWorkspaceList = this.msWorkspaceList;
+
+        if (Meta.prefs_get_dynamic_workspaces()) {
+            msWorkspaceList = msWorkspaceList
+                .filter((msWorkspace) => {
+                    return msWorkspace.msWindowList.length;
+                });
+        }
+
+        this._state.msWorkspaceList = msWorkspaceList
             .map((msWorkspace) => {
                 return msWorkspace.state;
             });
