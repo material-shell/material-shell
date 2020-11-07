@@ -5,7 +5,6 @@ const { GObject } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
-    ResizablePortion,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
 /* exported HalfLayout */
@@ -87,4 +86,5 @@ var HalfLayout = GObject.registerClass(
     }
 );
 
-HalfLayout.key = 'half';
+HalfLayout.state = { key: 'half' };
+HalfLayout.label = 'Half';

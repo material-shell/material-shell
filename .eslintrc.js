@@ -1,9 +1,12 @@
+/* eslint-env node */
 module.exports = {
     env: {
         es6: true,
     },
-    extends: 'eslint:recommended',
+    extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+    plugins: ['prettier'],
     rules: {
+        'prettier/prettier': 'error',
         'array-bracket-newline': ['error', 'consistent'],
         'array-bracket-spacing': ['error', 'never'],
         'arrow-spacing': 'error',
@@ -15,17 +18,7 @@ module.exports = {
                 after: true,
             },
         ],
-        indent: [
-            'error',
-            4,
-            {
-                ignoredNodes: [
-                    'CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child',
-                ],
-                MemberExpression: 'off',
-                SwitchCase: 1,
-            },
-        ],
+
         'key-spacing': [
             'error',
             {

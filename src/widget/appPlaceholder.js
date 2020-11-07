@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter, GLib } = imports.gi;
 const Animation = imports.ui.animation;
 
 /** Extension imports */
@@ -32,7 +32,7 @@ var AppPlaceholder = GObject.registerClass(
             this.spinnerContainer.set_opacity(0);
             this.appTitle = new St.Label({
                 text: app.get_name(),
-                style_class: 'headline-4',
+                style_class: 'headline-4 text-high-emphasis',
             });
 
             this.callToAction = new St.Label({
@@ -142,7 +142,12 @@ var AppPlaceholder = GObject.registerClass(
         }
 
         vfunc_allocate(...args) {
-            this.setOrientation(args[0].get_width(), args[0].get_height());
+            const width = args[0].get_width();
+            const height = args[0].get_height();
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.setOrientation(width, height);
+                return GLib.SOURCE_REMOVE;
+            });
             super.vfunc_allocate(...args);
         }
 

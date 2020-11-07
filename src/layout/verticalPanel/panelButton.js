@@ -12,21 +12,27 @@ var MatPanelButton = GObject.registerClass(
         _init(params = {}) {
             super._init(params);
             this.add_style_class_name('mat-panel-button');
-            Me.msThemeManager.connect('panel-size-changed', () => {
+            const panelSizeSignal = Me.msThemeManager.connect('panel-size-changed', () => {
                 this.queue_relayout();
             });
             this.monitor = this.findMonitor();
-            Main.layoutManager.connect('monitors-changed', () => {
+            const monitorSignal = Main.layoutManager.connect('monitors-changed', () => {
                 GLib.idle_add(GLib.PRIORITY_LOW, () => {
                     this.monitor = this.findMonitor();
                 });
+            });
+            this.connect('destroy', () => {
+                Me.msThemeManager.disconnect(panelSizeSignal);
+                Main.layoutManager.disconnect(monitorSignal);
             });
         }
 
         findMonitor() {
             let [x, y] = this.get_transformed_position();
-            return global.display.get_monitor_index_for_rect(
-                new Meta.Rectangle({ x, y, width: 0, height: 0 })
+            return (
+                global.display.get_monitor_index_for_rect(
+                    new Meta.Rectangle({ x, y, width: 0, height: 0 })
+                ) || global.display.get_current_monitor()
             );
         }
 
@@ -43,7 +49,7 @@ var MatPanelButton = GObject.registerClass(
         /**
          * Just the panel height
          */
-        vfunc_get_preferred_height(forWidth) {
+        vfunc_get_preferred_height(_forWidth) {
             return [
                 Me.msThemeManager.getPanelSize(this.monitor.index),
                 Me.msThemeManager.getPanelSize(this.monitor.index),

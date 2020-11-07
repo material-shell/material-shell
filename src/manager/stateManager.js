@@ -6,6 +6,7 @@ const FileTest = GLib.FileTest;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { getSettings } = Me.imports.src.utils.settings;
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
@@ -21,57 +22,64 @@ var StateManager = class StateManager {
     loadRegistry(callback) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
-
+        const serializedState = global.get_persistent_state(
+            's',
+            'material-shell-state'
+        );
+        if (serializedState) {
+            this.state = this.updateState(
+                JSON.parse(serializedState.deep_unpack())
+            );
+            return callback(this.state);
+        }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             this.stateFile.load_contents_async(null, (obj, res) => {
                 let [success, contents] = obj.load_contents_finish(res);
                 if (success) {
                     try {
-                        this.state = JSON.parse(
-                            imports.byteArray.toString(contents)
+                        this.state = this.updateState(
+                            JSON.parse(imports.byteArray.toString(contents))
                         );
-                    } catch {
+                    } catch (e) {
+                        Me.log(e);
                         this.state = {};
                     }
                 }
                 callback(this.state);
             });
         } else {
+            this.state = {};
             callback(this.state);
         }
     }
+
+    updateState(state) {
+        if (state) {
+            const workspacesState = state['workspaces-state'];
+            if (workspacesState) {
+                // in old version the workspaces was split in 2 different array
+                workspacesState.msWorkspaceList = workspacesState.msWorkspaceList || [
+                    ...workspacesState.primaryWorkspaceList,
+                    ...workspacesState.externalWorkspaces,
+                ];
+
+                workspacesState.msWorkspaceList.map((msWorkspaceState) => {
+                    msWorkspaceState.layoutKey =
+                        msWorkspaceState.layoutKey ||
+                        msWorkspaceState.tilingLayout;
+                    delete msWorkspaceState.tilingLayout;
+                    return msWorkspaceState;
+                });
+            }
+        }
+        return state;
+    }
+
     saveRegistry() {
         let json = JSON.stringify(this.state);
-        let contents = new GLib.Bytes(json);
-
-        // Write contents to file asynchronously
-        let file = Gio.file_new_for_path(REGISTRY_NEXT_PATH);
-        file.replace_async(
-            null,
-            false,
-            Gio.FileCreateFlags.NONE,
-            GLib.PRIORITY_DEFAULT,
-            null,
-            (obj, res) => {
-                let stream = obj.replace_finish(res);
-
-                stream.write_bytes_async(
-                    contents,
-                    GLib.PRIORITY_DEFAULT,
-                    null,
-                    (w_obj, w_res) => {
-                        w_obj.write_bytes_finish(w_res);
-                        stream.close(null);
-                        file.move(this.stateFile, 1, null, () => {
-                            //Progress callback
-                            Me.logFocus(
-                                '[DEBUG]',
-                                `registry successfully saved`
-                            );
-                        });
-                    }
-                );
-            }
+        global.set_persistent_state(
+            'material-shell-state',
+            new GLib.Variant('s', json)
         );
     }
     getState(key) {
@@ -84,6 +92,34 @@ var StateManager = class StateManager {
             this.state[key] = value;
         }
         this.saveRegistry();
+    }
+
+    stateChanged() {
+        if (
+            !Me.loaded ||
+            Me.msWorkspaceManager.updatingMonitors ||
+            this.stateChangedTriggered ||
+            Me.disableInProgress
+        )
+            return;
+
+        Me.logFocus('[DEBUG]', 'Inside stateChanged');
+        this.stateChangedTriggered = true;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.saveCurrentState();
+            this.stateChangedTriggered = false;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    saveCurrentState() {
+        // Avoid unnecessary work
+        if (!Me.loaded || Me.disableInProgress) return;
+        Me.logFocus('[DEBUG]', 'saveCurrentState');
+
+        if (getSettings('tweaks').get_boolean('enable-persistence')) {
+            this.setState('workspaces-state', Me.msWorkspaceManager.state);
+        }
     }
 
     destroy() {}

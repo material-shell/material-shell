@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Shell, Gio, GLib } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio, Meta, GLib } = imports.gi;
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -19,13 +19,14 @@ let dragData = null;
 /* exported TaskBar */
 var TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
-        _init(msWorkspace) {
+        _init(msWorkspace, panelMenuManager) {
             super._init({
                 name: 'taskBar',
                 x_expand: true,
+                reactive: true,
             });
             this._delegate = this;
-            this.taskActiveIndicator = new St.Widget({
+            this.taskActiveIndicator = new TaskActiveIndicator({
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
@@ -47,17 +48,27 @@ var TaskBar = GObject.registerClass(
                 ),
             ];
 
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspace.focusNextTileable();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspace.focusPreviousTileable();
+
+                        break;
+                }
+            });
+
             this.tracker = Shell.WindowTracker.get_default();
             this.windowFocused = null;
             this.items = [];
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menuManager = panelMenuManager;
             this.updateItems();
-            this._animateActiveIndicator();
         }
 
         onTileableListChange() {
             this.updateItems();
-            this._animateActiveIndicator();
         }
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
@@ -80,14 +91,17 @@ var TaskBar = GObject.registerClass(
 
             //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
-            this._animateActiveIndicator();
             nextItem.setActive(true);
+        }
+
+        getActiveItem() {
+            return this.items[this.msWorkspace.focusedIndex];
         }
 
         updateItems() {
             this.items.forEach((item) => item.destroy());
             this.items = this.msWorkspace.tileableList.map(
-                (tileable, index) => {
+                (tileable, _index) => {
                     if (tileable instanceof MsWindow) {
                         const item = new TileableItem(tileable);
                         this.menuManager.addMenu(item.menu);
@@ -165,12 +179,6 @@ var TaskBar = GObject.registerClass(
                         });
 
                         item.connect('drag-dropped', this.reparentDragItem);
-                        item.connect('notify::width', () => {
-                            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                                this._animateActiveIndicator();
-                                return GLib.SOURCE_REMOVE;
-                            });
-                        });
                         this.taskButtonContainer.add_child(item);
                         return item;
                     } else {
@@ -188,10 +196,9 @@ var TaskBar = GObject.registerClass(
                     }
                 }
             );
-            if (this.items[this.msWorkspace.focusedIndex])
-                this.items[this.msWorkspace.focusedIndex].add_style_class_name(
-                    'active'
-                );
+            if (this.items[this.msWorkspace.focusedIndex]) {
+                this.items[this.msWorkspace.focusedIndex].setActive(true);
+            }
         }
 
         updateCurrentTaskBar() {
@@ -280,40 +287,6 @@ var TaskBar = GObject.registerClass(
             dropPlaceholder.resize(item.width, currentTaskBar.height);
         }
 
-        _animateActiveIndicator() {
-            let taskBarItem = this.getTaskBarItemOfTileable(
-                this.msWorkspace.tileableFocused
-            );
-            if (
-                this.taskBarItemSignal &&
-                this.items.includes(this.taskBarItemSignal.from)
-            ) {
-                this.taskBarItemSignal.from.disconnect(
-                    this.taskBarItemSignal.id
-                );
-            }
-            if (!taskBarItem) {
-                return;
-            }
-
-            if (!this.mapped) return;
-            if (!this.taskActiveIndicator.width) {
-                this.taskActiveIndicator.scale_x = 1;
-                this.taskActiveIndicator.width = taskBarItem.width;
-            } else {
-                this.taskActiveIndicator.ease({
-                    translation_x: taskBarItem.x,
-                    scale_x: taskBarItem.width / this.taskActiveIndicator.width,
-                    duration: 250,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => {
-                        this.taskActiveIndicator.scale_x = 1;
-                        this.taskActiveIndicator.width = taskBarItem.width;
-                    },
-                });
-            }
-        }
-
         getTaskBarItemOfTileable(tileable) {
             return this.items.find((item) => {
                 return item.tileable === tileable;
@@ -321,21 +294,16 @@ var TaskBar = GObject.registerClass(
         }
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            let themeNode = this.get_theme_node();
+            const themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
+            Allocate(this.taskButtonContainer, contentBox, flags);
 
-            Allocate(this.taskButtonContainer, box, flags);
-
-            let taskActiveIndicatorBox = new Clutter.ActorBox();
-            taskActiveIndicatorBox.x1 = contentBox.x1;
-            taskActiveIndicatorBox.x2 =
-                contentBox.x1 +
-                this.taskActiveIndicator.get_preferred_width(-1)[0];
-            taskActiveIndicatorBox.y1 =
-                contentBox.y2 -
-                this.taskActiveIndicator.get_preferred_height(-1)[0];
-            taskActiveIndicatorBox.y2 = contentBox.y2;
-
+            let taskActiveIndicatorBox = new Clutter.ActorBox({
+                x1: this.getActiveItem().x,
+                x2: this.getActiveItem().x + this.getActiveItem().width,
+                y1: contentBox.get_height() - this.taskActiveIndicator.height,
+                y2: contentBox.get_height(),
+            });
             Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
         }
 
@@ -347,7 +315,41 @@ var TaskBar = GObject.registerClass(
     }
 );
 
-let TaskBarItem = GObject.registerClass(
+var TaskActiveIndicator = GObject.registerClass(
+    {
+        GTypeName: 'TaskActiveIndicator',
+    },
+    class TaskActiveIndicator extends St.Widget {
+        _init() {
+            super._init(...arguments);
+        }
+        prepareAnimation(newAllocation) {
+            this.translation_x = this.translation_x + this.x - newAllocation.x1;
+            this.scale_x =
+                (this.width * this.scale_x) / newAllocation.get_width();
+        }
+        animate() {
+            this.ease({
+                translation_x: 0,
+                scale_x: 1,
+                duration: 250,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            });
+        }
+        vfunc_allocate(...args) {
+            if (this.width && this.mapped) {
+                this.prepareAnimation(args[0]);
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.animate();
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+            super.vfunc_allocate(...args);
+        }
+    }
+);
+
+var TaskBarItem = GObject.registerClass(
     {
         Signals: {
             'drag-dropped': {},
@@ -521,11 +523,12 @@ let TileableItem = GObject.registerClass(
                 });
             }
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+            this.menu.actor.add_style_class_name('horizontal-panel-menu');
             /* this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
             ); */
             this.makePersistentAction = this.menu.addAction(
-                `Make this fully persistent`,
+                'Make this fully persistent',
                 () => {
                     this.tileable.persistent = true;
                     this.endIconContainer.set_child(this.persistentIcon);
@@ -538,7 +541,7 @@ let TileableItem = GObject.registerClass(
             );
 
             this.unmakePersistentAction = this.menu.addAction(
-                `Unmake this fully persistent`,
+                'Unmake this fully persistent',
                 () => {
                     this.tileable.persistent = false;
                     this.endIconContainer.set_child(this.closeButton);
@@ -555,7 +558,7 @@ let TileableItem = GObject.registerClass(
                 this.unmakePersistentAction.hide();
             }
             this.menu.addAction(
-                `Close`,
+                'Close',
                 () => {
                     this.emit('close-clicked');
                 },
@@ -578,6 +581,7 @@ let TileableItem = GObject.registerClass(
                 style_class: 'task-bar-item-title',
                 y_align: Clutter.ActorAlign.CENTER,
             });
+            Me.tooltipManager.add(this.title, { relativeActor: this });
 
             this.signalManager = new MsManager();
             this.style = getSettings('theme').get_string('taskbar-item-style');
@@ -677,11 +681,17 @@ let TileableItem = GObject.registerClass(
                 this.title.text = this.app.get_name();
             }
         }
-        vfunc_allocate(box, flags) {
-            if (!this.icon || this.lastHeight != box.get_height()) {
-                this.buildIcon(box.get_height());
+        vfunc_allocate(...args) {
+            const box = args[0];
+            const height = box.get_height();
+
+            if (!this.icon || this.lastHeight != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.buildIcon(height);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
         _onDestroy() {
             this.signalManager.destroy();
@@ -714,14 +724,17 @@ let IconTaskBarItem = GObject.registerClass(
             return [_forHeight, _forHeight];
         }
 
-        vfunc_allocate(box, flags) {
-            if (
-                this.icon &&
-                this.icon.get_icon_size() != box.get_height() / 2
-            ) {
-                this.icon.set_icon_size(box.get_height() / 2);
+        vfunc_allocate(...args) {
+            const box = args[0];
+            const height = box.get_height() / 2;
+
+            if (this.icon && this.icon.get_icon_size() != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.icon.set_icon_size(height);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
-            super.vfunc_allocate(box, flags);
+            super.vfunc_allocate(...args);
         }
     }
 );

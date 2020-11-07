@@ -24,7 +24,7 @@ var init = function () {
                             .map((param) => {
                                 try {
                                     return param.toString();
-                                } catch {
+                                } catch (_e) {
                                     return '';
                                 }
                             })

@@ -11,16 +11,21 @@ const {
 const { OverrideModule } = Me.imports.src.module.overrideModule;
 const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
 const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-const { TilingManager } = Me.imports.src.manager.tilingManager;
+const { LayoutManager } = Me.imports.src.manager.layoutManager;
 const { StateManager } = Me.imports.src.manager.stateManager;
 const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
 const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
 const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
+const { TooltipManager } = Me.imports.src.manager.tooltipManager;
+
 const { MsMain } = Me.imports.src.layout.main;
 const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
+const { getSettings } = Me.imports.src.utils.settings;
+
 let disableIncompatibleExtensionsModule,
     modules,
     _startupPreparedId,
+    _splashscreenTimeoutId,
     splashscreenCalled;
 let splashScreens = [];
 
@@ -60,18 +65,25 @@ function enable() {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
         //Load persistent data
-        Me.stateManager.loadRegistry(() => {
+        Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
-            Me.tilingManager = new TilingManager();
+            Me.tooltipManager = new TooltipManager();
+            Me.layoutManager = new LayoutManager();
             Me.msWindowManager = new MsWindowManager();
-            Me.msWorkspaceManager = new MsWorkspaceManager();
+            Me.msWorkspaceManager = new MsWorkspaceManager(
+                state['workspaces-state']
+            );
             Me.msNotificationManager = new MsNotificationManager();
             modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
             if (!Me.locked) {
                 Me.msThemeManager.regenerateStylesheet();
             }
-            Me.msWorkspaceManager.restorePreviousState();
+            if (getSettings('tweaks').get_boolean('enable-persistence')) {
+                Me.msWorkspaceManager.restorePreviousState();
+            } else {
+                Me.msWorkspaceManager.initState();
+            }
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
@@ -99,6 +111,10 @@ function loaded(disconnect) {
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
     if (splashscreenCalled) {
+        if (_splashscreenTimeoutId) {
+            GLib.source_remove(_splashscreenTimeoutId);
+            _splashscreenTimeoutId = 0;
+        }
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
             hideSplashScreens();
             return GLib.SOURCE_REMOVE;
@@ -123,13 +139,15 @@ function disable() {
     modules.reverse().forEach((module) => {
         module.destroy();
     });
-    Me.tilingManager.destroy();
+    Me.tooltipManager.destroy();
+    Me.layoutManager.destroy();
     Me.msWorkspaceManager.destroy();
     Me.msWindowManager.destroy();
 
     Me.layout.destroy();
     Me.msThemeManager.destroy();
     disableIncompatibleExtensionsModule.destroy();
+    Me.stateManager.destroy();
     Me.loaded = false;
     delete Me.disableInProgress;
     log('---------------------');
@@ -158,10 +176,16 @@ function showSplashScreens() {
         });
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 4000, () => {
-            hideSplashScreens();
-        });
     });
+    _splashscreenTimeoutId = GLib.timeout_add(
+        GLib.PRIORITY_DEFAULT,
+        5000,
+        () => {
+            _splashscreenTimeoutId = 0;
+            hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
+        }
+    );
 }
 
 function hideSplashScreens() {

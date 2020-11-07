@@ -50,7 +50,7 @@ subtitle-1 {
   font-size: 10.5pt;
   letter-spacing: 0.25px; }
 
-.caption {
+.caption, MatTooltip {
   font-family: "Roboto", sans-serif;
   font-size: 9pt;
   letter-spacing: 0.4px; }
@@ -105,8 +105,14 @@ subtitle-1 {
 .margin-left-x3 {
   margin-left: 24px !important; }
 
+.text-high-emphasis {
+  color: rgba(0, 0, 0, 0.87); }
+
 .text-medium-emphasis {
   color: rgba(0, 0, 0, 0.6); }
+
+.text-disabled {
+  color: rgba(0, 0, 0, 0.38); }
 
 .workspace-active-indicator {
   background: #3f51b5;
@@ -263,9 +269,21 @@ subtitle-1 {
     padding: 24px;
     color: rgba(0, 0, 0, 0.87); }
 
-MsApplicationLauncher .search-entry {
+MsApplicationLauncher * .search-entry {
+  color: rgba(0, 0, 0, 0.6);
   background: white;
   border-radius: 48px; }
+
+MsApplicationLauncher * .search-entry-icon {
+  color: rgba(0, 0, 0, 0.6); }
+
+MatTooltip {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0c0c0c;
+  border-radius: 4px;
+  padding: 0px 8px;
+  min-height: 24px;
+  text-align: center; }
 
 .surface {
   background: rgba(255, 255, 255, 0.987); }
@@ -275,3 +293,125 @@ MsApplicationLauncher .search-entry {
 
 .surface-darker {
   background: rgba(179, 179, 179, 0.987); }
+
+.popup-menu {
+  margin-bottom: 0;
+  -arrow-base: 0px;
+  -arrow-rise: 0px; }
+
+/* .no-theme { 
+    .popup-menu {
+        margin: 0;
+        -boxpointer-gap: 0px;
+        -arrow-border-radius: 0;
+        -arrow-border-width: 0px;
+        -arrow-border-color: transparent;
+        -arrow-base: 0px;
+        -arrow-rise: 0px;
+        -arrow-background-color: transparent;
+        .popup-menu-content {
+            background: getDarkerColor(getBackgroundColor('dark'));
+            margin: 0;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 8px;
+            .popup-menu-item {
+                font-weight: 400;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                @extend .body-2;
+                .popup-menu-icon {
+                    icon-size: 20px;
+                    margin-right: 10px;
+                    @include foreground-medium-emphasis('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    padding-top: 1.5px;
+                    @include foreground-high-emphasis('dark');
+                }
+                &.selected {
+                    @extend .surface;
+                }
+            }
+            .popup-separator-menu-item {
+                padding: 0;
+                spacing: 0px;
+                .popup-separator-menu-item-separator {
+                    margin: 8px 0px;
+                    padding: 0;
+                    @include hover('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    margin: 8px 10px;
+                    @include foreground-disabled('dark');
+                }
+                .popup-menu-ornament {
+                    width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            .popup-sub-menu {
+                background: rgba(0, 0, 0, 0.12);
+                box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+            }
+            .popup-submenu-menu-item:open {
+                @extend .surface-lighter;
+            }
+        }
+        &.panel-menu {
+            border-radius: 0px 8px 8px 0px;
+
+            .popup-menu-content {
+                margin-top: 20px; // space for shadow
+                border-radius: 0px 8px 8px 0px;
+                box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+        &.horizontal-panel-menu {
+            border-radius: 0px 0px 8px 8px;
+
+            .popup-menu-content {
+                margin-left: 20px; // space for shadow
+                border-radius: 0px 0px 8px 8px;
+                box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+    }
+    #calendarArea {
+        .calendar,
+        .message,
+        .events-button,
+        .world-clocks-button,
+        .weather-button,
+        .events-section-title {
+            background: getLighterColor(getBackgroundColor('dark'));
+            border: 0px;
+        }
+    }
+} */
+LayoutSwitcher > StBin {
+  padding: 8px 0;
+  margin-right: 8px; }
+
+MatNumberPicker {
+  background: #b3b3b3;
+  border-radius: 10000px; }
+  MatNumberPicker StButton {
+    background: white;
+    width: 32px; }
+    MatNumberPicker StButton StIcon {
+      margin: 8px; }
+    MatNumberPicker StButton:first-child {
+      border-radius: 32px 0 0 32px; }
+    MatNumberPicker StButton:last-child {
+      border-radius: 0 32px 32px 0; }
+    MatNumberPicker StButton:hover {
+      background: white; }
+    MatNumberPicker StButton:active {
+      background: white; }
+  MatNumberPicker StLabel {
+    margin-left: 8px;
+    margin-right: 8px; }

@@ -36,13 +36,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(
             global.display,
             'window-demands-attention',
-            (_, metaWindow) => {}
+            (_, _metaWindow) => {}
         );
 
         this.observe(
             global.display,
             'window-marked-urgent',
-            (_, metaWindow) => {}
+            (_, _metaWindow) => {}
         );
     }
 
@@ -72,9 +72,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     onNewMetaWindow(metaWindow) {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
-        metaWindow.get_compositor_private().connect('first-frame', (params) => {
-            metaWindow.firstFrameDrawn = true;
-        });
+        metaWindow
+            .get_compositor_private()
+            .connect('first-frame', (_params) => {
+                metaWindow.firstFrameDrawn = true;
+            });
 
         if (!this._handleWindow(metaWindow)) {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
@@ -116,12 +118,9 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 1
             );
         }
-        if (
-            metaWindow.msWindow &&
-            metaWindow.msWindow.metaWindow === metaWindow
-        ) {
+        if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
-            msWindow.kill();
+            msWindow.metaWindowUnManaged(metaWindow);
         }
     }
 
@@ -372,6 +371,10 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 .split(',')
                 .indexOf(metaWindow.wm_class) > -1
         ) {
+            return false;
+        }
+        if (metaWindow.above) {
+            metaWindow.stick();
             return false;
         }
         let meta = Meta.WindowType;

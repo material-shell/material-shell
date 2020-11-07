@@ -4,7 +4,11 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
+const {
+    SetAllocation,
+    Allocate,
+    AllocatePreferredSize,
+} = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
 
@@ -72,6 +76,18 @@ var MsWindow = GObject.registerClass(
             }
         }
 
+        get state() {
+            return {
+                appId: this.app.get_id(),
+                metaWindowIdentifier: this.metaWindowIdentifier,
+                persistent: this._persistent,
+                x: this.x,
+                y: this.y,
+                width: this.width,
+                height: this.height,
+            };
+        }
+
         get metaWindow() {
             return (
                 this._metaWindow ||
@@ -90,8 +106,8 @@ var MsWindow = GObject.registerClass(
 
         set persistent(boolean) {
             this._persistent = boolean;
-            Me.logFocus('[DEBUG]', `stateChanged from set Persistent`);
-            Me.msWorkspaceManager.stateChanged();
+            Me.logFocus('[DEBUG]', 'stateChanged from set Persistent');
+            Me.stateManager.stateChanged();
         }
 
         delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
@@ -124,8 +140,7 @@ var MsWindow = GObject.registerClass(
             if (!this.msWorkspace) return false;
             return (
                 (this.msWorkspace &&
-                    this.msWorkspace.tilingLayout.constructor.key ===
-                        'float') ||
+                    this.msWorkspace.layout.state.key === 'float') ||
                 (this.metaWindow && this.metaWindow.fullscreen)
             );
         }
@@ -199,11 +214,13 @@ var MsWindow = GObject.registerClass(
             });
         }
 
+        // eslint-disable-next-line camelcase
         set_position(x, y) {
             if (this.followMetaWindow) return;
             super.set_position(x, y);
         }
 
+        // eslint-disable-next-line camelcase
         set_size(width, height) {
             if (this.followMetaWindow) return;
             super.set_size(width, height);
@@ -240,6 +257,7 @@ var MsWindow = GObject.registerClass(
                 this._metaWindow && this._metaWindow.get_compositor_private();
 
             if (
+                this.destroyed ||
                 !windowActor ||
                 !this.mapped ||
                 this.width === 0 ||
@@ -584,9 +602,6 @@ var MsWindow = GObject.registerClass(
                 metaWindow,
                 clone,
             };
-            metaWindow.connect('unmanaged', () => {
-                this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
-            });
             metaWindow.msWindow = this;
             this.dialogs.push(dialog);
             this.add_child(clone);
@@ -595,6 +610,11 @@ var MsWindow = GObject.registerClass(
             if (this.msWorkspace.tileableFocused === this) {
                 this.takeFocus();
             }
+        }
+
+        removeDialog(dialog) {
+            this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+            dialog.clone.destroy();
         }
 
         async onMetaWindowsChanged() {
@@ -646,6 +666,36 @@ var MsWindow = GObject.registerClass(
             } else {
                 this.placeholder.grab_key_focus();
             }
+        }
+
+        /**
+         * When a MetaWindow associated to this MsWindow is unManaged we remove it from the dialogs if it's a dialog or the MainMetaWindow then we kill the MsWindow only if it was the last one.
+         * @param {MetaWindow} metaWindow the MetaWindow currently unManaged
+         */
+        metaWindowUnManaged(metaWindow) {
+            const isMainMetaWindow = metaWindow === this._metaWindow;
+            const isDialogMetaWindow = this.dialogs
+                .map((dialog) => dialog.metaWindow)
+                .includes(metaWindow);
+            // If it's neither the MainMetaWindow or a Dialog we ignore but this shouldn't happen
+            if (!isMainMetaWindow && !isDialogMetaWindow) {
+                return;
+            }
+            if (isDialogMetaWindow) {
+                const dialog = this.dialogs.find(
+                    (dialog) => dialog.metaWindow === metaWindow
+                );
+                this.removeDialog(dialog);
+            }
+            if (isMainMetaWindow) {
+                this._metaWindow = null;
+            }
+            // If there is a dialog or the mainMetaWindow we exit here
+            if (this.dialogs.length || this._metaWindow) {
+                return;
+            }
+            // Otherwise we kill the msWindow
+            this.kill();
         }
 
         kill() {
@@ -739,6 +789,7 @@ var MsWindow = GObject.registerClass(
         }
 
         _onDestroy() {
+            this.destroyed = true;
             this.unregisterOnMetaWindowSignals();
         }
     }
@@ -762,7 +813,7 @@ var MsWindowContent = GObject.registerClass(
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let metaWindow = this.get_parent().metaWindow;
-            if (metaWindow) {
+            if (metaWindow && metaWindow.firstFrameDrawn) {
                 let windowFrameRect = metaWindow.get_frame_rect();
                 let windowBufferRect = metaWindow.get_buffer_rect();
                 //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
@@ -791,11 +842,20 @@ var MsWindowContent = GObject.registerClass(
                     }
 
                     Allocate(this.clone, cloneBox, flags);
+                } else {
+                    AllocatePreferredSize(this.clone, flags);
                 }
+            } else {
+                AllocatePreferredSize(this.clone, flags);
             }
 
             if (this.placeholder.get_parent() === this) {
-                this.placeholder.set_size(box.get_width(), box.get_height());
+                let height = box.get_height();
+                let width = box.get_width();
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.placeholder.set_size(width, height);
+                    return GLib.SOURCE_REMOVE;
+                });
                 Allocate(this.placeholder, box, flags);
             }
         }
