@@ -6,12 +6,13 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     HalfLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.half;
+const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported HalfHorizontalLayout */
 var HalfHorizontalLayout = GObject.registerClass(
     class HalfHorizontalLayout extends HalfLayout {
-        tileTileable(tileable, box, index, siblingLength) {
-            this.tileTileableHorizontal(tileable, box, index, siblingLength);
+        isVerticalLayout() {
+            return false;
         }
     }
 );

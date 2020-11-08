@@ -26,7 +26,7 @@ var SplitLayout = GObject.registerClass(
             });
 
             const PortionClass = this.vertical ? VerticalPortion : HorizontalPortion;
-            this.mainPortion = new PortionClass(100);
+            this.mainPortion = new PortionClass();
         }
 
         afterInit() {
@@ -147,7 +147,7 @@ var SplitLayout = GObject.registerClass(
             }
 
             const { x, y, width, height } = this.applyGaps(
-                box.x1, box.y1, box.x2, box.y2
+                box.x1, box.y1, box.get_width(), box.get_height()
             );
 
             tileable.x = x;
