@@ -117,33 +117,35 @@ var HotKeysModule = class HotKeysModule {
             ) {
                 return;
             }
+
             if (
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
-                if (activeMsWorkspace.tileableList.length > 2) {
-                    const nextMsWorkspace =
-                        Me.msWorkspaceManager.msWorkspaceList[
-                            Me.msWorkspaceManager.msWorkspaceList.length - 1
-                        ];
+                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
+                    && (!Meta.prefs_get_dynamic_workspaces() || activeMsWorkspace.msWindowList.length === 1)) {
+                    return;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 1
+                    ];
+
                     Me.msWorkspaceManager.setWindowToMsWorkspace(
                         activeMsWorkspace.tileableFocused,
                         nextMsWorkspace
                     );
 
-                    if (
-                        !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
-                    ) {
-                        Me.msWorkspaceManager.setMsWorkspaceAt(
-                            nextMsWorkspace,
-                            0
-                        );
-                    }
-
-                    nextMsWorkspace.activate();
+                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                    Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
                 }
+
+                nextMsWorkspace.activate();
+
                 return;
             }
+
             const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                 activeMsWorkspace
             );
@@ -172,28 +174,32 @@ var HotKeysModule = class HotKeysModule {
                 }
                 if (
                     activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
-                    ]
+                        Me.msWorkspaceManager.primaryMsWorkspaces[
+                            Me.msWorkspaceManager.primaryMsWorkspaces.length - (
+                                Meta.prefs_get_dynamic_workspaces() ? 2 : 1
+                            )
+                        ]
                 ) {
-                    if (activeMsWorkspace.msWindowList.length === 1) {
-                        if (
-                            Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
-                        ) {
-                            const nextMsWorkspace =
-                                Me.msWorkspaceManager.msWorkspaceList[0];
+                    if ((Meta.prefs_get_dynamic_workspaces() && activeMsWorkspace.msWindowList.length === 1 && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                        || (!Meta.prefs_get_dynamic_workspaces() && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())) {
+                        return;
+                    }
 
-                            Me.msWorkspaceManager.setWindowToMsWorkspace(
-                                activeMsWorkspace.tileableFocused,
-                                nextMsWorkspace
-                            );
+                    if (!Meta.prefs_get_dynamic_workspaces() ||
+                        (activeMsWorkspace.msWindowList.length === 1 && Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    ) {
 
-                            Me.msWorkspaceManager.setMsWorkspaceAt(
-                                nextMsWorkspace,
-                                0
-                            );
-                            nextMsWorkspace.activate();
-                        }
+                        const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                            activeMsWorkspace.tileableFocused,
+                            nextMsWorkspace
+                        );
+
+                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+
+                        nextMsWorkspace.activate();
+
                         return;
                     }
                 }
