@@ -87,12 +87,13 @@ class BasePortion {
                 return portion;
             }
 
-            if (portion.portionLength + i > index) {
-                return portion.getPortionAtIndex(index - i);
+            if (portion.portionLength + portionIndex > index) {
+                return portion.getPortionAtIndex(index - portionIndex);
             }
 
             portionIndex += portion.portionLength;
         }
+        log('DEBUG MS: ', index);
     }
 
     setPositionAndSize(box) {
@@ -132,7 +133,12 @@ class BasePortion {
     }
 
     describe() {
-        return 'box: ' + JSON.stringify({ x1: this.box.x1, y1: this.box.y1, x2: this.box.x2, y2: this.box.y2 }) + ' nbr: ' + this.children.length;
+        return 'box: ' + JSON.stringify({ 
+                x1: this.box.x1 + '', 
+                y1: this.box.y1 + '', 
+                x2: this.box.x2 + '', 
+                y2: this.box.y2 + '' 
+            }) + ' nbr: ' + this.children.length;
     }
 };
 

@@ -134,7 +134,7 @@ var BaseTilingLayout = GObject.registerClass(
                 this.mainPortion.pop();
             }
 
-            while (this.mainPortion.portionLength < length) {
+            while (length > 1 && this.mainPortion.portionLength < length) {
                 this.mainPortion.push();
             }
         }

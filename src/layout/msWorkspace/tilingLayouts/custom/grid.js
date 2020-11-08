@@ -10,27 +10,43 @@ const {
 /* exported GridLayout */
 var GridLayout = GObject.registerClass(
     class GridLayout extends BaseTilingLayout {
-        tileTileable(tileable, box, index, siblingLength) {
-            const columns = Math.ceil(Math.sqrt(siblingLength));
+        updateMainPortionLength(length) {
+            const columnLength = Math.ceil(Math.sqrt(length));
+            const rowLength = Math.ceil(length / columnLength);
 
-            const rows = Math.ceil(siblingLength / columns);
-            const portionWidth = box.get_width() / columns;
-            const portionHeight = box.get_height() / rows;
-            const columnIndex = Math.floor(index / rows);
-            const rowIndex = index - columnIndex * rows;
+            while (this.mainPortion.children.length > columnLength) {
+                this.mainPortion.pop();
+            }
+            
+            while (columnLength > 1 && this.mainPortion.children.length < columnLength) {
+                this.mainPortion.push();
+            }
 
-            let { x, y, width, height } = this.applyGaps(
-                columnIndex * portionWidth,
-                rowIndex * portionHeight,
-                portionWidth,
-                index === siblingLength - 1
-                    ? portionHeight * (columns * rows - index)
-                    : portionHeight
-            );
-            tileable.x = x;
-            tileable.y = y;
-            tileable.width = width;
-            tileable.height = height;
+            for (let i = 0; i < columnLength - 1; i++) {
+                const column = this.mainPortion.children[i];
+
+                while (column.children.length > rowLength) {
+                    column.pop();
+                }
+                
+                while (rowLength > 1 && column.children.length < rowLength) {
+                    column.push();
+                }
+            }
+
+            const lastColumn = this.mainPortion.children[columnLength - 1];
+
+            if (lastColumn) {
+                const lastRowLength = length - ((columnLength - 1) * rowLength);
+
+                while (lastColumn.children.length > lastRowLength) {
+                    lastColumn.pop();
+                }
+                
+                while (lastRowLength > 1 && lastColumn.children.length < lastRowLength) {
+                    lastColumn.push();
+                }
+            }
         }
     }
 );
