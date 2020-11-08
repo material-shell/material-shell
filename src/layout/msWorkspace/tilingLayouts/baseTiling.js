@@ -112,10 +112,21 @@ var BaseTilingLayout = GObject.registerClass(
              */
         }
 
-        tileTileable(tileable, box, index, siblingLength) {
-            /*
-             * Function called automatically size of the container change
-             */
+        tileTileable(tileable, box, index) {
+            const portion = this.mainPortion.getPortionAtIndex(index);
+
+            if (portion) {
+                box = portion.box;
+            }
+
+            const { x, y, width, height } = this.applyGaps(
+                box.x1, box.y1, box.get_width(), box.get_height()
+            );
+
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
 
         updateMainPortionLength(length) {
@@ -128,14 +139,12 @@ var BaseTilingLayout = GObject.registerClass(
                     this.mainPortion.push();
                 }
 
-                this.mainPortion.push();
+                this.mainPortion.push(300);
             }
         }
 
         updateMainPortionBox(box) {
-            if (this.mainPortion.box !== box) {
-                this.mainPortion.setPositionAndSize(box);
-            }
+            this.mainPortion.setPositionAndSize(box);
         }
 
         tileAll(box) {

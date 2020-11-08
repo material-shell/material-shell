@@ -105,6 +105,40 @@ class BasePortion {
 
         this.setChildrenPositionAndSize();
     }
+
+    convertToHorizontal() {
+        const horizontal = new HorizontalPortion(this.basis);
+        horizontal.children = this.children.map(
+            (portion) => portion.convertToVertical()
+        );
+
+        horizontal.setPositionAndSize(this.box);
+        
+        this.basis = 100;
+        this.children = [];
+        this.box = new Clutter.ActorBox();
+
+        return horizontal;
+    }
+
+    convertToVertical() {
+        const vertical = new VerticalPortion(this.basis);
+        vertical.children = this.children.map(
+            (portion) => portion.convertToHorizontal()
+        );
+
+        vertical.setPositionAndSize(this.box);
+        
+        this.basis = 100;
+        this.children = [];
+        this.box = new Clutter.ActorBox();
+
+        return vertical;
+    }
+
+    describe() {
+        return 'box: ' + JSON.stringify({ x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y2 }) + ' nbr: ' + this.children.length;
+    }
 };
 
 const VerticalPortion = class VerticalPortion extends BasePortion {
@@ -117,21 +151,23 @@ const VerticalPortion = class VerticalPortion extends BasePortion {
     }
 
     setChildrenPositionAndSize() {
-        const basisSum = this.children.reduce(
+        const basisTotal = this.children.reduce(
             (sum, portion) => sum + portion.basis, 
             0
         );
-        let verticalBasisSum = 0;
+        let basisSum = 0;
 
         this.children.forEach((portion) => {
             const box = new Clutter.ActorBox();
             
             box.x1 = this.box.x1;
-            box.y1 = (verticalBasisSum * this.box.get_height()) / basisSum;
-            box.x2 = this.box.get_width();
-            box.y2 = this.box.get_height() * portion.basis / basisSum;
+            box.y1 = this.box.y1 + (this.box.get_height() * (basisSum / basisTotal));
 
-            verticalBasisSum += portion.basis;
+            basisSum += portion.basis;
+
+            box.x2 = this.box.x2;
+            box.y2 = this.box.y1 + (this.box.get_height() * (basisSum / basisTotal));
+
             portion.setPositionAndSize(box);
         });
     }
@@ -147,21 +183,23 @@ const HorizontalPortion = class HorizontalPortion extends BasePortion {
     }
 
     setChildrenPositionAndSize() {
-        const basisSum = this.children.reduce(
+        const basisTotal = this.children.reduce(
             (sum, portion) => sum + portion.basis, 
             0
         );
-        let horizontalBasisSum = 0;
+        let basisSum = 0;
 
         this.children.forEach((portion) => {
             const box = new Clutter.ActorBox();
             
-            box.x1 = (horizontalBasisSum * this.box.get_width()) / basisSum;
+            box.x1 = this.box.x1 + (this.box.get_width() * (basisSum / basisTotal));
             box.y1 = this.box.y1;
-            box.x2 = this.box.get_width() * portion.basis / basisSum;
-            box.y2 = this.box.get_height();
 
-            horizontalBasisSum += portion.basis;
+            basisSum += portion.basis;
+
+            box.x2 = this.box.x1 + (this.box.get_width() * (basisSum / basisTotal));
+            box.y2 = this.box.y2;
+
             portion.setPositionAndSize(box);
         });
     }
