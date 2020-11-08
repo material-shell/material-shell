@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { GObject, St } = imports.gi;
+const { GObject } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -8,6 +8,7 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
+const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 // TODO: Make this configurable
 const WINDOW_SLIDE_TWEEN_TIME = 250;
@@ -23,6 +24,9 @@ var SplitLayout = GObject.registerClass(
             this.translationAnimator.connect('transition-completed', () => {
                 this.endTransition();
             });
+
+            const PortionClass = this.vertical ? VerticalPortion : HorizontalPortion;
+            this.mainPortion = new PortionClass(100);
         }
 
         afterInit() {
@@ -124,50 +128,32 @@ var SplitLayout = GObject.registerClass(
             }
         }
 
-        tileTileable(tileable, box, index, siblingLength) {
-            // Do nothing if App Launcher is the only tileable
-            if (index === 0 && siblingLength === 1) {
-                tileable.x = box.x1;
-                tileable.y = box.y1;
-                tileable.width = box.get_width();
-                tileable.height = box.get_height();
-            } else {
-                let x, y, width, height;
-                let verticalPortion = this.vertical
-                    ? box.get_height() / this.state.nbOfColumns
-                    : box.get_height();
-                let horizontalPortion = this.vertical
-                    ? box.get_width()
-                    : box.get_width() / this.state.nbOfColumns;
-                if (this.activeTileableList.includes(tileable)) {
-                    let activeIndex = this.activeTileableList.indexOf(tileable);
-                    if (this.vertical) {
-                        x = box.x1;
-                        y = box.y1 + activeIndex * verticalPortion;
-                    } else {
-                        x = box.x1 + activeIndex * horizontalPortion;
-                        y = box.y1;
-                    }
-                } else {
-                    x = box.x1;
-                    y = box.y1;
+        updateMainPortionLength(length) {
+            super.updateMainPortionLength(length > this.state.nbOfColumns
+                ? this.state.nbOfColumns
+                : length
+            );
+        }
+
+        tileTileable(tileable, box) {
+            if (this.activeTileableList.includes(tileable)) { 
+                let activeIndex = this.activeTileableList.indexOf(tileable);
+
+                const portion = this.mainPortion.getPortionAtIndex(activeIndex);
+
+                if (portion) {
+                    box = portion.box;
                 }
-
-                width = horizontalPortion;
-                height = verticalPortion;
-
-                let {
-                    x: gapX,
-                    y: gapY,
-                    width: gapWidth,
-                    height: gapHeight,
-                } = this.applyGaps(x, y, width, height);
-
-                tileable.x = gapX;
-                tileable.y = gapY;
-                tileable.width = gapWidth;
-                tileable.height = gapHeight;
             }
+
+            const { x, y, width, height } = this.applyGaps(
+                box.x1, box.y1, box.x2, box.y2
+            );
+
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
 
         /*

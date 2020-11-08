@@ -11,6 +11,7 @@ const {
 } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
@@ -21,6 +22,7 @@ var BaseTilingLayout = GObject.registerClass(
                 `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
+            this.mainPortion = new HorizontalPortion();
             this.themeSettings = getSettings('theme');
             this.signals = [];
             this.registerToSignals();
@@ -116,12 +118,36 @@ var BaseTilingLayout = GObject.registerClass(
              */
         }
 
+        updateMainPortionLength(length) {
+            while (this.mainPortion.portionLength > length) {
+                this.mainPortion.pop();
+            }
+
+            while (this.mainPortion.portionLength < length) {
+                if (this.mainPortion.children.length === 0) {
+                    this.mainPortion.push();
+                }
+
+                this.mainPortion.push();
+            }
+        }
+
+        updateMainPortionBox(box) {
+            if (this.mainPortion.box !== box) {
+                this.mainPortion.setPositionAndSize(box);
+            }
+        }
+
         tileAll(box) {
             if (!box) {
                 box = new Clutter.ActorBox();
                 box.x2 = this.tileableContainer.allocation.get_width();
                 box.y2 = this.tileableContainer.allocation.get_height();
             }
+
+            this.updateMainPortionLength(this.tileableListVisible.length);
+            this.updateMainPortionBox(box);
+
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
