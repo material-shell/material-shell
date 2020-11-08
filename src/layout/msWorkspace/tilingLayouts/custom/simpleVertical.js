@@ -10,8 +10,8 @@ const {
 /* exported SimpleVerticalLayout */
 var SimpleVerticalLayout = GObject.registerClass(
     class SimpleVerticalLayout extends SimpleLayout {
-        tileTileable(tileable, box, index, siblingLength) {
-            this.tileTileableVertical(tileable, box, index, siblingLength);
+        isVerticalLayout() {
+            return true;
         }
     }
 );

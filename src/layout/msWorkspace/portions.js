@@ -93,7 +93,6 @@ class BasePortion {
 
             portionIndex += portion.portionLength;
         }
-        log('DEBUG MS: ', index);
     }
 
     setPositionAndSize(box) {
