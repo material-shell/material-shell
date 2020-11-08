@@ -46,35 +46,28 @@ var TooltipManager = class TooltipManager extends MsManager {
                 leaveCallback
             );
 
-            timeoutId = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                200,
-                () => {
-                    timeoutId = 0;
-                    if (!left) {
-                        tooltip = this.createTooltip(actor, params);
-                    }
-                    return GLib.SOURCE_REMOVE;
+            timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+                timeoutId = 0;
+                if (!left) {
+                    tooltip = this.createTooltip(actor, params);
                 }
-            );
+                return GLib.SOURCE_REMOVE;
+            });
         };
         this.observe(actor, 'enter-event', tooltipCallback);
     }
 
     createTooltip(actor, params) {
-
         // If actor has text, use it instead because it may be updated
         let actorText;
         if (actor instanceof St.Label || actor instanceof Clutter.Text) {
             const clutterText =
-                actor instanceof St.Label
-                    ? actor.get_clutter_text()
-                    : actor;
+                actor instanceof St.Label ? actor.get_clutter_text() : actor;
             if (clutterText.get_layout().is_ellipsized()) {
                 actorText = clutterText.get_text();
             }
         }
-        if (actorText)  params.text = actorText;
+        if (actorText) params.text = actorText;
 
         if (!params.text) {
             return;
@@ -174,11 +167,14 @@ var MatTooltip = GObject.registerClass(
                     y = stageY + relativeActor.get_height();
                     break;
             }
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.set_position(
+                    Math.max(Math.round(x + this.params.offsetX), 0),
+                    Math.max(Math.round(y + this.params.offsetY), 0)
+                );
+                return GLib.SOURCE_REMOVE;
+            });
 
-            this.set_position(
-                Math.max(Math.round(x + this.params.offsetX), 0),
-                Math.max(Math.round(y + this.params.offsetY), 0)
-            );
             super.vfunc_allocate(...args);
         }
     }

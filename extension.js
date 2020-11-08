@@ -81,6 +81,8 @@ function enable() {
             }
             if (getSettings('tweaks').get_boolean('enable-persistence')) {
                 Me.msWorkspaceManager.restorePreviousState();
+            } else {
+                Me.msWorkspaceManager.initState();
             }
             new MsMain();
             Me.msWindowManager.handleExistingMetaWindow();

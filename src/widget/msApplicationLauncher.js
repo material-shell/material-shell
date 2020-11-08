@@ -79,7 +79,6 @@ var MsApplicationLauncher = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            if (!this.visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerBox = new Clutter.ActorBox();
@@ -100,8 +99,20 @@ var MsApplicationLauncher = GObject.registerClass(
             containerBox.x2 = Math.round(
                 contentBox.x2 - (contentBox.get_width() - containerWidth) / 2
             );
+
             containerBox.y1 = Math.round(contentBox.y1 + 0.1 * minSize);
             containerBox.y2 = Math.round(contentBox.y2 - 0.1 * minSize);
+
+            // Prevent odd number size to have proper font aliasing
+            containerBox.x2 =
+                containerBox.get_width() % 2 != 0
+                    ? containerBox.x2 + 1
+                    : containerBox.x2;
+            containerBox.y2 =
+                containerBox.get_height() % 2 != 0
+                    ? containerBox.y2 + 1
+                    : containerBox.y2;
+
             Allocate(this.appListContainer, containerBox, flags);
         }
     }
@@ -135,8 +146,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
                 const updateClock = () => {
                     this.clockLabel.text = this._wallClock.clock;
                     const date = new Date();
-                    /* Translators: This is a time format for a date in
-               long format */
                     let dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
                     );
@@ -522,7 +531,6 @@ var MsApplicationButtonContainer = GObject.registerClass(
 
         vfunc_allocate(box, flags) {
             SetAllocation(this, box, flags);
-            if (!this.get_parent().visible) return;
             let themeNode = this.get_theme_node();
             const contentBox = themeNode.get_content_box(box);
             const containerPadding = 16 * this.monitorScale;

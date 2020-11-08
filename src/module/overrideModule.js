@@ -6,16 +6,13 @@ const { WindowManager } = imports.ui.windowManager;
 var OverrideModule = class OverrideModule {
     constructor() {
         this.overrideWindowManagerFunctions();
-        this.orignalMetaDynamicWorkspaces = Meta.prefs_get_dynamic_workspaces;
         this.orignalMetaWorkspaceOnPrimary =
             Meta.prefs_get_workspaces_only_on_primary;
-        Meta.prefs_get_dynamic_workspaces = () => true;
         Meta.prefs_get_workspaces_only_on_primary = () => true;
     }
 
     destroy() {
         this.restoreWindowManagersFunctions();
-        Meta.prefs_get_dynamic_workspaces = this.orignalMetaDynamicWorkspaces;
         Meta.prefs_get_workspaces_only_on_primary = this.orignalMetaWorkspaceOnPrimary;
     }
 

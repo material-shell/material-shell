@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GObject, Clutter } = imports.gi;
+const { St, GObject, Clutter, GLib } = imports.gi;
 const Animation = imports.ui.animation;
 
 /** Extension imports */
@@ -142,7 +142,12 @@ var AppPlaceholder = GObject.registerClass(
         }
 
         vfunc_allocate(...args) {
-            this.setOrientation(args[0].get_width(), args[0].get_height());
+            const width = args[0].get_width();
+            const height = args[0].get_height();
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.setOrientation(width, height);
+                return GLib.SOURCE_REMOVE;
+            });
             super.vfunc_allocate(...args);
         }
 

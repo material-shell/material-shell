@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { St, GObject, Gio, Clutter } = imports.gi;
+const { St, GObject, Gio, Clutter, Meta, GLib } = imports.gi;
 const Animation = imports.ui.animation;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -147,11 +147,13 @@ var LayoutSwitcher = GObject.registerClass(
 
         vfunc_allocate(...args) {
             let box = args[0];
-            if (
-                this.tilingIcon &&
-                this.tilingIcon.get_icon_size() != box.get_height() / 2
-            ) {
-                this.tilingIcon.set_icon_size(box.get_height() / 2);
+            const height = box.get_height() / 2;
+
+            if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.tilingIcon.set_icon_size(height);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             super.vfunc_allocate(...args);
         }

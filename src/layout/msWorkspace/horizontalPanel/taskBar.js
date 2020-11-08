@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Shell, Gio } = imports.gi;
+const { Clutter, GObject, St, Shell, Gio, Meta, GLib } = imports.gi;
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -184,6 +184,9 @@ var TaskActiveIndicator = GObject.registerClass(
         GTypeName: 'TaskActiveIndicator',
     },
     class TaskActiveIndicator extends St.Widget {
+        _init() {
+            super._init(...arguments);
+        }
         prepareAnimation(newAllocation) {
             this.translation_x = this.translation_x + this.x - newAllocation.x1;
             this.scale_x =
@@ -198,9 +201,12 @@ var TaskActiveIndicator = GObject.registerClass(
             });
         }
         vfunc_allocate(...args) {
-            if (this.width) {
+            if (this.width && this.mapped) {
                 this.prepareAnimation(args[0]);
-                this.animate();
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.animate();
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             super.vfunc_allocate(...args);
         }
@@ -464,8 +470,13 @@ let TileableItem = GObject.registerClass(
         }
         vfunc_allocate(...args) {
             const box = args[0];
-            if (!this.icon || this.lastHeight != box.get_height()) {
-                this.buildIcon(box.get_height());
+            const height = box.get_height();
+
+            if (!this.icon || this.lastHeight != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.buildIcon(height);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             super.vfunc_allocate(...args);
         }
@@ -502,11 +513,13 @@ let IconTaskBarItem = GObject.registerClass(
 
         vfunc_allocate(...args) {
             const box = args[0];
-            if (
-                this.icon &&
-                this.icon.get_icon_size() != box.get_height() / 2
-            ) {
-                this.icon.set_icon_size(box.get_height() / 2);
+            const height = box.get_height() / 2;
+
+            if (this.icon && this.icon.get_icon_size() != height) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this.icon.set_icon_size(height);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             super.vfunc_allocate(...args);
         }

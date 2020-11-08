@@ -39,6 +39,19 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
 
             if (!Meta.prefs_get_dynamic_workspaces()) {
                 this._checkWorkspacesId = 0;
+                const msWorkspaceManager = global.ms.msWorkspaceManager;
+
+                while (workspaceManager.get_n_workspaces() < msWorkspaceManager.msWorkspaceList.length) {
+                    const workspaceIndex = msWorkspaceManager.msWorkspaceList.length - 1;
+
+                    Me.logFocus(
+                        '[DEBUG]',
+                        `Workspace ${workspaceIndex} was removed because the number of static workspaces changed`
+                    );
+
+                    msWorkspaceManager.removeMsWorkspaceAtIndex(workspaceIndex);
+                }
+
                 return false;
             }
 
@@ -211,6 +224,16 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         );
     }
 
+    initState() {
+        for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
+            if (!this.primaryMsWorkspaces[i]) {
+                this.setupNewWorkspace(
+                    this.workspaceManager.get_workspace_by_index(i)
+                );
+            }
+        }
+    }
+
     restorePreviousState() {
         this.restoringState = true;
         Me.logFocus('[DEBUG]', 'Restoring previous state');
@@ -295,11 +318,14 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             'Then add the last empty Ms Workspace at the end'
         );
         // Add empty workspace at the end
-        const workspace = this.workspaceManager.append_new_workspace(
-            false,
-            global.get_current_time()
-        );
-        this.setupNewWorkspace(workspace);
+        if (Meta.prefs_get_dynamic_workspaces()) {
+            const workspace = this.workspaceManager.append_new_workspace(
+                false,
+                global.get_current_time()
+            );
+
+            this.setupNewWorkspace(workspace);
+        }
 
         // Activate the saved workspace, if valid
         if (this._state && this._state.primaryWorkspaceActiveIndex) {
@@ -562,14 +588,24 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     get state() {
-        this._state.msWorkspaceList = this.msWorkspaceList
-            .filter((msWorkspace) => {
-                return msWorkspace.msWindowList.length;
-            })
+        let msWorkspaceList = this.msWorkspaceList;
+
+        if (Meta.prefs_get_dynamic_workspaces()) {
+            msWorkspaceList = msWorkspaceList
+                .filter((msWorkspace) => {
+                    return msWorkspace.msWindowList.length;
+                });
+        }
+
+        this._state.msWorkspaceList = msWorkspaceList
             .map((msWorkspace) => {
                 return msWorkspace.state;
             });
-        this._state.primaryWorkspaceActiveIndex = this.workspaceManager.get_active_workspace_index();
+
+        // Removing empty workspaces changes the active index.
+        const activeIndex = this.workspaceManager.get_active_workspace_index();
+        this._state.primaryWorkspaceActiveIndex = msWorkspaceList.indexOf(this.msWorkspaceList[activeIndex]);
+
         return this._state;
     }
 
