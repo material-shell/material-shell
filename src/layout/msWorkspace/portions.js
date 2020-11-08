@@ -33,11 +33,6 @@ class BasePortion {
         this.children.push(new HorizontalPortion(basis));
     }
 
-    split() {
-        this.push();
-        this.push();
-    }
-
     shift() {
         // If this portion has less than 3 portions, it means that when
         // want to delete one, this portion describes the space.
@@ -137,16 +132,24 @@ class BasePortion {
     }
 
     describe() {
-        return 'box: ' + JSON.stringify({ x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y2 }) + ' nbr: ' + this.children.length;
+        return 'box: ' + JSON.stringify({ x1: this.box.x1, y1: this.box.y1, x2: this.box.x2, y2: this.box.y2 }) + ' nbr: ' + this.children.length;
     }
 };
 
 const VerticalPortion = class VerticalPortion extends BasePortion {
     insert(basis = 100) {
+        if (this.children.length === 0) {
+            this.insertHorizontal(basis);
+        }
+
         this.insertHorizontal(basis);
     }
     
     push(basis = 100) {
+        if (this.children.length === 0) {
+            this.pushHorizontal(basis);
+        }
+
         this.pushHorizontal(basis);
     }
 
@@ -175,10 +178,18 @@ const VerticalPortion = class VerticalPortion extends BasePortion {
 
 const HorizontalPortion = class HorizontalPortion extends BasePortion {
     insert(basis = 100) {
+        if (this.children.length === 0) {
+            this.insertVertical(basis);
+        }
+        
         this.insertVertical(basis);
     }
     
     push(basis = 100) {
+        if (this.children.length === 0) {
+            this.pushVertical(basis);
+        }
+
         this.pushVertical(basis);
     }
 

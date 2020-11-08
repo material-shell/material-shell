@@ -19,8 +19,6 @@ var HalfLayout = GObject.registerClass(
             while (this.mainPortion.portionLength < length) {
                 if (this.mainPortion.children.length === 0) {
                     this.mainPortion.push();
-                } else if (this.mainPortion.children.length === 1) {
-                    this.mainPortion.push(200);
                 } else {
                     this.mainPortion.children[1].push();
                 }
