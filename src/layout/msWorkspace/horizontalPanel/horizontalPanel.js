@@ -76,21 +76,6 @@ var HorizontalPanel = GObject.registerClass(
             this.clockBin = null;
         }
 
-        handleDragOver(source) {
-            if (source instanceof TaskBarItem) {
-                return this.taskBar.updateCurrentTaskBar();
-            }
-            return DND.DragMotionResult.NO_DROP;
-        }
-
-        acceptDrop(source) {
-            if (source instanceof TaskBarItem) {
-                this.taskBar.reparentDragItem();
-                return true;
-            }
-            return false;
-        }
-
         vfunc_get_preferred_height(_forWidth) {
             let height = Me.msThemeManager.getPanelSize(
                 this.msWorkspace.monitor.index
@@ -115,7 +100,7 @@ var HorizontalPanel = GObject.registerClass(
             taskBarBox.y2 = contentBox.y2;
             Allocate(this.taskBar, taskBarBox, flags);
 
-            if (this.clockBin) {
+            if (this.clockBin && this.get_children().includes(this.clockBin)) {
                 let clockBox = new Clutter.ActorBox();
                 clockBox.x1 = taskBarBox.x2;
                 clockBox.x2 = contentBox.x2 - this.layoutSwitcher.width;
