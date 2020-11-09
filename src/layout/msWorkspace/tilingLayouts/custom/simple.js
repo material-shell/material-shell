@@ -15,7 +15,13 @@ var SimpleLayout = GObject.registerClass(
             return box.get_width() < box.get_height();
         }
 
-        updateMainPortionBox(box) {
+        tileAll(box) {
+            if (!box) {
+                box = new Clutter.ActorBox();
+                box.x2 = this.tileableContainer.allocation.get_width();
+                box.y2 = this.tileableContainer.allocation.get_height();
+            }
+
             const vertical = this.isVerticalLayout(box);
             const MainPortion = vertical ? VerticalPortion : HorizontalPortion;
 
@@ -25,7 +31,7 @@ var SimpleLayout = GObject.registerClass(
                     : this.mainPortion.convertToHorizontal();
             }
 
-            super.updateMainPortionBox(box);
+            super.tileAll(box);
         }
     }
 );

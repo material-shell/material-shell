@@ -8,7 +8,6 @@ class BasePortion {
     constructor(basis = 100) {
         this.basis = basis;
         this.children = [];
-        this.box = new Clutter.ActorBox();
     }
 
     get portionLength() {
@@ -93,12 +92,35 @@ class BasePortion {
 
             portionIndex += portion.portionLength;
         }
+
+        return this;
     }
 
-    setPositionAndSize(box) {
-        this.box = box;
+    getRatioForIndex(index, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
+        let portionIndex = 0;
 
-        this.setChildrenPositionAndSize();
+        if (index >= this.portionLength) {
+            return;
+        }
+
+        for (let i = 0; i < this.children.length; i++) {
+            const portion = this.children[i];
+
+            if (portionIndex === index && portion.children.length === 0) {
+                return this.getRatioForPortion(portion, ratio);
+            }
+
+            if (portion.portionLength + portionIndex > index) {
+                return portion.getRatioForIndex(
+                    index - portionIndex, 
+                    this.getRatioForPortion(portion, ratio)
+                );
+            }
+
+            portionIndex += portion.portionLength;
+        }
+
+        return ratio;
     }
 
     convertToHorizontal() {
@@ -107,11 +129,8 @@ class BasePortion {
             (portion) => portion.convertToVertical()
         );
 
-        horizontal.setPositionAndSize(this.box);
-        
         this.basis = 100;
         this.children = [];
-        this.box = new Clutter.ActorBox();
 
         return horizontal;
     }
@@ -122,22 +141,10 @@ class BasePortion {
             (portion) => portion.convertToHorizontal()
         );
 
-        vertical.setPositionAndSize(this.box);
-        
         this.basis = 100;
         this.children = [];
-        this.box = new Clutter.ActorBox();
 
         return vertical;
-    }
-
-    describe() {
-        return 'box: ' + JSON.stringify({ 
-                x1: this.box.x1 + '', 
-                y1: this.box.y1 + '', 
-                x2: this.box.x2 + '', 
-                y2: this.box.y2 + '' 
-            }) + ' nbr: ' + this.children.length;
     }
 };
 
@@ -158,26 +165,29 @@ const VerticalPortion = class VerticalPortion extends BasePortion {
         this.pushHorizontal(basis);
     }
 
-    setChildrenPositionAndSize() {
+    getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
             (sum, portion) => sum + portion.basis, 
             0
         );
         let basisSum = 0;
 
-        this.children.forEach((portion) => {
-            const box = new Clutter.ActorBox();
+        for (let i = 0; i < this.children.length; i++) {
+            const child = this.children[i];
+
+            if (child !== portion) {
+                basisSum += child.basis;
+
+                continue;
+            }
             
-            box.x1 = this.box.x1;
-            box.y1 = this.box.y1 + (this.box.get_height() * (basisSum / basisTotal));
+            ratio.y = ratio.y + (ratio.height * (basisSum / basisTotal));
+            ratio.height = ratio.height * (portion.basis / basisTotal);
 
-            basisSum += portion.basis;
+            break;
+        }
 
-            box.x2 = this.box.x2;
-            box.y2 = this.box.y1 + (this.box.get_height() * (basisSum / basisTotal));
-
-            portion.setPositionAndSize(box);
-        });
+        return ratio;
     }
 };
 
@@ -198,25 +208,28 @@ const HorizontalPortion = class HorizontalPortion extends BasePortion {
         this.pushVertical(basis);
     }
 
-    setChildrenPositionAndSize() {
+    getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
             (sum, portion) => sum + portion.basis, 
             0
         );
         let basisSum = 0;
 
-        this.children.forEach((portion) => {
-            const box = new Clutter.ActorBox();
+        for (let i = 0; i < this.children.length; i++) {
+            const child = this.children[i];
+
+            if (child !== portion) {
+                basisSum += child.basis;
+
+                continue;
+            }
             
-            box.x1 = this.box.x1 + (this.box.get_width() * (basisSum / basisTotal));
-            box.y1 = this.box.y1;
+            ratio.x = ratio.x + (ratio.width * (basisSum / basisTotal));
+            ratio.width = ratio.width * (portion.basis / basisTotal);
 
-            basisSum += portion.basis;
+            break;
+        }
 
-            box.x2 = this.box.x1 + (this.box.get_width() * (basisSum / basisTotal));
-            box.y2 = this.box.y2;
-
-            portion.setPositionAndSize(box);
-        });
+        return ratio;
     }
 };

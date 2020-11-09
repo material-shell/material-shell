@@ -25,21 +25,24 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             super._init(msWorkspace, state);
         }
 
-        getTileablePortion(tileable) {
-            return this.mainPortion.getPortionAtIndex(
+        getTileablePortionRatio(tileable) {
+            return this.mainPortion.getRatioForIndex(
                 this.tileableListVisible.indexOf(tileable)
             );
         }
 
         tileTileable(tileable, box) {
-            const portion = this.getTileablePortion(tileable);
+            let ratio = this.getTileablePortionRatio(tileable);
 
-            if (portion) {
-                box = portion.box;
+            if (!ratio) {
+                ratio = { x: 0, y: 0, width: 1, height: 1 };
             }
 
             const { x, y, width, height } = this.applyGaps(
-                box.x1, box.y1, box.get_width(), box.get_height()
+                box.x1 + (ratio.x * box.get_width()),
+                box.y1 + (ratio.y * box.get_height()),
+                ratio.width * box.get_width(),
+                ratio.height * box.get_height(),
             );
 
             tileable.x = x;
@@ -58,10 +61,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             }
         }
 
-        updateMainPortionBox(box) {
-            this.mainPortion.setPositionAndSize(box);
-        }
-
         tileAll(box) {
             if (!box) {
                 box = new Clutter.ActorBox();
@@ -70,7 +69,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             }
 
             this.updateMainPortionLength(this.tileableListVisible.length);
-            this.updateMainPortionBox(box);
 
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
