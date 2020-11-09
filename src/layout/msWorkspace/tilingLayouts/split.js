@@ -4,8 +4,8 @@ const { GObject } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
 const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
@@ -15,7 +15,7 @@ const WINDOW_SLIDE_TWEEN_TIME = 250;
 
 /* exported SplitLayout */
 var SplitLayout = GObject.registerClass(
-    class SplitLayout extends BaseTilingLayout {
+    class SplitLayout extends BaseResizeableTilingLayout {
         _init(msWorkspace, state) {
             super._init(msWorkspace, state);
             this.updateActiveTileableListFromFocused();

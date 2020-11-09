@@ -4,12 +4,12 @@ const { GObject } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
 /* exported GridLayout */
 var GridLayout = GObject.registerClass(
-    class GridLayout extends BaseTilingLayout {
+    class GridLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             const columnLength = Math.ceil(Math.sqrt(length));
             const rowLength = Math.ceil(length / columnLength);

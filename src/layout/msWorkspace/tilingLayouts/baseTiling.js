@@ -11,7 +11,6 @@ const {
 } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
@@ -22,7 +21,6 @@ var BaseTilingLayout = GObject.registerClass(
                 `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
-            this.mainPortion = new HorizontalPortion();
             this.themeSettings = getSettings('theme');
             this.signals = [];
             this.registerToSignals();
@@ -112,41 +110,10 @@ var BaseTilingLayout = GObject.registerClass(
              */
         }
 
-        getTileablePortion(tileable) {
-            return this.mainPortion.getPortionAtIndex(
-                this.tileableListVisible.indexOf(tileable)
-            );
-        }
-
-        tileTileable(tileable, box) {
-            const portion = this.getTileablePortion(tileable);
-
-            if (portion) {
-                box = portion.box;
-            }
-
-            const { x, y, width, height } = this.applyGaps(
-                box.x1, box.y1, box.get_width(), box.get_height()
-            );
-
-            tileable.x = x;
-            tileable.y = y;
-            tileable.width = width;
-            tileable.height = height;
-        }
-
-        updateMainPortionLength(length) {
-            while (this.mainPortion.portionLength > length) {
-                this.mainPortion.pop();
-            }
-
-            while (length > 1 && this.mainPortion.portionLength < length) {
-                this.mainPortion.push();
-            }
-        }
-
-        updateMainPortionBox(box) {
-            this.mainPortion.setPositionAndSize(box);
+        tileTileable(tileable, box, index, siblingLength) {
+            /*
+             * Function called automatically size of the container change
+             */
         }
 
         tileAll(box) {
@@ -155,15 +122,13 @@ var BaseTilingLayout = GObject.registerClass(
                 box.x2 = this.tileableContainer.allocation.get_width();
                 box.y2 = this.tileableContainer.allocation.get_height();
             }
-
-            this.updateMainPortionLength(this.tileableListVisible.length);
-            this.updateMainPortionBox(box);
-
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
-                    box || this.tileableContainer.allocation
+                    box || this.tileableContainer.allocation,
+                    this.tileableListVisible.indexOf(tileable),
+                    this.tileableListVisible.length
                 );
                 if (tileable instanceof MsWindow) {
                     tileable.updateMetaWindowPositionAndSize();

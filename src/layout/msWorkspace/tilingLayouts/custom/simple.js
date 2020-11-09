@@ -4,13 +4,13 @@ const { GObject } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported SimpleLayout */
 var SimpleLayout = GObject.registerClass(
-    class SimpleLayout extends BaseTilingLayout {
+    class SimpleLayout extends BaseResizeableTilingLayout {
         isVerticalLayout(box) {
             return box.get_width() < box.get_height();
         }

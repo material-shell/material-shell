@@ -4,13 +4,13 @@ const { GObject } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported HalfLayout */
 var HalfLayout = GObject.registerClass(
-    class HalfLayout extends BaseTilingLayout {
+    class HalfLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             while (this.mainPortion.portionLength > length) {
                 this.mainPortion.pop();

@@ -4,12 +4,12 @@ const { GObject } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
 /* exported RatioLayout */
 var RatioLayout = GObject.registerClass(
-    class RatioLayout extends BaseTilingLayout {
+    class RatioLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             const pushInPortion = (portion) => {
                 if (portion.children.length === 2) {
