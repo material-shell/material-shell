@@ -608,11 +608,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             return msWorkspace.state;
         });
 
-        // Removing empty workspaces changes the active index.
-        const activeIndex = this.workspaceManager.get_active_workspace_index();
-        this._state.primaryWorkspaceActiveIndex = msWorkspaceList.indexOf(
-            this.msWorkspaceList[activeIndex]
-        );
+        this._state.primaryWorkspaceActiveIndex = this.workspaceManager.get_active_workspace_index();
 
         return this._state;
     }
