@@ -31,13 +31,36 @@ var TaskBar = GObject.registerClass(
                 style_class: 'task-active-indicator',
             });
             this.add_child(this.taskActiveIndicator);
-            this.taskButtonContainer = new ReorderableList();
+            this.taskButtonContainer = new ReorderableList(false, [
+                TaskBarItem,
+            ]);
             this.taskButtonContainer.connect(
                 'actor-moved',
                 (_, item, index) => {
                     Me.logFocus('actor-moved', item, index);
                     this.msWorkspace.setTileableAtIndex(item.tileable, index);
                     this.msWorkspace.focusTileable(item.tileable);
+                }
+            );
+            this.taskButtonContainer.connect(
+                'foreign-actor-inserted',
+                (_, actor, index) => {
+                    if (actor.tileable instanceof MsWindow) {
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                            actor.tileable,
+                            this.msWorkspace
+                        );
+                        this.msWorkspace.setTileableAtIndex(
+                            actor.tileable,
+                            index
+                        );
+                        this.msWorkspace.focusTileable(actor.tileable);
+                        Me.logFocus(
+                            '[DEBUG]',
+                            'stateChanged from foreign-actor-inserted'
+                        );
+                        Me.msWorkspaceManager.stateChanged();
+                    }
                 }
             );
             this.taskButtonContainer.connect(

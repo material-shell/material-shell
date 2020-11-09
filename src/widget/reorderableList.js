@@ -15,10 +15,13 @@ var ReorderableList = GObject.registerClass(
             'actor-moved': {
                 param_types: [Clutter.Actor.$gtype, GObject.TYPE_INT],
             },
+            'foreign-actor-inserted': {
+                param_types: [Clutter.Actor.$gtype, GObject.TYPE_INT],
+            },
         },
     },
     class ReorderableList extends Clutter.Actor {
-        _init(vertical = false) {
+        _init(vertical = false, classAccepted = []) {
             super._init({
                 layout_manager: new Clutter.BoxLayout({
                     orientation: vertical
@@ -27,6 +30,7 @@ var ReorderableList = GObject.registerClass(
                 }),
             });
             this.vertical = vertical;
+            this.classAccepted = classAccepted;
             this.dragInProgress = false;
             this.connect('actor-added', (_, actor) => {
                 if (!actor._draggable && actor !== this.placeHolder)
@@ -34,8 +38,8 @@ var ReorderableList = GObject.registerClass(
             });
 
             this.placeHolder = new DropPlaceholder();
-            this.placeHolder.connect('drag-dropped', () => {
-                reparentActor(this.draggedActor, this);
+            this.placeHolder.connect('drag-dropped', (_, source) => {
+                source._draggable._dragActor.get_parent().remove_child(source);
             });
         }
 
@@ -46,12 +50,21 @@ var ReorderableList = GObject.registerClass(
                 const originalResult = actor.originalHandleDragOver
                     ? actor.originalHandleDragOver(source, actor, x, y)
                     : null;
-                if (source === this.draggedActor) {
+                const isForeignActor =
+                    source != this.draggedActor &&
+                    this.classAccepted.some(
+                        (aClass) => source instanceof aClass
+                    );
+                if (isForeignActor && !this.foreignActor) {
+                    this.foreignEntered(source);
+                }
+                if (source === this.draggedActor || isForeignActor) {
                     if (
                         actor.draggable != undefined &&
                         actor.draggable === false
                     )
                         return DND.DragMotionResult.NO_DROP;
+
                     const actorIndex = this.get_children()
                         .filter((actor) => actor != this.placeHolder)
                         .indexOf(actor);
@@ -59,6 +72,7 @@ var ReorderableList = GObject.registerClass(
                         ? y > actor.height / 2
                         : x > actor.width / 2;
                     Me.logFocus('handleDragOver', x, after);
+                    this.placeHolder.resize(source.width, source.height);
                     this.movePlaceholder(actorIndex + (after ? 1 : 0));
                     return DND.DragMotionResult.NO_DROP;
                 }
@@ -68,9 +82,13 @@ var ReorderableList = GObject.registerClass(
 
             actor.acceptDrop = (source) => {
                 source._draggable._dragActor.get_parent().remove_child(source);
-                if (source === this.draggedActor) {
+                if (
+                    source === this.draggedActor ||
+                    source === this.foreignActor
+                ) {
                     return true;
                 }
+
                 return actor.originalAcceptDrop
                     ? actor.originalAcceptDrop(source)
                     : false;
@@ -84,56 +102,6 @@ var ReorderableList = GObject.registerClass(
             let eventPressed = false;
             let timeoutId = null;
             let originalIndex = null;
-            /* actor.connect('event', (_, event) => {
-                if (actor.draggable != undefined && actor.draggable === false)
-                    return;
-                const eventType = event.type();
-                switch (eventType) {
-                    // On Press
-                    case Clutter.EventType.BUTTON_PRESS:
-                    case Clutter.EventType.TOUCH_BEGIN:
-                        // handle press
-                        eventPressed = true;
-                        timeoutId = GLib.timeout_add(
-                            GLib.PRIORITY_DEFAULT,
-                            300,
-                            () => {
-                                if (eventPressed) {
-                                    eventPressed = false;
-                                    originalIndex = this.get_children().indexOf(
-                                        actor
-                                    );
-                                    this.placeHolder.resize(
-                                        actor.width,
-                                        actor.height
-                                    );
-                                    this.draggedActor = actor;
-                                    actor._draggable.startDrag(
-                                        ...event.get_coords(),
-                                        event.get_time(),
-                                        event.get_event_sequence(),
-                                        event.get_device()
-                                    );
-                                    this.movePlaceholder(originalIndex);
-                                    this.emit('drag-start');
-                                }
-                            }
-                        );
-                        break;
-
-                    //On Release
-                    case Clutter.EventType.BUTTON_RELEASE:
-                    case Clutter.EventType.TOUCH_END:
-                    case Clutter.EventType.LEAVE:
-                        // handle release
-                        eventPressed = false;
-                        if (timeoutId) {
-                            GLib.source_remove(timeoutId);
-                            timeoutId = null;
-                        }
-                        break;
-                }
-            }); */
 
             actor._draggable.connect('drag-begin', () => {
                 originalIndex = this.get_children().indexOf(actor);
@@ -177,9 +145,12 @@ var ReorderableList = GObject.registerClass(
             });
         }
 
-        startDragActor(actor) {}
         movePlaceholder(toIndex) {
-            Me.logFocus('movePlaceholder', toIndex);
+            Me.logFocus(
+                'movePlaceholder',
+                toIndex,
+                this.placeHolder.get_parent()
+            );
 
             if (this.placeHolder.get_parent()) {
                 this.set_child_at_index(this.placeHolder, toIndex);
@@ -187,13 +158,49 @@ var ReorderableList = GObject.registerClass(
                 this.insert_child_at_index(this.placeHolder, toIndex);
             }
         }
+
+        foreignEntered(actor) {
+            Me.logFocus('foreignEntered');
+            this.foreignActor = actor;
+            const connectCancelId = actor._draggable.connect(
+                'drag-cancelled',
+                () => {
+                    Me.logFocus('foreign-drag-cancelled');
+                    if (this.placeHolder.get_parent() == this)
+                        this.remove_child(this.placeHolder);
+                }
+            );
+            const connectEndId = actor._draggable.connect('drag-end', () => {
+                Me.logFocus('foreign-drag-end');
+                let placeholderIndex;
+                let actor = this.foreignActor;
+                if (this.placeHolder.get_parent()) {
+                    placeholderIndex = this.get_children().indexOf(
+                        this.placeHolder
+                    );
+                    this.remove_child(this.placeHolder);
+                }
+                actor._draggable.disconnect(connectCancelId);
+                actor._draggable.disconnect(connectEndId);
+                delete this.foreignActor;
+                if (placeholderIndex) {
+                    this.emit(
+                        'foreign-actor-inserted',
+                        actor,
+                        placeholderIndex
+                    );
+                }
+            });
+        }
     }
 );
 
 var DropPlaceholder = GObject.registerClass(
     {
         Signals: {
-            'drag-dropped': {},
+            'drag-dropped': {
+                param_types: [Clutter.Actor.$gtype],
+            },
             'drag-over': {},
         },
     },
@@ -208,7 +215,7 @@ var DropPlaceholder = GObject.registerClass(
         }
 
         acceptDrop(source) {
-            this.emit('drag-dropped');
+            this.emit('drag-dropped', source);
             return true;
         }
 

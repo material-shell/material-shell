@@ -8,6 +8,7 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { InfinityTo0 } = Me.imports.src.utils.index;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = GObject.registerClass(
@@ -102,8 +103,12 @@ var MaximizeLayout = GObject.registerClass(
          */
         startTransition(nextActor, prevActor) {
             if (!this.translationAnimator.get_parent()) {
-                this.translationAnimator.width = this.tileableContainer.allocation.get_width();
-                this.translationAnimator.height = this.tileableContainer.allocation.get_height();
+                this.translationAnimator.width = InfinityTo0(
+                    this.tileableContainer.allocation.get_width()
+                );
+                this.translationAnimator.height = InfinityTo0(
+                    this.tileableContainer.allocation.get_height()
+                );
                 this.tileableContainer.add_child(this.translationAnimator);
             }
             let indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
@@ -119,10 +124,14 @@ var MaximizeLayout = GObject.registerClass(
             [nextActor, prevActor].forEach((actor) => {
                 if (actor) {
                     actor.set_width(
-                        this.tileableContainer.allocation.get_width()
+                        InfinityTo0(
+                            this.tileableContainer.allocation.get_width()
+                        )
                     );
                     actor.set_height(
-                        this.tileableContainer.allocation.get_height()
+                        InfinityTo0(
+                            this.tileableContainer.allocation.get_height()
+                        )
                     );
                 }
             });
