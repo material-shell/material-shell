@@ -135,25 +135,12 @@ var SplitLayout = GObject.registerClass(
             );
         }
 
-        tileTileable(tileable, box) {
+        getTileablePortion(tileable) {
             if (this.activeTileableList.includes(tileable)) { 
                 let activeIndex = this.activeTileableList.indexOf(tileable);
 
-                const portion = this.mainPortion.getPortionAtIndex(activeIndex);
-
-                if (portion) {
-                    box = portion.box;
-                }
+                return this.mainPortion.getPortionAtIndex(activeIndex);
             }
-
-            const { x, y, width, height } = this.applyGaps(
-                box.x1, box.y1, box.get_width(), box.get_height()
-            );
-
-            tileable.x = x;
-            tileable.y = y;
-            tileable.width = width;
-            tileable.height = height;
         }
 
         /*

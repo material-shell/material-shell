@@ -112,8 +112,14 @@ var BaseTilingLayout = GObject.registerClass(
              */
         }
 
-        tileTileable(tileable, box, index) {
-            const portion = this.mainPortion.getPortionAtIndex(index);
+        getTileablePortion(tileable) {
+            return this.mainPortion.getPortionAtIndex(
+                this.tileableListVisible.indexOf(tileable)
+            );
+        }
+
+        tileTileable(tileable, box) {
+            const portion = this.getTileablePortion(tileable);
 
             if (portion) {
                 box = portion.box;
@@ -157,9 +163,7 @@ var BaseTilingLayout = GObject.registerClass(
                 if (tileable instanceof MsWindow && tileable.dragged) return;
                 this.tileTileable(
                     tileable,
-                    box || this.tileableContainer.allocation,
-                    this.tileableListVisible.indexOf(tileable),
-                    this.tileableListVisible.length
+                    box || this.tileableContainer.allocation
                 );
                 if (tileable instanceof MsWindow) {
                     tileable.updateMetaWindowPositionAndSize();
