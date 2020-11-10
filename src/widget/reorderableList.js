@@ -5,6 +5,7 @@ const DND = imports.ui.dnd;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { reparentActor } = Me.imports.src.utils.index;
+const { MatButton } = Me.imports.src.widget.material.button;
 
 /* exported ReorderableList */
 var ReorderableList = GObject.registerClass(
@@ -94,11 +95,25 @@ var ReorderableList = GObject.registerClass(
                     : false;
             };
 
+            const isMatButton = actor instanceof MatButton;
             actor._draggable = DND.makeDraggable(actor, {
                 restoreOnSuccess: false,
-                manualMode: false,
+                manualMode: isMatButton,
             });
 
+            if (isMatButton) {
+                actor.connect('drag-start', (_, event) => {
+                    let [x, y] = event.get_coords();
+
+                    actor._draggable.startDrag(
+                        x,
+                        y,
+                        global.get_current_time(),
+                        event.get_event_sequence(),
+                        event.get_device()
+                    );
+                });
+            }
             let eventPressed = false;
             let timeoutId = null;
             let originalIndex = null;

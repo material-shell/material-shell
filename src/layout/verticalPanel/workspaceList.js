@@ -342,10 +342,15 @@ var WorkspaceButton = GObject.registerClass(
             Me.msThemeManager.connect('panel-size-changed', () => {
                 this.queue_relayout();
             });
-            this.connect('clicked', (_, button) => {
-                if (button === 3) {
-                    this.menu.toggle();
-                } else if (button === 2) {
+
+            this.connect('primary-action', () => {
+                this.msWorkspace.activate();
+            });
+            this.connect('secondary-action', () => {
+                this.menu.toggle();
+            });
+            this.connect('clicked', (actor, button) => {
+                if (button === Clutter.BUTTON_MIDDLE) {
                     if (
                         this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                             this.msWorkspace
@@ -353,8 +358,6 @@ var WorkspaceButton = GObject.registerClass(
                         this.msWorkspaceManager.primaryMsWorkspaces.length - 1
                     )
                         msWorkspace.close();
-                } else {
-                    this.msWorkspace.activate();
                 }
             });
 
@@ -517,13 +520,13 @@ var WorkspaceButton = GObject.registerClass(
         acceptDrop(source) {
             if (source instanceof TaskBarItem) {
                 if (source.tileable instanceof MsWindow) {
-                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
                         source.tileable,
-                            this.msWorkspace
-                        );
-                        Me.logFocus('[DEBUG]', 'stateChanged from acceptDrop');
-                        this.msWorkspaceManager.stateChanged();
-                        this.msWorkspace.activate();
+                        this.msWorkspace
+                    );
+                    Me.logFocus('[DEBUG]', 'stateChanged from acceptDrop');
+                    this.msWorkspaceManager.stateChanged();
+                    this.msWorkspace.activate();
                 }
                 return true;
             }

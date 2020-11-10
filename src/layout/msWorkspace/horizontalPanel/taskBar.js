@@ -258,25 +258,15 @@ var TaskBarItem = GObject.registerClass(
             this.contentActor = contentActor;
             this.set_child(this.contentActor);
 
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                switch (eventType) {
-                    case Clutter.EventType.BUTTON_RELEASE:
-                    case Clutter.EventType.TOUCH_END:
-                        switch (event.get_button()) {
-                            case 0:
-                            case 1:
-                                this.emit('left-clicked');
-                                break;
-
-                            case 2:
-                                this.emit('middle-clicked');
-                                break;
-                            case 3:
-                                this.menu.toggle();
-                                break;
-                        }
-                        break;
+            this.connect('primary-action', () => {
+                this.emit('left-clicked');
+            });
+            this.connect('secondary-action', () => {
+                this.menu.toggle();
+            });
+            this.connect('clicked', (actor, button) => {
+                if (button === Clutter.BUTTON_MIDDLE) {
+                    this.emit('middle-clicked');
                 }
             });
             this.connect('parent-set', () => {
