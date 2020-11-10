@@ -161,7 +161,7 @@ var MsWorkspace = class MsWorkspace {
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
         )
-            return;
+            return Promise.resolve();
 
         msWindow.setMsWorkspace(this);
         if (this.msWorkspaceActor && !msWindow.dragged) {

@@ -11,9 +11,9 @@ const { MatButton } = Me.imports.src.widget.material.button;
 const { ReorderableList } = Me.imports.src.widget.reorderableList;
 
 const {
-    DropPlaceholder,
     TaskBarItem,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
+
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,

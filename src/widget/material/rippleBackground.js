@@ -10,6 +10,11 @@ let RippleWave = GObject.registerClass(
             super._init({
                 style_class: 'ripple-wave',
             });
+            this.destroyed = false;
+
+            this.connect('destroy', () => {
+                this.destroyed = true;
+            });
             this.set_pivot_point(0.5, 0.5);
             this.mouseX = mouseX;
             this.mouseY = mouseY;
@@ -39,8 +44,10 @@ let RippleWave = GObject.registerClass(
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => {
                     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                        this.remove_all_transitions();
-                        this.destroy();
+                        if (!this.destroyed) {
+                            this.remove_all_transitions();
+                            this.destroy();
+                        }
                     });
                 },
             });
@@ -84,7 +91,7 @@ var RippleBackground = GObject.registerClass(
                 this.removeRippleWave.bind(this)
             );
             this.connect('destroy', () => {
-                global.stage.disconnect(deactivateId);
+                if (deactivateId) global.stage.disconnect(deactivateId);
             });
         }
 
