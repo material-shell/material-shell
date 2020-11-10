@@ -202,8 +202,13 @@ class Portion {
 
     convert() {
         this.vertical = !this.vertical;
+        
         this.children.forEach(
             (portion) => portion.convert()
+        );
+
+        this.borders.forEach(
+            (border) => portion.convert()
         );
     }
 };
@@ -213,5 +218,9 @@ class PortionBorder {
     constructor(portions, vertical = false) {
         this.portions = portions;
         this.vertical = vertical;
+    }
+
+    convert() {
+        this.vertical = !this.vertical;
     }
 }
