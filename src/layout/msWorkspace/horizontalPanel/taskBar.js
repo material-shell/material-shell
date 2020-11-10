@@ -256,6 +256,7 @@ var TaskBarItem = GObject.registerClass(
             this._delegate = this;
             this.draggable = draggable;
             this.contentActor = contentActor;
+            this.monitor = Main.layoutManager.primaryMonitor;
             this.set_child(this.contentActor);
 
             this.connect('primary-action', () => {
@@ -269,10 +270,9 @@ var TaskBarItem = GObject.registerClass(
                     this.emit('middle-clicked');
                 }
             });
+
             this.connect('parent-set', () => {
-                this.monitor =
-                    Main.layoutManager.findMonitorForActor(this) ||
-                    Main.layoutManager.primaryMonitor;
+                this.monitor = Main.layoutManager.findMonitorForActor(this);
             });
         }
 
