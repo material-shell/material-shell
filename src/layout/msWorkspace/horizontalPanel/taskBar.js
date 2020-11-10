@@ -270,7 +270,9 @@ var TaskBarItem = GObject.registerClass(
                 }
             });
             this.connect('parent-set', () => {
-                this.monitor = Main.layoutManager.findMonitorForActor(this);
+                this.monitor =
+                    Main.layoutManager.findMonitorForActor(this) ||
+                    Main.layoutManager.primaryMonitor;
             });
         }
 
