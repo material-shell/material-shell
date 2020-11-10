@@ -46,11 +46,12 @@ var MatButton = GObject.registerClass(
             let clickAction = new Clutter.ClickAction();
             clickAction.connect('clicked', (action) => {
                 this.clicked = true;
-                this.emit('clicked', action.get_button());
-                if (action.get_button() === Clutter.BUTTON_PRIMARY) {
+                const button = action.get_button();
+                this.emit('clicked', button);
+                if (button === Clutter.BUTTON_PRIMARY || button === 0) {
                     this.emit('primary-action');
                 }
-                if (action.get_button() === Clutter.BUTTON_SECONDARY) {
+                if (button === Clutter.BUTTON_SECONDARY) {
                     this.emit('secondary-action');
                 }
                 this.rippleBackground.removeRippleWave();
