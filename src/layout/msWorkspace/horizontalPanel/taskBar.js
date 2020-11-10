@@ -292,7 +292,7 @@ var TaskBarItem = GObject.registerClass(
     }
 );
 
-let TileableItem = GObject.registerClass(
+var TileableItem = GObject.registerClass(
     {
         Signals: {
             'close-clicked': {},
@@ -502,7 +502,7 @@ let TileableItem = GObject.registerClass(
     }
 );
 
-let IconTaskBarItem = GObject.registerClass(
+var IconTaskBarItem = GObject.registerClass(
     class IconTaskBarItem extends TaskBarItem {
         _init(tileable, gicon) {
             this.container = new St.Bin({

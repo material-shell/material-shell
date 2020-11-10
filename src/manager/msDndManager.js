@@ -13,7 +13,7 @@ const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 var MsDndManager = class MsDndManager extends MsManager {
     constructor(msWindowManager) {
         super();
-
+        this.msWindowDragged = null;
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.dragInProgress = false;
