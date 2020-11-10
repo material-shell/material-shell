@@ -9,12 +9,25 @@ class Portion {
         this.basis = basis;
         this.vertical = vertical;
         this.children = [];
+        this.borders = [];
     }
 
     get portionLength() {
         return this.children.length
             ? this.children.reduce((sum, portion) => sum + portion.portionLength, 0)
             : 1;
+    }
+
+    updateBorders() {
+        this.borders = [];
+
+        if (this.children < 2) {
+            return;
+        }
+
+        for (let i = 0; i < this.children.length - 1; i++) {
+            this.borders.push(new PortionBorder(this.children.slice(i, i + 1), this.vertical));
+        }
     }
 
     insert(basis = 100, vertical) {
@@ -27,6 +40,8 @@ class Portion {
         }
 
         this.children.splice(0, 0, new Portion(basis, vertical));
+     
+        this.updateBorders();
     }
 
     insertVertical(basis = 100) {
@@ -47,6 +62,8 @@ class Portion {
         }
 
         this.children.push(new Portion(basis, vertical));
+     
+        this.updateBorders();
     }
 
     pushVertical(basis = 100) {
@@ -62,6 +79,7 @@ class Portion {
         // want to delete one, this portion describes the space.
         if (this.portionLength <= 2) {
             this.children = [];
+            this.borders = [];
 
             return;
         }
@@ -75,6 +93,8 @@ class Portion {
                 this.children.shift();
             }
         }
+
+        this.updateBorders();
     }
 
     pop() {
@@ -82,6 +102,7 @@ class Portion {
         // want to delete one, this portion describes the space.
         if (this.portionLength <= 2) {
             this.children = [];
+            this.borders = [];
 
             return;
         }
@@ -95,6 +116,8 @@ class Portion {
                 this.children.pop();
             }
         }
+     
+        this.updateBorders();
     }
     
     getPortionAtIndex(index) {
@@ -184,3 +207,11 @@ class Portion {
         );
     }
 };
+
+
+class PortionBorder {
+    constructor(portions, vertical = false) {
+        this.portions = portions;
+        this.vertical = vertical;
+    }
+}
