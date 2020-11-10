@@ -4,9 +4,10 @@ const { GObject, Clutter, St } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-class BasePortion {
-    constructor(basis = 100) {
+class Portion {
+    constructor(basis = 100, vertical = false) {
         this.basis = basis;
+        this.vertical = vertical;
         this.children = [];
     }
 
@@ -16,20 +17,44 @@ class BasePortion {
             : 1;
     }
 
+    insert(basis = 100, vertical) {
+        if (vertical === undefined) {
+            vertical = !this.vertical;
+        }
+
+        if (this.children.length === 0) {
+            this.children.splice(0, 0, new Portion(basis, vertical));
+        }
+
+        this.children.splice(0, 0, new Portion(basis, vertical));
+    }
+
     insertVertical(basis = 100) {
-        this.children.splice(0, 0, new VerticalPortion(basis));
+        this.insert(basis, true);
     }
 
     insertHorizontal(basis = 100) {
-        this.children.splice(0, 0, new HorizontalPortion(basis));
+        this.insert(basis, false);
+    }
+
+    push(basis = 100, vertical) {
+        if (vertical === undefined) {
+            vertical = !this.vertical;
+        }
+
+        if (this.children.length === 0) {
+            this.children.push(new Portion(basis, vertical));
+        }
+
+        this.children.push(new Portion(basis, vertical));
     }
 
     pushVertical(basis = 100) {
-        this.children.push(new VerticalPortion(basis));
+        this.push(basis, true);
     }
 
     pushHorizontal(basis = 100) {
-        this.children.push(new HorizontalPortion(basis));
+        this.push(basis, false);
     }
 
     shift() {
@@ -123,48 +148,6 @@ class BasePortion {
         return ratio;
     }
 
-    convertToHorizontal() {
-        const horizontal = new HorizontalPortion(this.basis);
-        horizontal.children = this.children.map(
-            (portion) => portion.convertToVertical()
-        );
-
-        this.basis = 100;
-        this.children = [];
-
-        return horizontal;
-    }
-
-    convertToVertical() {
-        const vertical = new VerticalPortion(this.basis);
-        vertical.children = this.children.map(
-            (portion) => portion.convertToHorizontal()
-        );
-
-        this.basis = 100;
-        this.children = [];
-
-        return vertical;
-    }
-};
-
-const VerticalPortion = class VerticalPortion extends BasePortion {
-    insert(basis = 100) {
-        if (this.children.length === 0) {
-            this.insertHorizontal(basis);
-        }
-
-        this.insertHorizontal(basis);
-    }
-    
-    push(basis = 100) {
-        if (this.children.length === 0) {
-            this.pushHorizontal(basis);
-        }
-
-        this.pushHorizontal(basis);
-    }
-
     getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
             (sum, portion) => sum + portion.basis, 
@@ -180,56 +163,24 @@ const VerticalPortion = class VerticalPortion extends BasePortion {
 
                 continue;
             }
+
+            const [ position, size ] = this.vertical
+                ? [ 'y', 'height' ]
+                : [ 'x', 'width' ];
             
-            ratio.y = ratio.y + (ratio.height * (basisSum / basisTotal));
-            ratio.height = ratio.height * (portion.basis / basisTotal);
+            ratio[position] = ratio[position] + (ratio[size] * (basisSum / basisTotal));
+            ratio[size] = ratio[size] * (portion.basis / basisTotal);
 
             break;
         }
 
         return ratio;
     }
-};
 
-const HorizontalPortion = class HorizontalPortion extends BasePortion {
-    insert(basis = 100) {
-        if (this.children.length === 0) {
-            this.insertVertical(basis);
-        }
-        
-        this.insertVertical(basis);
-    }
-    
-    push(basis = 100) {
-        if (this.children.length === 0) {
-            this.pushVertical(basis);
-        }
-
-        this.pushVertical(basis);
-    }
-
-    getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
-        const basisTotal = this.children.reduce(
-            (sum, portion) => sum + portion.basis, 
-            0
+    convert() {
+        this.vertical = !this.vertical;
+        this.children.forEach(
+            (portion) => portion.convert()
         );
-        let basisSum = 0;
-
-        for (let i = 0; i < this.children.length; i++) {
-            const child = this.children[i];
-
-            if (child !== portion) {
-                basisSum += child.basis;
-
-                continue;
-            }
-            
-            ratio.x = ratio.x + (ratio.width * (basisSum / basisTotal));
-            ratio.width = ratio.width * (portion.basis / basisTotal);
-
-            break;
-        }
-
-        return ratio;
     }
 };

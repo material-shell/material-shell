@@ -14,13 +14,13 @@ const {
 } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
+const { Portion } = Me.imports.src.layout.msWorkspace.portion;
 
 /* exported BaseTilingLayout */
 var BaseResizeableTilingLayout = GObject.registerClass(
     class BaseResizeableTilingLayout extends BaseTilingLayout {
         _init(msWorkspace, state = {}) {
-            this.mainPortion = new HorizontalPortion();
+            this.mainPortion = new Portion(100);
 
             super._init(msWorkspace, state);
         }
@@ -62,24 +62,9 @@ var BaseResizeableTilingLayout = GObject.registerClass(
         }
 
         tileAll(box) {
-            if (!box) {
-                box = new Clutter.ActorBox();
-                box.x2 = this.tileableContainer.allocation.get_width();
-                box.y2 = this.tileableContainer.allocation.get_height();
-            }
-
             this.updateMainPortionLength(this.tileableListVisible.length);
 
-            this.tileableListVisible.forEach((tileable) => {
-                if (tileable instanceof MsWindow && tileable.dragged) return;
-                this.tileTileable(
-                    tileable,
-                    box || this.tileableContainer.allocation
-                );
-                if (tileable instanceof MsWindow) {
-                    tileable.updateMetaWindowPositionAndSize();
-                }
-            });
+            super.tileAll(box);
         }
     }
 );

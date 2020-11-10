@@ -8,7 +8,6 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
-const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 // TODO: Make this configurable
 const WINDOW_SLIDE_TWEEN_TIME = 250;
@@ -25,8 +24,9 @@ var SplitLayout = GObject.registerClass(
                 this.endTransition();
             });
 
-            const PortionClass = this.vertical ? VerticalPortion : HorizontalPortion;
-            this.mainPortion = new PortionClass();
+            if (this.mainPortion.vertical !== this.vertical) {
+                this.mainPortion.convert();
+            }
         }
 
         afterInit() {

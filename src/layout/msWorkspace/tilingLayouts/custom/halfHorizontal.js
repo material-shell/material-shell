@@ -6,7 +6,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     HalfLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.half;
-const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported HalfHorizontalLayout */
 var HalfHorizontalLayout = GObject.registerClass(

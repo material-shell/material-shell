@@ -6,7 +6,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
-const { VerticalPortion, HorizontalPortion } = Me.imports.src.layout.msWorkspace.portions;
 
 /* exported SimpleLayout */
 var SimpleLayout = GObject.registerClass(
@@ -23,12 +22,9 @@ var SimpleLayout = GObject.registerClass(
             }
 
             const vertical = this.isVerticalLayout(box);
-            const MainPortion = vertical ? VerticalPortion : HorizontalPortion;
 
-            if (!(this.mainPortion instanceof MainPortion)) {
-                this.mainPortion = vertical
-                    ? this.mainPortion.convertToVertical()
-                    : this.mainPortion.convertToHorizontal();
+            if (this.mainPortion.vertical !== vertical) {
+                this.mainPortion.convert();
             }
 
             super.tileAll(box);
