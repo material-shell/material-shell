@@ -135,12 +135,14 @@ var SplitLayout = GObject.registerClass(
             );
         }
 
-        getTileablePortionRatio(tileable) {
+        getTileableIndex(tileable) {
             if (this.activeTileableList.includes(tileable)) { 
                 let activeIndex = this.activeTileableList.indexOf(tileable);
 
-                return this.mainPortion.getRatioForIndex(activeIndex);
+                return activeIndex;
             }
+
+            return -1;
         }
 
         /*

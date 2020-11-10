@@ -25,10 +25,28 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             super._init(msWorkspace, state);
         }
 
+        getTileableIndex(tileable) {
+            return this.tileableListVisible.indexOf(tileable);
+        }
+
         getTileablePortionRatio(tileable) {
-            return this.mainPortion.getRatioForIndex(
-                this.tileableListVisible.indexOf(tileable)
-            );
+            const index = this.getTileableIndex(tileable);
+
+            if (index < 0) {
+                return;
+            }
+
+            return this.mainPortion.getRatioForIndex(index);
+        }
+
+        getTileableBorder(tileable, after = false) {
+            const index = this.getTileableIndex(tileable);
+
+            if (index < 0) {
+                return;
+            }
+
+            return this.mainPortion.getBorderForIndex(index, after);
         }
 
         tileTileable(tileable, box) {

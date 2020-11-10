@@ -120,7 +120,7 @@ class Portion {
         this.updateBorders();
     }
     
-    getPortionAtIndex(index) {
+    getBorderForIndex(index, after = false) {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -130,18 +130,20 @@ class Portion {
         for (let i = 0; i < this.children.length; i++) {
             const portion = this.children[i];
 
-            if (portionIndex === index && portion.children.length === 0) {
-                return portion;
+            if (portionIndex === index) {
+                if (i - after < 0) {
+                    return;
+                }
+                
+                return this.borders[i - after];
             }
 
             if (portion.portionLength + portionIndex > index) {
-                return portion.getPortionAtIndex(index - portionIndex);
+                return portion.getBorderForIndex(index - portionIndex, after);
             }
 
             portionIndex += portion.portionLength;
         }
-
-        return this;
     }
 
     getRatioForIndex(index, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
