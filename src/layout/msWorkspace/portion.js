@@ -4,6 +4,8 @@ const { GObject, Clutter, St } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+const MIN_BASIS_RATIO = 0.10;
+
 class Portion {
     constructor(basis = 100, vertical = false) {
         this.basis = basis;
@@ -18,6 +20,18 @@ class Portion {
             : 1;
     }
 
+    get basis() {
+        return this._basis;
+    }
+
+    set basis(value) {
+        if (value < 0) {
+            value = 0;
+        }
+
+        this._basis = value;
+    }
+
     updateBorders() {
         this.borders = [];
 
@@ -26,8 +40,22 @@ class Portion {
         }
 
         for (let i = 0; i < this.children.length - 1; i++) {
-            this.borders.push(new PortionBorder(this.children.slice(i, i + 1), this.vertical));
+            this.borders.push(new PortionBorder(this.children.slice(i, i + 2), this.vertical));
         }
+    }
+
+    hasPortion(portion) {
+        for (let i = 0; i < this.children.length; i++) {
+            const possiblePortion = this.children[i];
+
+            if (possiblePortion === portion || (
+                possiblePortion.children.length > 0 && possiblePortion.hasPortion(portion)
+            )) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     insert(basis = 100, vertical) {
@@ -119,8 +147,34 @@ class Portion {
      
         this.updateBorders();
     }
+
+    isBorderInSubPortion(subPortion, index, after = false) {
+        let portionIndex = 0;
+
+        for (let i = 0; i < subPortion.children.length; i++) {
+            const portion = subPortion.children[i];
+
+            if (portionIndex === index) {
+                if (after || i - after < 0 || portion.children.length === 0) {
+                    return false;
+                }
+            }
+
+            if (portion.portionLength + portionIndex > index) {
+                if (!after) {
+                    return true;
+                }
+
+                return this.isBorderInSubPortion(portion, index - portionIndex, after);
+            }
+
+            portionIndex += portion.portionLength;
+        }
+
+        return after;
+    }
     
-    getBorderForIndex(index, after = false) {
+    getBorderForIndex(index, vertical = false, after = false) {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -134,12 +188,15 @@ class Portion {
                 if (i - after < 0) {
                     return;
                 }
-                
-                return this.borders[i - after];
             }
 
             if (portion.portionLength + portionIndex > index) {
-                return portion.getBorderForIndex(index - portionIndex, after);
+                log('DEBUG MS', index, this.isBorderInSubPortion(portion, index - portionIndex, after));
+                if (this.vertical === vertical && !this.isBorderInSubPortion(portion, index - portionIndex, after)) {
+                    return this.borders[i - after];
+                }
+
+                return portion.getBorderForIndex(index - portionIndex, vertical, after);
             }
 
             portionIndex += portion.portionLength;
@@ -182,8 +239,9 @@ class Portion {
 
         for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
+            const hasPortion = child.hasPortion(portion);
 
-            if (child !== portion) {
+            if (child !== portion && !hasPortion) {
                 basisSum += child.basis;
 
                 continue;
@@ -195,6 +253,13 @@ class Portion {
             
             ratio[position] = ratio[position] + (ratio[size] * (basisSum / basisTotal));
             ratio[size] = ratio[size] * (portion.basis / basisTotal);
+
+            if (hasPortion) {
+                return child.getRatioForPortion(
+                    portion, 
+                    ratio
+                );
+            }
 
             break;
         }
@@ -210,7 +275,7 @@ class Portion {
         );
 
         this.borders.forEach(
-            (border) => portion.convert()
+            (border) => border.convert()
         );
     }
 };
@@ -220,9 +285,33 @@ class PortionBorder {
     constructor(portions, vertical = false) {
         this.portions = portions;
         this.vertical = vertical;
+
+        this.lastBasis = this.portions.map((portion) => portion.basis);
     }
 
     convert() {
         this.vertical = !this.vertical;
+    }
+
+    updateBasis(basisRatio, after = false) {
+        if (basisRatio < 0) {
+            basisRatio = 0;
+        }
+
+        const [i, j] = [after + 0, (after + 1) % 2];
+        const oldBasis = this.portions[i].basis;
+
+        this.portions[i].basis *= basisRatio;
+        this.portions[j].basis += oldBasis - this.portions[i].basis;
+
+        const basisSum = this.portions[i].basis + this.portions[j].basis;
+
+        if (this.portions[i].basis / basisSum < MIN_BASIS_RATIO) {
+            this.portions[i].basis = MIN_BASIS_RATIO * basisSum;
+            this.portions[j].basis = basisSum - this.portions[i].basis;
+        } else if (this.portions[j].basis / basisSum < MIN_BASIS_RATIO) {
+            this.portions[j].basis = MIN_BASIS_RATIO * basisSum;
+            this.portions[i].basis = basisSum - this.portions[j].basis;
+        }
     }
 }
