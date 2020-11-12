@@ -37,7 +37,6 @@ var TaskBar = GObject.registerClass(
             this.taskButtonContainer.connect(
                 'actor-moved',
                 (_, item, index) => {
-                    Me.logFocus('actor-moved', item, index);
                     this.msWorkspace.setTileableAtIndex(item.tileable, index);
                     this.msWorkspace.focusTileable(item.tileable);
                 }
@@ -55,10 +54,6 @@ var TaskBar = GObject.registerClass(
                             index
                         );
                         this.msWorkspace.focusTileable(actor.tileable);
-                        Me.logFocus(
-                            '[DEBUG]',
-                            'stateChanged from foreign-actor-inserted'
-                        );
                         Me.msWorkspaceManager.stateChanged();
                     }
                 }

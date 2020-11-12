@@ -38,7 +38,6 @@ var WorkspaceList = GObject.registerClass(
 
             this.buttonList = new ReorderableList(true);
             this.buttonList.connect('actor-moved', (_, actor, index) => {
-                Me.logFocus('actor-moved', actor, index);
                 this.msWorkspaceManager.setMsWorkspaceAt(
                     actor.msWorkspace,
                     index
@@ -524,7 +523,6 @@ var WorkspaceButton = GObject.registerClass(
                         source.tileable,
                         this.msWorkspace
                     );
-                    Me.logFocus('[DEBUG]', 'stateChanged from acceptDrop');
                     this.msWorkspaceManager.stateChanged();
                     this.msWorkspace.activate();
                 }

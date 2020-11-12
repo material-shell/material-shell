@@ -72,7 +72,6 @@ var ReorderableList = GObject.registerClass(
                     const after = this.vertical
                         ? y > actor.height / 2
                         : x > actor.width / 2;
-                    Me.logFocus('handleDragOver', x, after);
                     this.placeHolder.resize(source.width, source.height);
                     this.movePlaceholder(actorIndex + (after ? 1 : 0));
                     return DND.DragMotionResult.NO_DROP;
@@ -114,8 +113,7 @@ var ReorderableList = GObject.registerClass(
                     );
                 });
             }
-            let eventPressed = false;
-            let timeoutId = null;
+
             let originalIndex = null;
 
             actor._draggable.connect('drag-begin', () => {
@@ -127,12 +125,9 @@ var ReorderableList = GObject.registerClass(
             });
 
             actor._draggable.connect('drag-cancelled', () => {
-                Me.logFocus('drag-cancelled');
                 this.set_child_at_index(this.placeHolder, originalIndex);
             });
             actor._draggable.connect('drag-end', () => {
-                Me.logFocus('drag-end');
-
                 const placeholderIndex = this.get_children().indexOf(
                     this.placeHolder
                 );
@@ -161,12 +156,6 @@ var ReorderableList = GObject.registerClass(
         }
 
         movePlaceholder(toIndex) {
-            Me.logFocus(
-                'movePlaceholder',
-                toIndex,
-                this.placeHolder.get_parent()
-            );
-
             if (this.placeHolder.get_parent()) {
                 this.set_child_at_index(this.placeHolder, toIndex);
             } else {
@@ -175,18 +164,15 @@ var ReorderableList = GObject.registerClass(
         }
 
         foreignEntered(actor) {
-            Me.logFocus('foreignEntered');
             this.foreignActor = actor;
             const connectCancelId = actor._draggable.connect(
                 'drag-cancelled',
                 () => {
-                    Me.logFocus('foreign-drag-cancelled');
                     if (this.placeHolder.get_parent() == this)
                         this.remove_child(this.placeHolder);
                 }
             );
             const connectEndId = actor._draggable.connect('drag-end', () => {
-                Me.logFocus('foreign-drag-end');
                 let placeholderIndex;
                 let actor = this.foreignActor;
                 if (this.placeHolder.get_parent()) {
