@@ -112,11 +112,11 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
     getPortionPositionAndSize() {
         const { layout } = this.msWindow.msWorkspace;
-        const { allocation: container } = layout.tileableContainer;
-
         const ratio = layout.mainPortion.getRatioForPortion(this.border.portions[this.after + 0]);
 
-        return layout.applyBoxRatio(container, ratio);
+        log('DEBUG MS', ratio.x, ratio.width);
+
+        return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }
 
     startResize(msWindow, directionOp) {
@@ -128,9 +128,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
         const vertical = RESIZE_VERTICAL_CODES.includes(directionOp);
         this.after = RESIZE_AFTER_CODES.includes(directionOp);
-        log('DEBUG MS', 'border');
         this.border = layout.getTileableBorder(msWindow, vertical, this.after);
-        log('DEBUG MS', this.border);
 
         if (!this.border) {
             return;

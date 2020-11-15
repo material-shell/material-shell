@@ -148,11 +148,11 @@ class Portion {
         this.updateBorders();
     }
 
-    isBorderInSubPortion(subPortion, index, after = false) {
+    isBorderInSubPortion(index, after = false) {
         let portionIndex = 0;
 
-        for (let i = 0; i < subPortion.children.length; i++) {
-            const portion = subPortion.children[i];
+        for (let i = 0; i < this.children.length; i++) {
+            const portion = this.children[i];
 
             if (portionIndex === index) {
                 if (after || i - after < 0 || portion.children.length === 0) {
@@ -161,17 +161,41 @@ class Portion {
             }
 
             if (portion.portionLength + portionIndex > index) {
-                if (!after) {
+                if (portion.children.length === 0) {
+                    return false;
+                }
+
+                if (after) {
+                    if (portionIndex === index) {
+                        if (portion.children[0].portionLength > 1) {
+                            return portion.children[0].isBorderInSubPortion(0, after);
+                        } else {
+                            return false;
+                        }
+                    }
+
                     return true;
                 }
 
-                return this.isBorderInSubPortion(portion, index - portionIndex, after);
+                const lastPortion = portion.children[portion.children.length - 1];
+                const portionIndexUntilLast = portion.portionLength + portionIndex 
+                    - lastPortion.portionLength;
+
+                if (index > portionIndexUntilLast) {
+                    if (lastPortion.portionLength > 1) {
+                        return lastPortion.isBorderInSubPortion(index- portionIndexUntilLast, after);
+                    } else {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             portionIndex += portion.portionLength;
         }
 
-        return after;
+        return false;
     }
     
     getBorderForIndex(index, vertical = false, after = false) {
@@ -191,8 +215,7 @@ class Portion {
             }
 
             if (portion.portionLength + portionIndex > index) {
-                log('DEBUG MS', index, this.isBorderInSubPortion(portion, index - portionIndex, after));
-                if (this.vertical === vertical && !this.isBorderInSubPortion(portion, index - portionIndex, after)) {
+                if (this.vertical === vertical && !portion.isBorderInSubPortion(index - portionIndex, after)) {
                     return this.borders[i - after];
                 }
 
@@ -298,13 +321,13 @@ class PortionBorder {
             basisRatio = 0;
         }
 
+        basisRatio = basisRatio.toFixed(2);
+
         const [i, j] = [after + 0, (after + 1) % 2];
-        const oldBasis = this.portions[i].basis;
+        const basisSum = this.portions[i].basis + this.portions[j].basis;
 
         this.portions[i].basis *= basisRatio;
-        this.portions[j].basis += oldBasis - this.portions[i].basis;
-
-        const basisSum = this.portions[i].basis + this.portions[j].basis;
+        this.portions[j].basis = basisSum - this.portions[i].basis;
 
         if (this.portions[i].basis / basisSum < MIN_BASIS_RATIO) {
             this.portions[i].basis = MIN_BASIS_RATIO * basisSum;
