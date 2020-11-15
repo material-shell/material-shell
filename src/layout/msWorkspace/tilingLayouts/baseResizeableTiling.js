@@ -1,3 +1,6 @@
+/** JS imports */
+const { round } = Math;
+
 /** Gnome libs imports */
 const { Gio, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
@@ -51,10 +54,10 @@ var BaseResizeableTilingLayout = GObject.registerClass(
 
         applyBoxRatio(box, ratio) {
             return this.applyGaps(
-                box.x1 + (ratio.x * box.get_width()),
-                box.y1 + (ratio.y * box.get_height()),
-                ratio.width * box.get_width(),
-                ratio.height * box.get_height(),
+                round(box.x1 + (ratio.x * box.get_width())),
+                round(box.y1 + (ratio.y * box.get_height())),
+                round(ratio.width * box.get_width()),
+                round(ratio.height * box.get_height()),
             );
         }
 
