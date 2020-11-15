@@ -255,7 +255,7 @@ class Portion {
 
     getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
-            (sum, portion) => sum + portion.basis, 
+            (sum, child) => sum + child.basis, 
             0
         );
         let basisSum = 0;
@@ -274,8 +274,8 @@ class Portion {
                 ? [ 'y', 'height' ]
                 : [ 'x', 'width' ];
             
-            ratio[position] = ratio[position] + (ratio[size] * (basisSum / basisTotal));
-            ratio[size] = ratio[size] * (portion.basis / basisTotal);
+            ratio[position] += (ratio[size] * (basisSum / basisTotal));
+            ratio[size] *= (child.basis / basisTotal);
 
             if (hasPortion) {
                 return child.getRatioForPortion(
