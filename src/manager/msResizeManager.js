@@ -181,6 +181,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         });
 
         Main.popModal(this.inputResizer);
+        Me.stateManager.stateChanged();
         global.stage.remove_child(this.inputResizer);
         global.display.set_cursor(Meta.Cursor.DEFAULT);
     }

@@ -46,13 +46,13 @@ var SplitLayout = GObject.registerClass(
                 Math.min(
                     this.msWorkspace.focusedIndex,
                     this.msWorkspace.tileableList.length -
-                        this.state.nbOfColumns -
+                        this._state.nbOfColumns -
                         1
                 )
             );
             this.activeTileableList = this.msWorkspace.tileableList.slice(
                 this.baseIndex,
-                this.baseIndex + this.state.nbOfColumns
+                this.baseIndex + this._state.nbOfColumns
             );
         }
 
@@ -88,13 +88,13 @@ var SplitLayout = GObject.registerClass(
             const oldTileableList = this.activeTileableList;
             if (oldIndex < newIndex) {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
-                    newIndex - this.state.nbOfColumns + 1,
+                    newIndex - this._state.nbOfColumns + 1,
                     newIndex + 1
                 );
             } else {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
                     newIndex,
-                    newIndex + this.state.nbOfColumns
+                    newIndex + this._state.nbOfColumns
                 );
             }
             this.baseIndex = this.msWorkspace.tileableList.indexOf(
@@ -129,8 +129,8 @@ var SplitLayout = GObject.registerClass(
         }
 
         updateMainPortionLength(length) {
-            super.updateMainPortionLength(length > this.state.nbOfColumns
-                ? this.state.nbOfColumns
+            super.updateMainPortionLength(length > this._state.nbOfColumns
+                ? this._state.nbOfColumns
                 : length
             );
         }
@@ -172,12 +172,12 @@ var SplitLayout = GObject.registerClass(
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height() /
-                            this.state.nbOfColumns
+                            this._state.nbOfColumns
                     );
                 } else {
                     actor.set_width(
                         this.tileableContainer.allocation.get_width() /
-                            this.state.nbOfColumns
+                            this._state.nbOfColumns
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
@@ -197,11 +197,11 @@ var SplitLayout = GObject.registerClass(
         }
 
         buildQuickWidget() {
-            const widget = new MatNumberPicker(this.state.nbOfColumns, {
+            const widget = new MatNumberPicker(this._state.nbOfColumns, {
                 min: 2,
             });
             widget.connect('changed', (_, newValue) => {
-                this.state.nbOfColumns = newValue;
+                this._state.nbOfColumns = newValue;
                 this.tileAll();
             });
             return widget;

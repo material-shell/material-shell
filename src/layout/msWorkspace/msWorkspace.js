@@ -51,9 +51,7 @@ var MsWorkspace = class MsWorkspace {
             this._state.forcedCategory
         );
         this.precedentIndex = this._state.focusedIndex;
-        const LayoutConstructor = Me.layoutManager.getLayoutByKey(
-            this._state.layoutKey
-        );
+
         this._state.msWindowList.forEach((msWindowData) => {
             this.addMsWindow(
                 Me.msWindowManager.createNewMsWindow(
@@ -73,9 +71,9 @@ var MsWorkspace = class MsWorkspace {
 
         this.msWorkspaceCategory.determineCategory();
 
-        this.layout = new LayoutConstructor(this);
         this.msWorkspaceActor = new MsWorkspaceActor(this);
-        this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
+        this.setLayoutByKey(this._state.layoutKey);
+
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.determineCategory();
         });
@@ -110,6 +108,7 @@ var MsWorkspace = class MsWorkspace {
             .map((msWindow) => {
                 return msWindow.state;
             });
+            
         if (this.layout) {
             this._state.layoutStateList[
                 this._state.layoutStateList.findIndex(
@@ -402,7 +401,10 @@ var MsWorkspace = class MsWorkspace {
     }
 
     setLayoutByKey(layoutKey) {
-        this.layout.onDestroy();
+        if (this.layout) {
+            this.layout.onDestroy();
+        }
+
         const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
         this.layout = new Layout(
             this,
