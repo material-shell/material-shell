@@ -11,6 +11,7 @@ const {
 } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { InfinityTo0 } = Me.imports.src.utils.index;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
@@ -119,8 +120,12 @@ var BaseTilingLayout = GObject.registerClass(
         resolveBox(box) {
             if (!box) {
                 box = new Clutter.ActorBox();
-                box.x2 = this.tileableContainer.allocation.get_width();
-                box.y2 = this.tileableContainer.allocation.get_height();
+                box.x2 = InfinityTo0(
+                    this.tileableContainer.allocation.get_width()
+                );
+                box.y2 = InfinityTo0(
+                    this.tileableContainer.allocation.get_height()
+                );
             }
 
             return box;

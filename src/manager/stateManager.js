@@ -103,7 +103,6 @@ var StateManager = class StateManager {
         )
             return;
 
-        Me.logFocus('[DEBUG]', 'Inside stateChanged');
         this.stateChangedTriggered = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.saveCurrentState();
@@ -115,7 +114,6 @@ var StateManager = class StateManager {
     saveCurrentState() {
         // Avoid unnecessary work
         if (!Me.loaded || Me.disableInProgress) return;
-        Me.logFocus('[DEBUG]', 'saveCurrentState');
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
             this.setState('workspaces-state', Me.msWorkspaceManager.state);

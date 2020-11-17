@@ -106,7 +106,6 @@ var MsWindow = GObject.registerClass(
 
         set persistent(boolean) {
             this._persistent = boolean;
-            Me.logFocus('[DEBUG]', 'stateChanged from set Persistent');
             Me.stateManager.stateChanged();
         }
 
@@ -690,12 +689,14 @@ var MsWindow = GObject.registerClass(
             if (isMainMetaWindow) {
                 this._metaWindow = null;
             }
-            // If there is a dialog or the mainMetaWindow we exit here
-            if (this.dialogs.length || this._metaWindow) {
-                return;
-            }
-            // Otherwise we kill the msWindow
-            this.kill();
+
+            // We check in an idle that closing dialog didn't popped a new window. If there is no new window we kill the msWindow
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                if (!this.dialogs.length && !this._metaWindow) {
+                    this.kill();
+                }
+                return GLib.SOURCE_REMOVE;
+            });
         }
 
         kill() {

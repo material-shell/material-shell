@@ -85,3 +85,7 @@ var reparentActor = (actor, parent) => {
     }
     Me.reparentInProgress = false;
 };
+
+var InfinityTo0 = (number) => {
+    return number === Infinity ? 0 : number;
+};

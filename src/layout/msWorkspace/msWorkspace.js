@@ -161,7 +161,7 @@ var MsWorkspace = class MsWorkspace {
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
         )
-            return;
+            return Promise.resolve();
 
         msWindow.setMsWorkspace(this);
         if (this.msWorkspaceActor && !msWindow.dragged) {
@@ -173,10 +173,7 @@ var MsWorkspace = class MsWorkspace {
         let insertAt = this.tileableList.length - 1;
 
         // Do not insert tileable after App Launcher
-        if (
-            insert &&
-            this.tileableFocused !== this.appLauncher
-        ) {
+        if (insert && this.tileableFocused !== this.appLauncher) {
             insertAt = this.focusedIndex + 1;
             this.insertedMsWindow = msWindow;
         }
@@ -369,6 +366,14 @@ var MsWorkspace = class MsWorkspace {
 
         let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
+        this.emit('tileableList-changed', this.tileableList, oldTileableList);
+    }
+
+    setTileableAtIndex(tileableToMove, index) {
+        const oldTileableList = [...this.tileableList];
+        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        this.tileableList.splice(tileableToMoveIndex, 1);
+        this.tileableList.splice(index, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 

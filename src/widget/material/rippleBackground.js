@@ -2,12 +2,18 @@
 const { St, Clutter, GObject, GLib } = imports.gi;
 
 /* exported RippleBackground */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 let RippleWave = GObject.registerClass(
     class RippleWave extends St.Widget {
         _init(mouseX, mouseY, size) {
             super._init({
                 style_class: 'ripple-wave',
+            });
+            this.destroyed = false;
+
+            this.connect('destroy', () => {
+                this.destroyed = true;
             });
             this.set_pivot_point(0.5, 0.5);
             this.mouseX = mouseX;
@@ -37,7 +43,12 @@ let RippleWave = GObject.registerClass(
                 duration: second * 1000,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => {
-                    this.destroy();
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                        if (!this.destroyed) {
+                            this.remove_all_transitions();
+                            this.destroy();
+                        }
+                    });
                 },
             });
         }
@@ -50,7 +61,7 @@ var RippleBackground = GObject.registerClass(
             super._init({
                 clip_to_allocation: true,
             });
-
+            this.displayed = true;
             eventListener.connect('event', (actor, event) => {
                 let eventType = event.type();
                 if (
@@ -72,6 +83,15 @@ var RippleBackground = GObject.registerClass(
                 ) {
                     this.removeRippleWave();
                 }
+                return false;
+            });
+
+            const deactivateId = global.stage.connect(
+                'deactivate',
+                this.removeRippleWave.bind(this)
+            );
+            this.connect('destroy', () => {
+                if (deactivateId) global.stage.disconnect(deactivateId);
             });
         }
 

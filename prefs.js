@@ -271,7 +271,7 @@ var HotkeysTab = GObject.registerClass(
 
             const cellAccelRenderer = new Gtk.CellRendererAccel({
                 editable: true,
-                'accel-mode': Gtk.CellRendererAccelMode.GTK,
+                'accel-mode': Gtk.CellRendererAccelMode.OTHER,
             });
             cellAccelRenderer.connect('accel-cleared', (rend, strIter) => {
                 const [success, iter] = model.get_iter_from_string(strIter);

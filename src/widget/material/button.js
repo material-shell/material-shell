@@ -14,6 +14,13 @@ var MatButton = GObject.registerClass(
             clicked: {
                 param_types: [GObject.TYPE_INT],
             },
+            // Left Click or Touch
+            'primary-action': {},
+            // Right Click or Long press
+            'secondary-action': {},
+            'drag-start': {
+                param_types: [Clutter.Event],
+            },
         },
     },
     class MatButton extends St.Widget {
@@ -30,44 +37,65 @@ var MatButton = GObject.registerClass(
             super._init(params);
             this.set_child(child);
             this.rippleBackground = new RippleBackground(this);
-
+            this.add_child(this.rippleBackground);
             this.add_style_class_name('mat-button');
             if (isPrimary) {
                 this.add_style_class_name('primary');
             }
 
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                if (
-                    [
-                        Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.pressed = true;
-                } else if (
-                    [
-                        Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END,
-                    ].indexOf(eventType) > -1
-                ) {
-                    if (this.pressed) {
-                        this.emit('clicked', event.get_button());
-                        this.pressed = false;
-                    }
-                } else if (eventType === Clutter.EventType.LEAVE) {
-                    this.pressed = false;
-                    global.display.set_cursor(Meta.Cursor.DEFAULT);
-                    if (this.rippleBackground.get_parent()) {
-                        this.remove_child(this.rippleBackground);
-                    }
-                } else if (eventType === Clutter.EventType.ENTER) {
-                    global.display.set_cursor(Meta.Cursor.POINTING_HAND);
-                    if (!this.rippleBackground.get_parent()) {
-                        this.add_child(this.rippleBackground);
-                    }
+            let clickAction = new Clutter.ClickAction();
+            clickAction.connect('clicked', (action) => {
+                this.clicked = true;
+                const button = action.get_button();
+                this.emit('clicked', button);
+                if (button === Clutter.BUTTON_PRIMARY || button === 0) {
+                    this.emit('primary-action');
                 }
+                if (button === Clutter.BUTTON_SECONDARY) {
+                    this.emit('secondary-action');
+                }
+                this.rippleBackground.removeRippleWave();
+                return true;
             });
+            clickAction.connect('long-press', this._onLongPress.bind(this));
+            this.add_action(clickAction);
+
+            this.connect('enter-event', () => {
+                global.display.set_cursor(Meta.Cursor.POINTING_HAND);
+            });
+            this.connect('leave-event', () => {
+                global.display.set_cursor(Meta.Cursor.DEFAULT);
+            });
+        }
+
+        _onLongPress(action, actor, state) {
+            // Take advantage of the Clutter policy to consider
+            // a long-press canceled when the pointer movement
+            // exceeds dnd-drag-threshold to manually start the drag
+            if (state == Clutter.LongPressState.CANCEL) {
+                let event = Clutter.get_current_event();
+
+                if (this._longPressLater) return true;
+
+                // A click cancels a long-press before any click handler is
+                // run - make sure to not start a drag in that case
+                this._longPressLater = Meta.later_add(
+                    Meta.LaterType.BEFORE_REDRAW,
+                    () => {
+                        delete this._longPressLater;
+                        if (this.clicked) {
+                            delete this.clicked;
+                            return;
+                        }
+                        action.release();
+                        this.emit('drag-start', event);
+                    }
+                );
+            }
+            if (state == Clutter.LongPressState.ACTIVATE) {
+                this.emit('secondary-action');
+            }
+            return true;
         }
 
         /**
