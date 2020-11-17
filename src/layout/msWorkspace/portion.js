@@ -31,6 +31,8 @@ class Portion {
 
             return child;
         });
+
+        this.updateBorders();
     }
 
     get portionLength() {

@@ -28,14 +28,14 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             if (state.mainPortion) {
                 this.mainPortion.state = state.mainPortion;
 
-                state.mainPortion = undefined;
+                delete state.mainPortion;
             }
 
             super._init(msWorkspace, state);
         }
 
         get state() {
-            return Object.assign(this._state, {
+            return Object.assign({}, this._state, {
                 mainPortion: this.mainPortion.state,
             });
         }
