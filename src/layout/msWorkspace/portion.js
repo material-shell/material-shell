@@ -14,6 +14,25 @@ class Portion {
         this.borders = [];
     }
 
+    get state() {
+        return {
+            basis: this.basis,
+            vertical: this.vertical,
+            children: this.children.map((child) => child.state),
+        };
+    }
+
+    set state(state) {
+        this.basis = state.basis;
+        this.vertical = state.vertical;
+        this.children = state.children.map((childState) => {
+            const child = new Portion();
+            child.state = childState;
+
+            return child;
+        });
+    }
+
     get portionLength() {
         return this.children.length
             ? this.children.reduce((sum, portion) => sum + portion.portionLength, 0)

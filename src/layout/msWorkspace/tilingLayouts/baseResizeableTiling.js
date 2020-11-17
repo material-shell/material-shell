@@ -23,9 +23,21 @@ const { Portion } = Me.imports.src.layout.msWorkspace.portion;
 var BaseResizeableTilingLayout = GObject.registerClass(
     class BaseResizeableTilingLayout extends BaseTilingLayout {
         _init(msWorkspace, state = {}) {
-            this.mainPortion = new Portion(100);
+            this.mainPortion = new Portion();
+
+            if (state.mainPortion) {
+                this.mainPortion.state = state.mainPortion;
+
+                state.mainPortion = undefined;
+            }
 
             super._init(msWorkspace, state);
+        }
+
+        get state() {
+            return Object.assign(this._state, {
+                mainPortion: this.mainPortion.state,
+            });
         }
 
         getTileableIndex(tileable) {

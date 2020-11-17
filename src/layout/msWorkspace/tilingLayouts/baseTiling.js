@@ -17,7 +17,7 @@ const { InfinityTo0 } = Me.imports.src.utils.index;
 var BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
         _init(msWorkspace, state = {}) {
-            this.state = Object.assign({}, this.constructor.state, state);
+            this._state = Object.assign({}, this.constructor.state, state);
             this.icon = Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
             );
@@ -37,6 +37,14 @@ var BaseTilingLayout = GObject.registerClass(
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.alterTileable(tileable);
             });
+        }
+
+        get state() {
+            return this._state;
+        }
+
+        set state(state) {
+            this._state = state;
         }
 
         get tileableContainer() {
