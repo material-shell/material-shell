@@ -112,7 +112,9 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
     getPortionPositionAndSize() {
         const { layout } = this.msWindow.msWorkspace;
-        const ratio = layout.mainPortion.getRatioForPortion(this.border.portions[this.after + 0]);
+        const ratio = layout.mainPortion.getRatioForPortion(
+            this.after ? this.border.secondPortion : this.border.firstPortion
+        );
 
         return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }

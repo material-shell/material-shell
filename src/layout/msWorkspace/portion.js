@@ -61,7 +61,9 @@ class Portion {
         }
 
         for (let i = 0; i < this.children.length - 1; i++) {
-            this.borders.push(new PortionBorder(this.children.slice(i, i + 2), this.vertical));
+            const [firstPortion, secondPortion] = this.children.slice(i, i + 2);
+
+            this.borders.push(new PortionBorder(firstPortion, secondPortion, this.vertical));
         }
     }
 
@@ -326,11 +328,10 @@ class Portion {
 
 
 class PortionBorder {
-    constructor(portions, vertical = false) {
-        this.portions = portions;
+    constructor(firstPortion, secondPortion, vertical = false) {
+        this.firstPortion = firstPortion;
+        this.secondPortion = secondPortion;
         this.vertical = vertical;
-
-        this.lastBasis = this.portions.map((portion) => portion.basis);
     }
 
     convert() {
@@ -344,18 +345,22 @@ class PortionBorder {
 
         basisRatio = basisRatio.toFixed(2);
 
-        const [i, j] = [after + 0, (after + 1) % 2];
-        const basisSum = this.portions[i].basis + this.portions[j].basis;
+        const basisSum = this.firstPortion.basis + this.secondPortion.basis;
 
-        this.portions[i].basis *= basisRatio;
-        this.portions[j].basis = basisSum - this.portions[i].basis;
+        if (after) {
+            this.secondPortion.basis *= basisRatio;
+            this.firstPortion.basis = basisSum - this.secondPortion.basis;
+        } else {
+            this.firstPortion.basis *= basisRatio;
+            this.secondPortion.basis = basisSum - this.firstPortion.basis;
+        }
 
-        if (this.portions[i].basis / basisSum < MIN_BASIS_RATIO) {
-            this.portions[i].basis = MIN_BASIS_RATIO * basisSum;
-            this.portions[j].basis = basisSum - this.portions[i].basis;
-        } else if (this.portions[j].basis / basisSum < MIN_BASIS_RATIO) {
-            this.portions[j].basis = MIN_BASIS_RATIO * basisSum;
-            this.portions[i].basis = basisSum - this.portions[j].basis;
+        if (this.firstPortion.basis / basisSum < MIN_BASIS_RATIO) {
+            this.firstPortion.basis = MIN_BASIS_RATIO * basisSum;
+            this.secondPortion.basis = basisSum - this.firstPortion.basis;
+        } else if (this.secondPortion.basis / basisSum < MIN_BASIS_RATIO) {
+            this.secondPortion.basis = MIN_BASIS_RATIO * basisSum;
+            this.firstPortion.basis = basisSum - this.secondPortion.basis;
         }
     }
 }
