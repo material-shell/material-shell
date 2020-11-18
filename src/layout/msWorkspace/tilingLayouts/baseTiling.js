@@ -281,9 +281,10 @@ var BaseTilingLayout = GObject.registerClass(
             const useScreenGap = Me.layoutManager.useScreenGap;
 
             if (
-                (!gap && (!useScreenGap || !screenGap)) ||
+                (!gap && (!useScreenGap || !screenGap))
                 // Never apply gaps if App Launcher is the only tileable
-                this.msWorkspace.tileableList.length < 2
+                || this.tileableListVisible.length === 0
+                // || this.tileableListVisible.length === 1
             ) {
                 return { x, y, width, height };
             }

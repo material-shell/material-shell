@@ -23,7 +23,7 @@ var MaximizeLayout = GObject.registerClass(
 
         get tileableListVisible() {
             return this.msWorkspace.tileableList.filter(
-                (tileable) => tileable.visible
+                (_, index) => this.msWorkspace.focusedIndex === index
             );
         }
 
@@ -92,10 +92,14 @@ var MaximizeLayout = GObject.registerClass(
         }
 
         tileTileable(tileable, box) {
-            tileable.x = box.x1;
-            tileable.y = box.y1;
-            tileable.width = box.get_width();
-            tileable.height = box.get_height();
+            let { x, y, width, height } = this.applyGaps(
+                box.x1, box.y1, box.x2, box.y2
+            );
+
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
 
         /*
