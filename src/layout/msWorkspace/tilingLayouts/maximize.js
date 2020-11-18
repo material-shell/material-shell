@@ -23,7 +23,7 @@ var MaximizeLayout = GObject.registerClass(
 
         get tileableListVisible() {
             return this.msWorkspace.tileableList.filter(
-                (tileable) => tileable.visible
+                (_, index) => this.msWorkspace.focusedIndex === index
             );
         }
 
@@ -92,10 +92,14 @@ var MaximizeLayout = GObject.registerClass(
         }
 
         tileTileable(tileable, box) {
-            tileable.x = box.x1;
-            tileable.y = box.y1;
-            tileable.width = box.get_width();
-            tileable.height = box.get_height();
+            let { x, y, width, height } = this.applyGaps(
+                box.x1, box.y1, box.x2, box.y2
+            );
+
+            tileable.x = x;
+            tileable.y = y;
+            tileable.width = width;
+            tileable.height = height;
         }
 
         /*
@@ -104,10 +108,10 @@ var MaximizeLayout = GObject.registerClass(
         startTransition(nextActor, prevActor) {
             if (!this.translationAnimator.get_parent()) {
                 this.translationAnimator.width = InfinityTo0(
-                    this.tileableContainer.allocation.get_width()
+                    prevActor.allocation.get_width()
                 );
                 this.translationAnimator.height = InfinityTo0(
-                    this.tileableContainer.allocation.get_height()
+                    prevActor.allocation.get_height()
                 );
                 this.tileableContainer.add_child(this.translationAnimator);
             }
@@ -125,12 +129,12 @@ var MaximizeLayout = GObject.registerClass(
                 if (actor) {
                     actor.set_width(
                         InfinityTo0(
-                            this.tileableContainer.allocation.get_width()
+                            prevActor.allocation.get_width()
                         )
                     );
                     actor.set_height(
                         InfinityTo0(
-                            this.tileableContainer.allocation.get_height()
+                            prevActor.allocation.get_height()
                         )
                     );
                 }
