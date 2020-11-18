@@ -108,10 +108,10 @@ var MaximizeLayout = GObject.registerClass(
         startTransition(nextActor, prevActor) {
             if (!this.translationAnimator.get_parent()) {
                 this.translationAnimator.width = InfinityTo0(
-                    this.tileableContainer.allocation.get_width()
+                    prevActor.allocation.get_width()
                 );
                 this.translationAnimator.height = InfinityTo0(
-                    this.tileableContainer.allocation.get_height()
+                    prevActor.allocation.get_height()
                 );
                 this.tileableContainer.add_child(this.translationAnimator);
             }
@@ -129,12 +129,12 @@ var MaximizeLayout = GObject.registerClass(
                 if (actor) {
                     actor.set_width(
                         InfinityTo0(
-                            this.tileableContainer.allocation.get_width()
+                            prevActor.allocation.get_width()
                         )
                     );
                     actor.set_height(
                         InfinityTo0(
-                            this.tileableContainer.allocation.get_height()
+                            prevActor.allocation.get_height()
                         )
                     );
                 }
