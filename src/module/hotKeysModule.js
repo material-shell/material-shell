@@ -228,20 +228,19 @@ var HotKeysModule = class HotKeysModule {
 
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
                 if (
-                    activeMsWorkspace.tileableFocused ===
-                    activeMsWorkspace.appLauncher
+                    (activeMsWorkspace.tileableFocused === activeMsWorkspace.appLauncher)
+                    || (workspaceIndex === currentMsWorkspaceIndex)
                 ) {
                     return;
                 }
 
-                if (
-                    activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
-                    ]
-                ) {
-                    return;
+                if (workspaceIndex >= Me.msWorkspaceManager.primaryMsWorkspaces.length) {
+                    workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
                 }
 
                 const nextMsWorkspace =
@@ -252,6 +251,7 @@ var HotKeysModule = class HotKeysModule {
                     activeMsWorkspace.tileableFocused,
                     nextMsWorkspace
                 );
+
                 nextMsWorkspace.activate();
             });
         });
