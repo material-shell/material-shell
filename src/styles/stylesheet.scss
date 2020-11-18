@@ -1,4 +1,5 @@
 @import 'typography';
+@import 'margins';
 $theme: 'dark' !default;
 $color-primary: #3f51b5; // Don't change this value since it's dynamically changed by the theme Manager
 $ripple: rgba(255, 255, 255, 0.12);
@@ -12,6 +13,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 
     @if ($bgColor== 'dark') {
+        @return rgba(255, 255, 255, $opacity);
+    }
+
+    @if ($bgColor== 'primary') {
         @return rgba(255, 255, 255, $opacity);
     }
 }
@@ -146,8 +151,16 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     @include foreground-as-background($theme, 0.38);
 }
 
+.text-high-emphasis {
+    @include foreground-high-emphasis($theme);
+}
+
 .text-medium-emphasis {
     @include foreground-medium-emphasis($theme);
+}
+
+.text-disabled {
+    @include foreground-disabled($theme);
 }
 
 .workspace-active-indicator {
@@ -255,21 +268,33 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         text-align: center;
         min-height: 20px;
     }
-
-    .clock-display {
-        * {
-            padding: 4px 0px !important;
-        }
-    }
     .system-status-icon {
         height: 20px;
         icon-size: 1.09em;
         margin-top: 4px;
         margin-bottom: 4px;
     }
+    MsDateMenuBox {
+        StIcon {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            height: 20px;
+            width: 20px;
+            .primary {
+                color: $color-primary;
+            }
+        }
+        StLabel {
+            margin: 8px 0px;
+
+            .primary {
+                color: $color-primary;
+            }
+        }
+    }
 }
 
-#topPanel {
+#horizontalPanel {
     background: rgba(getBackgroundColor($theme), $panel-opacity);
     $topPanelTheme: $theme;
 
@@ -302,61 +327,70 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             }
         }
     }
-    .task-bar-item {
-        font-size: 10.5pt;
+    .clock-label {
+        @include foreground-medium-emphasis($theme);
+        @extend .subtitle-2;
+        margin-top: 3px;
+        margin-right: 16px;
+        margin-left: 16px;
+    }
+}
 
-        &.active {
-            .task-bar-item-content,
-            .task-bar-icon-container {
-                background: rgba(255, 255, 255, 0.03);
+// This need to be at racine because it's dragged
+.task-bar-item {
+    font-size: 10.5pt;
 
-                @if ($theme== 'light') {
-                    color: $color-primary;
-                } @else {
-                    @include foreground-high-emphasis($theme);
-                }
+    &.active {
+        .task-bar-item-content,
+        .task-bar-icon-container {
+            background: rgba(255, 255, 255, 0.03);
+
+            @if ($theme== 'light') {
+                color: $color-primary;
+            } @else {
+                @include foreground-high-emphasis($theme);
             }
         }
-        .task-bar-icon-container {
-            @include foreground-medium-emphasis($theme);
-        }
+    }
+    .task-bar-icon-container {
+        @include foreground-medium-emphasis($theme);
+    }
+    .app-icon {
+        icon-size: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+    .task-bar-item-content {
+        padding: 0px 12px;
+        @include foreground-medium-emphasis($theme);
+        max-width: 248px;
         .app-icon {
-            icon-size: 24px;
+            margin-right: 12px;
+        }
+        .task-bar-item-title {
+            margin-right: 12px;
+            font-weight: 600;
+            font-size: 10.5pt;
+        }
+
+        .task-close-button {
+            border-radius: 20px;
             width: 24px;
             height: 24px;
-        }
-
-        .task-bar-item-content {
-            padding: 0px 12px;
             @include foreground-medium-emphasis($theme);
-            max-width: 248px;
-            .app-icon {
-                margin-right: 12px;
-            }
-            .task-bar-item-title {
-                margin-right: 12px;
-                font-weight: 600;
-                font-size: 10.5pt;
+            transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.12);
             }
 
-            .task-close-button {
-                border-radius: 20px;
-                width: 24px;
-                height: 24px;
-                @include foreground-medium-emphasis($theme);
-                transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
-                &:hover {
-                    background: rgba(255, 255, 255, 0.12);
-                }
-
-                &:hover:active {
-                    background: rgba(255, 255, 255, 0.24);
-                }
+            &:hover:active {
+                background: rgba(255, 255, 255, 0.24);
             }
-            .task-small-icon {
-                icon-size: 18px;
-            }
+        }
+        .task-small-icon {
+            icon-size: 18px;
         }
     }
 }
@@ -401,10 +435,26 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 MsApplicationLauncher {
-    .search-entry {
+    * .search-entry {
+        @include foreground-medium-emphasis($theme);
         @include background($theme);
         border-radius: 48px;
     }
+    * .search-entry-icon {
+        @include foreground-medium-emphasis($theme);
+    }
+}
+
+MatTooltip {
+    @include foreground-high-emphasis('dark');
+    background-color: getDarkerColor(
+        getDarkerColor(getBackgroundColor('dark'))
+    );
+    border-radius: 4px;
+    padding: 0px 8px;
+    min-height: 24px;
+    @extend .caption;
+    text-align: center;
 }
 
 .surface {
@@ -421,4 +471,143 @@ MsApplicationLauncher {
         getDarkerColor(getBackgroundColor($theme)),
         $surface-opacity
     );
+}
+.popup-menu {
+    margin-bottom: 0;
+    -arrow-base: 0px;
+    -arrow-rise: 0px;
+}
+// If there is no custom theme loaded we can override adwaita to provide better material theme
+/* .no-theme { 
+    .popup-menu {
+        margin: 0;
+        -boxpointer-gap: 0px;
+        -arrow-border-radius: 0;
+        -arrow-border-width: 0px;
+        -arrow-border-color: transparent;
+        -arrow-base: 0px;
+        -arrow-rise: 0px;
+        -arrow-background-color: transparent;
+        .popup-menu-content {
+            background: getDarkerColor(getBackgroundColor('dark'));
+            margin: 0;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            border-radius: 8px;
+            .popup-menu-item {
+                font-weight: 400;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                @extend .body-2;
+                .popup-menu-icon {
+                    icon-size: 20px;
+                    margin-right: 10px;
+                    @include foreground-medium-emphasis('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    padding-top: 1.5px;
+                    @include foreground-high-emphasis('dark');
+                }
+                &.selected {
+                    @extend .surface;
+                }
+            }
+            .popup-separator-menu-item {
+                padding: 0;
+                spacing: 0px;
+                .popup-separator-menu-item-separator {
+                    margin: 8px 0px;
+                    padding: 0;
+                    @include hover('dark');
+                }
+                StLabel {
+                    padding: 0;
+                    margin: 8px 10px;
+                    @include foreground-disabled('dark');
+                }
+                .popup-menu-ornament {
+                    width: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            .popup-sub-menu {
+                background: rgba(0, 0, 0, 0.12);
+                box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.12);
+            }
+            .popup-submenu-menu-item:open {
+                @extend .surface-lighter;
+            }
+        }
+        &.panel-menu {
+            border-radius: 0px 8px 8px 0px;
+
+            .popup-menu-content {
+                margin-top: 20px; // space for shadow
+                border-radius: 0px 8px 8px 0px;
+                box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+        &.horizontal-panel-menu {
+            border-radius: 0px 0px 8px 8px;
+
+            .popup-menu-content {
+                margin-left: 20px; // space for shadow
+                border-radius: 0px 0px 8px 8px;
+                box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+            }
+        }
+    }
+    #calendarArea {
+        .calendar,
+        .message,
+        .events-button,
+        .world-clocks-button,
+        .weather-button,
+        .events-section-title {
+            background: getLighterColor(getBackgroundColor('dark'));
+            border: 0px;
+        }
+    }
+} */
+
+LayoutSwitcher {
+    & > StBin {
+        padding: 8px 0;
+        margin-right: 8px;
+    }
+}
+
+MatNumberPicker {
+    background: getDarkerColor(getBackgroundColor($theme));
+    //This is a hack because percentage is not handled yet
+    border-radius: 10000px;
+    StButton {
+        background: getLighterColor(getBackgroundColor($theme));
+        width: 32px;
+        StIcon {
+            margin: 8px;
+        }
+        &:first-child {
+            border-radius: 32px 0 0 32px;
+        }
+        &:last-child {
+            border-radius: 0 32px 32px 0;
+        }
+        &:hover {
+            background: getLighterColor(
+                getLighterColor(getBackgroundColor($theme))
+            );
+        }
+        &:active {
+            background: getLighterColor(
+                getLighterColor(getLighterColor(getBackgroundColor($theme)))
+            );
+        }
+    }
+    StLabel {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
 }

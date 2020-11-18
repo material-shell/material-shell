@@ -1,0 +1,27 @@
+$value: 8px;
+$directions: ('top', 'right', 'bottom', 'left');
+$sizes: (
+    'x2': 2,
+    'x3': 3,
+);
+// Margins, paddings
+.margin {
+    margin: $value !important;
+}
+
+@each $size, $factor in $sizes {
+    .margin-#{$size} {
+        margin: $value * $factor !important;
+    }
+}
+
+@each $direction in $directions {
+    .margin-#{$direction} {
+        margin-#{$direction}: $value !important;
+    }
+    @each $size, $factor in $sizes {
+        .margin-#{$direction}-#{$size} {
+            margin-#{$direction}: $value * $factor !important;
+        }
+    }
+}

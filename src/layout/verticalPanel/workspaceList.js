@@ -8,7 +8,12 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
 const { MatButton } = Me.imports.src.widget.material.button;
-const { DropPlaceholder, TaskBarItem } = Me.imports.src.widget.taskBar;
+const { ReorderableList } = Me.imports.src.widget.reorderableList;
+
+const {
+    TaskBarItem,
+} = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
+
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const {
     MainCategories,
@@ -22,6 +27,7 @@ var WorkspaceList = GObject.registerClass(
             super._init({
                 clip_to_allocation: true,
                 style_class: 'workspace-list',
+                reactive: true,
             });
             this._delegate = this;
 
@@ -30,23 +36,15 @@ var WorkspaceList = GObject.registerClass(
             this.msWorkspaceManager = Me.msWorkspaceManager;
             this.menuManager = new PopupMenu.PopupMenuManager(this);
 
-            this.buttonList = new St.Widget({
-                layout_manager: new Clutter.BoxLayout({
-                    orientation: Clutter.Orientation.VERTICAL,
-                }),
+            this.buttonList = new ReorderableList(true);
+            this.buttonList.connect('actor-moved', (_, actor, index) => {
+                this.msWorkspaceManager.setMsWorkspaceAt(
+                    actor.msWorkspace,
+                    index
+                );
             });
-            this.add_child(this.buttonList);
 
-            this.dropPlaceholder = new DropPlaceholder(WorkspaceButton);
-            this.dropPlaceholder.connect('drag-dropped', () => {
-                this.tempDragData.workspaceButton
-                    .get_parent()
-                    .remove_child(this.tempDragData.workspaceButton);
-                this.buttonList.add_child(this.tempDragData.workspaceButton);
-            });
-            this.dropPlaceholder.connect('drag-over', () => {
-                this.tempDragData.draggedOverByChild = true;
-            });
+            this.add_child(this.buttonList);
 
             this.workspaceActiveIndicator = new St.Widget({
                 style_class: 'workspace-active-indicator',
@@ -89,6 +87,16 @@ var WorkspaceList = GObject.registerClass(
                     );
                 }
             );
+            this.connect('scroll-event', (_, event) => {
+                switch (event.get_scroll_direction()) {
+                    case Clutter.ScrollDirection.UP:
+                        this.msWorkspaceManager.activatePreviousMsWorkspace();
+                        break;
+                    case Clutter.ScrollDirection.DOWN:
+                        this.msWorkspaceManager.activateNextMsWorkspace();
+                        break;
+                }
+            });
         }
 
         buildButtons() {
@@ -100,7 +108,7 @@ var WorkspaceList = GObject.registerClass(
                             msWorkspace
                         );
                         this.menuManager.addMenu(workspaceButton.menu);
-                        workspaceButton._draggable.connect('drag-begin', () => {
+                        /* workspaceButton._draggable.connect('drag-begin', () => {
                             let workspaceButtonIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                                 msWorkspace
                             );
@@ -132,9 +140,9 @@ var WorkspaceList = GObject.registerClass(
                         workspaceButton._draggable.connect(
                             'drag-end',
                             this._onDragEnd.bind(this)
-                        );
+                        ); */
 
-                        workspaceButton.connect('drag-over', (_, before) => {
+                        /* workspaceButton.connect('drag-over', (_, before) => {
                             this.tempDragData.draggedOverByChild = true;
                             this._onDragOver(workspaceButton, before);
                             //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
@@ -149,7 +157,7 @@ var WorkspaceList = GObject.registerClass(
                             this.buttonList.add_child(
                                 this.tempDragData.workspaceButton
                             );
-                        });
+                        }); */
                         this.buttonList.insert_child_at_index(
                             workspaceButton,
                             index
@@ -182,7 +190,7 @@ var WorkspaceList = GObject.registerClass(
             });
         }
 
-        handleDragOver(source, actor, x, y) {
+        /* handleDragOver(source, _actor, _x, _y) {
             if (source instanceof WorkspaceButton) {
                 // Needed for dragging over tasks
                 if (!this.tempDragData.draggedOverByChild) {
@@ -198,9 +206,9 @@ var WorkspaceList = GObject.registerClass(
             }
 
             return DND.DragMotionResult.MOVE_DROP;
-        }
+        } */
 
-        _onDragEnd() {
+        /* _onDragEnd() {
             this.buttonList.remove_child(this.dropPlaceholder);
             if (this.tempDragData.draggedOver) {
                 let toIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
@@ -268,7 +276,7 @@ var WorkspaceList = GObject.registerClass(
                     toIndex + 1
                 );
             }
-        }
+        } */
 
         activeButtonForIndex(index) {
             if (this.buttonActive) {
@@ -333,10 +341,15 @@ var WorkspaceButton = GObject.registerClass(
             Me.msThemeManager.connect('panel-size-changed', () => {
                 this.queue_relayout();
             });
-            this.connect('clicked', (_, button) => {
-                if (button === 3) {
-                    this.menu.toggle();
-                } else if (button === 2) {
+
+            this.connect('primary-action', () => {
+                this.msWorkspace.activate();
+            });
+            this.connect('secondary-action', () => {
+                this.menu.toggle();
+            });
+            this.connect('clicked', (actor, button) => {
+                if (button === Clutter.BUTTON_MIDDLE) {
                     if (
                         this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                             this.msWorkspace
@@ -344,8 +357,6 @@ var WorkspaceButton = GObject.registerClass(
                         this.msWorkspaceManager.primaryMsWorkspaces.length - 1
                     )
                         msWorkspace.close();
-                } else {
-                    this.msWorkspace.activate();
                 }
             });
 
@@ -355,67 +366,6 @@ var WorkspaceButton = GObject.registerClass(
                 originalCoords: null,
                 originalSequence: null,
             };
-
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                if (
-                    [
-                        Clutter.EventType.BUTTON_PRESS,
-                        Clutter.EventType.TOUCH_BEGIN,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = true;
-                    this.mouseData.originalCoords = event.get_coords();
-                    this.mouseData.originalSequence = event.get_event_sequence();
-                } else if (
-                    [
-                        Clutter.EventType.MOTION,
-                        Clutter.EventType.TOUCH_UPDATE,
-                    ].indexOf(eventType) > -1
-                ) {
-                    if (this.mouseData.pressed && !this.mouseData.dragged) {
-                        let coords = event.get_coords();
-                        if (
-                            Math.abs(
-                                this.mouseData.originalCoords[0] - coords[0]
-                            ) > this.get_preferred_width(-1)[1] &&
-                            !this.mouseData.dragged
-                        ) {
-                            this.mouseData.dragged = true;
-                            this._draggable.startDrag(
-                                this.mouseData.originalCoords[0],
-                                this.mouseData.originalCoords[1],
-                                global.get_current_time(),
-                                this.mouseData.originalSequence
-                            );
-                        }
-                    }
-                } else if (
-                    [
-                        Clutter.EventType.BUTTON_RELEASE,
-                        Clutter.EventType.TOUCH_END,
-                    ].indexOf(eventType) > -1
-                ) {
-                    this.mouseData.pressed = false;
-                    this.mouseData.dragged = false;
-                } else if (eventType === Clutter.EventType.LEAVE) {
-                    if (
-                        this.draggable &&
-                        this.mouseData.pressed &&
-                        !this.mouseData.dragged
-                    ) {
-                        this.mouseData.dragged = true;
-                        this._draggable.startDrag(
-                            this.mouseData.originalCoords[0],
-                            this.mouseData.originalCoords[1],
-                            global.get_current_time(),
-                            this.mouseData.originalSequence
-                        );
-                    }
-                }
-            });
-
-            this.initDrag();
         }
 
         get draggable() {
@@ -429,6 +379,7 @@ var WorkspaceButton = GObject.registerClass(
 
         buildMenu() {
             this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+            this.menu.actor.add_style_class_name('panel-menu');
             this.menu.addMenuItem(
                 new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
             );
@@ -559,34 +510,21 @@ var WorkspaceButton = GObject.registerClass(
         }
 
         handleDragOver(source, actor, x, y) {
-            if (source instanceof WorkspaceButton && this.draggable) {
-                this.emit('drag-over', y < this.height / 2);
-                return DND.DragMotionResult.MOVE_DROP;
-            } else if (source instanceof TaskBarItem) {
+            if (source instanceof TaskBarItem) {
                 return DND.DragMotionResult.MOVE_DROP;
             }
             return DND.DragMotionResult.NO_DROP;
         }
 
         acceptDrop(source) {
-            if (source instanceof WorkspaceButton) {
-                this.emit('drag-dropped');
-                return true;
-            } else if (source instanceof TaskBarItem) {
-                const tileableIndex = this.msWorkspace.tileableList.indexOf(
-                    source.tileable
-                );
-                const tileable = source.tileable;
-                if (tileableIndex < 0 && tileable instanceof MsWindow) {
-                    (async () => {
-                        await source.emit('drag-dropped');
-                        await tileable.msWorkspace.removeMsWindow(tileable);
-                        await this.msWorkspace.addMsWindow(tileable, true);
-                        this.msWorkspaceManager.stateChanged();
-                        this.msWorkspace.activate();
-                    })();
-                } else {
-                    source.emit('drag-dropped');
+            if (source instanceof TaskBarItem) {
+                if (source.tileable instanceof MsWindow) {
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
+                        source.tileable,
+                        this.msWorkspace
+                    );
+                    this.msWorkspaceManager.stateChanged();
+                    this.msWorkspace.activate();
                 }
                 return true;
             }
@@ -596,7 +534,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the parent width
          */
-        vfunc_get_preferred_width(forHeight) {
+        vfunc_get_preferred_width(_forHeight) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -606,7 +544,7 @@ var WorkspaceButton = GObject.registerClass(
         /**
          * Just the child height
          */
-        vfunc_get_preferred_height(forWidth) {
+        vfunc_get_preferred_height(_forWidth) {
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -634,6 +572,9 @@ var WorkspaceButtonIcon = GObject.registerClass(
                 this.buildIcons();
             });
             Me.msThemeManager.connect('panel-icon-style-changed', () => {
+                this.buildIcons();
+            });
+            Me.msThemeManager.connect('panel-size-changed', () => {
                 this.buildIcons();
             });
         }

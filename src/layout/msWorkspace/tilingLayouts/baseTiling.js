@@ -11,13 +11,15 @@ const {
 } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { InfinityTo0 } = Me.imports.src.utils.index;
 
 /* exported BaseTilingLayout */
 var BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
-        _init(msWorkspace) {
+        _init(msWorkspace, state = {}) {
+            this.state = Object.assign({}, this.constructor.state, state);
             this.icon = Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/tiling/${this.constructor.key}-symbolic.svg`
+                `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
             );
             this.msWorkspace = msWorkspace;
             this.themeSettings = getSettings('theme');
@@ -118,8 +120,12 @@ var BaseTilingLayout = GObject.registerClass(
         tileAll(box) {
             if (!box) {
                 box = new Clutter.ActorBox();
-                box.x2 = this.tileableContainer.allocation.get_width();
-                box.y2 = this.tileableContainer.allocation.get_height();
+                box.x2 = InfinityTo0(
+                    this.tileableContainer.allocation.get_width()
+                );
+                box.y2 = InfinityTo0(
+                    this.tileableContainer.allocation.get_height()
+                );
             }
             this.tileableListVisible.forEach((tileable) => {
                 if (tileable instanceof MsWindow && tileable.dragged) return;
@@ -257,28 +263,6 @@ var BaseTilingLayout = GObject.registerClass(
             });
         }
 
-        /* moveAndResizeActor(
-            actor,
-            x,
-            y,
-            width,
-            height,
-            animate = true,
-            gaps = true
-        ) {
-            actor.show();
-            if (gaps) {
-                ({ x, y, width, height } = this.applyGaps(x, y, width, height));
-            }
-            if (animate) {
-                this.animateSetPosition(actor, x, y);
-                this.animateSetSize(actor, width, height);
-            } else {
-                actor.set_position(x, y);
-                actor.set_size(width, height);
-            }
-        } */
-
         getWorkspaceBounds() {
             const box = this.msWorkspace.msWorkspaceActor.tileableContainer
                 .allocation;
@@ -292,9 +276,9 @@ var BaseTilingLayout = GObject.registerClass(
 
         applyGaps(x, y, width, height) {
             // Reduces box size according to gap setting
-            const gap = Me.tilingManager.gap;
-            const screenGap = Me.tilingManager.screenGap;
-            const useScreenGap = Me.tilingManager.useScreenGap;
+            const gap = Me.layoutManager.gap;
+            const screenGap = Me.layoutManager.screenGap;
+            const useScreenGap = Me.layoutManager.useScreenGap;
 
             if (
                 (!gap && (!useScreenGap || !screenGap)) ||
@@ -336,6 +320,10 @@ var BaseTilingLayout = GObject.registerClass(
                 height -= halfGap;
             }
             return { x, y, width, height };
+        }
+
+        buildQuickWidget() {
+            // return a widget to add to the panel
         }
 
         vfunc_get_preferred_width(container, forHeight) {

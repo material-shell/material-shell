@@ -13,7 +13,7 @@ const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
 var MsDndManager = class MsDndManager extends MsManager {
     constructor(msWindowManager) {
         super();
-
+        this.msWindowDragged = null;
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.dragInProgress = false;
@@ -53,7 +53,11 @@ var MsDndManager = class MsDndManager extends MsManager {
             (_, display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
                     let msWindow = metaWindow.msWindow;
-                    if (msWindow && !msWindow.followMetaWindow) {
+                    if (
+                        msWindow &&
+                        msWindow.metaWindow === metaWindow &&
+                        !msWindow.followMetaWindow
+                    ) {
                         global.display.end_grab_op(global.get_current_time());
                         this.startDrag(msWindow);
                     }

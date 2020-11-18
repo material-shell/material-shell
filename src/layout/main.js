@@ -10,7 +10,7 @@ const {
     Allocate,
     AllocatePreferredSize,
 } = Me.imports.src.utils.compatibility;
-const { MsPanel } = Me.imports.src.layout.panel.panel;
+const { MsPanel } = Me.imports.src.layout.verticalPanel.verticalPanel;
 const { reparentActor } = Me.imports.src.utils.index;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const {
@@ -182,9 +182,8 @@ var MsMain = GObject.registerClass(
                             this.monitorsContainer.push(container);
                             this.add_child(container);
                         }
-                    }
-                    // if there are less external monitors
-                    else if (externalMonitorsDiff < 0) {
+                        // if there are less external monitors
+                    } else if (externalMonitorsDiff < 0) {
                         for (
                             let i = 0;
                             i < Math.abs(externalMonitorsDiff);
@@ -224,7 +223,7 @@ var MsMain = GObject.registerClass(
             });
         }
 
-        onSwitchWorkspace(from, to) {
+        onSwitchWorkspace(_from, _to) {
             this.onMsWorkspacesChanged();
         }
 
@@ -284,6 +283,7 @@ var MsMain = GObject.registerClass(
             Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
 
+        // eslint-disable-next-line camelcase
         add_child(actor) {
             super.add_child(actor);
             this.set_child_above_sibling(this.aboveContainer, null);
@@ -396,17 +396,24 @@ var MonitorContainer = GObject.registerClass(
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
-            if (this.horizontalPanelSpacer) {
-                this.allocateHorizontalPanelSpacer(box, flags);
-            }
-            if (this.msWorkspaceActor) {
-                let msWorkspaceActorBox = new Clutter.ActorBox();
-                msWorkspaceActorBox.x1 = box.x1;
-                msWorkspaceActorBox.x2 = box.x2;
-                msWorkspaceActorBox.y1 = box.y1;
-                msWorkspaceActorBox.y2 = box.y2;
-                Allocate(this.msWorkspaceActor, msWorkspaceActorBox, flags);
-            }
+            this.get_children().forEach((actor) => {
+                if (actor === this.horizontalPanelSpacer) {
+                    return this.allocateHorizontalPanelSpacer(box, flags);
+                }
+                if (actor === this.msWorkspaceActor) {
+                    let msWorkspaceActorBox = new Clutter.ActorBox();
+                    msWorkspaceActorBox.x1 = box.x1;
+                    msWorkspaceActorBox.x2 = box.x2;
+                    msWorkspaceActorBox.y1 = box.y1;
+                    msWorkspaceActorBox.y2 = box.y2;
+                    return Allocate(
+                        this.msWorkspaceActor,
+                        msWorkspaceActorBox,
+                        flags
+                    );
+                }
+                AllocatePreferredSize(actor, flags);
+            });
         }
     }
 );
@@ -518,10 +525,6 @@ var PrimaryMonitorContainer = GObject.registerClass(
                 panelBox.x2 = panelBox.x1 + panelWidth;
                 panelBox.y1 = box.y1;
                 panelBox.y2 = this.panel.get_preferred_height(-1)[1];
-                Allocate(this.panel, panelBox, flags);
-            }
-            if (this.horizontalPanelSpacer) {
-                this.allocateHorizontalPanelSpacer(box, flags);
             }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -538,15 +541,15 @@ var PrimaryMonitorContainer = GObject.registerClass(
                         msWorkspaceActorBox.x2 - panelBox.get_width();
                 }
             }
-            this.get_children()
-                .filter(
-                    (actor) =>
-                        actor != this.panel &&
-                        actor != this.horizontalPanelSpacer
-                )
-                .forEach((child) => {
-                    Allocate(child, msWorkspaceActorBox, flags);
-                });
+            this.get_children().forEach((child) => {
+                if (child === this.panel) {
+                    return Allocate(child, panelBox, flags);
+                }
+                if (child === this.horizontalPanelSpacer) {
+                    return this.allocateHorizontalPanelSpacer(box, flags);
+                }
+                Allocate(child, msWorkspaceActorBox, flags);
+            });
         }
     }
 );

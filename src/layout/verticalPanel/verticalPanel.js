@@ -4,9 +4,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsStatusArea } = Me.imports.src.layout.panel.statusArea;
-const { MatPanelButton } = Me.imports.src.layout.panel.panelButton;
-const { WorkspaceList } = Me.imports.src.layout.panel.workspaceList;
+const { MsStatusArea } = Me.imports.src.layout.verticalPanel.statusArea;
+const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
+const { WorkspaceList } = Me.imports.src.layout.verticalPanel.workspaceList;
 
 /* exported MsPanel */
 var MsPanel = GObject.registerClass(
