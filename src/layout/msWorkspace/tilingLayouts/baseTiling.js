@@ -284,7 +284,7 @@ var BaseTilingLayout = GObject.registerClass(
                 (!gap && (!useScreenGap || !screenGap))
                 // Never apply gaps if App Launcher is the only tileable
                 || this.tileableListVisible.length === 0
-                // || this.tileableListVisible.length === 1
+                || (this.tileableListVisible.length === 1 && !getSettings('layouts').get_boolean('gap-single-tileable'))
             ) {
                 return { x, y, width, height };
             }

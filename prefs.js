@@ -99,6 +99,7 @@ function buildPrefsWidget() {
     });
 
     layouts.addSetting('gap', WidgetType.INT);
+    layouts.addSetting('gap-single-tileable', WidgetType.BOOLEAN);
     layouts.addSetting('use-screen-gap', WidgetType.BOOLEAN);
     layouts.addSetting('screen-gap', WidgetType.INT);
     layouts.addSetting('tween-time', WidgetType.DECIMAL);

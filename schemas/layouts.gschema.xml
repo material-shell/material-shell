@@ -65,6 +65,11 @@
       <summary>Gap size around tiled windows</summary>
       <description>Determines the gap size between windows</description>
     </key>
+    <key name="gap-single-tileable" type="b">
+      <default>false</default>
+      <summary>Apply gap for single tiled windows</summary>
+      <description>When only one tiled window is in the workspace, use the whole space or not</description>
+    </key>
     <key name="use-screen-gap" type="b">
       <default>false</default>
       <summary>Use a different gap size for screen</summary>
