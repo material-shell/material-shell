@@ -132,7 +132,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
     startResize(border) {
         this.border = border;
-        this.msWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+        this.msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
         this.resizeInProgress = true;
 
         global.stage.add_child(this.inputResizer);
