@@ -220,6 +220,42 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
+        [...Array(10).keys()].forEach((workspaceIndex) => {
+            const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `move-window-to-workspace-${
+                workspaceIndex + 1
+            }`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
+                if (
+                    (activeMsWorkspace.tileableFocused === activeMsWorkspace.appLauncher)
+                    || (workspaceIndex === currentMsWorkspaceIndex)
+                ) {
+                    return;
+                }
+
+                if (workspaceIndex >= Me.msWorkspaceManager.primaryMsWorkspaces.length) {
+                    workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        workspaceIndex
+                    ];
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
+
+                nextMsWorkspace.activate();
+            });
+        });
+
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
