@@ -6,6 +6,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { TilingLayoutByKey } = Me.imports.src.manager.layoutManager;
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -122,8 +123,11 @@ var HotKeysModule = class HotKeysModule {
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
-                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
-                    && (!Meta.prefs_get_dynamic_workspaces() || activeMsWorkspace.msWindowList.length === 1)) {
+                if (
+                    !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation() &&
+                    (!Meta.prefs_get_dynamic_workspaces() ||
+                        activeMsWorkspace.msWindowList.length === 1)
+                ) {
                     return;
                 }
 
@@ -132,10 +136,10 @@ var HotKeysModule = class HotKeysModule {
                         Me.msWorkspaceManager.primaryMsWorkspaces.length - 1
                     ];
 
-                    Me.msWorkspaceManager.setWindowToMsWorkspace(
-                        activeMsWorkspace.tileableFocused,
-                        nextMsWorkspace
-                    );
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
 
                 if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                     Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
@@ -174,29 +178,38 @@ var HotKeysModule = class HotKeysModule {
                 }
                 if (
                     activeMsWorkspace ===
-                        Me.msWorkspaceManager.primaryMsWorkspaces[
-                            Me.msWorkspaceManager.primaryMsWorkspaces.length - (
-                                Meta.prefs_get_dynamic_workspaces() ? 2 : 1
-                            )
-                        ]
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length -
+                            (Meta.prefs_get_dynamic_workspaces() ? 2 : 1)
+                    ]
                 ) {
-                    if ((Meta.prefs_get_dynamic_workspaces() && activeMsWorkspace.msWindowList.length === 1 && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
-                        || (!Meta.prefs_get_dynamic_workspaces() && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())) {
+                    if (
+                        (Meta.prefs_get_dynamic_workspaces() &&
+                            activeMsWorkspace.msWindowList.length === 1 &&
+                            !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) ||
+                        (!Meta.prefs_get_dynamic_workspaces() &&
+                            !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    ) {
                         return;
                     }
 
-                    if (!Meta.prefs_get_dynamic_workspaces() ||
-                        (activeMsWorkspace.msWindowList.length === 1 && Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    if (
+                        !Meta.prefs_get_dynamic_workspaces() ||
+                        (activeMsWorkspace.msWindowList.length === 1 &&
+                            Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
                     ) {
-
-                        const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+                        const nextMsWorkspace =
+                            Me.msWorkspaceManager.msWorkspaceList[0];
 
                         Me.msWorkspaceManager.setWindowToMsWorkspace(
                             activeMsWorkspace.tileableFocused,
                             nextMsWorkspace
                         );
 
-                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                        Me.msWorkspaceManager.setMsWorkspaceAt(
+                            nextMsWorkspace,
+                            0
+                        );
 
                         nextMsWorkspace.activate();
 
@@ -220,6 +233,45 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
+        [...Array(10).keys()].forEach((workspaceIndex) => {
+            const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `move-window-to-workspace-${
+                workspaceIndex + 1
+            }`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
+                if (
+                    activeMsWorkspace.tileableFocused ===
+                        activeMsWorkspace.appLauncher ||
+                    workspaceIndex === currentMsWorkspaceIndex
+                ) {
+                    return;
+                }
+
+                if (
+                    workspaceIndex >=
+                    Me.msWorkspaceManager.primaryMsWorkspaces.length
+                ) {
+                    workspaceIndex =
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[workspaceIndex];
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
+
+                nextMsWorkspace.activate();
+            });
+        });
+
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
@@ -227,6 +279,7 @@ var HotKeysModule = class HotKeysModule {
                 msWorkspace.nextLayout(1);
             }
         );
+
         this.actionNameToActionMap.set(
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
@@ -241,6 +294,16 @@ var HotKeysModule = class HotKeysModule {
                 Me.layout.togglePanelsVisibilities();
             }
         );
+
+        Object.keys(TilingLayoutByKey).forEach((layoutKey) => {
+            const actionKey = `USE_${layoutKey}_LAYOUT`;
+            KeyBindingAction[actionKey] = `use-${layoutKey}-layout`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                msWorkspace.setTilingLayout(layoutKey);
+            });
+        });
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `NAVIGATE_TO_${workspaceIndex + 1}`;
