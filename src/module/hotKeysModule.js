@@ -6,7 +6,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { TilingLayoutByKey } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
+const { TilingLayoutByKey } = Me.imports.src.manager.layoutManager;
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -123,8 +123,11 @@ var HotKeysModule = class HotKeysModule {
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
-                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
-                    && (!Meta.prefs_get_dynamic_workspaces() || activeMsWorkspace.msWindowList.length === 1)) {
+                if (
+                    !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation() &&
+                    (!Meta.prefs_get_dynamic_workspaces() ||
+                        activeMsWorkspace.msWindowList.length === 1)
+                ) {
                     return;
                 }
 
@@ -133,10 +136,10 @@ var HotKeysModule = class HotKeysModule {
                         Me.msWorkspaceManager.primaryMsWorkspaces.length - 1
                     ];
 
-                    Me.msWorkspaceManager.setWindowToMsWorkspace(
-                        activeMsWorkspace.tileableFocused,
-                        nextMsWorkspace
-                    );
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
 
                 if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
                     Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
@@ -175,29 +178,38 @@ var HotKeysModule = class HotKeysModule {
                 }
                 if (
                     activeMsWorkspace ===
-                        Me.msWorkspaceManager.primaryMsWorkspaces[
-                            Me.msWorkspaceManager.primaryMsWorkspaces.length - (
-                                Meta.prefs_get_dynamic_workspaces() ? 2 : 1
-                            )
-                        ]
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length -
+                            (Meta.prefs_get_dynamic_workspaces() ? 2 : 1)
+                    ]
                 ) {
-                    if ((Meta.prefs_get_dynamic_workspaces() && activeMsWorkspace.msWindowList.length === 1 && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
-                        || (!Meta.prefs_get_dynamic_workspaces() && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())) {
+                    if (
+                        (Meta.prefs_get_dynamic_workspaces() &&
+                            activeMsWorkspace.msWindowList.length === 1 &&
+                            !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) ||
+                        (!Meta.prefs_get_dynamic_workspaces() &&
+                            !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    ) {
                         return;
                     }
 
-                    if (!Meta.prefs_get_dynamic_workspaces() ||
-                        (activeMsWorkspace.msWindowList.length === 1 && Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    if (
+                        !Meta.prefs_get_dynamic_workspaces() ||
+                        (activeMsWorkspace.msWindowList.length === 1 &&
+                            Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
                     ) {
-
-                        const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+                        const nextMsWorkspace =
+                            Me.msWorkspaceManager.msWorkspaceList[0];
 
                         Me.msWorkspaceManager.setWindowToMsWorkspace(
                             activeMsWorkspace.tileableFocused,
                             nextMsWorkspace
                         );
 
-                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+                        Me.msWorkspaceManager.setMsWorkspaceAt(
+                            nextMsWorkspace,
+                            0
+                        );
 
                         nextMsWorkspace.activate();
 
@@ -234,20 +246,23 @@ var HotKeysModule = class HotKeysModule {
                 );
 
                 if (
-                    (activeMsWorkspace.tileableFocused === activeMsWorkspace.appLauncher)
-                    || (workspaceIndex === currentMsWorkspaceIndex)
+                    activeMsWorkspace.tileableFocused ===
+                        activeMsWorkspace.appLauncher ||
+                    workspaceIndex === currentMsWorkspaceIndex
                 ) {
                     return;
                 }
 
-                if (workspaceIndex >= Me.msWorkspaceManager.primaryMsWorkspaces.length) {
-                    workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
+                if (
+                    workspaceIndex >=
+                    Me.msWorkspaceManager.primaryMsWorkspaces.length
+                ) {
+                    workspaceIndex =
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
                 }
 
                 const nextMsWorkspace =
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        workspaceIndex
-                    ];
+                    Me.msWorkspaceManager.primaryMsWorkspaces[workspaceIndex];
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
                     activeMsWorkspace.tileableFocused,
                     nextMsWorkspace
