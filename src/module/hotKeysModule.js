@@ -6,6 +6,7 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+const { TilingLayoutByKey } = Me.imports.src.layout.msWorkspace.tilingLayouts.layouts;
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -263,6 +264,7 @@ var HotKeysModule = class HotKeysModule {
                 msWorkspace.nextLayout(1);
             }
         );
+
         this.actionNameToActionMap.set(
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
@@ -277,6 +279,16 @@ var HotKeysModule = class HotKeysModule {
                 Me.layout.togglePanelsVisibilities();
             }
         );
+
+        Object.keys(TilingLayoutByKey).forEach((layoutKey) => {
+            const actionKey = `USE_${layoutKey}_LAYOUT`;
+            KeyBindingAction[actionKey] = `use-${layoutKey}-layout`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                msWorkspace.setTilingLayout(layoutKey);
+            });
+        });
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `NAVIGATE_TO_${workspaceIndex + 1}`;
