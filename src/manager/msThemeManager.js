@@ -1,19 +1,21 @@
 /** Gnome libs imports */
 const { GLib, Gio, St } = imports.gi;
+const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, MsThemeManager */
 
-const VerticalPanelPositionEnum = {
+var VerticalPanelPositionEnum = {
     LEFT: 0,
     RIGHT: 1,
 };
 
-const HorizontalPanelPositionEnum = {
+var HorizontalPanelPositionEnum = {
     TOP: 0,
     BOTTOM: 1,
 };
@@ -35,6 +37,18 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         );
         this.themeValue = this.themeSettings.get_string('theme');
         this.primary = this.themeSettings.get_string('primary-color');
+
+        this.observe(this.themeContext, 'changed', () => {
+            Me.log('theme changed');
+            this.theme = this.themeContext.get_theme();
+
+            if (Main.uiGroup.has_style_class_name('no-theme')) {
+                Main.uiGroup.remove_style_class_name('no-theme');
+            }
+            if (!this.theme.application_stylesheet) {
+                Main.uiGroup.add_style_class_name('no-theme');
+            }
+        });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
             this.themeValue = schema.get_string('theme');
             this.regenerateStylesheet();
@@ -72,6 +86,12 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
             this.emit('panel-icon-style-changed');
         });
+        this.observe(this.themeSettings, 'changed::clock-horizontal', () => {
+            this.emit('clock-horizontal-changed');
+        });
+        this.observe(this.themeSettings, 'changed::clock-app-launcher', () => {
+            this.emit('clock-app-launcher-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -100,6 +120,14 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     get blurBackground() {
         return this.themeSettings.get_boolean('blur-background');
+    }
+
+    get clockHorizontal() {
+        return this.themeSettings.get_boolean('clock-horizontal');
+    }
+
+    get clockAppLauncher() {
+        return this.themeSettings.get_boolean('clock-app-launcher');
     }
 
     getPanelSize(monitorIndex) {
@@ -155,7 +183,7 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     async writeContentToFile(content, file) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _) => {
             const contentBytes = new GLib.Bytes(content);
             file.replace_async(
                 null,
@@ -193,14 +221,29 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     async regenerateStylesheet() {
-        await this.buildThemeStylesheetToFile(this.themeFile);
         this.unloadStylesheet();
+        if (!this.theme.application_stylesheet) {
+            Main.uiGroup.add_style_class_name('no-theme');
+        }
+        if (ShellVersionMatch('3.34')) {
+            //TODO The new code may prevent crashes on 3.34 without this, needs testing
+            // This loads an empty theme, cleaning all nodes but causes top panel flash
+            this.themeContext.set_theme(new St.Theme());
+        }
+        await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
-        this.themeContext.set_theme(new St.Theme());
-        this.themeContext.set_theme(this.theme);
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.themeContext.set_theme(this.theme);
+            Main.reloadThemeResource();
+            Main.loadTheme();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     unloadStylesheet() {
+        if (Main.uiGroup.has_style_class_name('no-theme')) {
+            Main.uiGroup.remove_style_class_name('no-theme');
+        }
         this.theme.unload_stylesheet(this.themeFile);
     }
 

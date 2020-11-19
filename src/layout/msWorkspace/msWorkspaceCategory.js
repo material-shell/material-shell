@@ -34,7 +34,7 @@ var MsWorkspaceCategory = class MsWorkspaceCategory {
     forceCategory(category) {
         this.forcedCategory = category;
         this.determineCategory();
-        Me.msWorkspaceManager.saveCurrentState();
+        Me.stateManager.stateChanged();
     }
 
     determineCategory() {

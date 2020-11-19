@@ -8,12 +8,13 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+const { InfinityTo0 } = Me.imports.src.utils.index;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = GObject.registerClass(
     class MaximizeLayout extends BaseTilingLayout {
-        _init(msWorkspace) {
-            super._init(msWorkspace);
+        _init(msWorkspace, state) {
+            super._init(msWorkspace, state);
             this.translationAnimator = new TranslationAnimator();
             this.translationAnimator.connect('transition-completed', () => {
                 this.endTransition();
@@ -102,8 +103,12 @@ var MaximizeLayout = GObject.registerClass(
          */
         startTransition(nextActor, prevActor) {
             if (!this.translationAnimator.get_parent()) {
-                this.translationAnimator.width = this.tileableContainer.allocation.get_width();
-                this.translationAnimator.height = this.tileableContainer.allocation.get_height();
+                this.translationAnimator.width = InfinityTo0(
+                    this.tileableContainer.allocation.get_width()
+                );
+                this.translationAnimator.height = InfinityTo0(
+                    this.tileableContainer.allocation.get_height()
+                );
                 this.tileableContainer.add_child(this.translationAnimator);
             }
             let indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
@@ -119,10 +124,14 @@ var MaximizeLayout = GObject.registerClass(
             [nextActor, prevActor].forEach((actor) => {
                 if (actor) {
                     actor.set_width(
-                        this.tileableContainer.allocation.get_width()
+                        InfinityTo0(
+                            this.tileableContainer.allocation.get_width()
+                        )
                     );
                     actor.set_height(
-                        this.tileableContainer.allocation.get_height()
+                        InfinityTo0(
+                            this.tileableContainer.allocation.get_height()
+                        )
                     );
                 }
             });
@@ -141,4 +150,5 @@ var MaximizeLayout = GObject.registerClass(
     }
 );
 
-MaximizeLayout.key = 'maximize';
+MaximizeLayout.state = { key: 'maximize' };
+MaximizeLayout.label = 'Maximize';

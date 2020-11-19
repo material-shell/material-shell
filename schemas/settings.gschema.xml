@@ -73,6 +73,16 @@
       <summary>Taskbar item style</summary>
       <description>Type of style for the taskbar item</description>
     </key>
+    <key name="clock-horizontal" type="b">
+      <default>false</default>
+      <summary>Display clock horizontally</summary>
+      <description>Display the clock to the right of the horizontal panel</description>
+    </key>
+    <key name="clock-app-launcher" type="b">
+      <default>true</default>
+      <summary>Display clock and date in App Launcher</summary>
+      <description>Display a clock with date above search box in App Launcher</description>
+    </key>
   </schema>
   <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
     <key name="cycle-through-windows" type="b" >

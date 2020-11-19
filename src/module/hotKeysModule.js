@@ -40,7 +40,7 @@ var HotKeysModule = class HotKeysModule {
         this.resetStash();
         this.connectId = global.window_manager.connect(
             'switch-workspace',
-            (_, from, to) => {
+            (_, from, _to) => {
                 if (this.lastStash !== null && from != this.lastStash) {
                     this.resetStash();
                 }
@@ -66,34 +66,12 @@ var HotKeysModule = class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.PREVIOUS_WORKSPACE,
             () => {
-                let currentIndex = this.workspaceManager.get_active_workspace_index();
-                if (currentIndex > 0) {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        currentIndex - 1
-                    ].activate();
-                    return;
-                }
-
-                if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        this.workspaceManager.n_workspaces - 1
-                    ].activate();
-                }
+                Me.msWorkspaceManager.activatePreviousMsWorkspace();
             }
         );
 
         this.actionNameToActionMap.set(KeyBindingAction.NEXT_WORKSPACE, () => {
-            let currentIndex = this.workspaceManager.get_active_workspace_index();
-            if (currentIndex < this.workspaceManager.n_workspaces - 1) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[
-                    currentIndex + 1
-                ].activate();
-                return;
-            }
-
-            if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                Me.msWorkspaceManager.primaryMsWorkspaces[0].activate();
-            }
+            Me.msWorkspaceManager.activateNextMsWorkspace();
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
@@ -140,28 +118,35 @@ var HotKeysModule = class HotKeysModule {
             ) {
                 return;
             }
+
             if (
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
             ) {
-                if (activeMsWorkspace.tileableList.length > 2) {
-                    const nextMsWorkspace =
-                        Me.msWorkspaceManager.msWorkspaceList[
-                            Me.msWorkspaceManager.msWorkspaceList.length - 1
-                        ];
+                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()
+                    && (!Meta.prefs_get_dynamic_workspaces() || activeMsWorkspace.msWindowList.length === 1)) {
+                    return;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 1
+                    ];
+
                     Me.msWorkspaceManager.setWindowToMsWorkspace(
                         activeMsWorkspace.tileableFocused,
                         nextMsWorkspace
                     );
 
-                    if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
-                    }
-
-                    nextMsWorkspace.activate();
+                if (!Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
+                    Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
                 }
+
+                nextMsWorkspace.activate();
+
                 return;
             }
+
             const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                 activeMsWorkspace
             );
@@ -190,22 +175,32 @@ var HotKeysModule = class HotKeysModule {
                 }
                 if (
                     activeMsWorkspace ===
-                    Me.msWorkspaceManager.primaryMsWorkspaces[
-                        Me.msWorkspaceManager.primaryMsWorkspaces.length - 2
-                    ]
+                        Me.msWorkspaceManager.primaryMsWorkspaces[
+                            Me.msWorkspaceManager.primaryMsWorkspaces.length - (
+                                Meta.prefs_get_dynamic_workspaces() ? 2 : 1
+                            )
+                        ]
                 ) {
-                    if (activeMsWorkspace.msWindowList.length === 1) {
-                        if (Me.msWorkspaceManager.shouldCycleWorkspacesNavigation()) {
-                            const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+                    if ((Meta.prefs_get_dynamic_workspaces() && activeMsWorkspace.msWindowList.length === 1 && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                        || (!Meta.prefs_get_dynamic_workspaces() && !Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())) {
+                        return;
+                    }
 
-                            Me.msWorkspaceManager.setWindowToMsWorkspace(
-                                activeMsWorkspace.tileableFocused,
-                                nextMsWorkspace
-                            );
+                    if (!Meta.prefs_get_dynamic_workspaces() ||
+                        (activeMsWorkspace.msWindowList.length === 1 && Me.msWorkspaceManager.shouldCycleWorkspacesNavigation())
+                    ) {
 
-                            Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
-                            nextMsWorkspace.activate();
-                        }
+                        const nextMsWorkspace = Me.msWorkspaceManager.msWorkspaceList[0];
+
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                            activeMsWorkspace.tileableFocused,
+                            nextMsWorkspace
+                        );
+
+                        Me.msWorkspaceManager.setMsWorkspaceAt(nextMsWorkspace, 0);
+
+                        nextMsWorkspace.activate();
+
                         return;
                     }
                 }
@@ -226,11 +221,47 @@ var HotKeysModule = class HotKeysModule {
             }
         );
 
+        [...Array(10).keys()].forEach((workspaceIndex) => {
+            const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
+            KeyBindingAction[actionKey] = `move-window-to-workspace-${
+                workspaceIndex + 1
+            }`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
+
+                if (
+                    (activeMsWorkspace.tileableFocused === activeMsWorkspace.appLauncher)
+                    || (workspaceIndex === currentMsWorkspaceIndex)
+                ) {
+                    return;
+                }
+
+                if (workspaceIndex >= Me.msWorkspaceManager.primaryMsWorkspaces.length) {
+                    workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.length - 1;
+                }
+
+                const nextMsWorkspace =
+                    Me.msWorkspaceManager.primaryMsWorkspaces[
+                        workspaceIndex
+                    ];
+                Me.msWorkspaceManager.setWindowToMsWorkspace(
+                    activeMsWorkspace.tileableFocused,
+                    nextMsWorkspace
+                );
+
+                nextMsWorkspace.activate();
+            });
+        });
+
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                msWorkspace.nextTiling(1);
+                msWorkspace.nextLayout(1);
             }
         );
 
@@ -238,7 +269,7 @@ var HotKeysModule = class HotKeysModule {
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                msWorkspace.nextTiling(-1);
+                msWorkspace.nextLayout(-1);
             }
         );
 
@@ -318,10 +349,10 @@ var HotKeysModule = class HotKeysModule {
     }
 
     destroy() {
-        this.actionIdToNameMap.forEach(key => {
-                Main.wm.removeKeybinding(key);
-                this.actionIdToNameMap.delete(key);
-            });
+        this.actionIdToNameMap.forEach((key) => {
+            Main.wm.removeKeybinding(key);
+            this.actionIdToNameMap.delete(key);
+        });
         if (this.connectId) {
             global.window_manager.disconnect(this.connectId);
         }
