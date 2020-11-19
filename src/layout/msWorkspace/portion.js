@@ -338,7 +338,7 @@ class PortionBorder {
         this.vertical = !this.vertical;
     }
 
-    updateBasis(basisRatio, after = false) {
+    increaseBasis(basisRatio) {
         if (basisRatio < 0) {
             basisRatio = 0;
         }
@@ -347,13 +347,8 @@ class PortionBorder {
 
         const basisSum = this.firstPortion.basis + this.secondPortion.basis;
 
-        if (after) {
-            this.secondPortion.basis *= basisRatio;
-            this.firstPortion.basis = basisSum - this.secondPortion.basis;
-        } else {
-            this.firstPortion.basis *= basisRatio;
-            this.secondPortion.basis = basisSum - this.firstPortion.basis;
-        }
+        this.firstPortion.basis *= basisRatio;
+        this.secondPortion.basis = basisSum - this.firstPortion.basis;
 
         if (this.firstPortion.basis / basisSum < MIN_BASIS_RATIO) {
             this.firstPortion.basis = MIN_BASIS_RATIO * basisSum;

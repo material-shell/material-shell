@@ -40,8 +40,8 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         this.observe(
             global.display,
             'grab-op-begin',
-            (_, display, metaWindow, op) => {
-                if (RESIZE_CODES.includes(op)) {
+            (_, display, metaWindow, directionOp) => {
+                if (RESIZE_CODES.includes(directionOp)) {
                     const msWindow = metaWindow.msWindow;
 
                     if (
@@ -50,7 +50,20 @@ var MsResizeManager = class MsResizeManager extends MsManager {
                         !msWindow.followMetaWindow
                     ) {
                         global.display.end_grab_op(global.get_current_time());
-                        this.startResize(msWindow, op);
+
+                        const { layout } = msWindow.msWorkspace;
+
+                        if (!(layout instanceof BaseResizeableTilingLayout)) {
+                            return;
+                        }
+
+                        const vertical = RESIZE_VERTICAL_CODES.includes(directionOp);
+                        const after = RESIZE_AFTER_CODES.includes(directionOp);
+                        const border = layout.getTileableBorder(msWindow, vertical, after);
+
+                        if (border) {
+                            this.startResize(border);
+                        }
                     }
                 }
             }
@@ -100,7 +113,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
     }
 
     getPointerPosition() {
-        const { layout, msWorkspaceActor } = this.msWindow.msWorkspace;
+        const { layout, msWorkspaceActor } = this.msWorkspace;
 
         const { x1: containerX, y1: containerY } = layout.tileableContainer.allocation;
         const { x1: actorX, y1: actorY } = msWorkspaceActor.allocation;
@@ -110,37 +123,23 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         return [globalX - containerX - actorX, globalY - containerY - actorY];
     }
 
-    getPortionPositionAndSize() {
-        const { layout } = this.msWindow.msWorkspace;
-        const ratio = layout.mainPortion.getRatioForPortion(
-            this.after ? this.border.secondPortion : this.border.firstPortion
-        );
+    getFirstPortionPositionAndSize() {
+        const { layout } = this.msWorkspace;
+        const ratio = layout.mainPortion.getRatioForPortion(this.border.firstPortion);
 
         return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }
 
-    startResize(msWindow, directionOp) {
-        const { layout } = msWindow.msWorkspace;
-
-        if (!(layout instanceof BaseResizeableTilingLayout)) {
-            return;
-        }
-
-        const vertical = RESIZE_VERTICAL_CODES.includes(directionOp);
-        this.after = RESIZE_AFTER_CODES.includes(directionOp);
-        this.border = layout.getTileableBorder(msWindow, vertical, this.after);
-
-        if (!this.border) {
-            return;
-        }
-
+    startResize(border) {
+        this.border = border;
+        this.msWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
         this.resizeInProgress = true;
-        this.msWindow = msWindow;
 
         global.stage.add_child(this.inputResizer);
         Main.pushModal(this.inputResizer);
 
         this.checkPointerPositionRoutine();
+
         global.display.set_cursor(
             this.border.vertical ? Meta.Cursor.SOUTH_RESIZE : Meta.Cursor.EAST_RESIZE
         );
@@ -148,40 +147,28 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
     updateResize() {
         const [pointerX, pointerY] = this.getPointerPosition();
-        const { x, y, width, height } = this.getPortionPositionAndSize();
+        const { x, y, width, height } = this.getFirstPortionPositionAndSize();
         const [relativeX, relativeY] = [pointerX - x, pointerY - y];
         let basisRatio;
 
         if (this.border.vertical) {
-            if (this.after) {
-                basisRatio = 1 - (relativeY / height);
-            } else {
-                basisRatio = relativeY / height;
-            }
+            basisRatio = relativeY / height;
         } else {
-            if (this.after) {
-                basisRatio = 1 - (relativeX / width);
-            } else {
-                basisRatio = relativeX / width;
-            }
+            basisRatio = relativeX / width;
         }
 
-        this.border.updateBasis(basisRatio, this.after);
-        this.msWindow.msWorkspace.layout.tileAll();
+        this.border.increaseBasis(basisRatio);
+        this.msWorkspace.layout.tileAll();
     }
 
     endResize() {
         this.resizeInProgress = false;
-        delete this.msWindow;
-        delete this.after;
+        delete this.msWorkspace;
         delete this.border;
-
-        this.msWindowManager.msWindowList.forEach((aMsWindow) => {
-            aMsWindow.updateMetaWindowVisibility();
-        });
 
         Main.popModal(this.inputResizer);
         Me.stateManager.stateChanged();
+
         global.stage.remove_child(this.inputResizer);
         global.display.set_cursor(Meta.Cursor.DEFAULT);
     }

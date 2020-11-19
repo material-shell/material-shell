@@ -65,12 +65,18 @@ var BaseResizeableTilingLayout = GObject.registerClass(
         }
 
         applyBoxRatio(box, ratio) {
-            return this.applyGaps(
-                round(box.x1 + (ratio.x * box.get_width())),
-                round(box.y1 + (ratio.y * box.get_height())),
-                round(ratio.width * box.get_width()),
-                round(ratio.height * box.get_height()),
-            );
+            return {
+                x: round(box.x1 + (ratio.x * box.get_width())),
+                y: round(box.y1 + (ratio.y * box.get_height())),
+                width: round(ratio.width * box.get_width()),
+                height: round(ratio.height * box.get_height()),
+            };
+        }
+
+        applyBoxRatioAndGaps(box, ratio) {
+            const { x, y, width, height } = this.applyBoxRatio(box, ratio);
+            
+            return this.applyGaps(x, y, width, height);
         }
 
         tileTileable(tileable, box) {
@@ -80,7 +86,7 @@ var BaseResizeableTilingLayout = GObject.registerClass(
                 ratio = { x: 0, y: 0, width: 1, height: 1 };
             }
 
-            const { x, y, width, height } = this.applyBoxRatio(box, ratio);
+            const { x, y, width, height } = this.applyBoxRatioAndGaps(box, ratio);
 
             tileable.x = x;
             tileable.y = y;
