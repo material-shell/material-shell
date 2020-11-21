@@ -67,7 +67,7 @@ class Portion {
             const [firstPortion, secondPortion] = this.children.slice(i, i + 2);
 
             this.borders.push(
-                new PortionBorder(firstPortion, secondPortion, this.vertical)
+                new PortionBorder(firstPortion, secondPortion, this)
             );
         }
     }
@@ -335,22 +335,18 @@ class Portion {
 
     convert() {
         this.vertical = !this.vertical;
-
         this.children.forEach((portion) => portion.convert());
-
-        this.borders.forEach((border) => border.convert());
     }
 }
 
 class PortionBorder {
-    constructor(firstPortion, secondPortion, vertical = false) {
+    constructor(firstPortion, secondPortion, parentPortion) {
         this.firstPortion = firstPortion;
         this.secondPortion = secondPortion;
-        this.vertical = vertical;
+        this.parentPortion = parentPortion;
     }
-
-    convert() {
-        this.vertical = !this.vertical;
+    get vertical() {
+        return this.parentPortion.vertical;
     }
 
     updateBasis(basisRatio) {
