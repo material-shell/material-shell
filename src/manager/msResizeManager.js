@@ -13,16 +13,21 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
 const RESIZE_CODES = [
-    Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_NE, Meta.GrabOp.RESIZING_NW, 
-    Meta.GrabOp.RESIZING_E, Meta.GrabOp.RESIZING_W,
-    Meta.GrabOp.RESIZING_S, Meta.GrabOp.RESIZING_SE, Meta.GrabOp.RESIZING_SW, 
+    Meta.GrabOp.RESIZING_N,
+    Meta.GrabOp.RESIZING_NE,
+    Meta.GrabOp.RESIZING_NW,
+    Meta.GrabOp.RESIZING_E,
+    Meta.GrabOp.RESIZING_W,
+    Meta.GrabOp.RESIZING_S,
+    Meta.GrabOp.RESIZING_SE,
+    Meta.GrabOp.RESIZING_SW,
 ];
-const RESIZE_VERTICAL_CODES = [
-    Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_S, 
-];
+const RESIZE_VERTICAL_CODES = [Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_S];
 const RESIZE_AFTER_CODES = [
-    Meta.GrabOp.RESIZING_N, Meta.GrabOp.RESIZING_NW, 
-    Meta.GrabOp.RESIZING_W, Meta.GrabOp.RESIZING_SW, 
+    Meta.GrabOp.RESIZING_N,
+    Meta.GrabOp.RESIZING_NW,
+    Meta.GrabOp.RESIZING_W,
+    Meta.GrabOp.RESIZING_SW,
 ];
 
 const CHECK_TIMEOUT_MS = 100;
@@ -57,9 +62,15 @@ var MsResizeManager = class MsResizeManager extends MsManager {
                             return;
                         }
 
-                        const vertical = RESIZE_VERTICAL_CODES.includes(directionOp);
+                        const vertical = RESIZE_VERTICAL_CODES.includes(
+                            directionOp
+                        );
                         const after = RESIZE_AFTER_CODES.includes(directionOp);
-                        const border = layout.getTileableBorder(msWindow, vertical, after);
+                        const border = layout.getTileableBorder(
+                            msWindow,
+                            vertical,
+                            after
+                        );
 
                         if (border) {
                             this.startResize(border);
@@ -90,16 +101,6 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         );
     }
 
-    checkPointerPositionRoutine() {
-        if (!this.resizeInProgress) return;
-
-        this.throttledCheckPointerPosition();
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, CHECK_TIMEOUT_MS, () => {
-            this.checkPointerPositionRoutine();
-            return GLib.SOURCE_REMOVE;
-        });
-    }
-
     checkPointerPosition() {
         if (this.resizeInProgress) {
             this.updateResize();
@@ -115,7 +116,10 @@ var MsResizeManager = class MsResizeManager extends MsManager {
     getPointerPosition() {
         const { layout, msWorkspaceActor } = this.msWorkspace;
 
-        const { x1: containerX, y1: containerY } = layout.tileableContainer.allocation;
+        const {
+            x1: containerX,
+            y1: containerY,
+        } = layout.tileableContainer.allocation;
         const { x1: actorX, y1: actorY } = msWorkspaceActor.allocation;
 
         const [globalX, globalY] = global.get_pointer();
@@ -125,7 +129,9 @@ var MsResizeManager = class MsResizeManager extends MsManager {
 
     getFirstPortionPositionAndSize() {
         const { layout } = this.msWorkspace;
-        const ratio = layout.mainPortion.getRatioForPortion(this.border.firstPortion);
+        const ratio = layout.mainPortion.getRatioForPortion(
+            this.border.firstPortion
+        );
 
         return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }
@@ -138,10 +144,10 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         global.stage.add_child(this.inputResizer);
         Main.pushModal(this.inputResizer);
 
-        this.checkPointerPositionRoutine();
-
         global.display.set_cursor(
-            this.border.vertical ? Meta.Cursor.SOUTH_RESIZE : Meta.Cursor.EAST_RESIZE
+            this.border.vertical
+                ? Meta.Cursor.SOUTH_RESIZE
+                : Meta.Cursor.EAST_RESIZE
         );
     }
 
