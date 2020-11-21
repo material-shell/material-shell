@@ -49,8 +49,8 @@ function buildPrefsWidget() {
     if (!ShellVersionMatch('3.34')) {
         theme.addSetting('blur-background', WidgetType.BOOLEAN);
     }
-    theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
-    theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
+    // theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
+    // theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
 
     settingsTab.addCategory(theme);
 

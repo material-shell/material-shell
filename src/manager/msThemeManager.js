@@ -123,11 +123,11 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     get clockHorizontal() {
-        return this.themeSettings.get_boolean('clock-horizontal');
+        return false; // return this.themeSettings.get_boolean('clock-horizontal');
     }
 
     get clockAppLauncher() {
-        return this.themeSettings.get_boolean('clock-app-launcher');
+        return false; // return this.themeSettings.get_boolean('clock-app-launcher');
     }
 
     getPanelSize(monitorIndex) {
