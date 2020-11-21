@@ -4,7 +4,7 @@ const { GObject, Clutter, St } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const MIN_BASIS_RATIO = 0.10;
+const MIN_BASIS_RATIO = 0.1;
 
 class Portion {
     constructor(basis = 100, vertical = false) {
@@ -37,7 +37,10 @@ class Portion {
 
     get portionLength() {
         return this.children.length
-            ? this.children.reduce((sum, portion) => sum + portion.portionLength, 0)
+            ? this.children.reduce(
+                  (sum, portion) => sum + portion.portionLength,
+                  0
+              )
             : 1;
     }
 
@@ -63,7 +66,9 @@ class Portion {
         for (let i = 0; i < this.children.length - 1; i++) {
             const [firstPortion, secondPortion] = this.children.slice(i, i + 2);
 
-            this.borders.push(new PortionBorder(firstPortion, secondPortion, this.vertical));
+            this.borders.push(
+                new PortionBorder(firstPortion, secondPortion, this.vertical)
+            );
         }
     }
 
@@ -71,9 +76,11 @@ class Portion {
         for (let i = 0; i < this.children.length; i++) {
             const possiblePortion = this.children[i];
 
-            if (possiblePortion === portion || (
-                possiblePortion.children.length > 0 && possiblePortion.hasPortion(portion)
-            )) {
+            if (
+                possiblePortion === portion ||
+                (possiblePortion.children.length > 0 &&
+                    possiblePortion.hasPortion(portion))
+            ) {
                 return true;
             }
         }
@@ -91,7 +98,7 @@ class Portion {
         }
 
         this.children.splice(0, 0, new Portion(basis, vertical));
-     
+
         this.updateBorders();
     }
 
@@ -113,7 +120,7 @@ class Portion {
         }
 
         this.children.push(new Portion(basis, vertical));
-     
+
         this.updateBorders();
     }
 
@@ -167,7 +174,7 @@ class Portion {
                 this.children.pop();
             }
         }
-     
+
         this.updateBorders();
     }
 
@@ -191,7 +198,10 @@ class Portion {
                 if (after) {
                     if (portionIndex === index) {
                         if (portion.children[0].portionLength > 1) {
-                            return portion.children[0].isBorderInSubPortion(0, after);
+                            return portion.children[0].isBorderInSubPortion(
+                                0,
+                                after
+                            );
                         } else {
                             return false;
                         }
@@ -200,13 +210,19 @@ class Portion {
                     return true;
                 }
 
-                const lastPortion = portion.children[portion.children.length - 1];
-                const portionIndexUntilLast = portion.portionLength + portionIndex 
-                    - lastPortion.portionLength;
+                const lastPortion =
+                    portion.children[portion.children.length - 1];
+                const portionIndexUntilLast =
+                    portion.portionLength +
+                    portionIndex -
+                    lastPortion.portionLength;
 
                 if (index > portionIndexUntilLast) {
                     if (lastPortion.portionLength > 1) {
-                        return lastPortion.isBorderInSubPortion(index- portionIndexUntilLast, after);
+                        return lastPortion.isBorderInSubPortion(
+                            index - portionIndexUntilLast,
+                            after
+                        );
                     } else {
                         return false;
                     }
@@ -220,7 +236,7 @@ class Portion {
 
         return false;
     }
-    
+
     getBorderForIndex(index, vertical = false, after = false) {
         let portionIndex = 0;
 
@@ -238,18 +254,25 @@ class Portion {
             }
 
             if (portion.portionLength + portionIndex > index) {
-                if (this.vertical === vertical && !portion.isBorderInSubPortion(index - portionIndex, after)) {
+                if (
+                    this.vertical === vertical &&
+                    !portion.isBorderInSubPortion(index - portionIndex, after)
+                ) {
                     return this.borders[i - after];
                 }
 
-                return portion.getBorderForIndex(index - portionIndex, vertical, after);
+                return portion.getBorderForIndex(
+                    index - portionIndex,
+                    vertical,
+                    after
+                );
             }
 
             portionIndex += portion.portionLength;
         }
     }
 
-    getRatioForIndex(index, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForIndex(index, ratio = { x: 0, y: 0, width: 1, height: 1 }) {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -265,7 +288,7 @@ class Portion {
 
             if (portion.portionLength + portionIndex > index) {
                 return portion.getRatioForIndex(
-                    index - portionIndex, 
+                    index - portionIndex,
                     this.getRatioForPortion(portion, ratio)
                 );
             }
@@ -276,9 +299,9 @@ class Portion {
         return ratio;
     }
 
-    getRatioForPortion(portion, ratio={ x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForPortion(portion, ratio = { x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
-            (sum, child) => sum + child.basis, 
+            (sum, child) => sum + child.basis,
             0
         );
         let basisSum = 0;
@@ -293,18 +316,15 @@ class Portion {
                 continue;
             }
 
-            const [ position, size ] = this.vertical
-                ? [ 'y', 'height' ]
-                : [ 'x', 'width' ];
-            
-            ratio[position] += (ratio[size] * (basisSum / basisTotal));
-            ratio[size] *= (child.basis / basisTotal);
+            const [position, size] = this.vertical
+                ? ['y', 'height']
+                : ['x', 'width'];
+
+            ratio[position] += ratio[size] * (basisSum / basisTotal);
+            ratio[size] *= child.basis / basisTotal;
 
             if (hasPortion) {
-                return child.getRatioForPortion(
-                    portion, 
-                    ratio
-                );
+                return child.getRatioForPortion(portion, ratio);
             }
 
             break;
@@ -315,17 +335,12 @@ class Portion {
 
     convert() {
         this.vertical = !this.vertical;
-        
-        this.children.forEach(
-            (portion) => portion.convert()
-        );
 
-        this.borders.forEach(
-            (border) => border.convert()
-        );
+        this.children.forEach((portion) => portion.convert());
+
+        this.borders.forEach((border) => border.convert());
     }
-};
-
+}
 
 class PortionBorder {
     constructor(firstPortion, secondPortion, vertical = false) {
@@ -338,7 +353,7 @@ class PortionBorder {
         this.vertical = !this.vertical;
     }
 
-    increaseBasis(basisRatio) {
+    updateBasis(basisRatio) {
         if (basisRatio < 0) {
             basisRatio = 0;
         }

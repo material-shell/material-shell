@@ -163,7 +163,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
             basisRatio = relativeX / width;
         }
 
-        this.border.increaseBasis(basisRatio);
+        this.border.updateBasis(basisRatio);
         this.msWorkspace.layout.tileAll();
     }
 

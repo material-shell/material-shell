@@ -129,14 +129,15 @@ var SplitLayout = GObject.registerClass(
         }
 
         updateMainPortionLength(length) {
-            super.updateMainPortionLength(length > this._state.nbOfColumns
-                ? this._state.nbOfColumns
-                : length
+            super.updateMainPortionLength(
+                length > this._state.nbOfColumns
+                    ? this._state.nbOfColumns
+                    : length
             );
         }
 
         getTileableIndex(tileable) {
-            if (this.activeTileableList.includes(tileable)) { 
+            if (this.activeTileableList.includes(tileable)) {
                 let activeIndex = this.activeTileableList.indexOf(tileable);
 
                 return activeIndex;
