@@ -88,10 +88,10 @@ var TaskBar = GObject.registerClass(
             this.connect('scroll-event', (_, event) => {
                 switch (event.get_scroll_direction()) {
                     case Clutter.ScrollDirection.UP:
-                        this.msWorkspace.focusNextTileable();
+                        this.msWorkspace.focusPreviousTileable();
                         break;
                     case Clutter.ScrollDirection.DOWN:
-                        this.msWorkspace.focusPreviousTileable();
+                        this.msWorkspace.focusNextTileable();
 
                         break;
                 }
