@@ -83,7 +83,7 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             let ratio = this.getTileablePortionRatio(tileable);
 
             if (!ratio) {
-                ratio = { x: 0, y: 0, width: 1, height: 1 };
+                return;
             }
 
             const { x, y, width, height } = this.applyBoxRatioAndGaps(
