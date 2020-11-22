@@ -61,7 +61,13 @@ var HorizontalPanel = GObject.registerClass(
                 'notify::clock',
                 updateClock
             );
-            updateClock();
+            // There was a bug when updating the clock while the clock was not in the stage which didn't update the time correctly
+            this.clockLabel.connect('notify::mapped', () => {
+                if (this.clockLabel.mapped) {
+                    updateClock();
+                    this.clockLabel.queue_relayout();
+                }
+            });
             this.insert_child_at_index(this.clockBin, 1);
             this.clockLabel.connect('destroy', () => {
                 this._wallClock.disconnect(this.signalClock);

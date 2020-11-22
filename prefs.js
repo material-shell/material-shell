@@ -136,7 +136,7 @@ var TabsContainer = GObject.registerClass(
             this.stack.add_titled(tab, title, title);
         }
 
-        addHotkeysTab(title, treeView) {
+        addHotkeysTab(title, hotkeysTab) {
             // Add some padding to TreeView
             const cssProvider = new Gtk.CssProvider();
             const style = `
@@ -151,32 +151,34 @@ var TabsContainer = GObject.registerClass(
                 cssProvider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
             );
-            const styleContext = treeView.get_style_context();
+            const styleContext = hotkeysTab.get_style_context();
             styleContext.add_class('tree-view');
 
             // Search for action and hotkeys
-            treeView.set_enable_search(true);
-            treeView.set_search_column(1);
-            treeView.set_search_equal_func((model, column, key, iter) => {
-                const index = model.get_value(iter, 0);
-                const action = model.get_value(iter, 1).toLowerCase();
-                const keys = treeView.settings
-                    .get_strv(index)[0]
-                    .replace(/\>/gi, '+')
-                    .replace(/\</gi, '')
-                    .toLowerCase();
-                if (
-                    action.includes(key.toLowerCase()) ||
-                    keys.includes(key.toLowerCase())
-                ) {
-                    return false;
-                } else {
-                    return true;
+            hotkeysTab.treeView.set_enable_search(true);
+            hotkeysTab.treeView.set_search_column(1);
+            hotkeysTab.treeView.set_search_equal_func(
+                (model, column, key, iter) => {
+                    const index = model.get_value(iter, 0);
+                    const action = model.get_value(iter, 1).toLowerCase();
+                    const keys = hotkeysTab.settings
+                        .get_strv(index)[0]
+                        .replace(/\>/gi, '+')
+                        .replace(/\</gi, '')
+                        .toLowerCase();
+                    if (
+                        action.includes(key.toLowerCase()) ||
+                        keys.includes(key.toLowerCase())
+                    ) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
-            });
+            );
 
             // Move search widget to top (it is hidden in Float layout)
-            treeView.set_search_position_func((treeView, search) => {
+            hotkeysTab.treeView.set_search_position_func((treeView, search) => {
                 let window = this.get_toplevel();
                 let [x, y] = window.get_position();
                 let [width, height] = window.get_size();
@@ -184,11 +186,11 @@ var TabsContainer = GObject.registerClass(
             });
 
             // Grab focus for keyboard navigation and search
-            treeView.connect('realize', () => {
-                treeView.grab_focus();
+            hotkeysTab.connect('realize', () => {
+                hotkeysTab.treeView.grab_focus();
             });
 
-            this.stack.add_titled(treeView, title, title);
+            this.stack.add_titled(hotkeysTab, title, title);
         }
     }
 );
@@ -208,8 +210,11 @@ var SettingsTab = GObject.registerClass(
 );
 
 var HotkeysTab = GObject.registerClass(
-    class HotkeysTab extends Gtk.TreeView {
+    class HotkeysTab extends Gtk.ScrolledWindow {
         _init(schema) {
+            super._init({
+                vexpand: true,
+            });
             const model = new Gtk.ListStore();
             model.set_column_types([
                 GObject.TYPE_STRING,
@@ -217,11 +222,8 @@ var HotkeysTab = GObject.registerClass(
                 GObject.TYPE_INT,
                 GObject.TYPE_INT,
             ]);
-            super._init({
-                expand: true,
-                model: model,
-            });
-
+            this.treeView = new Gtk.TreeView({ expand: true, model: model });
+            this.add(this.treeView);
             this.settings = new Gio.Settings({
                 settings_schema: schemaSource.lookup(schema, false),
             });
@@ -306,8 +308,8 @@ var HotkeysTab = GObject.registerClass(
             hotkeyColumn.add_attribute(cellAccelRenderer, 'accel-mods', 2);
             hotkeyColumn.add_attribute(cellAccelRenderer, 'accel-key', 3);
 
-            this.append_column(actionColumn);
-            this.append_column(hotkeyColumn);
+            this.treeView.append_column(actionColumn);
+            this.treeView.append_column(hotkeyColumn);
         }
     }
 );
