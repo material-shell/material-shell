@@ -1,11 +1,11 @@
 /** Gnome libs imports */
-const { GObject, St } = imports.gi;
+const { GObject } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+    BaseResizeableTilingLayout,
+} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
 
@@ -14,7 +14,7 @@ const WINDOW_SLIDE_TWEEN_TIME = 250;
 
 /* exported SplitLayout */
 var SplitLayout = GObject.registerClass(
-    class SplitLayout extends BaseTilingLayout {
+    class SplitLayout extends BaseResizeableTilingLayout {
         _init(msWorkspace, state) {
             super._init(msWorkspace, state);
             this.updateActiveTileableListFromFocused();
@@ -23,6 +23,10 @@ var SplitLayout = GObject.registerClass(
             this.translationAnimator.connect('transition-completed', () => {
                 this.endTransition();
             });
+
+            if (this.mainPortion.vertical !== this.vertical) {
+                this.mainPortion.convert();
+            }
         }
 
         afterInit() {
@@ -42,13 +46,13 @@ var SplitLayout = GObject.registerClass(
                 Math.min(
                     this.msWorkspace.focusedIndex,
                     this.msWorkspace.tileableList.length -
-                        this.state.nbOfColumns -
+                        this._state.nbOfColumns -
                         1
                 )
             );
             this.activeTileableList = this.msWorkspace.tileableList.slice(
                 this.baseIndex,
-                this.baseIndex + this.state.nbOfColumns
+                this.baseIndex + this._state.nbOfColumns
             );
         }
 
@@ -84,13 +88,13 @@ var SplitLayout = GObject.registerClass(
             const oldTileableList = this.activeTileableList;
             if (oldIndex < newIndex) {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
-                    newIndex - this.state.nbOfColumns + 1,
+                    newIndex - this._state.nbOfColumns + 1,
                     newIndex + 1
                 );
             } else {
                 this.activeTileableList = this.msWorkspace.tileableList.slice(
                     newIndex,
-                    newIndex + this.state.nbOfColumns
+                    newIndex + this._state.nbOfColumns
                 );
             }
             this.baseIndex = this.msWorkspace.tileableList.indexOf(
@@ -124,50 +128,22 @@ var SplitLayout = GObject.registerClass(
             }
         }
 
-        tileTileable(tileable, box, index, siblingLength) {
-            // Do nothing if App Launcher is the only tileable
-            if (index === 0 && siblingLength === 1) {
-                tileable.x = box.x1;
-                tileable.y = box.y1;
-                tileable.width = box.get_width();
-                tileable.height = box.get_height();
-            } else {
-                let x, y, width, height;
-                let verticalPortion = this.vertical
-                    ? box.get_height() / this.state.nbOfColumns
-                    : box.get_height();
-                let horizontalPortion = this.vertical
-                    ? box.get_width()
-                    : box.get_width() / this.state.nbOfColumns;
-                if (this.activeTileableList.includes(tileable)) {
-                    let activeIndex = this.activeTileableList.indexOf(tileable);
-                    if (this.vertical) {
-                        x = box.x1;
-                        y = box.y1 + activeIndex * verticalPortion;
-                    } else {
-                        x = box.x1 + activeIndex * horizontalPortion;
-                        y = box.y1;
-                    }
-                } else {
-                    x = box.x1;
-                    y = box.y1;
-                }
+        updateMainPortionLength(length) {
+            super.updateMainPortionLength(
+                length > this._state.nbOfColumns
+                    ? this._state.nbOfColumns
+                    : length
+            );
+        }
 
-                width = horizontalPortion;
-                height = verticalPortion;
+        getTileableIndex(tileable) {
+            if (this.activeTileableList.includes(tileable)) {
+                let activeIndex = this.activeTileableList.indexOf(tileable);
 
-                let {
-                    x: gapX,
-                    y: gapY,
-                    width: gapWidth,
-                    height: gapHeight,
-                } = this.applyGaps(x, y, width, height);
-
-                tileable.x = gapX;
-                tileable.y = gapY;
-                tileable.width = gapWidth;
-                tileable.height = gapHeight;
+                return activeIndex;
             }
+
+            return -1;
         }
 
         /*
@@ -179,13 +155,10 @@ var SplitLayout = GObject.registerClass(
                 this.translationAnimator.height = this.tileableContainer.allocation.get_height();
                 this.tileableContainer.add_child(this.translationAnimator);
             }
-            let lastLeavingIndex = this.msWorkspace.tileableList.indexOf(
-                previousTileableList[previousTileableList.length - 1]
-            );
-            let firstEnteringIndex = this.msWorkspace.tileableList.indexOf(
-                nextTileableList[0]
-            );
-            let direction = lastLeavingIndex > firstEnteringIndex ? -1 : 1;
+
+            let direction = nextTileableList.includes(previousTileableList[0])
+                ? -1
+                : 1;
             [...previousTileableList, ...nextTileableList].forEach((actor) => {
                 let parent = actor.get_parent();
                 if (parent && parent === this.tileableContainer) {
@@ -197,12 +170,12 @@ var SplitLayout = GObject.registerClass(
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height() /
-                            this.state.nbOfColumns
+                            this._state.nbOfColumns
                     );
                 } else {
                     actor.set_width(
                         this.tileableContainer.allocation.get_width() /
-                            this.state.nbOfColumns
+                            this._state.nbOfColumns
                     );
                     actor.set_height(
                         this.tileableContainer.allocation.get_height()
@@ -222,11 +195,11 @@ var SplitLayout = GObject.registerClass(
         }
 
         buildQuickWidget() {
-            const widget = new MatNumberPicker(this.state.nbOfColumns, {
+            const widget = new MatNumberPicker(this._state.nbOfColumns, {
                 min: 2,
             });
             widget.connect('changed', (_, newValue) => {
-                this.state.nbOfColumns = newValue;
+                this._state.nbOfColumns = newValue;
                 this.updateActiveTileableListFromFocused();
                 this.refreshVisibleActors();
                 this.tileAll();

@@ -62,6 +62,11 @@ var LayoutSwitcher = GObject.registerClass(
 
         updateLayoutWidget() {
             this.layoutQuickWidgetBin.remove_all_children();
+
+            if (!this.msWorkspace.layout) {
+                return;
+            }
+            
             let quickWidget = this.msWorkspace.layout.buildQuickWidget();
             if (quickWidget) {
                 this.layoutQuickWidgetBin.set_child(quickWidget);

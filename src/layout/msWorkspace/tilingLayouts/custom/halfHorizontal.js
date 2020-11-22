@@ -10,8 +10,8 @@ const {
 /* exported HalfHorizontalLayout */
 var HalfHorizontalLayout = GObject.registerClass(
     class HalfHorizontalLayout extends HalfLayout {
-        tileTileable(tileable, box, index, siblingLength) {
-            this.tileTileableHorizontal(tileable, box, index, siblingLength);
+        isVerticalLayout() {
+            return false;
         }
     }
 );
