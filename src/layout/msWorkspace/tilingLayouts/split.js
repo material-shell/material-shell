@@ -155,13 +155,10 @@ var SplitLayout = GObject.registerClass(
                 this.translationAnimator.height = this.tileableContainer.allocation.get_height();
                 this.tileableContainer.add_child(this.translationAnimator);
             }
-            let lastLeavingIndex = this.msWorkspace.tileableList.indexOf(
-                previousTileableList[previousTileableList.length - 1]
-            );
-            let firstEnteringIndex = this.msWorkspace.tileableList.indexOf(
-                nextTileableList[0]
-            );
-            let direction = lastLeavingIndex > firstEnteringIndex ? -1 : 1;
+
+            let direction = nextTileableList.includes(previousTileableList[0])
+                ? -1
+                : 1;
             [...previousTileableList, ...nextTileableList].forEach((actor) => {
                 let parent = actor.get_parent();
                 if (parent && parent === this.tileableContainer) {
