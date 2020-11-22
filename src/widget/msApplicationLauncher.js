@@ -156,11 +156,16 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     'notify::clock',
                     updateClock
                 );
+                this.clockLabel.connect('notify::mapped', () => {
+                    if (this.clockLabel.mapped) {
+                        updateClock();
+                        this.clockLabel.queue_relayout();
+                    }
+                });
                 this.clockLabel.connect('destroy', () => {
                     this._wallClock.disconnect(this.signalClock);
                     delete this._wallClock;
                 });
-                updateClock();
                 this.add_child(this.clockBin);
             }
 
