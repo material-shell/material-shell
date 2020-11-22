@@ -301,7 +301,7 @@ var HotKeysModule = class HotKeysModule {
 
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                msWorkspace.setTilingLayout(layoutKey);
+                msWorkspace.setLayoutByKey(layoutKey);
             });
         });
 
