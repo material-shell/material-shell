@@ -113,18 +113,16 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         }
     }
 
-    getPointerPosition() {
+    getPointerPositionRelativeToWorkspace() {
         const { layout, msWorkspaceActor } = this.msWorkspace;
 
-        const {
-            x1: containerX,
-            y1: containerY,
-        } = layout.tileableContainer.allocation;
-        const { x1: actorX, y1: actorY } = msWorkspaceActor.allocation;
-
+        const [
+            containerX,
+            containerY,
+        ] = layout.tileableContainer.get_transformed_position();
         const [globalX, globalY] = global.get_pointer();
 
-        return [globalX - containerX - actorX, globalY - containerY - actorY];
+        return [globalX - containerX, globalY - containerY];
     }
 
     getFirstPortionPositionAndSize() {
@@ -152,7 +150,10 @@ var MsResizeManager = class MsResizeManager extends MsManager {
     }
 
     updateResize() {
-        const [pointerX, pointerY] = this.getPointerPosition();
+        const [
+            pointerX,
+            pointerY,
+        ] = this.getPointerPositionRelativeToWorkspace();
         const { x, y, width, height } = this.getFirstPortionPositionAndSize();
         const [relativeX, relativeY] = [pointerX - x, pointerY - y];
         let basisRatio;
