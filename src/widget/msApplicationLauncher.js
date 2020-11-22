@@ -156,6 +156,8 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     'notify::clock',
                     updateClock
                 );
+
+                // There was a bug when updating the clock while the clock was not in the stage which didn't update the time correct
                 this.clockLabel.connect('notify::mapped', () => {
                     if (this.clockLabel.mapped) {
                         updateClock();
