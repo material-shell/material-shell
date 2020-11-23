@@ -2,126 +2,162 @@
   <schema id="org.gnome.shell.extensions.materialshell.bindings" path="/org/gnome/shell/extensions/materialshell/bindings/">
     <!-- Window Actions -->
     <key name="previous-window" type="as">
-      <default><![CDATA[['<Super>a']]]></default>
+      <default>
+        <![CDATA[['<Super>a']]]>
+      </default>
       <summary>Focus previous window</summary>
       <description>
         Focus the previous window of the current workspace
       </description>
     </key>
     <key name="next-window" type="as">
-      <default><![CDATA[['<Super>d']]]></default>
+      <default>
+        <![CDATA[['<Super>d']]]>
+      </default>
       <summary>Focus next window</summary>
       <description>
         Focus the next window of the current workspace
       </description>
     </key>
     <key name="app-launcher" type="as">
-      <default><![CDATA[['<Super>x']]]></default>
+      <default>
+        <![CDATA[['<Super>x']]]>
+      </default>
       <summary>Focus App Launcher</summary>
       <description>
         Focus App Launcher of the current workspace
       </description>
     </key>
     <key name="kill-focused-window" type="as">
-      <default><![CDATA[['<Super>q']]]></default>
+      <default>
+        <![CDATA[['<Super>q']]]>
+      </default>
       <summary>Kill the current window</summary>
       <description>
         Kill the current focused window
       </description>
     </key>
     <key name="move-window-left" type="as">
-      <default><![CDATA[['<Shift><Super>a']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>a']]]>
+      </default>
       <summary>Move the current window to the left</summary>
       <description>
         Move the current window to the left
       </description>
     </key>
     <key name="move-window-right" type="as">
-      <default><![CDATA[['<Shift><Super>d']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>d']]]>
+      </default>
       <summary>Move the current window to the right</summary>
       <description>
         Move the current window to the right
       </description>
     </key>
     <key name="move-window-top" type="as">
-      <default><![CDATA[['<Shift><Super>w']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>w']]]>
+      </default>
       <summary>Move the current window to upper workspace</summary>
       <description>
         Move the current window to upper workspace
       </description>
     </key>
     <key name="move-window-bottom" type="as">
-      <default><![CDATA[['<Shift><Super>s']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>s']]]>
+      </default>
       <summary>Move the current window to lower workspace</summary>
       <description>
         Move the current window to lower workspace
       </description>
     </key>
     <key name="move-window-to-workspace-1" type="as">
-      <default><![CDATA[['<Shift><Super>1']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>1']]]>
+      </default>
       <summary>Move window to workspace 1</summary>
       <description>
         Move window to workspace 1
       </description>
     </key>
     <key name="move-window-to-workspace-2" type="as">
-      <default><![CDATA[['<Shift><Super>2']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>2']]]>
+      </default>
       <summary>Move window to workspace 2</summary>
       <description>
         Move window to workspace 2
       </description>
     </key>
     <key name="move-window-to-workspace-3" type="as">
-      <default><![CDATA[['<Shift><Super>3']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>3']]]>
+      </default>
       <summary>Move window to workspace 3</summary>
       <description>
         Move window to workspace 3
       </description>
     </key>
     <key name="move-window-to-workspace-4" type="as">
-      <default><![CDATA[['<Shift><Super>4']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>4']]]>
+      </default>
       <summary>Move window to workspace 4</summary>
       <description>
         Move window to workspace 4
       </description>
     </key>
     <key name="move-window-to-workspace-5" type="as">
-      <default><![CDATA[['<Shift><Super>5']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>5']]]>
+      </default>
       <summary>Move window to workspace 5</summary>
       <description>
         Move window to workspace 5
       </description>
     </key>
     <key name="move-window-to-workspace-6" type="as">
-      <default><![CDATA[['<Shift><Super>6']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>6']]]>
+      </default>
       <summary>Move window to workspace 6</summary>
       <description>
         Move window to workspace 6
       </description>
     </key>
     <key name="move-window-to-workspace-7" type="as">
-      <default><![CDATA[['<Shift><Super>7']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>7']]]>
+      </default>
       <summary>Move window to workspace 7</summary>
       <description>
         Move window to workspace 7`
       </description>
     </key>
     <key name="move-window-to-workspace-8" type="as">
-      <default><![CDATA[['<Shift><Super>8']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>8']]]>
+      </default>
       <summary>Move window to workspace 8</summary>
       <description>
         Move window to workspace 8
       </description>
     </key>
     <key name="move-window-to-workspace-9" type="as">
-      <default><![CDATA[['<Shift><Super>9']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>9']]]>
+      </default>
       <summary>Move window to workspace 9</summary>
       <description>
         Move window to workspace 9
       </description>
     </key>
     <key name="move-window-to-workspace-10" type="as">
-      <default><![CDATA[['<Shift><Super>0']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>0']]]>
+      </default>
       <summary>Move window to workspace 10</summary>
       <description>
         Move window to workspace 10
@@ -129,98 +165,126 @@
     </key>
     <!-- Layout actions -->
     <key name="cycle-tiling-layout" type="as">
-      <default><![CDATA[['<Super>Space']]]></default>
+      <default>
+        <![CDATA[['<Super>Space']]]>
+      </default>
       <summary>Cycle around the tiling layout on the current workspace</summary>
       <description>
         Cycle around the tiling layout on the current workspace
       </description>
     </key>
     <key name="reverse-cycle-tiling-layout" type="as">
-      <default><![CDATA[['<Shift><Super>Space']]]></default>
+      <default>
+        <![CDATA[['<Shift><Super>Space']]]>
+      </default>
       <summary>Cycle around in reverse order the tiling layout on the current workspace</summary>
       <description>
         Cycle around in reverse order the tiling layout on the current workspace
       </description>
     </key>
     <key name="toggle-material-shell-ui" type="as">
-      <default><![CDATA[['<Super>Escape']]]></default>
+      <default>
+        <![CDATA[['<Super>Escape']]]>
+      </default>
       <summary>Toggle the material-shell UI to simulate fullscreen</summary>
       <description>
         Toggle the material-shell UI to simulate fullscreen
       </description>
     </key>
     <key name="use-maximize-layout" type="as">
-      <default><![CDATA[['<Shift><Super>m']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use maximize layout</summary>
       <description>
         Use maximize layout
       </description>
     </key>
     <key name="use-split-layout" type="as">
-      <default><![CDATA[['<Shift><Super>s']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use split layout</summary>
       <description>
         Use split layout
       </description>
     </key>
     <key name="use-half-layout" type="as">
-      <default><![CDATA[['<Shift><Super>h']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use half layout</summary>
       <description>
         Use half layout
       </description>
     </key>
     <key name="use-half-horizontal-layout" type="as">
-      <default><![CDATA[['<Shift><Super>j']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use half-horizontal layout</summary>
       <description>
         Use half-horizontal layout
       </description>
     </key>
     <key name="use-half-vertical-layout" type="as">
-      <default><![CDATA[['<Shift><Super>k']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use half-vertical layout</summary>
       <description>
         Use half-vertical layout
       </description>
     </key>
     <key name="use-grid-layout" type="as">
-      <default><![CDATA[['<Shift><Super>g']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use grid layout</summary>
       <description>
         Use grid layout
       </description>
     </key>
     <key name="use-ratio-layout" type="as">
-      <default><![CDATA[['<Shift><Super>r']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use ratio layout</summary>
       <description>
         Use ratio layout
       </description>
     </key>
     <key name="use-float-layout" type="as">
-      <default><![CDATA[['<Shift><Super>f']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use float layout</summary>
       <description>
         Use float layout
       </description>
     </key>
     <key name="use-simple-layout" type="as">
-      <default><![CDATA[['<Shift><Super>d']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use simple layout</summary>
       <description>
         Use simple layout
       </description>
     </key>
     <key name="use-simple-horizontal-layout" type="as">
-      <default><![CDATA[['<Shift><Super>c']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use simple-horizontal layout</summary>
       <description>
         Use simple-horizontal layout
       </description>
     </key>
     <key name="use-simple-vertical-layout" type="as">
-      <default><![CDATA[['<Shift><Super>v']]]></default>
+      <default>
+        <![CDATA[['']]]>
+      </default>
       <summary>Use simple-vertical layout</summary>
       <description>
         Use simple-vertical layout
@@ -228,91 +292,117 @@
     </key>
     <!-- Workspace actions -->
     <key name="previous-workspace" type="as">
-      <default><![CDATA[['<Super>w']]]></default>
+      <default>
+        <![CDATA[['<Super>w']]]>
+      </default>
       <summary>Focus previous workspace</summary>
       <description>
         Focus the previous workspace
       </description>
     </key>
     <key name="next-workspace" type="as">
-      <default><![CDATA[['<Super>s']]]></default>
+      <default>
+        <![CDATA[['<Super>s']]]>
+      </default>
       <summary>Focus next workspace</summary>
       <description>
         Focus the next workspace
       </description>
     </key>
     <key name="last-workspace" type="as">
-      <default><![CDATA[['<Super>z']]]></default>
+      <default>
+        <![CDATA[['<Super>z']]]>
+      </default>
       <summary>Focus last workspace</summary>
       <description>
         Focus the last workspace
       </description>
     </key>
     <key name="navigate-to-workspace-1" type="as">
-      <default><![CDATA[['<Super>1']]]></default>
+      <default>
+        <![CDATA[['<Super>1']]]>
+      </default>
       <summary>Navigate to workspace 1</summary>
       <description>
         Navigate to workspace 1
       </description>
     </key>
     <key name="navigate-to-workspace-2" type="as">
-      <default><![CDATA[['<Super>2']]]></default>
+      <default>
+        <![CDATA[['<Super>2']]]>
+      </default>
       <summary>Navigate to workspace 2</summary>
       <description>
         Navigate to workspace 2
       </description>
     </key>
     <key name="navigate-to-workspace-3" type="as">
-      <default><![CDATA[['<Super>3']]]></default>
+      <default>
+        <![CDATA[['<Super>3']]]>
+      </default>
       <summary>Navigate to workspace 3</summary>
       <description>
         Navigate to workspace 3
       </description>
     </key>
     <key name="navigate-to-workspace-4" type="as">
-      <default><![CDATA[['<Super>4']]]></default>
+      <default>
+        <![CDATA[['<Super>4']]]>
+      </default>
       <summary>Navigate to workspace 4</summary>
       <description>
         Navigate to workspace 4
       </description>
     </key>
     <key name="navigate-to-workspace-5" type="as">
-      <default><![CDATA[['<Super>5']]]></default>
+      <default>
+        <![CDATA[['<Super>5']]]>
+      </default>
       <summary>Navigate to workspace 5</summary>
       <description>
         Navigate to workspace 5
       </description>
     </key>
     <key name="navigate-to-workspace-6" type="as">
-      <default><![CDATA[['<Super>6']]]></default>
+      <default>
+        <![CDATA[['<Super>6']]]>
+      </default>
       <summary>Navigate to workspace 6</summary>
       <description>
         Navigate to workspace 6
       </description>
     </key>
     <key name="navigate-to-workspace-7" type="as">
-      <default><![CDATA[['<Super>7']]]></default>
+      <default>
+        <![CDATA[['<Super>7']]]>
+      </default>
       <summary>Navigate to workspace 7</summary>
       <description>
         Navigate to workspace 7`
       </description>
     </key>
     <key name="navigate-to-workspace-8" type="as">
-      <default><![CDATA[['<Super>8']]]></default>
+      <default>
+        <![CDATA[['<Super>8']]]>
+      </default>
       <summary>Navigate to workspace 8</summary>
       <description>
         Navigate to workspace 8
       </description>
     </key>
     <key name="navigate-to-workspace-9" type="as">
-      <default><![CDATA[['<Super>9']]]></default>
+      <default>
+        <![CDATA[['<Super>9']]]>
+      </default>
       <summary>Navigate to workspace 9</summary>
       <description>
         Navigate to workspace 9
       </description>
     </key>
     <key name="navigate-to-workspace-10" type="as">
-      <default><![CDATA[['<Super>0']]]></default>
+      <default>
+        <![CDATA[['<Super>0']]]>
+      </default>
       <summary>Navigate to workspace 10</summary>
       <description>
         Navigate to workspace 10
