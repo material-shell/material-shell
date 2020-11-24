@@ -13,30 +13,32 @@ var init = function () {
         for (let key of Object.getOwnPropertyNames(prototype)) {
             if (key === 'constructor') continue;
             const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
-            const value = descriptor.value;
-            if (typeof value === 'function') {
-                prototype[key] = function () {
-                    // Before
-                    Me.log(
-                        `${prototype.constructor.name}.${key} (${Array.from(
-                            arguments
-                        )
-                            .map((param) => {
-                                try {
-                                    return param.toString();
-                                } catch (_e) {
-                                    return '';
-                                }
-                            })
-                            .join(',')})`
-                    );
-                    indent++;
-                    var result = value.apply(this, arguments); // use .apply() to call it
-                    // After
+            if (descriptor) {
+                const value = descriptor.value;
+                if (typeof value === 'function') {
+                    prototype[key] = function () {
+                        // Before
+                        Me.log(
+                            `${prototype.constructor.name}.${key} (${Array.from(
+                                arguments
+                            )
+                                .map((param) => {
+                                    try {
+                                        return param.toString();
+                                    } catch (_e) {
+                                        return '';
+                                    }
+                                })
+                                .join(',')})`
+                        );
+                        indent++;
+                        var result = value.apply(this, arguments); // use .apply() to call it
+                        // After
 
-                    indent--;
-                    return result;
-                };
+                        indent--;
+                        return result;
+                    };
+                }
             }
         }
     };
@@ -93,6 +95,14 @@ var init = function () {
                 Me.imports.src.layout.main.MsMain,
                 Me.imports.src.layout.msWorkspace.msWorkspace.MsWorkspace,
                 Me.imports.src.layout.msWorkspace.msWindow.MsWindow,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
+                    .TaskBar,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
+                    .TileableItem,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
+                    .LayoutSwitcher,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
+                    .TilingLayoutMenuItem,
             ]
                 .filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));
