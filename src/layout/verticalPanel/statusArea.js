@@ -24,14 +24,13 @@ var MsStatusArea = GObject.registerClass(
             this.centerBoxActors = [];
             this.rightBoxActors = [];
             this.dateMenu = this.gnomeShellPanel.statusArea.dateMenu;
+            this.enable();
+        }
+
+        enable() {
             this.verticaliseDateMenuButton();
             this.stealPanelActors();
             this.overridePanelMenuSide();
-
-            this.disableConnect = Me.connect(
-                'extension-disable',
-                this.onDisable.bind(this)
-            );
         }
 
         verticaliseDateMenuButton() {
@@ -178,8 +177,7 @@ var MsStatusArea = GObject.registerClass(
                 }
             });
         }
-        onDisable() {
-            Me.disconnect(this.disableConnect);
+        disable() {
             this.unVerticaliseDateMenuButton();
             this.restorePanelMenuSide();
             this.restorePanelActors();

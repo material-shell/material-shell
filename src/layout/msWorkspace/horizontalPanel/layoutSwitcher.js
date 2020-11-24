@@ -53,11 +53,14 @@ var LayoutSwitcher = GObject.registerClass(
                 this.menu.toggle();
             });
             this.updateLayoutWidget();
-            this.msWorkspace.connect(
+            const connectId = this.msWorkspace.connect(
                 'tiling-layout-changed',
                 this.updateLayoutWidget.bind(this)
             );
             this.buildMenu();
+            this.connect('destroy', () => {
+                this.msWorkspace.disconnect(connectId);
+            });
         }
 
         updateLayoutWidget() {
@@ -66,7 +69,7 @@ var LayoutSwitcher = GObject.registerClass(
             if (!this.msWorkspace.layout) {
                 return;
             }
-            
+
             let quickWidget = this.msWorkspace.layout.buildQuickWidget();
             if (quickWidget) {
                 this.layoutQuickWidgetBin.set_child(quickWidget);

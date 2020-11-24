@@ -61,7 +61,7 @@ var MsPanel = GObject.registerClass(
             this.add_child(this.statusArea);
             this.disableConnect = Me.connect('extension-disable', () => {
                 Me.disconnect(this.disableConnect);
-                this.gnomeShellPanel.show();
+                this.disable();
             });
 
             Me.msThemeManager.connect('panel-size-changed', () => {
@@ -70,6 +70,16 @@ var MsPanel = GObject.registerClass(
                 );
                 this.queue_relayout();
             });
+        }
+
+        enable() {
+            this.gnomeShellPanel.hide();
+            this.statusArea.enable();
+        }
+
+        disable() {
+            this.gnomeShellPanel.show();
+            this.statusArea.disable();
         }
 
         vfunc_get_preferred_width(_forHeight) {
