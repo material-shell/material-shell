@@ -205,6 +205,11 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     }
 
     initState() {
+        Main.layoutManager.monitors
+            .filter((monitor) => monitor != Main.layoutManager.primaryMonitor)
+            .forEach((monitor) => {
+                this.createNewMsWorkspace(monitor);
+            });
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             if (!this.primaryMsWorkspaces[i]) {
                 this.setupNewWorkspace(
