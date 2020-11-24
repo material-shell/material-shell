@@ -631,11 +631,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
     windowEnteredMonitor(metaWindow, monitorIndex) {
         if (this.updatingMonitors) return;
 
+        const currentMsWorkspaceOfMetaWindow = metaWindow.msWindow
+            ? metaWindow.msWindow.msWorkspace
+            : null;
         //Ignore unHandle metaWindow and metaWindow on secondary screens
         if (
             !metaWindow.handledByMaterialShell ||
             global.display.get_n_monitors() !== this.numOfMonitors ||
-            metaWindow.get_monitor() === monitorIndex ||
+            currentMsWorkspaceOfMetaWindow ===
+                this.getMsWorkspacesOfMonitorIndex(monitorIndex) ||
             monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
