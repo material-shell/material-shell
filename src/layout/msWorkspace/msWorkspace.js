@@ -118,7 +118,9 @@ var MsWorkspace = class MsWorkspace {
             ] = this.layout.state;
             this._state.layoutKey = this.layout.state.key;
         }
-
+        if (this.msWorkspaceCategory) {
+            this._state.forcedCategory = this.msWorkspaceCategory.forcedCategory;
+        }
         return this._state;
     }
 
