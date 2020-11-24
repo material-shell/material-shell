@@ -7,6 +7,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
+const { MsResizeManager } = Me.imports.src.manager.msResizeManager;
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
@@ -19,6 +20,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.msWindowWaitingForMetaWindowList = [];
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
+        this.msResizeManager = new MsResizeManager(this);
         this.signals = [];
         this.metaWindowWaitingForAssignationList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {

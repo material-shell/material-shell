@@ -215,11 +215,12 @@ var MsMain = GObject.registerClass(
                     .msWorkspaceActor
             );
             this.monitorsContainer.forEach((container) => {
-                container.setMsWorkspaceActor(
-                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                        container.monitor.index
-                    )[0].msWorkspaceActor
-                );
+                const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                    container.monitor.index
+                )[0];
+                if (msWorkspace) {
+                    container.setMsWorkspaceActor(msWorkspace.msWorkspaceActor);
+                }
             });
         }
 

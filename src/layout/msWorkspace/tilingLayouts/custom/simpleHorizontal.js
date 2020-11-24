@@ -10,8 +10,8 @@ const {
 /* exported SimpleHorizontalLayout */
 var SimpleHorizontalLayout = GObject.registerClass(
     class SimpleHorizontalLayout extends SimpleLayout {
-        tileTileable(tileable, box, index, siblingLength) {
-            this.tileTileableHorizontal(tileable, box, index, siblingLength);
+        isVerticalLayout() {
+            return false;
         }
     }
 );
