@@ -63,12 +63,11 @@ var StateManager = class StateManager {
                     ...workspacesState.externalWorkspaces,
                 ];
 
-                workspacesState.msWorkspaceList.map((msWorkspaceState) => {
+                workspacesState.msWorkspaceList.forEach((msWorkspaceState) => {
                     msWorkspaceState.layoutKey =
                         msWorkspaceState.layoutKey ||
                         msWorkspaceState.tilingLayout;
                     delete msWorkspaceState.tilingLayout;
-                    return msWorkspaceState;
                 });
             }
         }
