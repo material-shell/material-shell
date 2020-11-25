@@ -41,7 +41,7 @@ function buildPrefsWidget() {
     theme.addSetting('primary-color', WidgetType.COLOR);
     theme.addSetting('vertical-panel-position', WidgetType.COMBO);
     theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
-    theme.addSetting('panel-size', WidgetType.INT);
+    theme.addSetting('panel-size', WidgetType.COMBO);
     theme.addSetting('panel-opacity', WidgetType.INT);
     theme.addSetting('panel-icon-style', WidgetType.COMBO);
     theme.addSetting('taskbar-item-style', WidgetType.COMBO);

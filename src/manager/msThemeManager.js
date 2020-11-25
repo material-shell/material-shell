@@ -8,6 +8,9 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
+const PANEL_SIZES = [48, 40, 32];
+const DEFAULT_PANEL_SIZE = 48;
+
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, MsThemeManager */
 
 var VerticalPanelPositionEnum = {
@@ -131,14 +134,15 @@ var MsThemeManager = class MsThemeManager extends MsManager {
     }
 
     getPanelSize(monitorIndex) {
-        return (
-            this.themeSettings.get_int('panel-size') *
-            global.display.get_monitor_scale(monitorIndex)
-        );
+        const panelSize =
+            PANEL_SIZES[this.themeSettings.get_enum('panel-size')] ||
+            DEFAULT_PANEL_SIZE;
+        return panelSize * global.display.get_monitor_scale(monitorIndex);
     }
 
     getPanelSizeNotScaled() {
-        return this.themeSettings.get_int('panel-size');
+        return PANEL_SIZES[this.themeSettings.get_enum('panel-size')] ||
+            DEFAULT_PANEL_SIZE;
     }
 
     isColorDark(color) {

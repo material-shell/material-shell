@@ -22,6 +22,11 @@
     <value nick="top" value="0"/>
     <value nick="bottom" value="1"/>
   </enum>
+  <enum id="org.gnome.shell.extensions.materialshell.theme.panelSize">
+    <value nick="comfortable" value="0"/>
+    <value nick="cozy" value="1"/>
+    <value nick="compact" value="2"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
     <key name="theme" enum="org.gnome.shell.extensions.materialshell.theme.themeEnum">
       <default>'dark'</default>
@@ -43,8 +48,8 @@
       <summary>Horizontal panel position</summary>
       <description>Position on the monitor of the horizontal Panel</description>
     </key>
-    <key name="panel-size" type="i">
-      <default>48</default>
+    <key name="panel-size" enum="org.gnome.shell.extensions.materialshell.theme.panelSize">
+      <default>'comfortable'</default>
       <summary>Panels size</summary>
       <description>Width of the vertical panel and heigh of the horizontal panels.</description>
     </key>
