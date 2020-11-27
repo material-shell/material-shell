@@ -52,6 +52,11 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+    if (Me.locked) {
+        Me.locked = false;
+        Me.layout.panel.enable();
+        return;
+    }
     Me.imports.src.utils.debug.init();
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
@@ -76,9 +81,7 @@ function enable() {
             Me.msNotificationManager = new MsNotificationManager();
             modules = [...modules, (Me.hotKeysModule = new HotKeysModule())];
             Me.msThemeManager = new MsThemeManager();
-            if (!Me.locked) {
-                Me.msThemeManager.regenerateStylesheet();
-            }
+            Me.msThemeManager.regenerateStylesheet();
             if (getSettings('tweaks').get_boolean('enable-persistence')) {
                 Me.msWorkspaceManager.restorePreviousState();
             } else {
@@ -132,24 +135,26 @@ function disable() {
     log('-----------------');
     if (Main.sessionMode.currentMode === 'unlock-dialog') {
         Me.locked = true;
-    }
-    Me.disableInProgress = true;
-    if (!modules) return;
-    Me.emit('extension-disable');
-    modules.reverse().forEach((module) => {
-        module.destroy();
-    });
-    Me.tooltipManager.destroy();
-    Me.layoutManager.destroy();
-    Me.msWorkspaceManager.destroy();
-    Me.msWindowManager.destroy();
+        Me.layout.panel.disable();
+    } else {
+        Me.disableInProgress = true;
+        if (!modules) return;
+        Me.emit('extension-disable');
+        modules.reverse().forEach((module) => {
+            module.destroy();
+        });
+        Me.tooltipManager.destroy();
+        Me.layoutManager.destroy();
+        Me.msWorkspaceManager.destroy();
+        Me.msWindowManager.destroy();
 
-    Me.layout.destroy();
-    Me.msThemeManager.destroy();
-    disableIncompatibleExtensionsModule.destroy();
-    Me.stateManager.destroy();
-    Me.loaded = false;
-    delete Me.disableInProgress;
+        Me.layout.destroy();
+        Me.msThemeManager.destroy();
+        disableIncompatibleExtensionsModule.destroy();
+        Me.stateManager.destroy();
+        Me.loaded = false;
+        delete Me.disableInProgress;
+    }
     log('---------------------');
     log('END DISABLE EXTENSION');
     log('---------------------');
