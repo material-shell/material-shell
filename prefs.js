@@ -126,6 +126,10 @@ var TabsContainer = GObject.registerClass(
             this.stackSwitcher = new Gtk.StackSwitcher({
                 margin_left: 16,
                 margin_right: 16,
+                margin_top: 8,
+                margin_bottom: 8,
+                halign: Gtk.Align.CENTER,
+                valign: Gtk.Align.CENTER,
             });
             this.stackSwitcher.set_stack(this.stack);
             this.pack_start(this.stackSwitcher, false, false, 0);
