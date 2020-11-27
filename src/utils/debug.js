@@ -89,7 +89,7 @@ var init = function () {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             [
-                Me.imports.src.manager.msWindowManager.MsWindowManager,
+                /* Me.imports.src.manager.msWindowManager.MsWindowManager,
                 Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
                 Me.imports.src.manager.msThemeManager.MsThemeManager,
                 Me.imports.src.layout.main.MsMain,
@@ -102,7 +102,7 @@ var init = function () {
                 Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
                     .LayoutSwitcher,
                 Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .TilingLayoutMenuItem,
+                    .TilingLayoutMenuItem, */
             ]
                 .filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));
