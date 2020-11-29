@@ -98,11 +98,18 @@ var init = function () {
                 Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
                     .TaskBar,
                 Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
+                    .TaskBarItem,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
+                    .IconTaskBarItem,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
+                    .TaskActiveIndicator,
+                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
                     .TileableItem,
                 Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
                     .LayoutSwitcher,
                 Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .TilingLayoutMenuItem, */
+                    .TilingLayoutMenuItem,
+                Me.imports.src.widget.reorderableList.ReorderableList, */
             ]
                 .filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));

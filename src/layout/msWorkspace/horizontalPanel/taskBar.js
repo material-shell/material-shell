@@ -265,10 +265,12 @@ var TaskBarItem = GObject.registerClass(
                     this.emit('middle-clicked');
                 }
             });
+        }
 
-            this.connect('parent-set', () => {
-                this.monitor = Main.layoutManager.findMonitorForActor(this);
-            });
+        vfunc_parent_set() {
+            this.monitor = Main.layoutManager.findMonitorForActor(
+                this.get_parent()
+            );
         }
 
         vfunc_get_preferred_height(_forWidth) {

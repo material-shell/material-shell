@@ -65,10 +65,10 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
-    //Delay to wait for others extensions to load first;
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
+
         //Load persistent data
         Me.stateManager.loadRegistry((state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];

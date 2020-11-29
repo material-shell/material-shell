@@ -1,57 +1,49 @@
 /** Gnome libs imports */
 const Main = imports.ui.main;
+const { ExtensionManager, ENABLED_EXTENSIONS_KEY } = imports.ui.extensionSystem;
+const { ExtensionState } = imports.misc.extensionUtils;
 
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+const incompatibleExtensions = [
+    'desktop-icons@csoriano',
+    'ubuntu-dock@ubuntu.com',
+    'dash-to-dock@micxgx.gmail.com',
+    'ding@rastersoft.com',
+];
+
+let originalFunction;
 /* exported DisableIncompatibleExtensionsModule */
 var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsModule {
     constructor() {
-        this.incompatibleExtensions = [
-            {
-                uuid: 'desktop-icons@csoriano',
-                disable: (extension) => {
-                    if (extension.stateObj) {
-                        let _startupPreparedId;
-                        if (Main.layoutManager._startingUp) {
-                            _startupPreparedId = Main.layoutManager.connect(
-                                'startup-complete',
-                                () => {
-                                    extension.stateObj.disable();
-                                    Main.layoutManager.disconnect(
-                                        _startupPreparedId
-                                    );
-                                }
-                            );
-                        } else {
-                            extension.stateObj.disable();
-                        }
-                    }
-                },
-            },
-            {
-                uuid: 'ubuntu-dock@ubuntu.com',
-                disable: (extension) => {
-                    if (extension.stateObj) extension.stateObj.disable();
-                },
-            },
-        ];
+        originalFunction = ExtensionManager.prototype._callExtensionEnable;
+        ExtensionManager.prototype._callExtensionEnable = function () {
+            const uuid = arguments[0];
+            if (incompatibleExtensions.includes(uuid)) return;
+            originalFunction.apply(this, arguments);
+        };
 
-        for (let incompatibleExtension of this.incompatibleExtensions) {
-            let extension = Main.extensionManager.lookup(
-                incompatibleExtension.uuid
+        this.disableExtensions();
+    }
+
+    disableExtensions() {
+        for (let incompatibleExtension of incompatibleExtensions) {
+            const extension = Main.extensionManager.lookup(
+                incompatibleExtension
             );
             if (extension) {
-                incompatibleExtension.disable(extension);
+                try {
+                    extension.stateObj.disable();
+                } catch (e) {
+                    Me.logFocus('disable error', incompatibleExtension, e);
+                }
             }
         }
     }
 
     destroy() {
-        /* for (let incompatibleExtension of this.incompatibleExtensions) {
-            let extension = Main.extensionManager.lookup(
-                incompatibleExtension.uuid
-            );
-            if (extension) {
-                extension.stateObj.enable();
-            }
-        } */
+        ExtensionManager.prototype._callExtensionEnable = originalFunction;
+        originalFunction = null;
     }
 };
