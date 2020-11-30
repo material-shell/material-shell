@@ -175,15 +175,7 @@ var MsDndManager = class MsDndManager extends MsManager {
     /**  */
     checkUnderThePointer() {
         let [x, y] = global.get_pointer();
-
-        let monitor = Main.layoutManager.monitors.find((monitor) => {
-            return (
-                x >= monitor.x &&
-                x <= monitor.x + monitor.width &&
-                y >= monitor.y &&
-                y <= monitor.y + monitor.height
-            );
-        });
+        let monitor = Main.layoutManager.currentMonitor;
 
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWorkspace = this.msWindowDragged.msWorkspace;
