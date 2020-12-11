@@ -73,6 +73,24 @@
         Move the current window to lower workspace
       </description>
     </key>
+    <key name="move-window-monitor-left" type="as">
+      <default>
+        <![CDATA[['<Shift><Super><Ctrl>Left']]]>
+      </default>
+      <summary>Move the current window to the monitor to the left</summary>
+      <description>
+        Move the current window to the monitor to the left
+      </description>
+    </key>
+    <key name="move-window-monitor-right" type="as">
+      <default>
+        <![CDATA[['<Shift><Super><Ctrl>Right']]]>
+      </default>
+      <summary>Move the current window to the monitor to the right</summary>
+      <description>
+        Move the current window to the monitor to the right
+      </description>
+    </key>
     <key name="move-window-to-workspace-1" type="as">
       <default>
         <![CDATA[['<Shift><Super>1']]]>
@@ -316,6 +334,24 @@
       <summary>Focus last workspace</summary>
       <description>
         Focus the last workspace
+      </description>
+    </key>
+    <key name="workspace-monitor-left" type="as">
+      <default>
+        <![CDATA[['<Super><Shift>Left']]]>
+      </default>
+      <summary>Focus workspace on monitor left</summary>
+      <description>
+        Focus workspace on the monitor left of of the current one
+      </description>
+    </key>
+    <key name="workspace-monitor-right" type="as">
+      <default>
+        <![CDATA[['<Super><Shift>Right']]]>
+      </default>
+      <summary>Focus workspace on monitor right</summary>
+      <description>
+        Focus workspace on the monitor right of of the current one
       </description>
     </key>
     <key name="navigate-to-workspace-1" type="as">

@@ -20,6 +20,8 @@ var KeyBindingAction = {
     MOVE_WINDOW_RIGHT: 'move-window-right',
     MOVE_WINDOW_TOP: 'move-window-top',
     MOVE_WINDOW_BOTTOM: 'move-window-bottom',
+    MOVE_WINDOW_MONITOR_LEFT: 'move-window-monitor-left',
+    MOVE_WINDOW_MONITOR_RIGHT: 'move-window-monitor-right',
     // layout actions
     CYCLE_TILING_LAYOUT: 'cycle-tiling-layout',
     REVERSE_CYCLE_TILING_LAYOUT: 'reverse-cycle-tiling-layout',
@@ -28,6 +30,8 @@ var KeyBindingAction = {
     PREVIOUS_WORKSPACE: 'previous-workspace',
     NEXT_WORKSPACE: 'next-workspace',
     LAST_WORKSPACE: 'last-workspace',
+    WORKSPACE_MONITOR_LEFT: 'workspace-monitor-left',
+    WORKSPACE_MONITOR_RIGHT: 'workspace-monitor-right',
 };
 
 var HotKeysModule = class HotKeysModule {
@@ -81,6 +85,40 @@ var HotKeysModule = class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
             }
         });
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.WORKSPACE_MONITOR_LEFT,
+            () => {
+                const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const monitorIndex = global.display.get_monitor_neighbor_index(
+                    currentMsWorkspace.monitor.index,
+                    Meta.DisplayDirection.LEFT
+                );
+                if (monitorIndex !== -1) {
+                    const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitorIndex
+                    )[0];
+                    msWorkspace.focusWorkspace();
+                }
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.WORKSPACE_MONITOR_RIGHT,
+            () => {
+                const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const monitorIndex = global.display.get_monitor_neighbor_index(
+                    currentMsWorkspace.monitor.index,
+                    Meta.DisplayDirection.RIGHT
+                );
+                if (monitorIndex !== -1) {
+                    const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitorIndex
+                    )[0];
+                    msWorkspace.focusWorkspace();
+                }
+            }
+        );
 
         this.actionNameToActionMap.set(
             KeyBindingAction.KILL_FOCUSED_WINDOW,
@@ -230,6 +268,62 @@ var HotKeysModule = class HotKeysModule {
                     nextMsWorkspace
                 );
                 nextMsWorkspace.activate();
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.MOVE_WINDOW_MONITOR_LEFT,
+            () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                if (
+                    activeMsWorkspace.tileableFocused ===
+                    activeMsWorkspace.appLauncher
+                ) {
+                    return;
+                }
+                const monitorIndex = global.display.get_monitor_neighbor_index(
+                    activeMsWorkspace.monitor.index,
+                    Meta.DisplayDirection.LEFT
+                );
+                if (monitorIndex !== -1) {
+                    const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitorIndex
+                    )[0];
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
+                        activeMsWorkspace.tileableFocused,
+                        msWorkspace,
+                        true
+                    );
+                    msWorkspace.focusWorkspace();
+                }
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.MOVE_WINDOW_MONITOR_RIGHT,
+            () => {
+                const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                if (
+                    activeMsWorkspace.tileableFocused ===
+                    activeMsWorkspace.appLauncher
+                ) {
+                    return;
+                }
+                const monitorIndex = global.display.get_monitor_neighbor_index(
+                    activeMsWorkspace.monitor.index,
+                    Meta.DisplayDirection.RIGHT
+                );
+                if (monitorIndex !== -1) {
+                    const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitorIndex
+                    )[0];
+                    Me.msWorkspaceManager.setWindowToMsWorkspace(
+                        activeMsWorkspace.tileableFocused,
+                        msWorkspace,
+                        true
+                    );
+                    msWorkspace.focusWorkspace();
+                }
             }
         );
 

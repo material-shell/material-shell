@@ -108,7 +108,7 @@ var MsWorkspace = class MsWorkspace {
             .map((msWindow) => {
                 return msWindow.state;
             });
-            
+
         if (this.layout) {
             this._state.layoutStateList[
                 this._state.layoutStateList.findIndex(
@@ -329,7 +329,7 @@ var MsWorkspace = class MsWorkspace {
             this.precedentIndex = this.focusedIndex;
         }
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
-        if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
+        if (this.msWorkspaceManager.getActiveMsWorkspace() === this || forced) {
             if (tileable instanceof MsWindow) {
                 tileable.takeFocus();
             } else {
@@ -502,6 +502,33 @@ var MsWorkspace = class MsWorkspace {
             this.focusTileable(lastTileable);
         } else {
             //this.focusTileable(null);
+        }
+    }
+
+    focusWorkspace() {
+        if (this.tileableList.length) {
+            let lastTileable =
+                this.tileableList[this.focusedIndex] ||
+                this.tileableList.slice(-1)[0];
+
+            let [x, y] = global.get_pointer();
+            x -= this.monitor.x;
+            y -= this.monitor.y;
+            if (
+                x < 0 ||
+                x > this.monitor.width ||
+                y < 0 ||
+                y > this.monitor.height
+            ) {
+                let backend = Clutter.get_default_backend();
+                let seat = backend.get_default_seat();
+                seat.warp_pointer(
+                    this.monitor.x + Math.floor(this.monitor.width / 2),
+                    this.monitor.y + Math.floor(this.monitor.height / 2)
+                );
+            }
+
+            this.focusTileable(lastTileable, true);
         }
     }
 
