@@ -26,7 +26,7 @@ Here are some general guidelines:
   + Use camel case and do not abbreviate variable names.
 + If you are changing the gschema, please recompile:
 ```bash
-glib-recompile-schemas .
+glib-compile-schemas .
 ```
 + Do not change colors in the Sass. Use the variables at the top to color elements.
 
