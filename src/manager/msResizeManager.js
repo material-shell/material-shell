@@ -84,7 +84,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
             if (this.resizeInProgress) {
                 switch (event.type()) {
                     case Clutter.EventType.MOTION:
-                        this.throttledCheckPointerPosition();
+                        this.checkPointerPosition();
                         break;
 
                     case Clutter.EventType.BUTTON_RELEASE:
@@ -114,14 +114,13 @@ var MsResizeManager = class MsResizeManager extends MsManager {
     }
 
     getPointerPositionRelativeToWorkspace() {
-        const { layout, msWorkspaceActor } = this.msWorkspace;
+        const { msWorkspaceActor } = this.msWorkspace;
 
         const [
             containerX,
             containerY,
-        ] = layout.tileableContainer.get_transformed_position();
+        ] = msWorkspaceActor.tileableContainer.get_transformed_position();
         const [globalX, globalY] = global.get_pointer();
-
         return [globalX - containerX, globalY - containerY];
     }
 
@@ -142,11 +141,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         global.stage.add_child(this.inputResizer);
         Main.pushModal(this.inputResizer);
 
-        global.display.set_cursor(
-            this.border.vertical
-                ? Meta.Cursor.SOUTH_RESIZE
-                : Meta.Cursor.EAST_RESIZE
-        );
+        global.display.set_cursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
     }
 
     updateResize() {
@@ -158,7 +153,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         const [relativeX, relativeY] = [pointerX - x, pointerY - y];
         let basisRatio;
 
-        if (this.border.vertical) {
+        if (!this.border.vertical) {
             basisRatio = relativeY / height;
         } else {
             basisRatio = relativeX / width;

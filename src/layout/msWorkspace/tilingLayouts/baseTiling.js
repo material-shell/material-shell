@@ -25,7 +25,6 @@ var BaseTilingLayout = GObject.registerClass(
             this.themeSettings = getSettings('theme');
             this.signals = [];
             this.registerToSignals();
-
             super._init();
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 this.afterInit();
@@ -34,9 +33,7 @@ var BaseTilingLayout = GObject.registerClass(
         }
 
         afterInit() {
-            this.msWorkspace.tileableList.forEach((tileable) => {
-                this.alterTileable(tileable);
-            });
+            this.onTileableListChanged(this.msWorkspace.tileableList, []);
         }
 
         get state() {
@@ -289,21 +286,24 @@ var BaseTilingLayout = GObject.registerClass(
             };
         }
 
-        applyGaps(x, y, width, height) {
+        applyGaps(x, y, width, height, screenGap, gap) {
             // Reduces box size according to gap setting
-            const gap = Me.layoutManager.gap;
-            const screenGap = Me.layoutManager.screenGap;
-            const useScreenGap = Me.layoutManager.useScreenGap;
+            gap = gap || Me.layoutManager.gap;
+            if (screenGap == undefined) {
+                screenGap = Me.layoutManager.useScreenGap
+                    ? Me.layoutManager.screenGap
+                    : gap;
+            }
 
             if (
-                (!gap && (!useScreenGap || !screenGap)) ||
+                (!gap && !screenGap) ||
                 // Never apply gaps if App Launcher is the only tileable
                 this.msWorkspace.tileableList.length < 2
             ) {
                 return { x, y, width, height };
             }
             const bounds = this.getWorkspaceBounds();
-            const edgeGap = useScreenGap ? screenGap : gap;
+            const edgeGap = screenGap;
             const halfGap = gap / 2;
 
             if (x === bounds.x) {

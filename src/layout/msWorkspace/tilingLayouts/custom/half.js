@@ -29,11 +29,7 @@ var HalfLayout = GObject.registerClass(
         }
 
         tileAll(box) {
-            if (!box) {
-                box = new Clutter.ActorBox();
-                box.x2 = this.tileableContainer.allocation.get_width();
-                box.y2 = this.tileableContainer.allocation.get_height();
-            }
+            box = this.resolveBox(box);
 
             const vertical = this.isVerticalLayout(box);
 

@@ -182,6 +182,7 @@ var SplitLayout = GObject.registerClass(
                     );
                 }
             });
+            this.borderContainer.hide();
             this.translationAnimator.setTranslation(
                 previousTileableList,
                 nextTileableList,
@@ -191,6 +192,7 @@ var SplitLayout = GObject.registerClass(
 
         endTransition() {
             this.tileableContainer.remove_child(this.translationAnimator);
+            this.borderContainer.show();
             this.refreshVisibleActors();
         }
 
