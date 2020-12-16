@@ -487,7 +487,8 @@ var TileableItem = GObject.registerClass(
             const height = box.get_height();
 
             if (!this.icon || this.lastHeight != height) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.buildIconIdle = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    delete this.buildIconIdle;
                     this.buildIcon(height);
                     return GLib.SOURCE_REMOVE;
                 });
@@ -495,6 +496,9 @@ var TileableItem = GObject.registerClass(
             super.vfunc_allocate(...args);
         }
         _onDestroy() {
+            if (this.buildIconIdle) {
+                GLib.Source.remove(this.buildIconIdle);
+            }
             this.signalManager.destroy();
             this.menu.destroy();
         }
