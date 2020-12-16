@@ -466,14 +466,16 @@ var TileableItem = GObject.registerClass(
                 if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
+                    const escapedAppName = GLib.markup_escape_text(this.app.get_name(), -1);
+                    const escapedTitle = GLib.markup_escape_text(this.tileable.title, -1);
                     this.title
                         .get_clutter_text()
                         .set_markup(
-                            `${this.tileable.title}<span alpha="${
+                            `${escapedTitle}<span alpha="${
                                 this.has_style_class_name('active')
                                     ? '40%'
                                     : '20%'
-                            }">   -   ${this.app.get_name()}</span>`
+                            }">   -   ${escapedAppName}</span>`
                         );
                 }
             } else if (this.style == 'name') {
