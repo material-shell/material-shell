@@ -87,5 +87,11 @@ var reparentActor = (actor, parent) => {
 };
 
 var InfinityTo0 = (number) => {
-    return number === Infinity ? 0 : number;
+    if (number === Infinity) {
+        return 0;
+    } else if (number === -Infinity) {
+        return 0;
+    } else {
+        return number;
+    }
 };
