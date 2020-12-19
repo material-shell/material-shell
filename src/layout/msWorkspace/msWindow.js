@@ -771,10 +771,12 @@ var MsWindow = GObject.registerClass(
                     this.unsetWindow();
                 } else {
                     delete this.metaWindow;
-                    this._onDestroy();
-                    this.msWorkspace.removeMsWindow(this);
-                    if (this.destroyId) this.disconnect(this.destroyId);
-                    this.destroy();
+                    if (!this.destroyed) {
+                      this._onDestroy();
+                      this.msWorkspace.removeMsWindow(this);
+                      if (this.destroyId) this.disconnect(this.destroyId);
+                      this.destroy();
+                    }
                 }
             });
 
