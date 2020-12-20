@@ -654,6 +654,7 @@ var MsWindow = GObject.registerClass(
 
         removeDialog(dialog) {
             this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+            this.remove_child(dialog.clone);
             dialog.clone.destroy();
         }
 

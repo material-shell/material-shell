@@ -626,6 +626,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
          */
         if (
             metaWindow.msWindow.msWorkspace &&
+            metaWindow.msWindow.msWorkspace.workspace &&
             metaWindow.msWindow.msWorkspace != msWorkspace &&
             global.display.get_current_time_roundtrip() - metaWindow.createdAt <
                 2000
@@ -655,7 +656,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
         }
         const msWorkspace = this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
 
-        if (!msWorkspace) {
+        if (!msWorkspace || !metaWindow.msWindow) {
             return;
         }
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);

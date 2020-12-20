@@ -40,7 +40,9 @@ var ReorderableList = GObject.registerClass(
 
             this.placeHolder = new DropPlaceholder();
             this.placeHolder.connect('drag-dropped', (_, source) => {
-                source._draggable._dragActor.get_parent().remove_child(source);
+                if (source._draggable._dragActor.get_parent()) {
+                  source._draggable._dragActor.get_parent().remove_child(source);
+                }
             });
         }
 
@@ -81,7 +83,9 @@ var ReorderableList = GObject.registerClass(
             };
 
             actor.acceptDrop = (source) => {
-                source._draggable._dragActor.get_parent().remove_child(source);
+                if (source._draggable._dragActor.get_parent()) {
+                  source._draggable._dragActor.get_parent().remove_child(source);
+                }
                 if (
                     source === this.draggedActor ||
                     source === this.foreignActor

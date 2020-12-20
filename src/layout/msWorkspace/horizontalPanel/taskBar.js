@@ -268,9 +268,13 @@ var TaskBarItem = GObject.registerClass(
         }
 
         vfunc_parent_set() {
-            this.monitor = Main.layoutManager.findMonitorForActor(
-                this.get_parent()
-            );
+            if (this.get_parent()) {
+                this.monitor = Main.layoutManager.findMonitorForActor(
+                    this.get_parent()
+                );
+            } else {
+                this.monitor = Main.layoutManager.findMonitorForActor(this);
+            }
         }
 
         vfunc_get_preferred_height(_forWidth) {
