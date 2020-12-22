@@ -338,6 +338,12 @@ var HotKeysModule = class HotKeysModule {
                     }
                 }
             );
+            Meta.keybindings_set_custom_handler(
+                `move-to-monitor-${DIRECTION.toLowerCase()}`,
+                this.actionNameToActionMap.get(
+                    KeyBindingAction[`MOVE_WINDOW_MONITOR_${DIRECTION}`]
+                )
+            );
         });
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
