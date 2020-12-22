@@ -228,14 +228,6 @@ var MsMain = GObject.registerClass(
             this.onMsWorkspacesChanged();
         }
 
-        onTransitionCompleted() {
-            /*             this.remove_child(this.translationAnimator);
-             */
-            this.onMsWorkspacesChanged();
-            const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-            //activeMsWorkspace.refreshFocus();
-        }
-
         togglePanelsVisibilities() {
             this.panelsVisible = !this.panelsVisible;
             Me.stateManager.setState('panels-visible', this.panelsVisible);
