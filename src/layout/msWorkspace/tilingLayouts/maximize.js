@@ -9,6 +9,7 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { InfinityTo0 } = Me.imports.src.utils.index;
+const { reparentActor } = Me.imports.src.utils.index;
 
 /* exported MaximizeLayout */
 var MaximizeLayout = GObject.registerClass(
@@ -50,10 +51,9 @@ var MaximizeLayout = GObject.registerClass(
                     delete this.currentDisplayedActor;
                 }
             );
-            if (!this.currentDisplayedActor.get_parent()) {
-                this.tileableContainer.add_child(this.currentDisplayedActor);
-            }
-            this.msWorkspace.refreshFocus();
+
+            reparentActor(this.currentDisplayedActor, this.tileableContainer);
+            this.currentDisplayedActor.grab_key_focus();
         }
 
         showAppLauncher() {
@@ -70,6 +70,10 @@ var MaximizeLayout = GObject.registerClass(
             if (windowFocused.dragged) {
                 this.displayTileable(windowFocused);
             } else {
+                if (!windowFocused.get_parent()) {
+                    this.displayTileable(windowFocused);
+                }
+
                 this.startTransition(windowFocused, oldWindowFocused);
             }
         }
@@ -144,8 +148,8 @@ var MaximizeLayout = GObject.registerClass(
         }
 
         endTransition() {
-            this.tileableContainer.remove_child(this.translationAnimator);
             this.displayTileable(this.msWorkspace.tileableFocused);
+            this.tileableContainer.remove_child(this.translationAnimator);
         }
     }
 );

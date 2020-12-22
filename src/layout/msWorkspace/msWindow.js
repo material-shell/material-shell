@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 const { St, Meta, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
+const { WindowDimmer } = imports.ui.windowManager;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -11,7 +12,6 @@ const {
 } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
 const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
-
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
 /* exported MsWindow */
@@ -269,11 +269,10 @@ var MsWindow = GObject.registerClass(
                 return;
             }
 
-            const isMaximized =
-                this._metaWindow.maximized_horizontally &&
-                this._metaWindow.maximized_vertically;
-
-            let shouldBeMaximized = isMaximized;
+            let shouldBeMaximizedHorizontally = this._metaWindow
+                .maximized_horizontally;
+            let shouldBeMaximizedVertically = this._metaWindow
+                .maximized_vertically;
 
             // Check for maximized only if the msWindow is inside the tileableContainer
             if (
@@ -281,19 +280,29 @@ var MsWindow = GObject.registerClass(
                 this.msWorkspace.msWorkspaceActor.tileableContainer
             ) {
                 //Check if the actor position is corresponding of the maximized state (is equal of the size of the workArea)
-                shouldBeMaximized =
+                shouldBeMaximizedHorizontally =
                     this.x === 0 &&
-                    this.y === 0 &&
                     this.width ===
-                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_width() &&
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_width();
+                shouldBeMaximizedVertically =
+                    this.y === 0 &&
                     this.height ===
                         this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_height();
             }
 
+            let needToChangeMaximizeHorizontally =
+                shouldBeMaximizedHorizontally !==
+                this._metaWindow.maximized_horizontally;
+            let needToChangeMaximizeVertically =
+                shouldBeMaximizedVertically !==
+                this._metaWindow.maximized_vertically;
             let needToMoveOrResize = false;
             let moveTo, resizeTo;
             // check if the window need a changes only if we don't need to already maximize
-            if (!shouldBeMaximized) {
+            if (
+                !shouldBeMaximizedHorizontally ||
+                !shouldBeMaximizedVertically
+            ) {
                 let currentFrameRect = this._metaWindow.get_frame_rect();
                 let contentBox = this.msContent.allocation;
 
@@ -334,11 +343,11 @@ var MsWindow = GObject.registerClass(
                     currentFrameRect.height === resizeTo.height
                 );
             }
-
             // If there is no need to maximize, unmaximize, resize or move discard
             if (
-                (shouldBeMaximized && isMaximized) ||
-                (!shouldBeMaximized && !isMaximized && !needToMoveOrResize)
+                !needToChangeMaximizeHorizontally &&
+                !needToChangeMaximizeVertically &&
+                !needToMoveOrResize
             ) {
                 return;
             }
@@ -352,28 +361,61 @@ var MsWindow = GObject.registerClass(
                 return this.delayUpdateMetaWindowPositionAndSize();
             }
 
-            if (shouldBeMaximized) {
-                if (isWayland) {
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                        this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-                        return GLib.SOURCE_REMOVE;
-                    });
-                } else {
-                    this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
-                }
-                return;
-            }
+            if (
+                needToChangeMaximizeHorizontally ||
+                needToChangeMaximizeVertically
+            ) {
+                const shouldMaximizeHorizontally =
+                    shouldBeMaximizedHorizontally &&
+                    !this._metaWindow.maximized_horizontally;
+                const shouldMaximizeVertically =
+                    shouldBeMaximizedVertically &&
+                    !this._metaWindow.maximized_vertically;
+                const shouldUnMaximizeHorizontally =
+                    !shouldBeMaximizedHorizontally &&
+                    this._metaWindow.maximized_horizontally;
+                const shouldUnMaximizeVertically =
+                    !shouldBeMaximizedVertically &&
+                    this._metaWindow.maximized_vertically;
 
-            if (!shouldBeMaximized && isMaximized) {
+                const callback = () => {
+                    if (
+                        shouldMaximizeVertically &&
+                        shouldUnMaximizeVertically
+                    ) {
+                        this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                    } else if (shouldUnMaximizeHorizontally) {
+                        this._metaWindow.unmaximize(
+                            Meta.MaximizeFlags.HORIZONTAL
+                        );
+                    } else if (shouldUnMaximizeVertically) {
+                        this._metaWindow.unmaximize(
+                            Meta.MaximizeFlags.VERTICAL
+                        );
+                    }
+
+                    if (
+                        shouldMaximizeHorizontally &&
+                        shouldMaximizeVertically
+                    ) {
+                        this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                    } else if (shouldMaximizeHorizontally) {
+                        this._metaWindow.maximize(
+                            Meta.MaximizeFlags.HORIZONTAL
+                        );
+                    } else if (shouldMaximizeVertically) {
+                        this._metaWindow.maximize(Meta.MaximizeFlags.VERTICAL);
+                    }
+                };
+
                 if (isWayland) {
                     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                        this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                        callback();
                         return GLib.SOURCE_REMOVE;
                     });
                 } else {
-                    this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                    callback();
                 }
-                return;
             }
 
             if (needToMoveOrResize) {
@@ -607,7 +649,7 @@ var MsWindow = GObject.registerClass(
             this.resizeDialogs();
             this.onMetaWindowsChanged();
             if (this.msWorkspace.tileableFocused === this) {
-                this.takeFocus();
+                this.grab_key_focus();
             }
         }
 
@@ -654,14 +696,14 @@ var MsWindow = GObject.registerClass(
             this.emit('title-changed', this.title);
         }
 
-        takeFocus() {
-            if (Me.msWindowManager.msDndManager.dragInProgress) return;
+        grab_key_focus() {
+            if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
             if (this.dialogs.length) {
-                this.dialogs[this.dialogs.length - 1].metaWindow.activate(
+                this.dialogs[this.dialogs.length - 1].metaWindow.focus(
                     global.get_current_time()
                 );
             } else if (this.metaWindow) {
-                this.metaWindow.activate(global.get_current_time());
+                this.metaWindow.focus(global.get_current_time());
             } else {
                 this.placeholder.grab_key_focus();
             }

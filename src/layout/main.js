@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Shell, Meta, St, GObject, Clutter } = imports.gi;
+const { Shell, Meta, St, GObject, Clutter, GLib } = imports.gi;
 const Main = imports.ui.main;
 const Background = imports.ui.background;
 
@@ -228,14 +228,6 @@ var MsMain = GObject.registerClass(
             this.onMsWorkspacesChanged();
         }
 
-        onTransitionCompleted() {
-            /*             this.remove_child(this.translationAnimator);
-             */
-            this.onMsWorkspacesChanged();
-            const activeMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-            activeMsWorkspace.refreshFocus();
-        }
-
         togglePanelsVisibilities() {
             this.panelsVisible = !this.panelsVisible;
             Me.stateManager.setState('panels-visible', this.panelsVisible);
@@ -358,6 +350,7 @@ var MonitorContainer = GObject.registerClass(
             }
             this.msWorkspaceActor = actor;
             reparentActor(this.msWorkspaceActor, this);
+            this.msWorkspaceActor.updateUI();
         }
         updateHorizontalSpacer() {
             const panelHeight = Me.msThemeManager.getPanelSize(
@@ -431,15 +424,15 @@ var PrimaryMonitorContainer = GObject.registerClass(
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {
+                reparentActor(this.msWorkspaceActor, this);
                 this.remove_child(this.translationAnimator);
-                this.add_child(this.msWorkspaceActor);
                 if (this.panel) {
                     this.set_child_below_sibling(
                         this.msWorkspaceActor,
                         this.panel
                     );
                 }
-                this.msWorkspaceActor.msWorkspace.refreshFocus();
+                this.msWorkspaceActor.updateUI();
             });
             const verticalPanelPositionSignal = Me.msThemeManager.connect(
                 'vertical-panel-position-changed',
@@ -498,9 +491,7 @@ var PrimaryMonitorContainer = GObject.registerClass(
                     this.remove_child(this.msWorkspaceActor);
             }
             this.msWorkspaceActor = actor;
-            if (prevActor) {
-                this.setTranslation(prevActor, this.msWorkspaceActor);
-            } else {
+            if (!this.msWorkspaceActor.get_parent()) {
                 reparentActor(this.msWorkspaceActor, this);
                 if (this.panel) {
                     this.set_child_below_sibling(
@@ -508,6 +499,10 @@ var PrimaryMonitorContainer = GObject.registerClass(
                         this.panel
                     );
                 }
+            }
+            this.msWorkspaceActor.msWorkspace.refreshFocus(true);
+            if (prevActor) {
+                this.setTranslation(prevActor, this.msWorkspaceActor);
             }
         }
 

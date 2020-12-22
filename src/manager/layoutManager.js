@@ -49,6 +49,7 @@ var LayoutManager = class LayoutManager extends MsManager {
 
         this.observe(this.layoutsSettings, 'changed::gap', (schema) => {
             this.gap = schema.get_int('gap');
+            this.emit('gap-changed');
             this.tileWindows();
         });
 
@@ -57,12 +58,14 @@ var LayoutManager = class LayoutManager extends MsManager {
             'changed::use-screen-gap',
             (schema) => {
                 this.useScreenGap = schema.get_boolean('use-screen-gap');
+                this.emit('gap-changed');
                 this.tileWindows();
             }
         );
 
         this.observe(this.layoutsSettings, 'changed::screen-gap', (schema) => {
             this.screenGap = schema.get_int('screen-gap');
+            this.emit('gap-changed');
             this.tileWindows();
         });
         this.observe(this.layoutsSettings, 'changed::tween-time', (schema) => {
@@ -78,6 +81,10 @@ var LayoutManager = class LayoutManager extends MsManager {
         this.useScreenGap = this.layoutsSettings.get_boolean('use-screen-gap');
         this.screenGap = this.layoutsSettings.get_int('screen-gap');
         this.tweenTime = this.layoutsSettings.get_double('tween-time');
+    }
+
+    get someGap() {
+        return this.gap != 0 || (this.useScreenGap && this.screenGap != 0);
     }
 
     get defaultLayoutKeyList() {

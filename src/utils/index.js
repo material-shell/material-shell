@@ -68,24 +68,43 @@ var throttle = (func, wait, options) => {
     };
 };
 
+var isParentOfActor = (parent, actor) => {
+    if (!parent || !actor) {
+        return false;
+    }
+    let isParent = false;
+    let parentOfActor = actor;
+    while (parentOfActor.get_parent() && !isParent) {
+        isParent = parentOfActor === parent;
+        parentOfActor = parentOfActor.get_parent();
+    }
+    return isParent;
+};
+
 var reparentActor = (actor, parent) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
-    const isFocused = actor.has_key_focus();
+
+    const restoreFocusTo = actor.has_key_focus()
+        ? actor
+        : isParentOfActor(actor, global.stage.key_focus)
+        ? global.stage.key_focus
+        : null;
+
     const currentParent = actor.get_parent();
-    if (isFocused) {
+    if (restoreFocusTo) {
         Main.layoutManager.uiGroup.grab_key_focus();
     }
     if (currentParent) {
         currentParent.remove_child(actor);
     }
     parent.add_child(actor);
-    if (isFocused) {
-        actor.grab_key_focus();
+    if (restoreFocusTo) {
+        restoreFocusTo.grab_key_focus();
     }
     Me.reparentInProgress = false;
 };
 
 var InfinityTo0 = (number) => {
-    return number === Infinity ? 0 : number;
+    return Math.abs(number) === Infinity ? 0 : number;
 };

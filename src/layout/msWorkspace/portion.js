@@ -1,5 +1,6 @@
 /** Gnome libs imports */
 const { GObject, Clutter, St } = imports.gi;
+const Signals = imports.signals;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -28,7 +29,6 @@ class Portion {
         this.children = state.children.map((childState) => {
             const child = new Portion();
             child.state = childState;
-
             return child;
         });
 
@@ -42,6 +42,14 @@ class Portion {
                   0
               )
             : 1;
+    }
+
+    get concatBorders() {
+        return this.borders.concat(
+            ...this.children.map((portion) => {
+                return portion.borders;
+            })
+        );
     }
 
     get basis() {
@@ -58,11 +66,9 @@ class Portion {
 
     updateBorders() {
         this.borders = [];
-
         if (this.children < 2) {
             return;
         }
-
         for (let i = 0; i < this.children.length - 1; i++) {
             const [firstPortion, secondPortion] = this.children.slice(i, i + 2);
 
@@ -346,7 +352,7 @@ class PortionBorder {
         this.parentPortion = parentPortion;
     }
     get vertical() {
-        return this.parentPortion.vertical;
+        return !this.parentPortion.vertical;
     }
 
     updateBasis(basisRatio) {
@@ -354,19 +360,30 @@ class PortionBorder {
             basisRatio = 0;
         }
 
-        basisRatio = basisRatio.toFixed(2);
-
         const basisSum = this.firstPortion.basis + this.secondPortion.basis;
-
         this.firstPortion.basis *= basisRatio;
-        this.secondPortion.basis = basisSum - this.firstPortion.basis;
 
         if (this.firstPortion.basis / basisSum < MIN_BASIS_RATIO) {
             this.firstPortion.basis = MIN_BASIS_RATIO * basisSum;
-            this.secondPortion.basis = basisSum - this.firstPortion.basis;
-        } else if (this.secondPortion.basis / basisSum < MIN_BASIS_RATIO) {
-            this.secondPortion.basis = MIN_BASIS_RATIO * basisSum;
-            this.firstPortion.basis = basisSum - this.secondPortion.basis;
+        } else if (this.firstPortion.basis / basisSum > 1 - MIN_BASIS_RATIO) {
+            this.firstPortion.basis = (1 - MIN_BASIS_RATIO) * basisSum;
+        } else if (
+            this.firstPortion.basis / basisSum > 0.24 &&
+            this.firstPortion.basis / basisSum < 0.26
+        ) {
+            this.firstPortion.basis = basisSum * 0.25;
+        } else if (
+            this.firstPortion.basis / basisSum > 0.49 &&
+            this.firstPortion.basis / basisSum < 0.51
+        ) {
+            this.firstPortion.basis = basisSum * 0.5;
+        } else if (
+            this.firstPortion.basis / basisSum > 0.74 &&
+            this.firstPortion.basis / basisSum < 0.76
+        ) {
+            this.firstPortion.basis = basisSum * 0.75;
         }
+
+        this.secondPortion.basis = basisSum - this.firstPortion.basis;
     }
 }

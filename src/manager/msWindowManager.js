@@ -8,6 +8,8 @@ const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { MsResizeManager } = Me.imports.src.manager.msResizeManager;
+const { MsFocusManager } = Me.imports.src.manager.msFocusManager;
+
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
@@ -21,14 +23,11 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
         this.msResizeManager = new MsResizeManager(this);
+        this.msFocusManager = new MsFocusManager(this);
         this.signals = [];
         this.metaWindowWaitingForAssignationList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {
             this.onNewMetaWindow(metaWindow);
-        });
-
-        this.observe(global.display, 'notify::focus-window', (_) => {
-            this.onFocusMetaWindow(global.display.focus_window);
         });
 
         this.observe(global.window_manager, 'size-changed', (wm, actor) => {
@@ -68,7 +67,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             }
             this.onNewMetaWindow(metaWindow);
         });
-        this.onFocusMetaWindow(global.display.focus_window);
     }
 
     onNewMetaWindow(metaWindow) {
@@ -333,28 +331,8 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
                 this.checkInProgress = false;
                 this.checkWindowsForAssignations();
+                return GLib.SOURCE_REMOVE;
             });
-        }
-    }
-
-    onFocusMetaWindow(metaWindow) {
-        if (Me.disableInProgress || Me.closing || Me.reparentInProgress) return;
-        /*
-             If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
-             We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
-            */
-        if (
-            this.metaWindowFocused &&
-            !this.metaWindowFocused.get_compositor_private()
-        ) {
-            this.metaWindowFocused = global.display.focus_window;
-            return;
-        }
-
-        if (!metaWindow) return;
-
-        if (metaWindow.msWindow) {
-            this.emit('ms-window-focused', metaWindow.msWindow);
         }
     }
 
@@ -412,6 +390,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     destroy() {
         super.destroy();
         this.msDndManager.destroy();
+        this.msResizeManager.destroy();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow = windowActor.metaWindow;
             if (metaWindow.handledByMaterialShell)

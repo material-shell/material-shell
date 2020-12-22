@@ -133,13 +133,11 @@ var TranslationAnimator = GObject.registerClass(
         }
 
         endTransition() {
-            this.transitionContainer.get_children().forEach((actor) => {
-                this.transitionContainer.remove_actor(actor);
-            });
             this.transitionContainer.translation_x = 0;
             this.transitionContainer.translation_y = 0;
             this.animationInProgress = false;
             this.emit('transition-completed');
+            this.transitionContainer.remove_all_children();
         }
     }
 );

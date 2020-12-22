@@ -8,6 +8,7 @@ const {
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
 const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
+const { reparentActor } = Me.imports.src.utils.index;
 
 // TODO: Make this configurable
 const WINDOW_SLIDE_TWEEN_TIME = 250;
@@ -65,8 +66,11 @@ var SplitLayout = GObject.registerClass(
         refreshVisibleActors() {
             this.msWorkspace.tileableList.forEach((tileable) => {
                 let willBeDisplay = this.activeTileableList.includes(tileable);
-                if (willBeDisplay && !tileable.get_parent()) {
-                    this.tileableContainer.add_child(tileable);
+                if (
+                    willBeDisplay &&
+                    tileable.get_parent() !== this.tileableContainer
+                ) {
+                    reparentActor(tileable, this.tileableContainer);
                 } else if (!willBeDisplay && tileable.get_parent()) {
                     this.tileableContainer.remove_child(tileable);
                 }
@@ -76,6 +80,13 @@ var SplitLayout = GObject.registerClass(
 
         onFocusChanged(tileableFocused, oldTileableFocused) {
             if (this.activeTileableList.includes(tileableFocused)) {
+                this.activeTileableList.forEach((tileable) => {
+                    this.setUnFocusEffect(
+                        tileable,
+                        this.currentFocusEffect,
+                        tileable === tileableFocused
+                    );
+                });
                 return;
             }
 
@@ -100,9 +111,17 @@ var SplitLayout = GObject.registerClass(
             this.baseIndex = this.msWorkspace.tileableList.indexOf(
                 this.activeTileableList[0]
             );
-            super.onFocusChanged(tileableFocused, oldTileableFocused);
 
             this.startTransition(oldTileableList, this.activeTileableList);
+            [...oldTileableList, ...this.activeTileableList].forEach(
+                (tileable) => {
+                    this.setUnFocusEffect(
+                        tileable,
+                        this.currentFocusEffect,
+                        tileable === tileableFocused
+                    );
+                }
+            );
         }
 
         showAppLauncher() {
@@ -123,6 +142,7 @@ var SplitLayout = GObject.registerClass(
         }
 
         restoreTileable(tileable) {
+            super.restoreTileable(tileable);
             if (!tileable.get_parent()) {
                 this.tileableContainer.add_child(tileable);
             }
@@ -182,6 +202,7 @@ var SplitLayout = GObject.registerClass(
                     );
                 }
             });
+            this.borderContainer.hide();
             this.translationAnimator.setTranslation(
                 previousTileableList,
                 nextTileableList,
@@ -190,8 +211,9 @@ var SplitLayout = GObject.registerClass(
         }
 
         endTransition() {
-            this.tileableContainer.remove_child(this.translationAnimator);
+            this.borderContainer.show();
             this.refreshVisibleActors();
+            this.tileableContainer.remove_child(this.translationAnimator);
         }
 
         buildQuickWidget() {
