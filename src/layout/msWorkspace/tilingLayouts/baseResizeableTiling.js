@@ -2,7 +2,7 @@
 const { round } = Math;
 
 /** Gnome libs imports */
-const { Gio, GLib, Clutter, GObject, St, Meta } = imports.gi;
+const { Gio, GLib, Clutter, GObject, St, Meta, Cogl } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -18,6 +18,8 @@ const {
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { Portion } = Me.imports.src.layout.msWorkspace.portion;
+
+const { FocusEffectEnum } = Me.imports.src.manager.msThemeManager;
 
 const BORDER_WIDTH = 2;
 /* exported BaseTilingLayout */
@@ -35,8 +37,14 @@ var BaseResizeableTilingLayout = GObject.registerClass(
                 'gap-changed',
                 this.onGapChange.bind(this)
             );
+            this.currentFocusEffect = Me.msThemeManager.focusEffect;
+            Me.logFocus('focus-effect', this.currentFocusEffect);
             super._init(msWorkspace, state);
             this.onGapChange();
+            Me.msThemeManager.connect(
+                'focus-effect-changed',
+                this.onFocusEffectChanged.bind(this)
+            );
         }
 
         get state() {
@@ -198,6 +206,157 @@ var BaseResizeableTilingLayout = GObject.registerClass(
                 }
             });
         }
+
+        alterTileable(tileable) {
+            Me.logFocus('addUnFocusEffect alter');
+
+            this.addUnFocusEffect(
+                tileable,
+                this.currentFocusEffect,
+                tileable === this.msWorkspace.tileableFocused
+            );
+            super.alterTileable(tileable);
+        }
+
+        restoreTileable(tileable) {
+            this.removeUnFocusEffect(tileable, this.currentFocusEffect);
+            super.restoreTileable(tileable);
+        }
+
+        onFocusEffectChanged() {
+            const oldFocusEffect = this.currentFocusEffect;
+            this.currentFocusEffect = Me.msThemeManager.focusEffect;
+            this.msWorkspace.tileableList.forEach((tileable) => {
+                this.removeUnFocusEffect(tileable, oldFocusEffect);
+                Me.logFocus('addUnFocusEffect onFocusEffectChanged');
+
+                this.addUnFocusEffect(
+                    tileable,
+                    this.currentFocusEffect,
+                    tileable === this.msWorkspace.tileableFocused
+                );
+            });
+        }
+
+        onFocusChanged(tileable, oldTileable) {
+            //Me.logFocus('onFocusChanged', tileable, this.currentFocusEffect);
+            this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
+            if (oldTileable) {
+                if (
+                    oldTileable instanceof MsWindow &&
+                    oldTileable.metaWindow &&
+                    oldTileable.metaWindow.fullscreen
+                ) {
+                    oldTileable.metaWindow.unmake_fullscreen();
+                }
+                this.setUnFocusEffect(
+                    oldTileable,
+                    this.currentFocusEffect,
+                    false
+                );
+            }
+            super.onFocusChanged(tileable, oldTileable);
+        }
+
+        addUnFocusEffect(tileable, effect, focused) {
+            if (!tileable || tileable.focusEffects) return;
+            if (effect === FocusEffectEnum.DEFAULT) {
+                tileable.focusEffects = {
+                    dimmer: new Clutter.BrightnessContrastEffect({
+                        name: 'dimmer',
+                        brightness: focused
+                            ? Clutter.Color.new(127, 127, 127, 255)
+                            : Clutter.Color.new(100, 100, 100, 255),
+                    }),
+                };
+                tileable.add_effect(tileable.focusEffects.dimmer);
+            } else if (effect === FocusEffectEnum.BORDER) {
+                tileable.focusEffects = {
+                    border: new PrimaryBorderEffect({
+                        name: 'border',
+                        opacity: focused ? 1.0 : 0.0,
+                    }),
+                };
+                tileable.add_effect(tileable.focusEffects.border);
+            }
+        }
+
+        removeUnFocusEffect(tileable, effect) {
+            if (!tileable || !tileable.focusEffects) return;
+            tileable.remove_all_transitions();
+            if (effect === FocusEffectEnum.DEFAULT) {
+                tileable.remove_effect(tileable.focusEffects.dimmer);
+            } else if (effect === FocusEffectEnum.BORDER) {
+                tileable.remove_effect(tileable.focusEffects.border);
+            }
+            delete tileable.focusEffects;
+        }
+
+        setUnFocusEffect(tileable, effect, focused) {
+            if (!tileable) return;
+            if (effect === FocusEffectEnum.DEFAULT) {
+                if (!focused) {
+                    this.addUnFocusEffect(tileable, effect, !focused);
+                    if (tileable.get_effect('dimmer')) {
+                        tileable.ease_property(
+                            '@effects.dimmer.brightness',
+
+                            Clutter.Color.new(100, 100, 100, 255),
+                            {
+                                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                                duration: 150,
+                            }
+                        );
+                    }
+                } else {
+                    if (tileable.get_effect('dimmer')) {
+                        tileable.ease_property(
+                            '@effects.dimmer.brightness',
+                            Clutter.Color.new(127, 127, 127, 255),
+                            {
+                                duration: 150,
+                                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                                onComplete: () => {},
+                            }
+                        );
+                    }
+                }
+
+                /* if (tileable.get_effect('dimmer')) {
+                    tileable.ease_property(
+                        '@effects.dimmer.brightness',
+                        focused
+                            ? Clutter.Color.new(127, 127, 127, 255)
+                            : Clutter.Color.new(10, 10, 10, 255),
+                        {
+                            duration: 2500,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            onComplete: () => {
+                                GLib.idle_add(
+                                    GLib.PRIORITY_DEFAULT_IDLE,
+                                    () => {
+                                        if (focused) {
+                                            this.removeUnFocusEffect(
+                                                tileable,
+                                                effect
+                                            );
+                                        }
+                                        return GLib.SOURCE_REMOVE;
+                                    }
+                                );
+                            },
+                        }
+                    );
+                } */
+            } else if (effect === FocusEffectEnum.BORDER) {
+                if (focused) {
+                    this.addUnFocusEffect(tileable, effect, focused);
+                } else {
+                    this.removeUnFocusEffect(tileable, effect);
+                }
+            }
+        }
+
         onDestroy() {
             this.borderContainer.destroy();
             super.onDestroy();
@@ -243,6 +402,83 @@ var ResizableBorderActor = GObject.registerClass(
         }
         get vertical() {
             return this.height > this.width;
+        }
+    }
+);
+
+var PrimaryBorderEffect = GObject.registerClass(
+    {
+        Properties: {
+            opacity: GObject.ParamSpec.float(
+                'opacity',
+                'opacity',
+                'opacity',
+                GObject.ParamFlags.READWRITE,
+                0,
+                1,
+                1
+            ),
+        },
+    },
+    class PrimaryBorderEffect extends Clutter.Effect {
+        _init(params) {
+            super._init(params);
+            this._pipeline = null;
+            this.color = new Cogl.Color();
+        }
+
+        vfunc_paint(paintContext) {
+            let framebuffer = paintContext.get_framebuffer();
+            let coglContext = framebuffer.get_context();
+            let actor = this.get_actor();
+            actor.continue_paint(paintContext);
+
+            if (!this._pipeline) {
+                this._pipeline = new Cogl.Pipeline(coglContext);
+            }
+            Me.logFocus(this.opacity.toFixed(2), Me.msThemeManager.primary);
+
+            this.color.init_from_4ub(
+                parseInt(Me.msThemeManager.primary.substring(1, 3), 16),
+                parseInt(Me.msThemeManager.primary.substring(3, 5), 16),
+                parseInt(Me.msThemeManager.primary.substring(5, 7), 16),
+                parseInt((this.opacity.toFixed(2) * 255).toString(16), 16)
+            );
+            this.color.premultiply();
+            this._pipeline.set_color(this.color);
+
+            let alloc = actor.get_allocation_box();
+            let width = 2;
+
+            // clockwise order
+            framebuffer.draw_rectangle(
+                this._pipeline,
+                0,
+                0,
+                alloc.get_width(),
+                width
+            );
+            framebuffer.draw_rectangle(
+                this._pipeline,
+                alloc.get_width() - width,
+                width,
+                alloc.get_width(),
+                alloc.get_height()
+            );
+            framebuffer.draw_rectangle(
+                this._pipeline,
+                0,
+                alloc.get_height(),
+                alloc.get_width() - width,
+                alloc.get_height() - width
+            );
+            framebuffer.draw_rectangle(
+                this._pipeline,
+                0,
+                alloc.get_height() - width,
+                width,
+                width
+            );
         }
     }
 );

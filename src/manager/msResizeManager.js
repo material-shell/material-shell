@@ -174,6 +174,23 @@ var MsResizeManager = class MsResizeManager extends MsManager {
         global.stage.remove_child(this.inputResizer);
         global.display.set_cursor(Meta.Cursor.DEFAULT);
     }
+
+    resizeTileable(tileable, directionOp, percent) {
+        const { layout } = tileable.msWorkspace;
+        Me.logFocus('layout', layout);
+
+        if (!(layout instanceof BaseResizeableTilingLayout)) {
+            return;
+        }
+        const vertical = RESIZE_VERTICAL_CODES.includes(directionOp);
+        const after = RESIZE_AFTER_CODES.includes(directionOp);
+        const border = layout.getTileableBorder(tileable, vertical, after);
+        Me.logFocus('border', border);
+        if (border) {
+            border.updateBasis((100 + percent * (after ? -1 : 1)) / 100);
+            layout.tileAll();
+        }
+    }
 };
 
 /* exported InputResizer */

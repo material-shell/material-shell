@@ -51,6 +51,7 @@ function buildPrefsWidget() {
     }
     theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
     theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
+    theme.addSetting('focus-effect', WidgetType.COMBO);
 
     settingsTab.addCategory(theme);
 

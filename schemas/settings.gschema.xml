@@ -1,109 +1,119 @@
 <schemalist>
-  <enum id="org.gnome.shell.extensions.materialshell.theme.themeEnum">
-    <value nick="dark" value="0"/>
-    <value nick="light" value="1"/>
-    <value nick="primary" value="2"/>
-  </enum>
-  <enum id="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
-    <value nick="hybrid" value="0"/>
-    <value nick="category" value="1"/>
-    <value nick="application" value="2"/>
-  </enum>
-  <enum id="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
-    <value nick="full" value="0"/>
-    <value nick="name" value="1"/>
-    <value nick="icon" value="2"/>
-  </enum>
-  <enum id="org.gnome.shell.extensions.materialshell.theme.verticalPanelPosition">
-    <value nick="left" value="0"/>
-    <value nick="right" value="1"/>
-  </enum>
-  <enum id="org.gnome.shell.extensions.materialshell.theme.horizontalPanelPosition">
-    <value nick="top" value="0"/>
-    <value nick="bottom" value="1"/>
-  </enum>
-  <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
-    <key name="theme" enum="org.gnome.shell.extensions.materialshell.theme.themeEnum">
-      <default>'dark'</default>
-      <summary>Theme</summary>
-      <description>Determines the active theme for Material Shell</description>
-    </key>
-    <key name="primary-color" type="s">
-      <default>'#3f51b5'</default>
-      <summary>Primary UI color</summary>
-      <description>Primary color for UI elements. Is used for most elements.</description>
-    </key>
-    <key name="vertical-panel-position" enum="org.gnome.shell.extensions.materialshell.theme.verticalPanelPosition">
-      <default>'left'</default>
-      <summary>Vertical panel position</summary>
-      <description>Position on the monitor of the vertical Panel</description>
-    </key>
-    <key name="horizontal-panel-position" enum="org.gnome.shell.extensions.materialshell.theme.horizontalPanelPosition">
-      <default>'top'</default>
-      <summary>Horizontal panel position</summary>
-      <description>Position on the monitor of the horizontal Panel</description>
-    </key>
-    <key name="panel-size" type="i">
-      <default>48</default>
-      <summary>Panels size</summary>
-      <description>Width of the vertical panel and heigh of the horizontal panels.</description>
-    </key>
-    <key name="panel-opacity" type="i">
-      <default>100</default>
-      <summary>Panel opacity</summary>
-      <description>Change the opacity of Panels</description>
-    </key>
-    <key name="panel-icon-style" enum="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
-      <default>'hybrid'</default>
-      <summary>Vertical panel icons style</summary>
-      <description>Type of icons for the workspaces on the vertical panel</description>
-    </key>
-    <key name="surface-opacity" type="i">
-      <default>100</default>
-      <summary>Surface opacity</summary>
-      <description>Change the opacity of other UI elements</description>
-    </key>
-    <key name="blur-background" type="b">
-      <default>false</default>
-      <summary>Blur background</summary>
-      <description>Add the blurred effect to the background wallpaper</description>
-    </key>
-    <key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
-      <default>'full'</default>
-      <summary>Taskbar item style</summary>
-      <description>Type of style for the taskbar item</description>
-    </key>
-    <key name="clock-horizontal" type="b">
-      <default>false</default>
-      <summary>Display clock horizontally</summary>
-      <description>Display the clock to the right of the horizontal panel</description>
-    </key>
-    <key name="clock-app-launcher" type="b">
-      <default>true</default>
-      <summary>Display clock and date in App Launcher</summary>
-      <description>Display a clock with date above search box in App Launcher</description>
-    </key>
-  </schema>
-  <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
-    <key name="cycle-through-windows" type="b" >
-      <default>false</default>
-      <summary>Cycle through windows</summary>
-      <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
-    </key>
-    <key name="cycle-through-workspaces" type="b">
-      <default>false</default>
-      <summary>Cycle through workspaces</summary>
-      <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
-    </key>
-    <key name="disable-notifications" type="b">
-      <default>false</default>
-      <summary>Disable Material Shell notifications</summary>
-      <description>When enabled you will not receive Material Shell communications about updates anymore</description>
-    </key>
-    <key name="enable-persistence" type="b">
-      <default>true</default>
-      <summary>Enable session persistence</summary>
-      <description>Current session layout will be saved to disk and restored in the next start</description>
-    </key>
-  </schema>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.themeEnum">
+        <value nick="dark" value="0"/>
+        <value nick="light" value="1"/>
+        <value nick="primary" value="2"/>
+    </enum>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
+        <value nick="hybrid" value="0"/>
+        <value nick="category" value="1"/>
+        <value nick="application" value="2"/>
+    </enum>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
+        <value nick="full" value="0"/>
+        <value nick="name" value="1"/>
+        <value nick="icon" value="2"/>
+    </enum>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.verticalPanelPosition">
+        <value nick="left" value="0"/>
+        <value nick="right" value="1"/>
+    </enum>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.horizontalPanelPosition">
+        <value nick="top" value="0"/>
+        <value nick="bottom" value="1"/>
+    </enum>
+    <enum id="org.gnome.shell.extensions.materialshell.theme.focusEffect">
+        <value nick="none" value="0"/>
+        <value nick="default" value="1"/>
+        <value nick="border" value="2"/>
+    </enum>
+    <schema id="org.gnome.shell.extensions.materialshell.theme" path="/org/gnome/shell/extensions/materialshell/theme/">
+        <key name="theme" enum="org.gnome.shell.extensions.materialshell.theme.themeEnum">
+            <default>'dark'</default>
+            <summary>Theme</summary>
+            <description>Determines the active theme for Material Shell</description>
+        </key>
+        <key name="primary-color" type="s">
+            <default>'#3f51b5'</default>
+            <summary>Primary UI color</summary>
+            <description>Primary color for UI elements. Is used for most elements.</description>
+        </key>
+        <key name="vertical-panel-position" enum="org.gnome.shell.extensions.materialshell.theme.verticalPanelPosition">
+            <default>'left'</default>
+            <summary>Vertical panel position</summary>
+            <description>Position on the monitor of the vertical Panel</description>
+        </key>
+        <key name="horizontal-panel-position" enum="org.gnome.shell.extensions.materialshell.theme.horizontalPanelPosition">
+            <default>'top'</default>
+            <summary>Horizontal panel position</summary>
+            <description>Position on the monitor of the horizontal Panel</description>
+        </key>
+        <key name="panel-size" type="i">
+            <default>48</default>
+            <summary>Panels size</summary>
+            <description>Width of the vertical panel and heigh of the horizontal panels.</description>
+        </key>
+        <key name="panel-opacity" type="i">
+            <default>100</default>
+            <summary>Panel opacity</summary>
+            <description>Change the opacity of Panels</description>
+        </key>
+        <key name="panel-icon-style" enum="org.gnome.shell.extensions.materialshell.theme.workspaceIconStyleEnum">
+            <default>'hybrid'</default>
+            <summary>Vertical panel icons style</summary>
+            <description>Type of icons for the workspaces on the vertical panel</description>
+        </key>
+        <key name="surface-opacity" type="i">
+            <default>100</default>
+            <summary>Surface opacity</summary>
+            <description>Change the opacity of other UI elements</description>
+        </key>
+        <key name="blur-background" type="b">
+            <default>false</default>
+            <summary>Blur background</summary>
+            <description>Add the blurred effect to the background wallpaper</description>
+        </key>
+        <key name="taskbar-item-style" enum="org.gnome.shell.extensions.materialshell.theme.taskbarItemStyleEnum">
+            <default>'full'</default>
+            <summary>Taskbar item style</summary>
+            <description>Type of style for the taskbar item</description>
+        </key>
+        <key name="clock-horizontal" type="b">
+            <default>false</default>
+            <summary>Display clock horizontally</summary>
+            <description>Display the clock to the right of the horizontal panel</description>
+        </key>
+        <key name="clock-app-launcher" type="b">
+            <default>true</default>
+            <summary>Display clock and date in App Launcher</summary>
+            <description>Display a clock with date above search box in App Launcher</description>
+        </key>
+        <key name="focus-effect" enum="org.gnome.shell.extensions.materialshell.theme.focusEffect">
+            <default>'default'</default>
+            <summary>Focus effect</summary>
+            <description>Define which focus effect to apply when using tiling layouts</description>
+        </key>
+    </schema>
+    <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
+        <key name="cycle-through-windows" type="b" >
+            <default>false</default>
+            <summary>Cycle through windows</summary>
+            <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
+        </key>
+        <key name="cycle-through-workspaces" type="b">
+            <default>false</default>
+            <summary>Cycle through workspaces</summary>
+            <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
+        </key>
+        <key name="disable-notifications" type="b">
+            <default>false</default>
+            <summary>Disable Material Shell notifications</summary>
+            <description>When enabled you will not receive Material Shell communications about updates anymore</description>
+        </key>
+        <key name="enable-persistence" type="b">
+            <default>true</default>
+            <summary>Enable session persistence</summary>
+            <description>Current session layout will be saved to disk and restored in the next start</description>
+        </key>
+    </schema>
 </schemalist>

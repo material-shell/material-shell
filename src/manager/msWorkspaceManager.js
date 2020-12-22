@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Shell, Meta, GLib } = imports.gi;
+const { Shell, Meta, GLib, Clutter } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -132,11 +132,15 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
             this.onMonitorsChanged();
         });
 
-        this.observe(Me.msWindowManager, 'ms-window-focused', (_, msWindow) => {
-            if (msWindow && msWindow.msWorkspace) {
-                msWindow.msWorkspace.focusTileable(msWindow);
+        this.observe(
+            Me.msWindowManager.msFocusManager,
+            'focus-changed',
+            (_, msWindow) => {
+                if (msWindow && msWindow.msWorkspace) {
+                    msWindow.msWorkspace.focusTileable(msWindow);
+                }
             }
-        });
+        );
 
         this.observe(
             global.display,
@@ -706,5 +710,26 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                 this.workspaceManager.n_workspaces - 1
             ].activate();
         }
+    }
+
+    focusMsWorkspace(msWorkspace) {
+        if (!msWorkspace) return;
+        let backend = Clutter.get_default_backend();
+        let seat = backend.get_default_seat();
+        const [
+            containerX,
+            containerY,
+        ] = msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position();
+        seat.warp_pointer(
+            containerX +
+                Math.floor(
+                    msWorkspace.msWorkspaceActor.tileableContainer.width / 2
+                ),
+            containerY +
+                Math.floor(
+                    msWorkspace.msWorkspaceActor.tileableContainer.height / 2
+                )
+        );
+        msWorkspace.refreshFocus();
     }
 };

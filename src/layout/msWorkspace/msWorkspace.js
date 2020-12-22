@@ -108,7 +108,7 @@ var MsWorkspace = class MsWorkspace {
             .map((msWindow) => {
                 return msWindow.state;
             });
-            
+
         if (this.layout) {
             this._state.layoutStateList[
                 this._state.layoutStateList.findIndex(
@@ -321,33 +321,34 @@ var MsWorkspace = class MsWorkspace {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
+
         if (tileable !== this.insertedMsWindow) {
             this.insertedMsWindow = null;
         }
+
         const oldTileableFocused = this.tileableFocused;
         if (tileable !== this.tileableFocused) {
             this.precedentIndex = this.focusedIndex;
         }
+
         this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
         if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
-            if (tileable instanceof MsWindow) {
-                tileable.takeFocus();
-            } else {
-                tileable.grab_key_focus();
-            }
+            tileable.grab_key_focus();
         }
+
         this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
 
-    refreshFocus() {
-        if (this.msWorkspaceManager.getActiveMsWorkspace() !== this) {
+    refreshFocus(forced) {
+        Me.logFocus('refreshFocus');
+        if (
+            this.msWorkspaceManager.getActiveMsWorkspace() !== this &&
+            !forced
+        ) {
             return;
         }
-        if (this.tileableFocused instanceof MsWindow) {
-            this.tileableFocused.takeFocus();
-        } else {
-            this.tileableFocused.grab_key_focus();
-        }
+
+        this.tileableFocused.grab_key_focus();
     }
 
     setTileableBefore(tileableToMove, tileableRelative) {
@@ -547,9 +548,7 @@ var MsWorkspaceActor = GObject.registerClass(
                     this.msWorkspace.shouldPanelBeVisible() &&
                     !monitorInFullScreen;
             }
-            this.tileableContainer.visible =
-                !this.msWorkspace.containFullscreenWindow &&
-                !monitorInFullScreen;
+            this.visible = !monitorInFullScreen;
         }
 
         vfunc_allocate(box, flags) {
@@ -582,6 +581,15 @@ var MsWorkspaceActor = GObject.registerClass(
                 }
             }
             Allocate(this.tileableContainer, containerBox, flags);
+            this.get_children()
+                .filter(
+                    (actor) =>
+                        [this.panel, this.tileableContainer].indexOf(actor) ===
+                        -1
+                )
+                .forEach((actor) => {
+                    Allocate(actor, containerBox, flags);
+                });
         }
     }
 );

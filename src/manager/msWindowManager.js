@@ -8,6 +8,8 @@ const { MsManager } = Me.imports.src.manager.msManager;
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { MsDndManager } = Me.imports.src.manager.msDndManager;
 const { MsResizeManager } = Me.imports.src.manager.msResizeManager;
+const { MsFocusManager } = Me.imports.src.manager.msFocusManager;
+
 const { getSettings } = Me.imports.src.utils.settings;
 
 /* exported MsWindowManager */
@@ -21,15 +23,49 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.metaWindowFocused = null;
         this.msDndManager = new MsDndManager(this);
         this.msResizeManager = new MsResizeManager(this);
+        this.msFocusManager = new MsFocusManager(this);
         this.signals = [];
         this.metaWindowWaitingForAssignationList = [];
         this.observe(global.display, 'window-created', (_, metaWindow) => {
             this.onNewMetaWindow(metaWindow);
         });
 
-        this.observe(global.display, 'notify::focus-window', (_) => {
-            this.onFocusMetaWindow(global.display.focus_window);
+        /* this.observe(
+            global.workspace_manager,
+            'active-workspace-changed',
+            () => {
+                Me.logFocus('start focus protection');
+                this.focusProtected = true;
+                //global.begin_modal(global.get_current_time(), 0);
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+                    Me.logFocus('end focus protection');
+                    //global.end_modal(global.get_current_time());
+
+                    delete this.focusProtected;
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+        ); */
+
+        /*         this.observe(global.stage, 'notify::key-focus', (_, a, b) => {
+            Me.logFocus('key-focus', global.stage.key_focus);
+            if (global.stage.key_focus) {
+                this.lastActorFocus = global.stage.key_focus;
+            } else if (this.focusProtected && this.lastActorFocus) {
+                this.lastActorFocus.grab_key_focus();
+            }
         });
+
+        this.observe(global.display, 'notify::focus-window', (_) => {
+            if (!global.display.focus_window) return;
+            Me.logFocus('notify::focus-window', this.focusProtected);
+            if (this.focusProtected && this.lastActorFocus) {
+                Me.logFocus('catch focus change', this.lastActorFocus);
+                this.lastActorFocus.grab_key_focus();
+                return;
+            }
+            this.onFocusMetaWindow(global.display.focus_window);
+        }); */
 
         this.observe(global.window_manager, 'size-changed', (wm, actor) => {
             actor.lastResize = Date.now();
@@ -333,11 +369,13 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
                 this.checkInProgress = false;
                 this.checkWindowsForAssignations();
+                return GLib.SOURCE_REMOVE;
             });
         }
     }
 
     onFocusMetaWindow(metaWindow) {
+        Me.logFocus('onFocusMetaWindow', metaWindow);
         if (Me.disableInProgress || Me.closing || Me.reparentInProgress) return;
         /*
              If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
@@ -412,6 +450,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
     destroy() {
         super.destroy();
         this.msDndManager.destroy();
+        this.msResizeManager.destroy();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow = windowActor.metaWindow;
             if (metaWindow.handledByMaterialShell)

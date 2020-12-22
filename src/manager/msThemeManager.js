@@ -8,7 +8,7 @@ const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
 const { getSettings } = Me.imports.src.utils.settings;
 const { MsManager } = Me.imports.src.manager.msManager;
 
-/* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, MsThemeManager */
+/* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
 var VerticalPanelPositionEnum = {
     LEFT: 0,
@@ -24,6 +24,12 @@ var PanelIconStyleEnum = {
     HYBRID: 0,
     CATEGORY: 1,
     APPLICATION: 2,
+};
+
+var FocusEffectEnum = {
+    NONE: 0,
+    DEFAULT: 1,
+    BORDER: 2,
 };
 
 var MsThemeManager = class MsThemeManager extends MsManager {
@@ -92,6 +98,9 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::clock-app-launcher', () => {
             this.emit('clock-app-launcher-changed');
         });
+        this.observe(this.themeSettings, 'changed::focus-effect', () => {
+            this.emit('focus-effect-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -139,6 +148,10 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     getPanelSizeNotScaled() {
         return this.themeSettings.get_int('panel-size');
+    }
+
+    get focusEffect() {
+        return this.themeSettings.get_enum('focus-effect');
     }
 
     isColorDark(color) {

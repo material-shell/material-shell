@@ -20,6 +20,18 @@ var KeyBindingAction = {
     MOVE_WINDOW_RIGHT: 'move-window-right',
     MOVE_WINDOW_TOP: 'move-window-top',
     MOVE_WINDOW_BOTTOM: 'move-window-bottom',
+    RESIZE_WINDOW_LEFT: 'resize-window-left',
+    RESIZE_WINDOW_UP: 'resize-window-up',
+    RESIZE_WINDOW_RIGHT: 'resize-window-right',
+    RESIZE_WINDOW_DOWN: 'resize-window-down',
+    FOCUS_MONITOR_LEFT: 'focus-monitor-left',
+    FOCUS_MONITOR_UP: 'focus-monitor-up',
+    FOCUS_MONITOR_RIGHT: 'focus-monitor-right',
+    FOCUS_MONITOR_DOWN: 'focus-monitor-down',
+    MOVE_WINDOW_MONITOR_LEFT: 'move-window-monitor-left',
+    MOVE_WINDOW_MONITOR_UP: 'move-window-monitor-up',
+    MOVE_WINDOW_MONITOR_RIGHT: 'move-window-monitor-right',
+    MOVE_WINDOW_MONITOR_DOWN: 'move-window-monitor-down',
     // layout actions
     CYCLE_TILING_LAYOUT: 'cycle-tiling-layout',
     REVERSE_CYCLE_TILING_LAYOUT: 'reverse-cycle-tiling-layout',
@@ -232,6 +244,98 @@ var HotKeysModule = class HotKeysModule {
                 nextMsWorkspace.activate();
             }
         );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.RESIZE_WINDOW_LEFT,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+
+                Me.msWindowManager.msResizeManager.resizeTileable(
+                    msWorkspace.tileableFocused,
+                    Meta.GrabOp.RESIZING_W,
+                    5
+                );
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.RESIZE_WINDOW_UP,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+
+                Me.msWindowManager.msResizeManager.resizeTileable(
+                    msWorkspace.tileableFocused,
+                    Meta.GrabOp.RESIZING_N,
+                    5
+                );
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.RESIZE_WINDOW_RIGHT,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+
+                Me.msWindowManager.msResizeManager.resizeTileable(
+                    msWorkspace.tileableFocused,
+                    Meta.GrabOp.RESIZING_E,
+                    5
+                );
+            }
+        );
+
+        this.actionNameToActionMap.set(
+            KeyBindingAction.RESIZE_WINDOW_DOWN,
+            () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+
+                Me.msWindowManager.msResizeManager.resizeTileable(
+                    msWorkspace.tileableFocused,
+                    Meta.GrabOp.RESIZING_S,
+                    5
+                );
+            }
+        );
+
+        ['LEFT', 'UP', 'RIGHT', 'DOWN'].forEach((DIRECTION) => {
+            this.actionNameToActionMap.set(
+                KeyBindingAction[`FOCUS_MONITOR_${DIRECTION}`],
+                () => {
+                    const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    const monitorIndex = global.display.get_monitor_neighbor_index(
+                        currentMsWorkspace.monitor.index,
+                        Meta.DisplayDirection[DIRECTION]
+                    );
+                    if (monitorIndex !== -1) {
+                        const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                            monitorIndex
+                        )[0];
+                        Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
+                    }
+                }
+            );
+
+            this.actionNameToActionMap.set(
+                KeyBindingAction[`MOVE_WINDOW_MONITOR_${DIRECTION}`],
+                () => {
+                    const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    const monitorIndex = global.display.get_monitor_neighbor_index(
+                        currentMsWorkspace.monitor.index,
+                        Meta.DisplayDirection[DIRECTION]
+                    );
+                    if (monitorIndex !== -1) {
+                        const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                            monitorIndex
+                        )[0];
+                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                            currentMsWorkspace.tileableFocused,
+                            msWorkspace
+                        );
+                        Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
+                    }
+                }
+            );
+        });
 
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
