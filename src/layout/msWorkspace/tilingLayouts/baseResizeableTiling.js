@@ -2,20 +2,14 @@
 const { round } = Math;
 
 /** Gnome libs imports */
-const { Gio, GLib, Clutter, GObject, St, Meta, Cogl } = imports.gi;
-const Main = imports.ui.main;
+const { Clutter, GObject, St, Meta, Cogl } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const {
-    SetAllocation,
-    Allocate,
-    AllocatePreferredSize,
-} = Me.imports.src.utils.compatibility;
-const { getSettings } = Me.imports.src.utils.settings;
+
 const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 const { Portion } = Me.imports.src.layout.msWorkspace.portion;
 

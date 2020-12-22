@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 const { St, Meta, GLib, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
-const { WindowDimmer } = imports.ui.windowManager;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
