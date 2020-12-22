@@ -37,6 +37,22 @@ var MsFocusManager = class MsFocusManager extends MsManager {
                 });
             }
         );
+
+        this.observe(
+            global.display,
+            'window-demands-attention',
+            (_, _metaWindow) => {
+                Me.logFocus('window-demands-attention', _metaWindow);
+            }
+        );
+
+        this.observe(
+            global.display,
+            'window-marked-urgent',
+            (_, _metaWindow) => {
+                Me.logFocus('window-marked-urgent', _metaWindow);
+            }
+        );
     }
 
     onKeyFocus() {
@@ -45,7 +61,8 @@ var MsFocusManager = class MsFocusManager extends MsManager {
             if (
                 this.focusProtected &&
                 this.lastKeyFocus &&
-                this.lastKeyFocus != this.lastMsWindowFocused
+                this.lastKeyFocus != this.lastMsWindowFocused &&
+                this.lastKeyFocus.mapped
             ) {
                 Me.logFocus(
                     'Focus Protected, restore focus to ',
@@ -80,14 +97,20 @@ var MsFocusManager = class MsFocusManager extends MsManager {
 
     onWindowFocus() {
         const windowFocus = global.display.focus_window;
+        Me.logFocus('onWindowFocus', windowFocus);
+
         if (!windowFocus) return;
-        if (this.focusProtected && this.lastMsWindowFocused) {
+        /* if (
+            this.focusProtected &&
+            this.lastMsWindowFocused &&
+            this.lastMsWindowFocused.monitor
+        ) {
             Me.logFocus(
                 'Focus Protected, restore focus to ',
                 this.lastMsWindowFocused
             );
             return this.lastMsWindowFocused.grab_key_focus();
-        }
+        } */
 
         const msWindow = windowFocus.msWindow;
         this.setFocusToMsWindow(msWindow);
@@ -95,6 +118,7 @@ var MsFocusManager = class MsFocusManager extends MsManager {
 
     setFocusToMsWindow(msWindow) {
         if (msWindow === this.lastMsWindowFocused) return;
+        Me.logFocus('Focus MsWindow', msWindow);
         this.lastMsWindowFocused = msWindow;
         this.emit('focus-changed', msWindow);
     }

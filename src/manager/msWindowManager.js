@@ -33,18 +33,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
         this.observe(global.window_manager, 'size-changed', (wm, actor) => {
             actor.lastResize = Date.now();
         });
-
-        this.observe(
-            global.display,
-            'window-demands-attention',
-            (_, _metaWindow) => {}
-        );
-
-        this.observe(
-            global.display,
-            'window-marked-urgent',
-            (_, _metaWindow) => {}
-        );
     }
 
     handleExistingMetaWindow() {

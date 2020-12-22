@@ -13,11 +13,21 @@ const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
 /* exported FloatLayout */
 var FloatLayout = GObject.registerClass(
     class FloatLayout extends BaseTilingLayout {
+        _init(msWorkspace, state) {
+            super._init(msWorkspace, state);
+            global.display.connect(
+                'restacked',
+                this.windowsRestacked.bind(this)
+            );
+            this.windowsRestacked();
+        }
+
         alterTileable(tileable) {
             if (tileable.metaWindow) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                     tileable.mimicMetaWindowPositionAndSize();
+                    tileable.msContent.clip_to_allocation = false;
                     return GLib.SOURCE_REMOVE;
                 });
             }
@@ -32,6 +42,8 @@ var FloatLayout = GObject.registerClass(
 
         restoreTileable(tileable) {
             if (tileable.metaWindow) {
+                tileable.msContent.clip_to_allocation = true;
+
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                     return GLib.SOURCE_REMOVE;
@@ -77,6 +89,24 @@ var FloatLayout = GObject.registerClass(
                 }
                 if (tileable instanceof MsWindow) {
                     tileable.mimicMetaWindowPositionAndSize();
+                }
+            });
+        }
+
+        windowsRestacked() {
+            global.window_group.get_children().forEach((actor) => {
+                const metaWindow = actor.metaWindow;
+                if (metaWindow && metaWindow.msWindow) {
+                    if (
+                        this.msWorkspace.tileableList.includes(
+                            metaWindow.msWindow
+                        )
+                    ) {
+                        this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
+                            metaWindow.msWindow,
+                            null
+                        );
+                    }
                 }
             });
         }
