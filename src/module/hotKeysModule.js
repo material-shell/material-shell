@@ -177,6 +177,10 @@ var HotKeysModule = class HotKeysModule {
             );
             nextMsWorkspace.activate();
         });
+        Meta.keybindings_set_custom_handler(
+            'move-to-workspace-up',
+            this.actionNameToActionMap.get(KeyBindingAction.MOVE_WINDOW_TOP)
+        );
 
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_BOTTOM,
@@ -243,6 +247,11 @@ var HotKeysModule = class HotKeysModule {
                 );
                 nextMsWorkspace.activate();
             }
+        );
+
+        Meta.keybindings_set_custom_handler(
+            'move-to-workspace-down',
+            this.actionNameToActionMap.get(KeyBindingAction.MOVE_WINDOW_BOTTOM)
         );
 
         this.actionNameToActionMap.set(
