@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Meta, Shell } = imports.gi;
+const { Meta, Shell, GLib } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -343,7 +343,10 @@ var HotKeysModule = class HotKeysModule {
                             currentMsWorkspace.tileableFocused,
                             msWorkspace
                         );
-                        Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
+                        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                            Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
+                            return GLib.SOURCE_REMOVE;
+                        });
                     }
                 }
             );
