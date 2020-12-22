@@ -306,6 +306,7 @@ var HotKeysModule = class HotKeysModule {
                         currentMsWorkspace.monitor.index,
                         Meta.DisplayDirection[DIRECTION]
                     );
+                    Me.logFocus(`FOCUS_MONITOR_${DIRECTION}`);
                     if (monitorIndex !== -1) {
                         const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             monitorIndex
@@ -323,6 +324,8 @@ var HotKeysModule = class HotKeysModule {
                         currentMsWorkspace.monitor.index,
                         Meta.DisplayDirection[DIRECTION]
                     );
+                    Me.logFocus(`MOVE_WINDOW_MONITOR_${DIRECTION}`);
+
                     if (monitorIndex !== -1) {
                         const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                             monitorIndex
