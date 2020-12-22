@@ -38,7 +38,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
                 this.onGapChange.bind(this)
             );
             this.currentFocusEffect = Me.msThemeManager.focusEffect;
-            Me.logFocus('focus-effect', this.currentFocusEffect);
             super._init(msWorkspace, state);
             this.onGapChange();
             Me.msThemeManager.connect(
@@ -53,7 +52,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             });
         }
         onGapChange() {
-            Me.logFocus('onGapChange', Me.layoutManager.someGap);
             if (!Me.layoutManager.someGap) {
                 if (!this.borderContainer) {
                     this.borderActorList = [];
@@ -179,7 +177,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
                         this.borderActorList.length - borderLength
                     )
                     .forEach((actor) => {
-                        Me.logFocus('remove ResizableBorder');
                         actor.destroy();
                     });
             }
@@ -208,8 +205,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
         }
 
         alterTileable(tileable) {
-            Me.logFocus('addUnFocusEffect alter');
-
             this.addUnFocusEffect(
                 tileable,
                 this.currentFocusEffect,
@@ -228,8 +223,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
             this.currentFocusEffect = Me.msThemeManager.focusEffect;
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.removeUnFocusEffect(tileable, oldFocusEffect);
-                Me.logFocus('addUnFocusEffect onFocusEffectChanged');
-
                 this.addUnFocusEffect(
                     tileable,
                     this.currentFocusEffect,
@@ -239,7 +232,6 @@ var BaseResizeableTilingLayout = GObject.registerClass(
         }
 
         onFocusChanged(tileable, oldTileable) {
-            //Me.logFocus('onFocusChanged', tileable, this.currentFocusEffect);
             this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
             if (oldTileable) {
                 if (
@@ -388,13 +380,11 @@ var ResizableBorderActor = GObject.registerClass(
                         break;
 
                     case Clutter.EventType.ENTER:
-                        Me.logFocus('enter-event', event);
                         global.display.set_cursor(
                             Meta.Cursor.MOVE_OR_RESIZE_WINDOW
                         );
                         break;
                     case Clutter.EventType.LEAVE:
-                        Me.logFocus('leave-event', event);
                         global.display.set_cursor(Meta.Cursor.DEFAULT);
                         break;
                 }
@@ -436,7 +426,6 @@ var PrimaryBorderEffect = GObject.registerClass(
             if (!this._pipeline) {
                 this._pipeline = new Cogl.Pipeline(coglContext);
             }
-            Me.logFocus(this.opacity.toFixed(2), Me.msThemeManager.primary);
 
             this.color.init_from_4ub(
                 parseInt(Me.msThemeManager.primary.substring(1, 3), 16),

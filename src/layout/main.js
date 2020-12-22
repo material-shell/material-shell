@@ -225,7 +225,6 @@ var MsMain = GObject.registerClass(
         }
 
         onSwitchWorkspace(_from, _to) {
-            Me.logFocus('onSwitchWorkspace');
             this.onMsWorkspacesChanged();
         }
 

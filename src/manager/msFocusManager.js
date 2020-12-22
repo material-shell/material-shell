@@ -33,7 +33,6 @@ var MsFocusManager = class MsFocusManager extends MsManager {
                 this.focusProtected = true;
                 GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
-                    Me.logFocus('end focus protection');
                     return GLib.SOURCE_REMOVE;
                 });
             }
@@ -57,7 +56,6 @@ var MsFocusManager = class MsFocusManager extends MsManager {
             }
             return;
         }
-        //Me.logFocus('onKeyFocus', keyFocus);
 
         this.lastKeyFocus = keyFocus;
 
@@ -83,7 +81,6 @@ var MsFocusManager = class MsFocusManager extends MsManager {
     onWindowFocus() {
         const windowFocus = global.display.focus_window;
         if (!windowFocus) return;
-        //Me.logFocus('onWindowFocus', windowFocus);
         if (this.focusProtected && this.lastMsWindowFocused) {
             Me.logFocus(
                 'Focus Protected, restore focus to ',
@@ -99,7 +96,6 @@ var MsFocusManager = class MsFocusManager extends MsManager {
     setFocusToMsWindow(msWindow) {
         if (msWindow === this.lastMsWindowFocused) return;
         this.lastMsWindowFocused = msWindow;
-        //Me.logFocus('EMIT FOCUS CHANGED');
         this.emit('focus-changed', msWindow);
     }
 

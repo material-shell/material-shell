@@ -30,43 +30,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             this.onNewMetaWindow(metaWindow);
         });
 
-        /* this.observe(
-            global.workspace_manager,
-            'active-workspace-changed',
-            () => {
-                Me.logFocus('start focus protection');
-                this.focusProtected = true;
-                //global.begin_modal(global.get_current_time(), 0);
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
-                    Me.logFocus('end focus protection');
-                    //global.end_modal(global.get_current_time());
-
-                    delete this.focusProtected;
-                    return GLib.SOURCE_REMOVE;
-                });
-            }
-        ); */
-
-        /*         this.observe(global.stage, 'notify::key-focus', (_, a, b) => {
-            Me.logFocus('key-focus', global.stage.key_focus);
-            if (global.stage.key_focus) {
-                this.lastActorFocus = global.stage.key_focus;
-            } else if (this.focusProtected && this.lastActorFocus) {
-                this.lastActorFocus.grab_key_focus();
-            }
-        });
-
-        this.observe(global.display, 'notify::focus-window', (_) => {
-            if (!global.display.focus_window) return;
-            Me.logFocus('notify::focus-window', this.focusProtected);
-            if (this.focusProtected && this.lastActorFocus) {
-                Me.logFocus('catch focus change', this.lastActorFocus);
-                this.lastActorFocus.grab_key_focus();
-                return;
-            }
-            this.onFocusMetaWindow(global.display.focus_window);
-        }); */
-
         this.observe(global.window_manager, 'size-changed', (wm, actor) => {
             actor.lastResize = Date.now();
         });
@@ -104,7 +67,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             }
             this.onNewMetaWindow(metaWindow);
         });
-        this.onFocusMetaWindow(global.display.focus_window);
     }
 
     onNewMetaWindow(metaWindow) {
@@ -371,28 +333,6 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 this.checkWindowsForAssignations();
                 return GLib.SOURCE_REMOVE;
             });
-        }
-    }
-
-    onFocusMetaWindow(metaWindow) {
-        Me.logFocus('onFocusMetaWindow', metaWindow);
-        if (Me.disableInProgress || Me.closing || Me.reparentInProgress) return;
-        /*
-             If the current msWorkspace focused window actor is inaccessible it's mean that this notify is the was automatically made by gnome-shell to try to focus previous window
-             We want to prevent this in order to handle it ourselves to select the next one instead of the previous.
-            */
-        if (
-            this.metaWindowFocused &&
-            !this.metaWindowFocused.get_compositor_private()
-        ) {
-            this.metaWindowFocused = global.display.focus_window;
-            return;
-        }
-
-        if (!metaWindow) return;
-
-        if (metaWindow.msWindow) {
-            this.emit('ms-window-focused', metaWindow.msWindow);
         }
     }
 

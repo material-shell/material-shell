@@ -730,18 +730,7 @@ var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
                     msWorkspace.msWorkspaceActor.tileableContainer.height / 2
                 )
         );
-        Me.logFocus('');
-        Me.logFocus(
-            'Warp pointer to monitor ' + msWorkspace.monitor.index + ' at ',
-            containerX +
-                Math.floor(
-                    msWorkspace.msWorkspaceActor.tileableContainer.width / 2
-                ),
-            containerY +
-                Math.floor(
-                    msWorkspace.msWorkspaceActor.tileableContainer.height / 2
-                )
-        );
+
         msWorkspace.refreshFocus();
     }
 };

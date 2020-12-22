@@ -340,7 +340,6 @@ var MsWorkspace = class MsWorkspace {
     }
 
     refreshFocus(forced) {
-        Me.logFocus('refreshFocus');
         if (
             this.msWorkspaceManager.getActiveMsWorkspace() !== this &&
             !forced

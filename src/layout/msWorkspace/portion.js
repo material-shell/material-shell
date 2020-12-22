@@ -361,7 +361,6 @@ class PortionBorder {
         }
 
         const basisSum = this.firstPortion.basis + this.secondPortion.basis;
-        Me.logFocus('basisRation', basisRatio);
         this.firstPortion.basis *= basisRatio;
 
         if (this.firstPortion.basis / basisSum < MIN_BASIS_RATIO) {

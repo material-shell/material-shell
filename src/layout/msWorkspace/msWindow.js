@@ -697,17 +697,14 @@ var MsWindow = GObject.registerClass(
         }
 
         grab_key_focus() {
-            Me.logFocus('MsWindow grab key focus');
             if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
             if (this.dialogs.length) {
                 this.dialogs[this.dialogs.length - 1].metaWindow.focus(
                     global.get_current_time()
                 );
             } else if (this.metaWindow) {
-                Me.logFocus('activate meta window');
                 this.metaWindow.focus(global.get_current_time());
             } else {
-                Me.logFocus('grab_key_focus placeholder', this.get_parent());
                 this.placeholder.grab_key_focus();
             }
         }
