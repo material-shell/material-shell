@@ -334,9 +334,13 @@ var HotKeysModule = class HotKeysModule {
                     );
 
                     if (monitorIndex !== -1) {
-                        const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                            monitorIndex
-                        )[0];
+                        const msWorkspace =
+                            monitorIndex ===
+                            global.display.get_primary_monitor()
+                                ? Me.msWorkspaceManager.getActivePrimaryMsWorkspace()
+                                : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                                      monitorIndex
+                                  )[0];
                         Me.msWorkspaceManager.setWindowToMsWorkspace(
                             currentMsWorkspace.tileableFocused,
                             msWorkspace
