@@ -344,7 +344,9 @@ var BaseResizeableTilingLayout = GObject.registerClass(
         }
 
         onDestroy() {
-            this.borderContainer.destroy();
+            if (this.borderContainer) {
+                this.borderContainer.destroy();
+            }
             super.onDestroy();
         }
     }
