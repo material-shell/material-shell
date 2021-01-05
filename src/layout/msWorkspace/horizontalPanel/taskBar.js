@@ -268,9 +268,13 @@ var TaskBarItem = GObject.registerClass(
         }
 
         vfunc_parent_set() {
-            this.monitor = Main.layoutManager.findMonitorForActor(
-                this.get_parent()
-            );
+            if (this.get_parent()) {
+                this.monitor = Main.layoutManager.findMonitorForActor(
+                    this.get_parent()
+                );
+            } else {
+                this.monitor = Main.layoutManager.findMonitorForActor(this);
+            }
         }
 
         vfunc_get_preferred_height(_forWidth) {
@@ -466,14 +470,16 @@ var TileableItem = GObject.registerClass(
                 if (this.tileable.title.includes(this.app.get_name())) {
                     this.title.text = this.tileable.title;
                 } else {
+                    const escapedAppName = GLib.markup_escape_text(this.app.get_name(), -1);
+                    const escapedTitle = GLib.markup_escape_text(this.tileable.title, -1);
                     this.title
                         .get_clutter_text()
                         .set_markup(
-                            `${this.tileable.title}<span alpha="${
+                            `${escapedTitle}<span alpha="${
                                 this.has_style_class_name('active')
                                     ? '40%'
                                     : '20%'
-                            }">   -   ${this.app.get_name()}</span>`
+                            }">   -   ${escapedAppName}</span>`
                         );
                 }
             } else if (this.style == 'name') {
@@ -485,7 +491,8 @@ var TileableItem = GObject.registerClass(
             const height = box.get_height();
 
             if (!this.icon || this.lastHeight != height) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.buildIconIdle = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    delete this.buildIconIdle;
                     this.buildIcon(height);
                     return GLib.SOURCE_REMOVE;
                 });
@@ -493,6 +500,9 @@ var TileableItem = GObject.registerClass(
             super.vfunc_allocate(...args);
         }
         _onDestroy() {
+            if (this.buildIconIdle) {
+                GLib.Source.remove(this.buildIconIdle);
+            }
             this.signalManager.destroy();
             this.menu.destroy();
         }

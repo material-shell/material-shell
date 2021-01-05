@@ -27,9 +27,13 @@ var StateManager = class StateManager {
             'material-shell-state'
         );
         if (serializedState) {
-            this.state = this.updateState(
-                JSON.parse(serializedState.deep_unpack())
-            );
+            try {
+                this.state = this.updateState(
+                    JSON.parse(serializedState.deep_unpack())
+                );
+            } catch (e) {
+                this.state = {};
+            }
             return callback(this.state);
         }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {

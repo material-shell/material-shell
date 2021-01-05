@@ -654,6 +654,7 @@ var MsWindow = GObject.registerClass(
 
         removeDialog(dialog) {
             this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
+            this.remove_child(dialog.clone);
             dialog.clone.destroy();
         }
 
@@ -771,10 +772,12 @@ var MsWindow = GObject.registerClass(
                     this.unsetWindow();
                 } else {
                     delete this.metaWindow;
-                    this._onDestroy();
-                    this.msWorkspace.removeMsWindow(this);
-                    if (this.destroyId) this.disconnect(this.destroyId);
-                    this.destroy();
+                    if (!this.destroyed) {
+                      this._onDestroy();
+                      this.msWorkspace.removeMsWindow(this);
+                      if (this.destroyId) this.disconnect(this.destroyId);
+                      this.destroy();
+                    }
                 }
             });
 

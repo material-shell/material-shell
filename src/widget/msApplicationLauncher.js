@@ -144,12 +144,14 @@ var MsApplicationButtonContainer = GObject.registerClass(
                     time_only: true,
                 });
                 const updateClock = () => {
+                  if (this.clockLabel.mapped) {
                     this.clockLabel.text = this._wallClock.clock;
                     const date = new Date();
                     let dateFormat = Shell.util_translate_time_string(
-                        N_('%A %B %-d')
+                      N_('%A %B %-d')
                     );
                     this.dateLabel.text = date.toLocaleFormat(dateFormat);
+                  }
                 };
 
                 this.signalClock = this._wallClock.connect(
