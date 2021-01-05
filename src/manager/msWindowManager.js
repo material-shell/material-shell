@@ -337,6 +337,7 @@ var MsWindowManager = class MsWindowManager extends MsManager {
             getSettings('layouts')
                 .get_string('windows-excluded')
                 .split(',')
+                .map((item) => item.trim())
                 .indexOf(metaWindow.wm_class) > -1
         ) {
             return false;
