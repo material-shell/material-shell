@@ -34,3 +34,11 @@ build_prod: schemas sass
 	zip dist.zip style-dark-theme.css
 	zip dist.zip style-light-theme.css
 	zip dist.zip style-primary-theme.css
+
+compile:
+	tsc
+	sh transpile.sh
+	cp metadata.json target
+	cp *.css target
+	cp -r schemas target/schemas
+	cp -r assets target/assets
