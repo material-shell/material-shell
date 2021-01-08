@@ -7,8 +7,7 @@ const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
-/* exported RatioLayout */
-var RatioLayout = GObject.registerClass(
+export const RatioLayout = GObject.registerClass(
     class RatioLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             const pushInPortion = (portion) => {

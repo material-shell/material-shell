@@ -10,14 +10,13 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { Portion } = Me.imports.src.layout.msWorkspace.portion;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { Portion } from 'src/layout/msWorkspace/portion';
 
-const { FocusEffectEnum } = Me.imports.src.manager.msThemeManager;
+import { FocusEffectEnum } from 'src/manager/msThemeManager';
 
 const BORDER_WIDTH = 2;
-/* exported BaseTilingLayout */
-var BaseResizeableTilingLayout = GObject.registerClass(
+export const BaseResizeableTilingLayout = GObject.registerClass(
     class BaseResizeableTilingLayout extends BaseTilingLayout {
         _init(msWorkspace, state = {}) {
             this.mainPortion = new Portion();

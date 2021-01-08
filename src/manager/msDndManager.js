@@ -4,13 +4,12 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { reparentActor, throttle } = Me.imports.src.utils.index;
-const { MsManager } = Me.imports.src.manager.msManager;
-const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { reparentActor, throttle } from 'src/utils/index';
+import { MsManager } from 'src/manager/msManager';
+import { KeyBindingAction } from 'src/module/hotKeysModule';
 
-/* exported MsDndManager */
-var MsDndManager = class MsDndManager extends MsManager {
+export class MsDndManager extends MsManager {
     constructor(msWindowManager) {
         super();
         this.msWindowDragged = null;
@@ -225,8 +224,7 @@ var MsDndManager = class MsDndManager extends MsManager {
     }
 };
 
-/* exported InputGrabber */
-var InputGrabber = GObject.registerClass(
+export const InputGrabber = GObject.registerClass(
     class InputGrabber extends Clutter.Actor {
         _init() {
             super._init({

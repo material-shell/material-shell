@@ -6,22 +6,21 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { MatButton } = Me.imports.src.widget.material.button;
-const { ReorderableList } = Me.imports.src.widget.reorderableList;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { MatButton } from 'src/widget/material/button';
+import { ReorderableList } from 'src/widget/reorderableList';
 
 const {
     TaskBarItem,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
 
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 const {
     MainCategories,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
-const { PanelIconStyleEnum } = Me.imports.src.manager.msThemeManager;
+import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 
-/* exported WorkspaceList */
-var WorkspaceList = GObject.registerClass(
+export const WorkspaceList = GObject.registerClass(
     class WorkspaceList extends St.Widget {
         _init() {
             super._init({

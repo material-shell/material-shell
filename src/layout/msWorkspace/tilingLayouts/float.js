@@ -8,10 +8,9 @@ const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
 const WindowUtils = Me.imports.src.utils.windows;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
-/* exported FloatLayout */
-var FloatLayout = GObject.registerClass(
+export const FloatLayout = GObject.registerClass(
     class FloatLayout extends BaseTilingLayout {
         _init(msWorkspace, state) {
             super._init(msWorkspace, state);

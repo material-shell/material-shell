@@ -6,15 +6,14 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
-const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
-const { reparentActor } = Me.imports.src.utils.index;
+import { TranslationAnimator } from 'src/widget/translationAnimator';
+import { MatNumberPicker } from 'src/widget/material/numberPicker';
+import { reparentActor } from 'src/utils/index';
 
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;
 
-/* exported SplitLayout */
-var SplitLayout = GObject.registerClass(
+export const SplitLayout = GObject.registerClass(
     class SplitLayout extends BaseResizeableTilingLayout {
         _init(msWorkspace, state) {
             super._init(msWorkspace, state);

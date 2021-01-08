@@ -5,22 +5,20 @@ const Signals = imports.signals;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    DisableIncompatibleExtensionsModule,
-} = Me.imports.src.module.disableIncompatibleExtensionsModule;
-const { OverrideModule } = Me.imports.src.module.overrideModule;
-const { HotKeysModule } = Me.imports.src.module.hotKeysModule;
-const { RequiredSettingsModule } = Me.imports.src.module.requiredSettingsModule;
-const { LayoutManager } = Me.imports.src.manager.layoutManager;
-const { StateManager } = Me.imports.src.manager.stateManager;
-const { MsWindowManager } = Me.imports.src.manager.msWindowManager;
-const { MsWorkspaceManager } = Me.imports.src.manager.msWorkspaceManager;
-const { MsThemeManager } = Me.imports.src.manager.msThemeManager;
-const { TooltipManager } = Me.imports.src.manager.tooltipManager;
+import { DisableIncompatibleExtensionsModule } from 'src/module/disableIncompatibleExtensionsModule';
+import { OverrideModule } from 'src/module/overrideModule';
+import { HotKeysModule } from 'src/module/hotKeysModule';
+import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
+import { LayoutManager } from 'src/manager/layoutManager';
+import { StateManager } from 'src/manager/stateManager';
+import { MsWindowManager } from 'src/manager/msWindowManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { MsThemeManager } from 'src/manager/msThemeManager';
+import { TooltipManager } from 'src/manager/tooltipManager';
 
-const { MsMain } = Me.imports.src.layout.main;
-const { MsNotificationManager } = Me.imports.src.manager.msNotificationManager;
-const { getSettings } = Me.imports.src.utils.settings;
+import { MsMain } from 'src/layout/main';
+import { MsNotificationManager } from 'src/manager/msNotificationManager';
+import { getSettings } from 'src/utils/settings';
 
 let disableIncompatibleExtensionsModule,
     modules,

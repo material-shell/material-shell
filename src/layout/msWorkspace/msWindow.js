@@ -10,11 +10,10 @@ const {
     AllocatePreferredSize,
 } = Me.imports.src.utils.compatibility;
 const WindowUtils = Me.imports.src.utils.windows;
-const { AppPlaceholder } = Me.imports.src.widget.appPlaceholder;
+import { AppPlaceholder } from 'src/widget/appPlaceholder';
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
-/* exported MsWindow */
-var MsWindow = GObject.registerClass(
+export const MsWindow = GObject.registerClass(
     {
         GTypeName: 'MsWindow',
         Signals: {

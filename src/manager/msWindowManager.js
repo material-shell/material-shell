@@ -4,16 +4,15 @@ const Signals = imports.signals;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsManager } = Me.imports.src.manager.msManager;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { MsDndManager } = Me.imports.src.manager.msDndManager;
-const { MsResizeManager } = Me.imports.src.manager.msResizeManager;
-const { MsFocusManager } = Me.imports.src.manager.msFocusManager;
+import { MsManager } from 'src/manager/msManager';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsDndManager } from 'src/manager/msDndManager';
+import { MsResizeManager } from 'src/manager/msResizeManager';
+import { MsFocusManager } from 'src/manager/msFocusManager';
 
-const { getSettings } = Me.imports.src.utils.settings;
+import { getSettings } from 'src/utils/settings';
 
-/* exported MsWindowManager */
-var MsWindowManager = class MsWindowManager extends MsManager {
+export class MsWindowManager extends MsManager {
     constructor() {
         super();
 

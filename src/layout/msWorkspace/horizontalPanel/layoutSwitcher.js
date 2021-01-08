@@ -6,12 +6,11 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { MatPanelButton } = Me.imports.src.layout.verticalPanel.panelButton;
-const { TilingLayoutByKey } = Me.imports.src.manager.layoutManager;
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
+import { TilingLayoutByKey } from 'src/manager/layoutManager';
 
-/* exported LayoutSwitcher */
-var LayoutSwitcher = GObject.registerClass(
+export const LayoutSwitcher = GObject.registerClass(
     {
         GTypeName: 'LayoutSwitcher',
     },

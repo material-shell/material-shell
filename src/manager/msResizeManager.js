@@ -4,10 +4,10 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { reparentActor, throttle } = Me.imports.src.utils.index;
-const { MsManager } = Me.imports.src.manager.msManager;
-const { KeyBindingAction } = Me.imports.src.module.hotKeysModule;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { reparentActor, throttle } from 'src/utils/index';
+import { MsManager } from 'src/manager/msManager';
+import { KeyBindingAction } from 'src/module/hotKeysModule';
 const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
@@ -32,8 +32,7 @@ const RESIZE_AFTER_CODES = [
 
 const CHECK_TIMEOUT_MS = 100;
 
-/* exported MsResizeManager */
-var MsResizeManager = class MsResizeManager extends MsManager {
+export class MsResizeManager extends MsManager {
     constructor(msWindowManager) {
         super();
 
@@ -191,8 +190,7 @@ var MsResizeManager = class MsResizeManager extends MsManager {
     }
 };
 
-/* exported InputResizer */
-var InputResizer = GObject.registerClass(
+export const InputResizer = GObject.registerClass(
     class InputResizer extends Clutter.Actor {
         _init() {
             super._init({

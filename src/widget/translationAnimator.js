@@ -3,10 +3,9 @@ const { GObject, Clutter } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { reparentActor } = Me.imports.src.utils.index;
+import { reparentActor } from 'src/utils/index';
 
-/* exported TranslationAnimator */
-var TranslationAnimator = GObject.registerClass(
+export const TranslationAnimator = GObject.registerClass(
     {
         GTypeName: 'TranslationAnimator',
         Signals: {

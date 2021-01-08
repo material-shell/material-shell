@@ -6,19 +6,18 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { MatButton } = Me.imports.src.widget.material.button;
-const { ReorderableList } = Me.imports.src.widget.reorderableList;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { reparentActor } = Me.imports.src.utils.index;
-const { getSettings } = Me.imports.src.utils.settings;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { MatButton } from 'src/widget/material/button';
+import { ReorderableList } from 'src/widget/reorderableList';
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { reparentActor } from 'src/utils/index';
+import { getSettings } from 'src/utils/settings';
+import { MsManager } from 'src/manager/msManager';
 
 let dragData = null;
 
-/* exported TaskBar */
-var TaskBar = GObject.registerClass(
+export const TaskBar = GObject.registerClass(
     class TaskBar extends St.Widget {
         _init(msWorkspace, panelMenuManager) {
             super._init({

@@ -1,7 +1,7 @@
 const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
+import { ShellVersionMatch } from 'src/utils/compatibility';
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),

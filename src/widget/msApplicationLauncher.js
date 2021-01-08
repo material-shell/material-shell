@@ -4,10 +4,10 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { AppsManager } = Me.imports.src.manager.appsManager;
-const { MatButton } = Me.imports.src.widget.material.button;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { AppsManager } from 'src/manager/appsManager';
+import { MatButton } from 'src/widget/material/button';
 
 /* exported MsApplicationLauncher */
 

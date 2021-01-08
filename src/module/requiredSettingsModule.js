@@ -3,10 +3,9 @@ const { Gio } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
+import { getSettings } from 'src/utils/settings';
 
-/* exported RequiredSettingsModule */
-var RequiredSettingsModule = class RequiredSettingsModule {
+export class RequiredSettingsModule {
     constructor() {
         this.mutterSettings = new Gio.Settings({
             schema_id: 'org.gnome.mutter',

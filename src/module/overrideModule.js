@@ -3,7 +3,7 @@ const { Meta } = imports.gi;
 const { WindowManager } = imports.ui.windowManager;
 
 /* exported OverrideModule */
-var OverrideModule = class OverrideModule {
+export class OverrideModule {
     constructor() {
         this.overrideWindowManagerFunctions();
         this.orignalMetaWorkspaceOnPrimary =

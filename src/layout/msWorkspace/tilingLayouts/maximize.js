@@ -7,12 +7,11 @@ const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
-const { InfinityTo0 } = Me.imports.src.utils.index;
-const { reparentActor } = Me.imports.src.utils.index;
+import { TranslationAnimator } from 'src/widget/translationAnimator';
+import { InfinityTo0 } from 'src/utils/index';
+import { reparentActor } from 'src/utils/index';
 
-/* exported MaximizeLayout */
-var MaximizeLayout = GObject.registerClass(
+export const MaximizeLayout = GObject.registerClass(
     class MaximizeLayout extends BaseTilingLayout {
         _init(msWorkspace, state) {
             super._init(msWorkspace, state);

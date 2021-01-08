@@ -7,8 +7,7 @@ const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
-/* exported HalfLayout */
-var HalfLayout = GObject.registerClass(
+export const HalfLayout = GObject.registerClass(
     class HalfLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             while (this.mainPortion.portionLength > length) {

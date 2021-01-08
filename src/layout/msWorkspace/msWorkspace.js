@@ -5,21 +5,20 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 const {
     HorizontalPanel,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.horizontalPanel;
-const { MsApplicationLauncher } = Me.imports.src.widget.msApplicationLauncher;
-const { reparentActor } = Me.imports.src.utils.index;
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import { reparentActor } from 'src/utils/index';
 const {
     MsWorkspaceCategory,
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
-const { getSettings } = Me.imports.src.utils.settings;
-const { HorizontalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
+import { getSettings } from 'src/utils/settings';
+import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 
-/* exported MsWorkspace */
-var MsWorkspace = class MsWorkspace {
+export class MsWorkspace {
     constructor(msWorkspaceManager, monitor, state = {}) {
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);

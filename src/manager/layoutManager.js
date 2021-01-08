@@ -4,8 +4,8 @@ const GLib = imports.gi.GLib;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { getSettings } from 'src/utils/settings';
+import { MsManager } from 'src/manager/msManager';
 
 const layoutsFolder = Me.imports.src.layout.msWorkspace.tilingLayouts;
 const { MaximizeLayout } = layoutsFolder.maximize;
@@ -39,8 +39,7 @@ var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
     return layoutsByKey;
 }, {});
 
-/* exported LayoutManager */
-var LayoutManager = class LayoutManager extends MsManager {
+export class LayoutManager extends MsManager {
     constructor() {
         super();
         this.workspaceManager = global.workspace_manager;

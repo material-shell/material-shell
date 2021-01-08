@@ -4,11 +4,10 @@ const Animation = imports.ui.animation;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { RippleBackground } from 'src/widget/material/rippleBackground';
 
-/* exported AppPlaceholder */
-var AppPlaceholder = GObject.registerClass(
+export const AppPlaceholder = GObject.registerClass(
     {
         GTypeName: 'AppPlaceholder',
         Signals: {

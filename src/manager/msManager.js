@@ -5,7 +5,7 @@ const { Clutter } = imports.gi;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 /* exported MsManager */
-var MsManager = class MsManager {
+export class MsManager {
     constructor() {
         this.signals = [];
     }

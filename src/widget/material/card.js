@@ -1,8 +1,7 @@
 /** Gnome libs imports */
 const { Clutter, GObject, St } = imports.gi;
 
-/* exported MatCard */
-var MatCard = GObject.registerClass(
+export const MatCard = GObject.registerClass(
     class MatCard extends St.Bin {
         _init(params = {}) {
             super._init(params);
@@ -12,8 +11,7 @@ var MatCard = GObject.registerClass(
     }
 );
 
-/* exported MatCardTitle */
-var MatCardTitle = GObject.registerClass(
+export const MatCardTitle = GObject.registerClass(
     class MatCardTitle extends Clutter.Actor {
         _init(
             params = {
@@ -39,8 +37,7 @@ var MatCardTitle = GObject.registerClass(
     }
 );
 
-/* exported MatCardContent */
-var MatCardContent = GObject.registerClass(
+export const MatCardContent = GObject.registerClass(
     class MatCardContent extends St.Bin {
         _init(params = {}) {
             super._init(params);

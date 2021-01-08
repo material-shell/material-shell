@@ -1,14 +1,15 @@
 /** Gnome libs imports */
-const { St, GLib, Clutter, GObject } = imports.gi;
+const { St, Clutter, GObject } = imports.gi;
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-const { MsManager } = Me.imports.src.manager.msManager;
-const { SetAllocation } = Me.imports.src.utils.compatibility;
-/* exported TooltipManager */
-var TooltipManager = class TooltipManager extends MsManager {
+import { MsManager } from 'src/manager/msManager';
+import { SetAllocation } from 'src/utils/compatibility';
+import * as GLib from 'GLib';
+
+export class TooltipManager extends MsManager {
     constructor() {
         super();
     }
@@ -86,8 +87,7 @@ var TooltipSide = {
     BOTTOM: 3,
 };
 
-/* exported MatTooltip */
-var MatTooltip = GObject.registerClass(
+export const MatTooltip = GObject.registerClass(
     {
         GTypeName: 'MatTooltip',
     },

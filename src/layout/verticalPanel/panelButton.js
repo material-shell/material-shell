@@ -1,10 +1,9 @@
 const { GObject, GLib, Meta } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MatButton } = Me.imports.src.widget.material.button;
+import { MatButton } from 'src/widget/material/button';
 const Main = imports.ui.main;
 
-/* exported MatPanelButton */
-var MatPanelButton = GObject.registerClass(
+export const MatPanelButton = GObject.registerClass(
     {
         GTypeName: 'MatPanelButton',
     },

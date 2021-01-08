@@ -7,8 +7,7 @@ const {
     HalfLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.half;
 
-/* exported HalfVerticalLayout */
-var HalfVerticalLayout = GObject.registerClass(
+export const HalfVerticalLayout = GObject.registerClass(
     class HalfVerticalLayout extends HalfLayout {
         isVerticalLayout() {
             return true;

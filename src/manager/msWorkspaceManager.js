@@ -4,13 +4,12 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsWorkspace } = Me.imports.src.layout.msWorkspace.msWorkspace;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsManager } from 'src/manager/msManager';
 const { WorkspaceTracker } = imports.ui.windowManager;
-const { getSettings } = Me.imports.src.utils.settings;
+import { getSettings } from 'src/utils/settings';
 
-/* exported MsWorkspaceManager */
-var MsWorkspaceManager = class MsWorkspaceManager extends MsManager {
+export class MsWorkspaceManager extends MsManager {
     constructor(state = {}) {
         super();
         this.workspaceManager = global.workspace_manager;

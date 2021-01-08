@@ -5,7 +5,7 @@ const { Gio } = imports.gi;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported getSettings */
-var getSettings = (key) =>
+export const getSettings = (key) =>
     new Gio.Settings({
         settings_schema: Gio.SettingsSchemaSource.new_from_directory(
             Me.dir.get_child('schemas').get_path(),

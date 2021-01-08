@@ -4,9 +4,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { TilingLayoutByKey } = Me.imports.src.manager.layoutManager;
+import { getSettings } from 'src/utils/settings';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { TilingLayoutByKey } from 'src/manager/layoutManager';
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -42,7 +42,7 @@ var KeyBindingAction = {
     LAST_WORKSPACE: 'last-workspace',
 };
 
-var HotKeysModule = class HotKeysModule {
+export class HotKeysModule {
     constructor() {
         this.workspaceManager = global.workspace_manager;
         this.settings = getSettings('bindings');

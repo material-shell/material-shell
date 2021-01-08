@@ -5,7 +5,7 @@ const PopupMenu = imports.ui.popupMenu;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
 const {
     TaskBar,
     TaskBarItem,
@@ -13,8 +13,7 @@ const {
 const {
     LayoutSwitcher,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher;
-/* exported HorizontalPanel */
-var HorizontalPanel = GObject.registerClass(
+export const HorizontalPanel = GObject.registerClass(
     class HorizontalPanel extends St.BoxLayout {
         _init(msWorkspace) {
             super._init({

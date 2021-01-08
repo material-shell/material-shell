@@ -3,11 +3,10 @@ const { Clutter, GObject, St, Meta } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { RippleBackground } from 'src/widget/material/rippleBackground';
 
-/* exported MatButton */
-var MatButton = GObject.registerClass(
+export const MatButton = GObject.registerClass(
     {
         GTypeName: 'MatButton',
         Signals: {

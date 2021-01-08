@@ -7,13 +7,12 @@ const ModalDialog = imports.ui.modalDialog;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { getSettings } from 'src/utils/settings';
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { MsManager } from 'src/manager/msManager';
 
 const API_SERVER = 'http://api.material-shell.com';
-/* exported MsNotificationManager */
-var MsNotificationManager = class MsNotificationManager extends MsManager {
+export class MsNotificationManager extends MsManager {
     constructor() {
         super();
         this.httpSession = new Soup.Session({ ssl_use_system_ca_file: true });

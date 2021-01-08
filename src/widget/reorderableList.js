@@ -4,11 +4,10 @@ const DND = imports.ui.dnd;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { reparentActor } = Me.imports.src.utils.index;
-const { MatButton } = Me.imports.src.widget.material.button;
+import { reparentActor } from 'src/utils/index';
+import { MatButton } from 'src/widget/material/button';
 
-/* exported ReorderableList */
-var ReorderableList = GObject.registerClass(
+export const ReorderableList = GObject.registerClass(
     {
         Signals: {
             'drag-start': {},

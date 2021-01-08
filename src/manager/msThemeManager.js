@@ -4,9 +4,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { ShellVersionMatch } = Me.imports.src.utils.compatibility;
-const { getSettings } = Me.imports.src.utils.settings;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { ShellVersionMatch } from 'src/utils/compatibility';
+import { getSettings } from 'src/utils/settings';
+import { MsManager } from 'src/manager/msManager';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
@@ -32,7 +32,7 @@ var FocusEffectEnum = {
     BORDER: 2,
 };
 
-var MsThemeManager = class MsThemeManager extends MsManager {
+export class MsThemeManager extends MsManager {
     constructor() {
         super();
         this.themeContext = St.ThemeContext.get_for_stage(global.stage);

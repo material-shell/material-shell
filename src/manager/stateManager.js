@@ -6,15 +6,14 @@ const FileTest = GLib.FileTest;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { getSettings } = Me.imports.src.utils.settings;
+import { getSettings } from 'src/utils/settings';
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
     Me.uuid
 }-state-next.json`;
 
-/* exported StateManager */
-var StateManager = class StateManager {
+export class StateManager {
     constructor() {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);

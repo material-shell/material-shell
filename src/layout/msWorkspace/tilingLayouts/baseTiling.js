@@ -9,12 +9,11 @@ const {
     Allocate,
     AllocatePreferredSize,
 } = Me.imports.src.utils.compatibility;
-const { getSettings } = Me.imports.src.utils.settings;
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { InfinityTo0 } = Me.imports.src.utils.index;
+import { getSettings } from 'src/utils/settings';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { InfinityTo0 } from 'src/utils/index';
 
-/* exported BaseTilingLayout */
-var BaseTilingLayout = GObject.registerClass(
+export const BaseTilingLayout = GObject.registerClass(
     class BaseTilingLayout extends Clutter.LayoutManager {
         _init(msWorkspace, state = {}) {
             this._state = Object.assign({}, this.constructor.state, state);

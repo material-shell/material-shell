@@ -7,8 +7,7 @@ const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
-/* exported GridLayout */
-var GridLayout = GObject.registerClass(
+export const GridLayout = GObject.registerClass(
     class GridLayout extends BaseResizeableTilingLayout {
         updateMainPortionLength(length) {
             const columnLength = Math.ceil(Math.sqrt(length));

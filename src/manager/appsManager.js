@@ -1,8 +1,7 @@
 /** Gnome libs imports */
 const { Shell } = imports.gi;
 
-/* exported AppsManager */
-var AppsManager = class AppsManager {
+export class AppsManager {
     constructor() {}
 
     static getApps() {

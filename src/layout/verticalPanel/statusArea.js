@@ -4,10 +4,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { reparentActor } = Me.imports.src.utils.index;
-const { VerticalPanelPositionEnum } = Me.imports.src.manager.msThemeManager;
-/* exported MsStatusArea */
-var MsStatusArea = GObject.registerClass(
+import { reparentActor } from 'src/utils/index';
+import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
+export const MsStatusArea = GObject.registerClass(
     {
         GTypeName: 'MsStatusArea',
     },

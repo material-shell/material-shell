@@ -7,8 +7,7 @@ const {
     BaseResizeableTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
 
-/* exported SimpleLayout */
-var SimpleLayout = GObject.registerClass(
+export const SimpleLayout = GObject.registerClass(
     class SimpleLayout extends BaseResizeableTilingLayout {
         isVerticalLayout(box) {
             return box.get_width() < box.get_height();

@@ -10,16 +10,15 @@ const {
     Allocate,
     AllocatePreferredSize,
 } = Me.imports.src.utils.compatibility;
-const { MsPanel } = Me.imports.src.layout.verticalPanel.verticalPanel;
-const { reparentActor } = Me.imports.src.utils.index;
-const { TranslationAnimator } = Me.imports.src.widget.translationAnimator;
+import { MsPanel } from 'src/layout/verticalPanel/verticalPanel';
+import { reparentActor } from 'src/utils/index';
+import { TranslationAnimator } from 'src/widget/translationAnimator';
 const {
     VerticalPanelPositionEnum,
     HorizontalPanelPositionEnum,
 } = Me.imports.src.manager.msThemeManager;
 
-/* exported MsMain */
-var MsMain = GObject.registerClass(
+export const MsMain = GObject.registerClass(
     {
         GTypeName: 'MsMain',
     },
@@ -297,8 +296,7 @@ var MsMain = GObject.registerClass(
     }
 );
 
-/* exported MonitorContainer */
-var MonitorContainer = GObject.registerClass(
+export const MonitorContainer = GObject.registerClass(
     {
         GTypeName: 'MonitorContainer',
     },
@@ -412,8 +410,7 @@ var MonitorContainer = GObject.registerClass(
     }
 );
 
-/* exported PrimaryMonitorContainer */
-var PrimaryMonitorContainer = GObject.registerClass(
+export const PrimaryMonitorContainer = GObject.registerClass(
     {
         GTypeName: 'PrimaryMonitorContainer',
     },

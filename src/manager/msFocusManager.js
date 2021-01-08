@@ -4,11 +4,10 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { MsWindow } = Me.imports.src.layout.msWorkspace.msWindow;
-const { MsManager } = Me.imports.src.manager.msManager;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsManager } from 'src/manager/msManager';
 
-/* exported MsFocusManager */
-var MsFocusManager = class MsFocusManager extends MsManager {
+export class MsFocusManager extends MsManager {
     constructor(msWindowManager) {
         super();
         this.msWindowManager = msWindowManager;

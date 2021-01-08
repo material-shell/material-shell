@@ -14,8 +14,7 @@ const incompatibleExtensions = [
 ];
 
 let originalFunction;
-/* exported DisableIncompatibleExtensionsModule */
-var DisableIncompatibleExtensionsModule = class DisableIncompatibleExtensionsModule {
+export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction = ExtensionManager.prototype._callExtensionEnable;
         ExtensionManager.prototype._callExtensionEnable = function () {

@@ -3,11 +3,10 @@ const { Clutter, GObject, St, Gio } = imports.gi;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { SetAllocation, Allocate } = Me.imports.src.utils.compatibility;
-const { RippleBackground } = Me.imports.src.widget.material.rippleBackground;
+import { SetAllocation, Allocate } from 'src/utils/compatibility';
+import { RippleBackground } from 'src/widget/material/rippleBackground';
 
-/* exported MatNumberPicker */
-var MatNumberPicker = GObject.registerClass(
+export const MatNumberPicker = GObject.registerClass(
     {
         GTypeName: 'MatNumberPicker',
         Signals: {

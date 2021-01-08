@@ -7,8 +7,7 @@ const {
     SimpleLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.custom.simple;
 
-/* exported SimpleHorizontalLayout */
-var SimpleHorizontalLayout = GObject.registerClass(
+export const SimpleHorizontalLayout = GObject.registerClass(
     class SimpleHorizontalLayout extends SimpleLayout {
         isVerticalLayout() {
             return false;
