@@ -879,7 +879,11 @@ declare module "St" {
     export class TextureCache extends Widget { }
     export class Theme extends Widget { }
     export class ThemeContext extends Widget { }
-    export class ThemeNode extends Widget { }
+    export class ThemeNode extends Widget {
+        // The parameter isn't actually optional. But it has to be for typescript to be happy.
+        // (the gjs way of extending the number of parameters severely breaks polymorphism)
+        get_content_box(allocation?: Clutter.ActorBox): Clutter.ActorBox
+    }
     export class Viewport extends Widget { }
     export class WidgetAccessible extends Widget { }
 }
