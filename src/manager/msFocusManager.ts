@@ -6,12 +6,18 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
+import { MsWindowManager, MsWindowManagerType } from './msWindowManager';
 
+export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
-    constructor(msWindowManager) {
+    msWindowManager: MsWindowManagerType;
+    lastMsWindowFocused: MsWindow | null = null;
+    lastKeyFocus: MsWindow | null = null;
+    focusProtected?: boolean;
+
+    constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
-        this.lastMsWindowFocused;
         this.observe(
             global.stage,
             'notify::key-focus',
@@ -90,12 +96,12 @@ export class MsFocusManager extends MsManager {
         if (isChildrenOfMsWindow) {
             this.setFocusToMsWindow(actor);
         } else {
-            delete this.lastMsWindowFocused;
+            this.lastMsWindowFocused = null;
         }
     }
 
     onWindowFocus() {
-        const windowFocus = global.display.focus_window;
+        const windowFocus = global.display.get_focus_window();
         Me.logFocus('onWindowFocus', windowFocus);
 
         if (!windowFocus) return;

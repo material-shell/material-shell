@@ -52,20 +52,23 @@ export class MsWorkspace {
         this.precedentIndex = this._state.focusedIndex;
 
         this._state.msWindowList.forEach((msWindowData) => {
-            this.addMsWindow(
-                Me.msWindowManager.createNewMsWindow(
-                    msWindowData.appId,
-                    msWindowData.metaWindowIdentifier,
-                    null,
-                    msWindowData.persistent ? msWindowData.persistent : null,
-                    {
-                        x: msWindowData.x,
-                        y: msWindowData.y,
-                        width: msWindowData.width,
-                        height: msWindowData.height,
-                    }
-                )
-            );
+            Me.msWindowManager.createNewMsWindow(
+                msWindowData.appId,
+                msWindowData.metaWindowIdentifier,
+                null,
+                {
+                    msWorkspace: this,
+                    focus: false,
+                    insert: false,
+                },
+                msWindowData.persistent ? msWindowData.persistent : null,
+                {
+                    x: msWindowData.x,
+                    y: msWindowData.y,
+                    width: msWindowData.width,
+                    height: msWindowData.height,
+                }
+            )
         });
 
         this.msWorkspaceCategory.determineCategory();
@@ -156,7 +159,7 @@ export class MsWorkspace {
         });
     }
 
-    async addMsWindow(msWindow, focus = false, insert = false) {
+    addMsWindow(msWindow, focus = false, insert = false) {
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
@@ -164,6 +167,12 @@ export class MsWorkspace {
             return Promise.resolve();
 
         msWindow.setMsWorkspace(this);
+        return this.addMsWindowUnchecked(msWindow, focus, insert);
+    }
+
+    /// Assumes that msWindow.msWorkspace == this already but that
+    /// it hasn't been added to this workspace.
+    async addMsWindowUnchecked(msWindow, focus = false, insert = false) {
         if (this.msWorkspaceActor && !msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }

@@ -2,14 +2,21 @@
 const Signals = imports.signals;
 const { Clutter } = imports.gi;
 
+interface Signal {
+    from: any,
+    id: number,
+}
+
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-/* exported MsManager */
 export class MsManager {
+    signals: Signal[];
+
     constructor() {
         this.signals = [];
     }
-    observe(subject, property, callback) {
+
+    observe(subject: any, property: string, callback: (...args: any[])=>void) {
         let signal = {
             from: subject,
             id: subject.connect(property, callback),

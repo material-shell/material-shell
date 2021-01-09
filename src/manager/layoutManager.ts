@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 const Main = imports.ui.main;
-const GLib = imports.gi.GLib;
+import * as GLib from 'GLib';
+import * as Meta from 'Meta';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -39,7 +40,20 @@ var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
     return layoutsByKey;
 }, {});
 
+type LayoutType = new ()=>any;
+
 export class LayoutManager extends MsManager {
+    workspaceManager: Meta.WorkspaceManager;
+    layoutList: any[];
+    layoutsSettings: any;
+    screenGap: number;
+    ratio: number;
+    useScreenGap: boolean;
+    tweenTime: number;
+    gap: number;
+    availableLayouts: LayoutType[]|undefined;
+    tilingInProgress: boolean|undefined;
+
     constructor() {
         super();
         this.workspaceManager = global.workspace_manager;
@@ -96,31 +110,31 @@ export class LayoutManager extends MsManager {
         return this.layoutsSettings.get_string('default-layout');
     }
 
-    getLayoutListFromKeys(layoutKeys) {
+    getLayoutListFromKeys(layoutKeys: string[]) {
         return layoutKeys.map((layoutKey) => {
             return TilingLayoutByKey[layoutKey];
         });
     }
 
-    getLayoutByKey(key) {
+    getLayoutByKey(key: string): LayoutType {
         return TilingLayoutByKey[key];
     }
 
-    getNextLayout(currentLayout, direction) {
-        let { key } = currentLayout.constructor;
-        if (!this.availableLayouts.includes(key)) {
-            key = this.availableLayouts[0];
-        }
-        let nextIndex = this.availableLayouts.indexOf(key) + direction;
-        if (nextIndex < 0) {
-            nextIndex += this.availableLayouts.length;
-        }
-        nextIndex = nextIndex % this.availableLayouts.length;
-        // Get the next layout available
-        const newKey = this.availableLayouts[nextIndex];
-        // And returns it
-        return TilingLayoutByKey[newKey];
-    }
+    // getNextLayout(currentLayout, direction: string): string {
+    //     let { key } = currentLayout.constructor;
+    //     if (!this.availableLayouts.includes(key)) {
+    //         key = this.availableLayouts[0];
+    //     }
+    //     let nextIndex = this.availableLayouts.indexOf(key) + direction;
+    //     if (nextIndex < 0) {
+    //         nextIndex += this.availableLayouts.length;
+    //     }
+    //     nextIndex = nextIndex % this.availableLayouts.length;
+    //     // Get the next layout available
+    //     const newKey = this.availableLayouts[nextIndex];
+    //     // And returns it
+    //     return TilingLayoutByKey[newKey];
+    // }
 
     tileWindows() {
         if (this.tilingInProgress) return;

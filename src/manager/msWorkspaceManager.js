@@ -588,21 +588,18 @@ export class MsWorkspaceManager extends MsManager {
         });
     }
 
-    addWindowToAppropriateMsWorkspace(msWindow) {
-        const windowMonitorIndex = msWindow.metaWindow.get_monitor();
-        const currentWindowWorkspace = msWindow.metaWindow.get_workspace();
-        let msWorkspace;
+    determineAppropriateMsWorkspace(metaWindow) {
+        const windowMonitorIndex = metaWindow.get_monitor();
+        const currentWindowWorkspace = metaWindow.get_workspace();
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
-            msWorkspace = this.getMsWorkspacesOfMonitorIndex(
+            return this.getMsWorkspacesOfMonitorIndex(
                 windowMonitorIndex
             )[0];
         } else {
-            msWorkspace = this.primaryMsWorkspaces[
+            return this.primaryMsWorkspaces[
                 currentWindowWorkspace.index()
             ];
         }
-        this.setWindowToMsWorkspace(msWindow, msWorkspace, true);
-        this.stateChanged();
     }
 
     metaWindowEnteredWorkspace(metaWindow, workspace) {

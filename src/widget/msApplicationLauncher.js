@@ -66,9 +66,15 @@ var MsApplicationLauncher = GObject.registerClass(
                 });
                 button.connect('clicked', () => {
                     const msWindow = Me.msWindowManager.createNewMsWindow(
-                        app.id
+                        app.id,
+                        null,
+                        null,
+                        {
+                            msWorkspace: this.msWorkspace,
+                            focus: true,
+                            insert: false,
+                        }
                     );
-                    this.msWorkspace.addMsWindow(msWindow, true);
                     Me.msWindowManager.openAppForMsWindow(msWindow);
                     this.appListContainer.reset();
                 });

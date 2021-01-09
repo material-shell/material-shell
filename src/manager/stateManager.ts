@@ -1,24 +1,31 @@
 // Inspired by https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator/blob/master/utils.js
 
-/** Gnome libs imports */
-const { GLib, Gio } = imports.gi;
-const FileTest = GLib.FileTest;
-
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { getSettings } from 'src/utils/settings';
+import * as Gio from 'Gio';
+import * as GLib from 'GLib';
+
+/** Gnome libs imports */
+const FileTest = GLib.FileTest;
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
 const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
     Me.uuid
 }-state-next.json`;
 
+type StateDict = { [Key: string]: any };
+
 export class StateManager {
+    state: StateDict;
+    stateFile: Gio.File;
+    stateChangedTriggered: boolean|undefined;
+
     constructor() {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
-    loadRegistry(callback) {
+    loadRegistry(callback: (state: StateDict)=>void) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
         const serializedState = global.get_persistent_state(
@@ -37,7 +44,8 @@ export class StateManager {
         }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             this.stateFile.load_contents_async(null, (obj, res) => {
-                let [success, contents] = obj.load_contents_finish(res);
+                let file = obj as unknown as Gio.File;
+                let [success, contents] = file.load_contents_finish(res);
                 if (success) {
                     try {
                         this.state = this.updateState(
@@ -56,7 +64,7 @@ export class StateManager {
         }
     }
 
-    updateState(state) {
+    updateState(state: StateDict) {
         if (state) {
             const workspacesState = state['workspaces-state'];
             if (workspacesState) {
@@ -82,13 +90,13 @@ export class StateManager {
         let json = JSON.stringify(this.state);
         global.set_persistent_state(
             'material-shell-state',
-            new GLib.Variant('s', json)
+            GLib.Variant.new_string(json)
         );
     }
-    getState(key) {
+    getState(key: string) {
         return this.state[key];
     }
-    setState(key, value) {
+    setState(key: string, value) {
         if (value === undefined) {
             delete this.state[key];
         } else {
