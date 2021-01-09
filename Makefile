@@ -37,7 +37,7 @@ build_prod: schemas sass
 
 compile:
 	tsc
-	sh transpile.sh
+	./transpile.py
 	cp metadata.json target
 	cp *.css target
 	cp -r schemas target/schemas

@@ -1,10 +1,14 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
-const { GLib, St, Gio } = imports.gi;
+import * as GLib from 'GLib';
+import * as Gio from 'Gio';
+import * as GObject from 'GObject';
+import * as St from 'St';
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { DisableIncompatibleExtensionsModule } from 'src/module/disableIncompatibleExtensionsModule';
 import { OverrideModule } from 'src/module/overrideModule';
 import { HotKeysModule } from 'src/module/hotKeysModule';
@@ -20,12 +24,12 @@ import { MsMain } from 'src/layout/main';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { getSettings } from 'src/utils/settings';
 
-let disableIncompatibleExtensionsModule,
-    modules,
-    _startupPreparedId,
-    _splashscreenTimeoutId,
-    splashscreenCalled;
-let splashScreens = [];
+let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
+let modules: any[] | undefined;
+let _startupPreparedId: number | undefined;
+let _splashscreenTimeoutId: number | undefined;
+let splashscreenCalled: boolean | undefined;
+let splashScreens: St.Bin[] = [];
 
 // eslint-disable-next-line no-unused-vars
 function init() {
@@ -100,7 +104,7 @@ function enable() {
     });
 }
 
-function loaded(disconnect) {
+function loaded(disconnect: boolean) {
     log('----------------');
     log('EXTENSION LOADED');
     log('----------------');

@@ -2,13 +2,13 @@
     "version": "1.1.0",
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "es2015",
+        "target": "es2016",
         "strict": true,
         "outDir": "./target",
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true,
         "lib": [
-            "es2015"
+            "es2016"
         ],
         "pretty": true,
         "sourceMap": false,
@@ -24,12 +24,17 @@
         "paths": {
             "GLib": ["@types/Gjs/GLib-2.0"],
             "Gio": ["@types/Gjs/Gio-2.0"],
-        }
+            "Clutter": ["@types/Gjs/Clutter-1.0"],
+            "GObject": ["@types/Gjs/GObject-2.0"],
+            "St": ["src/st"],
+            "Meta": ["src/meta"],
+        },
+        "experimentalDecorators": true
     },
     "include": [
         "extension.ts",
         // "prefs.js",
-        "src/*.ts",
+        "src/**/*.ts",
         "src/**/*.js"
-, "src/manager/stateManager.ts", "src/manager/msManager.ts", "src/manager/layoutManager.ts"    ]
+    ]
 }
