@@ -8,11 +8,18 @@ patterns = [
     (re.compile(r"export var"), r"var"),
     (re.compile(r"export const"), r"var"),
     (re.compile(r"export class ([\w\-_\d]+)"), r"var \1 = class \1"),
+    # Typescript generates this sometimes, especially when using class decorators
+    # We can just remove it since it will also have generated a `let` declaration above.
+    (re.compile(r"export \{ ([\w\-_\d]+) \}"), r""),
+
     (re.compile(r"Object.defineProperty(exports, \"__esModule\", { value: true });"), r"var exports = {};"),
     # Replace our typechecked imports with what GJS uses
     (re.compile(r"import \* as Gio from ['\"]Gio['\"];"), r"const { Gio } = imports.gi;"),
     (re.compile(r"import \* as GLib from ['\"]GLib['\"];"), r"const { GLib } = imports.gi;"),
     (re.compile(r"import \* as GObject from ['\"]GObject['\"];"), r"const { GObject } = imports.gi;"),
+    (re.compile(r"import \* as St from ['\"]St['\"];"), r"const { St } = imports.gi;"),
+    (re.compile(r"import \* as Meta from ['\"]Meta['\"];"), r"const { Meta } = imports.gi;"),
+    (re.compile(r"import \* as Clutter from ['\"]Clutter['\"];"), r"const { Clutter } = imports.gi;"),
 
     # Replace `import * as Something from 'a/b/c` with `const Something = Me.imports.a/b/c` The slashes will be replaced later.
     (re.compile(r"import \* as ([\w\-_\d]+) from ['\"]([\w\-\d\/]+)['\"]"), r"const \1 = Me.imports.\2"),
@@ -20,10 +27,10 @@ patterns = [
     (re.compile(r"import \{([^\}]+)\} from ['\"]src\/([\w\-_\d\/]+)['\"]"), r"const {\1} = Me.imports.src.\2"),
     # Replace / with . in import paths.
     # May have to do it a few times since each replacement will only replace a single / in the path.
-    (re.compile(r"(Me\.imports\.src\.[^;]+)\/([^;]+)"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src\.[^;]+)\/([^;]+)"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src\.[^;]+)\/([^;]+)"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src\.[^;]+)\/([^;]+)"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
 
     # When a class has been decorated with @registerGObjectClass we want to change its constructor to be an _init function instead
     # because that's what GJS recommends. Typescript however likes constructors a lot more for typechecking purposes
@@ -66,6 +73,9 @@ for file in glob("target/**/*.js", recursive=True):
         firstOtherImport = text.find("= Me.imports")
         if meImport > firstOtherImport and firstOtherImport != -1:
             print(f"The `Me` constant needs to be defined before any imports.\nError in file: {file}")
+            exit(1)
+        elif meImport == -1 and firstOtherImport != -1:
+            print(f"The `Me` constant needs to be defined for imports to work, but it was not found.\nError in file: {file}")
             exit(1)
 
     with open(file, "w") as f:
