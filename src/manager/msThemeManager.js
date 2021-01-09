@@ -1,5 +1,7 @@
 /** Gnome libs imports */
-const { GLib, Gio, St } = imports.gi;
+import * as St from 'St';
+import * as Gio from 'Gio';
+import * as GLib from 'GLib';
 const Main = imports.ui.main;
 
 /** Extension imports */

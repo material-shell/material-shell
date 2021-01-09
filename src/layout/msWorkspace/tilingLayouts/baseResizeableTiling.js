@@ -2,7 +2,11 @@
 const { round } = Math;
 
 /** Gnome libs imports */
-const { Clutter, GObject, St, Meta, Cogl } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as St from 'St';
+import * as Meta from 'Meta';
+import * as Cogl from 'Cogl';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

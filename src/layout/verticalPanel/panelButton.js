@@ -1,4 +1,6 @@
-const { GObject, GLib, Meta } = imports.gi;
+import * as GObject from 'GObject';
+import * as GLib from 'GLib';
+import * as Meta from 'Meta';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MatButton } from 'src/widget/material/button';
 const Main = imports.ui.main;

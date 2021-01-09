@@ -1,5 +1,8 @@
 /** Gnome libs imports */
-const { Gio, GLib, Clutter, GObject } = imports.gi;
+import * as Gio from 'Gio';
+import * as GLib from 'GLib';
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
 const Main = imports.ui.main;
 
 /** Extension imports */

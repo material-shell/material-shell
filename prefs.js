@@ -1,4 +1,8 @@
-const { GObject, Gtk, Gdk, Gio, GLib } = imports.gi;
+import * as GObject from 'GObject';
+import * as Gtk from 'Gtk';
+import * as Gdk from 'Gdk';
+import * as Gio from 'Gio';
+import * as GLib from 'GLib';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { ShellVersionMatch } from 'src/utils/compatibility';

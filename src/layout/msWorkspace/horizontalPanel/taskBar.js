@@ -1,5 +1,11 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Shell, Gio, Meta, GLib } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as St from 'St';
+import * as Shell from 'Shell';
+import * as Gio from 'Gio';
+import * as Meta from 'Meta';
+import * as GLib from 'GLib';
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;

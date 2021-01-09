@@ -1,5 +1,8 @@
 /** Gnome libs imports */
-const { Shell, Meta, GLib, Clutter } = imports.gi;
+import * as Shell from 'Shell';
+import * as Meta from 'Meta';
+import * as GLib from 'GLib';
+import * as Clutter from 'Clutter';
 const Main = imports.ui.main;
 
 /** Extension imports */

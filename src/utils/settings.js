@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Gio } = imports.gi;
+import * as Gio from 'Gio';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

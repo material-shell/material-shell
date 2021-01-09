@@ -1,6 +1,6 @@
 /** Gnome libs imports */
 const Signals = imports.signals;
-const { Clutter } = imports.gi;
+import * as Clutter from 'Clutter';
 
 interface Signal {
     from: any,

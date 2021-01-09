@@ -1,5 +1,10 @@
 /** Gnome libs imports */
-const { Shell, Meta, St, GObject, Clutter, GLib } = imports.gi;
+import * as Shell from 'Shell';
+import * as Meta from 'Meta';
+import * as St from 'St';
+import * as GObject from 'GObject';
+import * as Clutter from 'Clutter';
+import * as GLib from 'GLib';
 const Main = imports.ui.main;
 const Background = imports.ui.background;
 

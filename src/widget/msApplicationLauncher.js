@@ -1,5 +1,10 @@
 /** Gnome libs imports */
-const { Clutter, GLib, GObject, St, GnomeDesktop, Shell } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GLib from 'GLib';
+import * as GObject from 'GObject';
+import * as St from 'St';
+import * as GnomeDesktop from 'GnomeDesktop';
+import * as Shell from 'Shell';
 const Main = imports.ui.main;
 
 /** Extension imports */

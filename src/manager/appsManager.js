@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { Shell } = imports.gi;
+import * as Shell from 'Shell';
 
 export class AppsManager {
     constructor() {}

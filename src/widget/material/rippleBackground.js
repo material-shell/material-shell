@@ -1,5 +1,8 @@
 /** Gnome libs imports */
-const { St, Clutter, GObject, GLib } = imports.gi;
+import * as St from 'St';
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as GLib from 'GLib';
 
 /* exported RippleBackground */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

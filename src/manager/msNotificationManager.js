@@ -1,5 +1,11 @@
 /** Gnome libs imports */
-const { GLib, Meta, Clutter, GObject, Gio, St, Soup } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as Gio from 'Gio';
+import * as St from 'St';
+import * as Soup from 'Soup';
+import * as Meta from 'Meta';
+import * as GLib from 'GLib';
 const MessageTray = imports.ui.messageTray;
 const Main = imports.ui.main;
 const Dialog = imports.ui.dialog;

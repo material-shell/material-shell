@@ -1,5 +1,7 @@
 /** Gnome libs imports */
-const { Clutter, GLib, GObject } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as GLib from 'GLib';
 const Signals = imports.signals;
 const Main = imports.ui.main;
 

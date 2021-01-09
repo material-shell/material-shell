@@ -1,5 +1,7 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as St from 'St';
 
 export const MatCard = GObject.registerClass(
     class MatCard extends St.Bin {

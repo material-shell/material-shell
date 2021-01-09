@@ -1,5 +1,8 @@
 /** Gnome libs imports */
-const { Clutter, GObject, St, Meta } = imports.gi;
+import * as Clutter from 'Clutter';
+import * as GObject from 'GObject';
+import * as St from 'St';
+import * as Meta from 'Meta';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

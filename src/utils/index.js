@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const { GLib } = imports.gi;
+import * as GLib from 'GLib';
 const Main = imports.ui.main;
 
 /** Extension imports */

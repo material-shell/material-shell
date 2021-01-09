@@ -1,5 +1,7 @@
 /** Gnome libs imports */
-const { Shell, Meta, GLib } = imports.gi;
+import * as Shell from 'Shell';
+import * as Meta from 'Meta';
+import * as GLib from 'GLib';
 const Signals = imports.signals;
 
 /** Extension imports */

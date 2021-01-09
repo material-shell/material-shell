@@ -1,7 +1,8 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-const { GLib, GObject } = imports.gi;
+import * as GLib from 'GLib';
+import * as GObject from 'GObject';
 
 /** Extension imports */
 const {

@@ -1,7 +1,9 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-const { GObject, Clutter, St } = imports.gi;
+import * as GObject from 'GObject';
+import * as Clutter from 'Clutter';
+import * as St from 'St';
 const Signals = imports.signals;
 
 const MIN_BASIS_RATIO = 0.1;
