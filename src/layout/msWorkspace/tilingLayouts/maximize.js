@@ -1,9 +1,9 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
 const { GObject } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
 
 /** Extension imports */
-const Me = ExtensionUtils.getCurrentExtension();
 const {
     BaseTilingLayout,
 } = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;

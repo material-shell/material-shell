@@ -3,7 +3,7 @@ const Util = imports.misc.util;
 
 /* exported updateTitleBarVisibility */
 
-var updateTitleBarVisibility = function (metaWindow) {
+export const updateTitleBarVisibility = function (metaWindow) {
     let msWorkspaceIsInFloatLayout =
         metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
     let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
@@ -15,7 +15,7 @@ var updateTitleBarVisibility = function (metaWindow) {
     }
 };
 
-var setTitleBarVisibility = function (metaWindow, visible) {
+export const setTitleBarVisibility = function (metaWindow, visible) {
     let windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
@@ -35,7 +35,7 @@ var setTitleBarVisibility = function (metaWindow, visible) {
     metaWindow.titleBarVisible = visible;
 };
 
-var getWindowXID = function (win) {
+export const getWindowXID = function (win) {
     let desc = win.get_description() || '';
     let match = desc.match(/0x[0-9a-f]+/) || [null];
 
