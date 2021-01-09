@@ -2,6 +2,21 @@
 from glob import glob
 import re
 
+giImports = [
+    "Clutter",
+    "Cogl",
+    "Gdk",
+    "Gio",
+    "GLib",
+    "GnomeDesktop",
+    "GObject",
+    "Gtk",
+    "Meta",
+    "Shell",
+    "Soup",
+    "St",
+]
+
 patterns = [
     # GJS doesn't know about exports, it just exports everything
     (re.compile(r"export function"), r"function"),
@@ -14,12 +29,17 @@ patterns = [
 
     (re.compile(r"Object.defineProperty(exports, \"__esModule\", { value: true });"), r"var exports = {};"),
     # Replace our typechecked imports with what GJS uses
-    (re.compile(r"import \* as Gio from ['\"]Gio['\"];"), r"const { Gio } = imports.gi;"),
-    (re.compile(r"import \* as GLib from ['\"]GLib['\"];"), r"const { GLib } = imports.gi;"),
-    (re.compile(r"import \* as GObject from ['\"]GObject['\"];"), r"const { GObject } = imports.gi;"),
-    (re.compile(r"import \* as St from ['\"]St['\"];"), r"const { St } = imports.gi;"),
-    (re.compile(r"import \* as Meta from ['\"]Meta['\"];"), r"const { Meta } = imports.gi;"),
-    (re.compile(r"import \* as Clutter from ['\"]Clutter['\"];"), r"const { Clutter } = imports.gi;"),
+    # Rewrites `import * as Name from 'Name';` to `const { Name } = imports.gi;`
+    *[
+        (re.compile(r"import \* as " + name + r" from ['\"]" + name + "['\"];"), r"const { " + name + r" } = imports.gi;")
+        for name in giImports
+    ]
+    # (re.compile(r"import \* as Gio from ['\"]Gio['\"];"), r"const { Gio } = imports.gi;"),
+    # (re.compile(r"import \* as GLib from ['\"]GLib['\"];"), r"const { GLib } = imports.gi;"),
+    # (re.compile(r"import \* as GObject from ['\"]GObject['\"];"), r"const { GObject } = imports.gi;"),
+    # (re.compile(r"import \* as St from ['\"]St['\"];"), r"const { St } = imports.gi;"),
+    # (re.compile(r"import \* as Meta from ['\"]Meta['\"];"), r"const { Meta } = imports.gi;"),
+    # (re.compile(r"import \* as Clutter from ['\"]Clutter['\"];"), r"const { Clutter } = imports.gi;"),
 
     # Replace `import * as Something from 'a/b/c` with `const Something = Me.imports.a/b/c` The slashes will be replaced later.
     (re.compile(r"import \* as ([\w\-_\d]+) from ['\"]([\w\-\d\/]+)['\"]"), r"const \1 = Me.imports.\2"),

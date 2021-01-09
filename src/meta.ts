@@ -24,6 +24,13 @@ declare module "Meta" {
         RIGHT
     }
 
+    export enum WindowType {
+        DIALOG,
+        MODAL_DIALOG,
+        UTILITY,
+        NORMAL,
+    }
+
     export interface Display extends GObject.Object {
         get_current_monitor(): number;
         get_focus_window(): null | Window;
