@@ -57,13 +57,14 @@ patterns = [
 ]
 
 for file in glob("target/**/*.js", recursive=True):
-    print(file)
     with open(file) as f:
         text = f.read()
         for (regex, replacement) in patterns:
             text = regex.sub(replacement, text)
-        
-        if text.find("= Me.imports") > text.find("const Me = imports"):
+
+        meImport = text.find("const Me = imports")
+        firstOtherImport = text.find("= Me.imports")
+        if meImport > firstOtherImport and firstOtherImport != -1:
             print(f"The `Me` constant needs to be defined before any imports.\nError in file: {file}")
             exit(1)
 
