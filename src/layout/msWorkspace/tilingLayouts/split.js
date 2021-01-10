@@ -11,7 +11,7 @@ const { MatNumberPicker } = Me.imports.src.widget.material.numberPicker;
 const { reparentActor } = Me.imports.src.utils.index;
 
 // TODO: Make this configurable
-const WINDOW_SLIDE_TWEEN_TIME = 250;
+// const WINDOW_SLIDE_TWEEN_TIME = 250;
 
 /* exported SplitLayout */
 var SplitLayout = GObject.registerClass(
@@ -158,9 +158,7 @@ var SplitLayout = GObject.registerClass(
 
         getTileableIndex(tileable) {
             if (this.activeTileableList.includes(tileable)) {
-                let activeIndex = this.activeTileableList.indexOf(tileable);
-
-                return activeIndex;
+                return this.activeTileableList.indexOf(tileable);
             }
 
             return -1;
@@ -202,7 +200,9 @@ var SplitLayout = GObject.registerClass(
                     );
                 }
             });
-            this.borderContainer.hide();
+            if (this.borderContainer) {
+                this.borderContainer.hide();
+            }
             this.translationAnimator.setTranslation(
                 previousTileableList,
                 nextTileableList,
@@ -211,7 +211,9 @@ var SplitLayout = GObject.registerClass(
         }
 
         endTransition() {
-            this.borderContainer.show();
+            if (this.borderContainer) {
+                this.borderContainer.show();
+            }
             this.refreshVisibleActors();
             this.tileableContainer.remove_child(this.translationAnimator);
         }
