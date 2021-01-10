@@ -176,8 +176,15 @@ var MsWindowManager = class MsWindowManager extends MsManager {
                 // If window is dialog try t0 find his parent
                 if (this.isMetaWindowDialog(waitingMetaWindow.metaWindow)) {
                     // The best way to find it's parent it with the root ancestor.
-                    let root = waitingMetaWindow.metaWindow.find_root_ancestor();
-                    if (root != waitingMetaWindow.metaWindow && root.msWindow) {
+                    let root;
+                    waitingMetaWindow.metaWindow.foreach_ancestor(
+                        (ancestor) => {
+                            if (!root && ancestor.msWindow) {
+                                root = ancestor;
+                            }
+                        }
+                    );
+                    if (root) {
                         msWindowFound = root.msWindow;
                     } else if (app) {
                         // But sometime the we failed to found one.
