@@ -620,13 +620,13 @@ var MsWindow = GObject.registerClass(
                 // We need to move the window before changing the workspace, because
                 // the move itself could cause a workspace change if the window enters
                 // the primary monitor
-                if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
+                if (metaWindow.get_monitor() !== this.msWorkspace.monitor.index)
                     metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
 
                 let workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
                     this.msWorkspace
                 );
-                if (workspace && metaWindow.get_workspace() != workspace) {
+                if (workspace && metaWindow.get_workspace() !== workspace) {
                     metaWindow.change_workspace(workspace);
                 }
             }
