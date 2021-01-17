@@ -26,7 +26,7 @@ declare module "St" {
     //     ease()
     // }
 
-    export interface Widget_ConstructProps extends Clutter.Actor_ConstructProps {
+    export interface Widget_ConstructProps extends Partial<Clutter.Actor.ConstructorProperties> {
         accessible_name?: string
         // accessible_role?: Atk.Role
         can_focus?: boolean
@@ -38,6 +38,8 @@ declare module "St" {
         track_hover?: boolean
     }
     export class Widget extends Clutter.Actor {
+        // ease(params: any): void;
+
         /* Properties of St.Widget */
         accessible_name: string
         // accessible_role: Atk.Role
@@ -417,7 +419,7 @@ declare module "St" {
         force_floating(): void
         freeze_notify(): void
         get_data(key: string): object | null
-        get_property(property_name: string, value: GObject.Value): void
+        // get_property(property_name: string, value: GObject.Value): void
         get_qdata(quark: GLib.Quark): object | null
         getv(names: string[], values: GObject.Value[]): void
         is_floating(): boolean
@@ -824,9 +826,9 @@ declare module "St" {
         constructor(config?: Widget_ConstructProps)
         _init(config?: Widget_ConstructProps): void
         /* Static methods and pseudo-constructors */
-        static class_find_child_property(klass: GObject.ObjectClass, property_name: string): GObject.ParamSpec
-        static class_list_child_properties(klass: GObject.ObjectClass): GObject.ParamSpec[]
-        static $gtype: GObject.Type
+        // static class_find_child_property(klass: GObject.ObjectClass, property_name: string): GObject.ParamSpec
+        // static class_list_child_properties(klass: GObject.ObjectClass): GObject.ParamSpec[]
+        // static $gtype: GObject.Type
     }
 
     export class Btn extends Widget {
