@@ -1,44 +1,47 @@
 /** Gnome libs imports */
 import * as GLib from 'GLib';
+import * as Clutter from 'Clutter';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported range, debounce, throttle, reparentActor */
-var range = (to) =>
+export const range = (to: any) =>
     // Returns a list containing all integers from 0 to `to`
     Array(to)
-        .fill()
+        .fill(0)
         .map((_, i) => i);
 
-var debounce = (fun, delay) => {
-    // Only calls once fun after no calls for more than delay
-    let timeout = null;
-    let debouncedArgs = [];
-    return function (...args) {
-        debouncedArgs.push(args);
-        const context = this;
-        if (timeout) {
-            GLib.source_remove(timeout);
-        }
-        timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
-            fun.apply(context, [...args, debouncedArgs]);
-            timeout = null;
-            debouncedArgs = [];
-            return GLib.SOURCE_REMOVE;
-        });
-    };
-};
+// This signature cannot be specified in TypeScript, but it's ok because it wasn't used anyway
+// export const debounce = function<T extends any[]>(fun: (...args: T, debounced_args: T[])=>void, delay: number) {
+//     // Only calls once fun after no calls for more than delay
+//     let timeout: number | null = null;
+//     let debouncedArgs: T[] = [];
+//     return function (...args: T) {
+//         debouncedArgs.push(args);
+//         const context: any = this;
+//         if (timeout !== null) {
+//             GLib.source_remove(timeout);
+//         }
+//         timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+//             fun.apply(context, [...args, debouncedArgs]);
+//             timeout = null;
+//             debouncedArgs = [];
+//             return GLib.SOURCE_REMOVE;
+//         });
+//     };
+// };
 
 // Returns a function, that, when invoked, will only be triggered at most once
 // during a given window of time. Normally, the throttled function will run
 // as much as it can, without ever going more than once per `wait` duration;
 // but if you'd like to disable the execution on the leading edge, pass
 // `{leading: false}`. To disable execution on the trailing edge, ditto.
-var throttle = (func, wait, options) => {
-    var context, args, result;
-    var timeout = null;
+export function throttle<T extends any[]> (func: (...args: T)=>void, wait: number, options: { trailing?: boolean; leading?: boolean; }) {
+    var context: any;
+    var args, result;
+    var timeout: number | null = null;
     var previous = 0;
     if (!options) options = {};
     var later = function () {
@@ -46,15 +49,16 @@ var throttle = (func, wait, options) => {
         timeout = null;
         result = func.apply(context, args);
         if (!timeout) context = args = null;
+        return false;
     };
-    return function () {
+    return function (this: any) {
         var now = Date.now();
         if (!previous && options.leading === false) previous = now;
         var remaining = wait - (now - previous);
         context = this;
         args = arguments;
         if (remaining <= 0 || remaining > wait) {
-            if (timeout) {
+            if (timeout !== null) {
                 GLib.source_remove(timeout);
                 timeout = null;
             }
@@ -68,7 +72,7 @@ var throttle = (func, wait, options) => {
     };
 };
 
-var isParentOfActor = (parent, actor) => {
+export const isParentOfActor = (parent: Clutter.Actor, actor: Clutter.Actor) => {
     if (!parent || !actor) {
         return false;
     }
@@ -81,7 +85,7 @@ var isParentOfActor = (parent, actor) => {
     return isParent;
 };
 
-var reparentActor = (actor, parent) => {
+export const reparentActor = (actor: Clutter.Actor, parent: Clutter.Actor) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
 
@@ -105,6 +109,6 @@ var reparentActor = (actor, parent) => {
     Me.reparentInProgress = false;
 };
 
-var InfinityTo0 = (number) => {
+export const InfinityTo0 = (number: number) => {
     return Math.abs(number) === Infinity ? 0 : number;
 };
