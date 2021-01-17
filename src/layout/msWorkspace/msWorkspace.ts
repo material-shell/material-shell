@@ -8,7 +8,7 @@ const Main = imports.ui.main;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
 const {
     HorizontalPanel,
 } = Me.imports.src.layout.msWorkspace.horizontalPanel.horizontalPanel;
@@ -19,9 +19,43 @@ const {
 } = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
 import { getSettings } from 'src/utils/settings';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
+import { logAssert } from 'src/utils/assert';
 
-export class MsWorkspace {
-    constructor(msWorkspaceManager, monitor, state = {}) {
+type Tileable = MsWindow | MsApplicationLauncher;
+
+function isMsWindow<T>(argument: any): argument is MsWindow {
+    return argument instanceof MsWindow;
+}
+
+export class MsWorkspace extends WithSignals {
+    msWorkspaceManager: MsWorkspaceManager;
+    private _state: {
+        // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
+        external: boolean;
+        focusedIndex: number;
+        forcedCategory: null;
+        msWindowList: MsWindowState[];
+        layoutStateList: any;
+        layoutKey: any;
+    };
+    insertedMsWindow: MsWindow | null;
+    appLauncher: MsApplicationLauncher;
+    tileableList: Tileable[];
+    msWorkspaceCategory: any;
+    precedentIndex: number;
+    private msWorkspaceActor: MsWorkspaceActor;
+    layout: any;
+    destroyed: boolean | undefined;
+    monitorIsExternal: any;
+    apps: any;
+    categorizedAppCard: any;
+    monitor: any;
+    emitTileableChangedInProgress: any;
+
+    constructor(msWorkspaceManager: MsWorkspaceManager, monitor, state = {}) {
+        super();
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
         this._state = Object.assign(
@@ -84,10 +118,11 @@ export class MsWorkspace {
     }
 
     destroy() {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
-            delete this.msWorkspaceActor;
         }
         this.destroyed = true;
     }
@@ -103,9 +138,7 @@ export class MsWorkspace {
 
     get state() {
         this._state.msWindowList = this.tileableList
-            .filter((tileable) => {
-                return tileable instanceof MsWindow;
-            })
+            .filter(isMsWindow)
             .filter((msWindow) => {
                 return !msWindow.app.is_window_backed();
             })
@@ -128,6 +161,8 @@ export class MsWorkspace {
     }
 
     get tileableFocused() {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         if (!this.tileableList) return null;
         return this.tileableList[this.focusedIndex];
     }
@@ -152,6 +187,8 @@ export class MsWorkspace {
     }
 
     close() {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         Promise.all(
             this.msWindowList.map((msWindow) => {
                 return msWindow.kill();
@@ -161,7 +198,7 @@ export class MsWorkspace {
         });
     }
 
-    addMsWindow(msWindow, focus = false, insert = false) {
+    addMsWindow(msWindow: MsWindow, focus = false, insert = false) {
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
@@ -174,7 +211,9 @@ export class MsWorkspace {
 
     /// Assumes that msWindow.msWorkspace == this already but that
     /// it hasn't been added to this workspace.
-    async addMsWindowUnchecked(msWindow, focus = false, insert = false) {
+    async addMsWindowUnchecked(msWindow: MsWindow, focus = false, insert = false) {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         if (this.msWorkspaceActor && !msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }
@@ -199,10 +238,12 @@ export class MsWorkspace {
     }
 
     async removeMsWindow(msWindow) {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
-        const oldTileableList = [...this.tileableList];
+        const oldTileableList: (Tileable | null)[] = [...this.tileableList];
         oldTileableList.splice(tileableIndex, 1, [null]);
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
@@ -327,7 +368,7 @@ export class MsWorkspace {
         }
     }
 
-    focusTileable(tileable, forced) {
+    focusTileable(tileable: MsWindow | MsApplicationLauncher, forced: boolean = false) {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
@@ -349,7 +390,7 @@ export class MsWorkspace {
         this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
 
-    refreshFocus(forced) {
+    refreshFocus(forced: boolean = false) {
         if (
             this.msWorkspaceManager.getActiveMsWorkspace() !== this &&
             !forced
@@ -360,7 +401,7 @@ export class MsWorkspace {
         this.tileableFocused.grab_key_focus();
     }
 
-    setTileableBefore(tileableToMove, tileableRelative) {
+    setTileableBefore(tileableToMove: Tileable, tileableRelative: Tileable) {
         const oldTileableList = [...this.tileableList];
         let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
@@ -370,7 +411,7 @@ export class MsWorkspace {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    setTileableAfter(tileableToMove, tileableRelative) {
+    setTileableAfter(tileableToMove: Tileable, tileableRelative: Tileable) {
         const oldTileableList = [...this.tileableList];
         let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
@@ -380,7 +421,7 @@ export class MsWorkspace {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    setTileableAtIndex(tileableToMove, index) {
+    setTileableAtIndex(tileableToMove: Tileable, index: number) {
         const oldTileableList = [...this.tileableList];
         let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
@@ -388,7 +429,7 @@ export class MsWorkspace {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    nextLayout(direction) {
+    nextLayout(direction: number) {
         this.layout.onDestroy();
 
         let { key } = this.layout.constructor.state;
@@ -413,6 +454,8 @@ export class MsWorkspace {
     }
 
     setLayoutByKey(layoutKey) {
+        logAssert(!this.destroyed, "Workspace is destroyed");
+
         if (this.layout) {
             this.layout.onDestroy();
         }
@@ -440,36 +483,37 @@ export class MsWorkspace {
         return getSettings('tweaks').get_boolean('cycle-through-windows');
     }
 
-    emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
-        // In case of direct call check if it has _debouncedArgs
-        if (debouncedArgs) {
-            // Get first debounced oldWindows
-            const firstOldWindows = debouncedArgs[0][1];
-            // And compare it with the new newWindows
-            if (
-                newWindows.length === firstOldWindows.length &&
-                newWindows.every((window, i) => firstOldWindows[i] === window)
-            ) {
-                // If it's the same, the changes have compensated themselves
-                // So in the end nothing happened:
+    // Dead code
+    // emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
+    //     // In case of direct call check if it has _debouncedArgs
+    //     if (debouncedArgs) {
+    //         // Get first debounced oldWindows
+    //         const firstOldWindows = debouncedArgs[0][1];
+    //         // And compare it with the new newWindows
+    //         if (
+    //             newWindows.length === firstOldWindows.length &&
+    //             newWindows.every((window, i) => firstOldWindows[i] === window)
+    //         ) {
+    //             // If it's the same, the changes have compensated themselves
+    //             // So in the end nothing happened:
 
-                return;
-            }
-            oldWindows = firstOldWindows;
-        }
+    //             return;
+    //         }
+    //         oldWindows = firstOldWindows;
+    //     }
 
-        if (!this.destroyed) {
-            // Make it async to prevent concurrent debounce calls
-            if (debouncedArgs) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    this.emit('windows-changed', newWindows, oldWindows);
-                    return GLib.SOURCE_REMOVE;
-                });
-            } else {
-                this.emit('windows-changed', newWindows, oldWindows);
-            }
-        }
-    }
+    //     if (!this.destroyed) {
+    //         // Make it async to prevent concurrent debounce calls
+    //         if (debouncedArgs) {
+    //             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+    //                 this.emit('windows-changed', newWindows, oldWindows);
+    //                 return GLib.SOURCE_REMOVE;
+    //             });
+    //         } else {
+    //             this.emit('windows-changed', newWindows, oldWindows);
+    //         }
+    //     }
+    // }
 
     setApps(apps) {
         this.apps = apps;
@@ -487,20 +531,20 @@ export class MsWorkspace {
     }
 
     activate() {
-        if (this.monitorIsExternal) {
-            return;
-        }
+        let workspace = this.workspace;
+        if (workspace === null) return;
+
         if (
             this.tileableFocused instanceof MsWindow &&
             this.tileableFocused.metaWindow &&
             !this.tileableFocused.dragged
         ) {
-            this.workspace.activate_with_focus(
+            workspace.activate_with_focus(
                 this.tileableFocused.metaWindow,
                 global.get_current_time()
             );
         } else {
-            this.workspace.activate(global.get_current_time());
+            workspace.activate(global.get_current_time());
         }
     }
 
@@ -524,81 +568,83 @@ export class MsWorkspace {
         });
     }
 };
-Signals.addSignalMethods(MsWorkspace.prototype);
 
-var MsWorkspaceActor = GObject.registerClass(
-    {
+@registerGObjectClass
+export class MsWorkspaceActor extends Clutter.Actor {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsWorkspaceActor',
-    },
-    class MsWorkspaceActor extends Clutter.Actor {
-        _init(msWorkspace) {
-            super._init({
-                clip_to_allocation: true,
-                x_expand: true,
-                //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
-            });
-            this.msWorkspace = msWorkspace;
-            this.tileableContainer = new Clutter.Actor({
-                //background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
-            });
+    };
+    tileableContainer: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
+    panel: any;
+    msWorkspace: MsWorkspace;
 
-            this.panel = new HorizontalPanel(msWorkspace);
-            this.add_child(this.tileableContainer);
-            this.add_child(this.panel);
-            this.updateUI();
-        }
+    constructor(msWorkspace: MsWorkspace) {
+        super({
+            clip_to_allocation: true,
+            x_expand: true,
+            //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
+        });
+        this.msWorkspace = msWorkspace;
+        this.tileableContainer = new Clutter.Actor({
+            //background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
+        });
 
-        updateUI() {
-            const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
-                this.msWorkspace.monitor.index
-            );
-            if (this.panel) {
-                this.panel.visible =
-                    this.msWorkspace.shouldPanelBeVisible() &&
-                    !monitorInFullScreen;
-            }
-            this.visible = !monitorInFullScreen;
-        }
-
-        vfunc_allocate(box, flags) {
-            SetAllocation(this, box, flags);
-            let contentBox = new Clutter.ActorBox();
-            contentBox.x2 = box.get_width();
-            contentBox.y2 = box.get_height();
-            let panelPosition = Me.msThemeManager.horizontalPanelPosition;
-            const panelHeight = this.panel.get_preferred_height(-1)[1];
-            let panelBox = new Clutter.ActorBox();
-            panelBox.x1 = contentBox.x1;
-            panelBox.x2 = contentBox.x2;
-
-            panelBox.y1 =
-                panelPosition === HorizontalPanelPositionEnum.TOP
-                    ? contentBox.y1
-                    : contentBox.y2 - panelHeight;
-            panelBox.y2 = panelBox.y1 + panelHeight;
-            Allocate(this.panel, panelBox, flags);
-            let containerBox = new Clutter.ActorBox();
-            containerBox.x1 = contentBox.x1;
-            containerBox.x2 = contentBox.x2;
-            containerBox.y1 = contentBox.y1;
-            containerBox.y2 = contentBox.y2;
-            if (this.panel && this.panel.visible) {
-                if (panelPosition === HorizontalPanelPositionEnum.TOP) {
-                    containerBox.y1 = containerBox.y1 + panelHeight;
-                } else {
-                    containerBox.y2 = containerBox.y2 - panelHeight;
-                }
-            }
-            Allocate(this.tileableContainer, containerBox, flags);
-            this.get_children()
-                .filter(
-                    (actor) =>
-                        [this.panel, this.tileableContainer].indexOf(actor) ===
-                        -1
-                )
-                .forEach((actor) => {
-                    Allocate(actor, containerBox, flags);
-                });
-        }
+        this.panel = new HorizontalPanel(msWorkspace);
+        this.add_child(this.tileableContainer);
+        this.add_child(this.panel);
+        this.updateUI();
     }
-);
+
+    updateUI() {
+        const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
+            this.msWorkspace.monitor.index
+        );
+        if (this.panel) {
+            this.panel.visible =
+                this.msWorkspace.shouldPanelBeVisible() &&
+                !monitorInFullScreen;
+        }
+        this.visible = !monitorInFullScreen;
+    }
+
+    vfunc_allocate(box, flags) {
+        SetAllocation(this, box, flags);
+        let contentBox = new Clutter.ActorBox();
+        contentBox.x2 = box.get_width();
+        contentBox.y2 = box.get_height();
+        let panelPosition = Me.msThemeManager.horizontalPanelPosition;
+        const panelHeight = this.panel.get_preferred_height(-1)[1];
+        let panelBox = new Clutter.ActorBox();
+        panelBox.x1 = contentBox.x1;
+        panelBox.x2 = contentBox.x2;
+
+        panelBox.y1 =
+            panelPosition === HorizontalPanelPositionEnum.TOP
+                ? contentBox.y1
+                : contentBox.y2 - panelHeight;
+        panelBox.y2 = panelBox.y1 + panelHeight;
+        Allocate(this.panel, panelBox, flags);
+        let containerBox = new Clutter.ActorBox();
+        containerBox.x1 = contentBox.x1;
+        containerBox.x2 = contentBox.x2;
+        containerBox.y1 = contentBox.y1;
+        containerBox.y2 = contentBox.y2;
+        if (this.panel && this.panel.visible) {
+            if (panelPosition === HorizontalPanelPositionEnum.TOP) {
+                containerBox.y1 = containerBox.y1 + panelHeight;
+            } else {
+                containerBox.y2 = containerBox.y2 - panelHeight;
+            }
+        }
+        Allocate(this.tileableContainer, containerBox, flags);
+        this.get_children()
+            .filter(
+                (actor) =>
+                    [this.panel, this.tileableContainer].indexOf(actor) ===
+                    -1
+            )
+            .forEach((actor) => {
+                Allocate(actor, containerBox, flags);
+            });
+    }
+}
