@@ -1,31 +1,38 @@
 /** Gnome libs imports */
 const { PACKAGE_VERSION } = imports.misc.config;
+import * as Clutter from 'Clutter';
 
 /* exported ShellVersionMatch, SetAllocation, Allocate, AllocatePreferredSize */
 export var ShellVersionMatch = function (version) {
     return PACKAGE_VERSION.match(new RegExp(`^${version}`)) !== null;
 };
 
-export var SetAllocation = function (actor, box, flags) {
+export var SetAllocation = function (actor: Clutter.Actor, box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
         actor.set_allocation(box, flags);
     } else {
-        actor.set_allocation(box);
+        // TODO: This is actually the newer version, but the .gir typedefs seem to be from an older version of Clutter
+        let compat = actor as unknown as { set_allocation: (box: Clutter.ActorBox)=>void };
+        compat.set_allocation(box);
     }
 };
 
-export var Allocate = function (actor, box, flags) {
+export var Allocate = function (actor: Clutter.Actor, box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
         actor.allocate(box, flags);
     } else {
-        actor.allocate(box);
+        // TODO: This is actually the newer version, but the .gir typedefs seem to be from an older version of Clutter
+        let compat = actor as unknown as { allocate: (box: Clutter.ActorBox)=>void };
+        compat.allocate(box);
     }
 };
 
-export var AllocatePreferredSize = function (actor, flags) {
+export var AllocatePreferredSize = function (actor: Clutter.Actor, flags: Clutter.AllocationFlags) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
         actor.allocate_preferred_size(flags);
     } else {
-        actor.allocate_preferred_size(actor.x, actor.y);
+        // TODO: This is actually the newer version, but the .gir typedefs seem to be from an older version of Clutter
+        let compat = actor as unknown as { allocate_preferred_size: (x: number, y: number)=>void };
+        compat.allocate_preferred_size(actor.x, actor.y);
     }
 };
