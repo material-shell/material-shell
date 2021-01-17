@@ -17,6 +17,10 @@ giImports = [
     "St",
 ]
 
+gjsImports = [
+    "Gjs"
+]
+
 patterns = [
     # GJS doesn't know about exports, it just exports everything
     (re.compile(r"export function"), r"function"),
@@ -33,6 +37,15 @@ patterns = [
     *[
         (re.compile(r"import \* as " + name + r" from ['\"]" + name + "['\"];"), r"const { " + name + r" } = imports.gi;")
         for name in giImports
+    ],
+    # Rewrites `import * as Name from 'Name';` to `const { Name } = imports;`
+    *[
+        (re.compile(r"import (\{([^\}]+)\}) from ['\"]" + name + "['\"];"), r"const \1 = imports;")
+        for name in gjsImports
+    ],
+    *[
+        (re.compile(r"import \* as " + name + r" from ['\"]" + name + "['\"];"), r"const { " + name + r" } = imports;")
+        for name in gjsImports
     ],
 
     # Replace `import * as Something from 'a/b/c` with `const Something = Me.imports.a/b/c` The slashes will be replaced later.

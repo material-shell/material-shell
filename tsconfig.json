@@ -35,6 +35,7 @@
             "St": ["src/st"],
             // "St": ["@types/Gjs/St-1.0"],
             "Meta": ["src/meta"],
+            "Gjs": ["@types/Gjs/Gjs"],
 
             // "GLib": ["@types/Gjs/GLib-2.0"],
             // "Gio": ["@types/Gjs/Gio-2.0"],
