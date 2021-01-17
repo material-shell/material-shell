@@ -21,7 +21,15 @@ import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import { MsWorkspace } from './msWorkspace';
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
-
+export interface MsWindowState {
+    appId: number,
+    metaWindowIdentifier: string,
+    persistent: boolean | undefined,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+}
 
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
@@ -110,7 +118,7 @@ export class MsWindow extends Clutter.Actor {
         this.setMsWorkspace(msWorkspace);
     }
 
-    get state() {
+    get state(): MsWindowState {
         return {
             appId: this.app.get_id(),
             metaWindowIdentifier: this.metaWindowIdentifier,
