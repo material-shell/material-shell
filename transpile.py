@@ -77,12 +77,13 @@ patterns = [
 
     # In the constructor we will always have a `super(...)` call (this is enforced by typescript).
     # We have to replace this with `super._init(...)` since we just renamed the constructor to _init
-    (re.compile(r"(_init\s*\(.*?\)\s*\{\s*)super\(", re.DOTALL), r"\1super._init("),
+    (re.compile(r"(_init\s*\(.*?\)\s*\{.*?)super\(", re.DOTALL), r"\1super._init("),
 ]
 
 for file in glob("target/**/*.js", recursive=True):
     with open(file) as f:
         text = f.read()
+        
         for (regex, replacement) in patterns:
             text = regex.sub(replacement, text)
 
