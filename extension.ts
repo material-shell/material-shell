@@ -202,7 +202,7 @@ function hideSplashScreens() {
         splashscreen.ease({
             opacity: 0,
             duration: 800,
-            transition: 'easeInQuad',
+            mode: Clutter.AnimationMode.EASE_IN_QUAD,
             onComplete: () => {
                 Main.layoutManager.removeChrome(splashscreen);
                 splashscreen.destroy();
