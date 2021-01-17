@@ -38,7 +38,7 @@ declare global {
         ms: any,
         display: Meta.Display,
         session_mode: string,
-        stage: Clutter.Actor & { key_focus: any },
+        stage: Clutter.Stage & { key_focus: any },
         window_group: Clutter.Actor,
         window_manager: Meta.WindowManager,
         workspace_manager: Meta.WorkspaceManager,

@@ -12,29 +12,35 @@ import { MsManager } from 'src/manager/msManager';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
-var VerticalPanelPositionEnum = {
+export const VerticalPanelPositionEnum = {
     LEFT: 0,
     RIGHT: 1,
 };
 
-var HorizontalPanelPositionEnum = {
+export const HorizontalPanelPositionEnum = {
     TOP: 0,
     BOTTOM: 1,
 };
 
-var PanelIconStyleEnum = {
+export const PanelIconStyleEnum = {
     HYBRID: 0,
     CATEGORY: 1,
     APPLICATION: 2,
 };
 
-var FocusEffectEnum = {
+export const FocusEffectEnum = {
     NONE: 0,
     DEFAULT: 1,
     BORDER: 2,
 };
 
 export class MsThemeManager extends MsManager {
+    themeContext: any;
+    theme: any;
+    themeSettings: Gio.Settings;
+    themeFile: Gio.FilePrototype;
+    themeValue: string;
+    primary: string;
     constructor() {
         super();
         this.themeContext = St.ThemeContext.get_for_stage(global.stage);
@@ -181,14 +187,13 @@ export class MsThemeManager extends MsManager {
         return luminance < 0.179;
     }
 
-    async readFileContent(file) {
-        return new Promise((resolve, reject) => {
+    async readFileContent(file: Gio.File) {
+        return new Promise<string>((resolve, reject) => {
             file.load_contents_async(null, (obj, res) => {
-                let [success, contents] = obj.load_contents_finish(res);
-                let content;
+                let [success, contents] = obj!.load_contents_finish(res);
                 if (success) {
                     //Read the binay content as string
-                    content = imports.byteArray.toString(contents);
+                    let content = imports.byteArray.toString(contents);
                     resolve(content);
                 } else {
                     reject(success);
@@ -197,8 +202,8 @@ export class MsThemeManager extends MsManager {
         });
     }
 
-    async writeContentToFile(content, file) {
-        return new Promise((resolve, _) => {
+    async writeContentToFile(content: string, file: Gio.File) {
+        return new Promise<Gio.File>((resolve, _) => {
             const contentBytes = new GLib.Bytes(content);
             file.replace_async(
                 null,
@@ -207,16 +212,16 @@ export class MsThemeManager extends MsManager {
                 GLib.PRIORITY_DEFAULT,
                 null,
                 (file, res) => {
-                    let stream = file.replace_finish(res);
+                    let stream = file!.replace_finish(res);
 
                     stream.write_bytes_async(
                         contentBytes,
                         GLib.PRIORITY_DEFAULT,
                         null,
                         (ioStream, wRes) => {
-                            ioStream.write_bytes_finish(wRes);
+                            ioStream!.write_bytes_finish(wRes);
                             stream.close(null);
-                            resolve(file);
+                            resolve(file!);
                         }
                     );
                 }

@@ -885,7 +885,9 @@ declare module "St" {
     export class Settings extends Widget { }
     export class TextureCache extends Widget { }
     export class Theme extends Widget { }
-    export class ThemeContext extends Widget { }
+    export class ThemeContext extends Widget {
+        static get_for_stage(stage: Clutter.Stage): ThemeContext;
+    }
     export class ThemeNode extends Widget {
         // The parameter isn't actually optional. But it has to be for typescript to be happy.
         // (the gjs way of extending the number of parameters severely breaks polymorphism)
