@@ -356,7 +356,7 @@ export class MsWorkspace extends WithSignals {
         if (
             !this.tileableList ||
             this.tileableList.length < 2 ||
-            this.focusTileable === this.appLauncher
+            this.tileableFocused === this.appLauncher
         ) {
             return;
         }
