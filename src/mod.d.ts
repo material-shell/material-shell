@@ -9,6 +9,18 @@ import { MsWorkspace } from './layout/msWorkspace/msWorkspace';
 declare global {
     function log(msg: string): void;
 
+    /** Localization function
+    * https://developer.gnome.org/glib/stable/glib-I18N.html#N-:CAPS
+    */
+    function N_(format: string): string;
+
+    interface Date {
+        /**
+         * @deprecated toLocaleFormat is deprecated
+         */
+        toLocaleFormat(format: string): string;
+    }
+
     const global: {
         log: (msg: string) => void,
         get_persistent_state: (_: String, key: String) => any,
@@ -106,17 +118,17 @@ declare type SignalID = number;
 
 declare module "GObject" {
     // Why these are not in the documentation or auto-generated typedefs, I do not know.
-    export const TYPE_INT: GObject.Type;
-    export const TYPE_STRING: GObject.Type;
-    export const TYPE_BOOLEAN: GObject.Type;
+    export const TYPE_INT: GObject.GType<number>;
+    export const TYPE_STRING: GObject.GType<string>;
+    export const TYPE_BOOLEAN: GObject.GType<boolean>;
 
     // Extra interfaces used to help define GObject classes in js; these
     // aren't part of gi.
     export interface SignalDefinition {
         flags?: SignalFlags;
-        accumulator: number;
-        return_type?: Type;
-        param_types?: Type[];
+        accumulator?: number;
+        return_type?: GType;
+        param_types?: GType[];
     }
 
     export interface MetaInfo {

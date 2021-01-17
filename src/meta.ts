@@ -31,8 +31,49 @@ declare module "Meta" {
         NORMAL,
     }
 
+    export enum Cursor {
+        NONE,
+        DEFAULT,
+        NORTH_RESIZE,
+        SOUTH_RESIZE,
+        WEST_RESIZE,
+        EAST_RESIZE,
+        SE_RESIZE,
+        SW_RESIZE,
+        NE_RESIZE,
+        NW_RESIZE,
+        MOVE_OR_RESIZE_WINDOW,
+        BUSY,
+        DND_IN_DRAG,
+        DND_MOVE,
+        DND_COPY,
+        DND_UNSUPPORTED_TARGET,
+        POINTING_HAND,
+        CROSSHAIR,
+        IBEAM,
+        LAST,
+    }
+
+    /// Sets up a callback to be called at some later time. when determines the
+    /// particular later occasion at which it is called. This is much like GLib,
+    /// except that the functions interact properly with clutter event handling.
+    /// If a "later" function is added from a clutter event handler, and is supposed
+    /// to be run before the stage is redrawn, it will be run before that redraw
+    /// of the stage, not the next one.
+    function later_add(when: LaterType, func: ()=>void): number;
+
+    export enum LaterType {
+        RESIZE = 0, // call in a resize processing phase that is done before GTK+ repainting (including window borders) is done.
+        CALC_SHOWING = 1, // used by Mutter to compute which windows should be mapped
+        CHECK_FULLSCREEN = 2, // used by Mutter to see if there's a fullscreen window
+        SYNC_STACK = 3, // used by Mutter to send it's idea of the stacking order to the server
+        BEFORE_REDRAW = 4, // call before the stage is redrawn
+        IDLE = 5, // call at a very low priority (can be blocked by running animations or redrawing applications)
+    }
+
     export interface Display extends GObject.Object {
         get_current_monitor(): number;
+        get_monitor_scale(monitor: number): number;
         get_focus_window(): null | Window;
         get_monitor_index_for_rect(rect: Rectangular): number;
         get_monitor_geometry(monitor: number): null | Rectangular;
@@ -42,6 +83,7 @@ declare module "Meta" {
         get_tab_list(list: number, workspace: Workspace | null): Array<Window>;
         get_workspace_manager(): WorkspaceManager;
         get_monitor_in_fullscreen(monitor: number): boolean;
+        set_cursor(cursor: Cursor): void,
     }
 
     export interface Window extends Clutter.Actor {

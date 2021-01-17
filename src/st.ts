@@ -839,14 +839,17 @@ declare module "St" {
         clutter_text: any;
 
         get_clutter_text(): Clutter.Text;
+        set_primary_icon(icon: Clutter.Actor): void;
+        get_text(): string;
+        set_text(text: string): void;
     }
 
-    interface IconCreate {
+    interface IconCreate extends Widget_ConstructProps {
         fallback_gicon?: Gio.Icon;
         fallback_icon_name?: string;
-        gicon: Gio.Icon;
+        gicon?: Gio.Icon;
         icon_name?: string;
-        icon_size: number;
+        icon_size?: number;
     }
     export class Icon extends Widget {
         constructor(params: IconCreate)
@@ -871,7 +874,9 @@ declare module "St" {
     export class FocusManager extends Widget { }
     export class GenericAccessible extends Widget { }
     export class ImageContent extends Widget { }
-    export class Label extends Widget { }
+    export class Label extends Widget {
+        text: string;
+    }
     export class PasswordEntry extends Widget { }
     export class ScrollBar extends Widget { }
     export class ScrollView extends Widget { }
