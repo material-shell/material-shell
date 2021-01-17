@@ -14,6 +14,12 @@ declare global {
     */
     function N_(format: string): string;
 
+    /** Localization function.
+     * Marks a string for translation, gets replaced with the translated string at runtime.
+     * https://developer.gnome.org/glib/stable/glib-I18N.html
+     */
+    function _(format: string): string;
+
     interface Date {
         /**
          * @deprecated toLocaleFormat is deprecated
