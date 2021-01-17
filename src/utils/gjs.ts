@@ -7,9 +7,15 @@ import * as GObject from 'GObject';
 /// @registerGObjectClass
 /// export class MyThing extends GObject.Object { ... }
 /// ```
-export function registerGObjectClass<K, T extends { metaInfo: GObject.MetaInfo, new(params: any): K }>(target: T) {
-    return GObject.registerClass(
-        target.metaInfo,
-        target
-    );
+export function registerGObjectClass<K, T extends { metaInfo?: GObject.MetaInfo, new(params: any): K }>(target: T) {
+    if (target.metaInfo) {
+        return GObject.registerClass<K,T>(
+            target.metaInfo,
+            target
+        ) as typeof target;
+    } else {
+        return GObject.registerClass<K,T>(
+            target
+        ) as typeof target;
+    }
 }
