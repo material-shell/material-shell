@@ -678,7 +678,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         containerBox.y2 = contentBox.y2 - verticalOffset;
         Allocate(this.container, containerBox, flags);
 
-        let index: number;
+        let index: number = 0;
         for (let y = 0; y < this.numberOfRow; y++) {
             for (let x = 0; x < this.numberOfColumn; x++) {
                 index = x + this.numberOfColumn * y;
@@ -700,10 +700,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                 }
             }
         }
-        if (index < numberOfButtons - 1) {
-            for (let i = index + 1; i < numberOfButtons; i++) {
-                this.filteredAppButtonList[i].visible = false;
-            }
+        for (let i = index + 1; i < numberOfButtons; i++) {
+            this.filteredAppButtonList[i].visible = false;
         }
 
         //hide other buttons
