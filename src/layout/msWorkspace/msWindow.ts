@@ -48,7 +48,7 @@ export class MsWindow extends Clutter.Actor {
     dialogs: any[];
     metaWindowIdentifier: any;
     windowClone: Clutter.Clone;
-    placeholder: typeof AppPlaceholder;
+    placeholder: AppPlaceholder;
     destroyId: number;
     metaWindowSignals: number[];
     msContent: MsWindowContent;
