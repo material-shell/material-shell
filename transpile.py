@@ -33,13 +33,7 @@ patterns = [
     *[
         (re.compile(r"import \* as " + name + r" from ['\"]" + name + "['\"];"), r"const { " + name + r" } = imports.gi;")
         for name in giImports
-    ]
-    # (re.compile(r"import \* as Gio from ['\"]Gio['\"];"), r"const { Gio } = imports.gi;"),
-    # (re.compile(r"import \* as GLib from ['\"]GLib['\"];"), r"const { GLib } = imports.gi;"),
-    # (re.compile(r"import \* as GObject from ['\"]GObject['\"];"), r"const { GObject } = imports.gi;"),
-    # (re.compile(r"import \* as St from ['\"]St['\"];"), r"const { St } = imports.gi;"),
-    # (re.compile(r"import \* as Meta from ['\"]Meta['\"];"), r"const { Meta } = imports.gi;"),
-    # (re.compile(r"import \* as Clutter from ['\"]Clutter['\"];"), r"const { Clutter } = imports.gi;"),
+    ],
 
     # Replace `import * as Something from 'a/b/c` with `const Something = Me.imports.a/b/c` The slashes will be replaced later.
     (re.compile(r"import \* as ([\w\-_\d]+) from ['\"]([\w\-\d\/]+)['\"]"), r"const \1 = Me.imports.\2"),
@@ -47,10 +41,10 @@ patterns = [
     (re.compile(r"import \{([^\}]+)\} from ['\"]src\/([\w\-_\d\/]+)['\"]"), r"const {\1} = Me.imports.src.\2"),
     # Replace / with . in import paths.
     # May have to do it a few times since each replacement will only replace a single / in the path.
-    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
-    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+);"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+;)"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+;)"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+;)"), r"\1.\2"),
+    (re.compile(r"(Me\.imports\.src[^;]*)\/([^;]+;)"), r"\1.\2"),
 
     # When a class has been decorated with @registerGObjectClass we want to change its constructor to be an _init function instead
     # because that's what GJS recommends. Typescript however likes constructors a lot more for typechecking purposes
@@ -76,7 +70,10 @@ patterns = [
     # so we match against that pattern and try to rename the constructor.
     # The pattern matches against a few things that are not strictly necesary, just to avoid potential issues with e.g. comments that
     # include the word `constructor` or things like that.
-    (re.compile(r"(let ([\w\d_]+) = .*class \2.*)constructor(\s*\(.*\2 = __decorate\(\[\s*registerGObjectClass)", re.DOTALL), r"\1_init\3"),
+    #
+    # In the process we also change `let MyClass = ...` to `var MyClass = `. GJS seems to think that `let` is not correct when it comes to classes.
+    # However typescript outputs it...
+    (re.compile(r"let (([\w\d_]+) = .*class \2.*)constructor(\s*\(.*\2 = __decorate\(\[\s*registerGObjectClass)", re.DOTALL), r"var \1_init\3"),
 
     # In the constructor we will always have a `super(...)` call (this is enforced by typescript).
     # We have to replace this with `super._init(...)` since we just renamed the constructor to _init
