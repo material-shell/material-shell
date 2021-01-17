@@ -236,8 +236,8 @@ export class MsThemeManager extends MsManager {
         );
         let content = await this.readFileContent(originThemeFile);
         content = content.replace(/#3f51b5/g, this.primary); // color-primary
-        content = content.replace(/0.876/g, this.panelOpacity / 100); // panel-opacity
-        content = content.replace(/0.987/g, this.surfaceOpacity / 100); // surface-opacity
+        content = content.replace(/0.876/g, `${this.panelOpacity / 100}`); // panel-opacity
+        content = content.replace(/0.987/g, `${this.surfaceOpacity / 100}`); // surface-opacity
         await this.writeContentToFile(content, file);
     }
 
