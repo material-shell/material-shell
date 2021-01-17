@@ -105,13 +105,38 @@ declare type SignalID = number;
 // }
 
 declare module "GObject" {
+    // Why these are not in the documentation or auto-generated typedefs, I do not know.
+    export const TYPE_INT: GObject.Type;
     export const TYPE_STRING: GObject.Type;
     export const TYPE_BOOLEAN: GObject.Type;
+
+    // Extra interfaces used to help define GObject classes in js; these
+    // aren't part of gi.
+    export interface SignalDefinition {
+        flags?: SignalFlags;
+        accumulator: number;
+        return_type?: Type;
+        param_types?: Type[];
+    }
+
+    export interface MetaInfo {
+        GTypeName: string;
+        GTypeFlags?: TypeFlags;
+        Implements?: Function[];
+        Properties?: {[K: string]: ParamSpec};
+        Signals?: {[K: string]: SignalDefinition};
+        Requires?: Function[];
+        CssName?: string;
+        Template?: string;
+        Children?: string[];
+        InternalChildren?: string[];
+    }
 
     interface Object {
         new(): Object;
     }
 
+    export function registerClass<K, C extends new (...args: any[]) => K>(klass: C): C;
     export function registerClass<K, C extends new (...args: any[]) => K>(metaInfo: MetaInfo, klass: C): C;
     // export function registerClass<T extends MetaInfo | Function, K, C extends new (...args: any[])=>K>(a: T, b?: C): C;
 }
@@ -159,12 +184,34 @@ declare module "Clutter" {
     //     EASE_OUT_QUAD = 3,
     // }
 
+    type AnimatableActorFields = "anchor_x" | "anchorX" | "anchor_y" | "anchorY" | "depth" | "fixed_x" | "fixedX" | "fixed_y" | "fixedY" | "height" | "margin_bottom" | "marginBottom" | "margin_left" | "marginLeft" | "margin_right" | "marginRight" | "margin_top" | "marginTop" | "min_height" | "minHeight" | "min_width" | "minWidth" | "natural_height" | "naturalHeight" | "natural_width" | "naturalWidth" | "opacity" | "pivot_point_z" | "pivotPointZ" | "rotation_angle_x" | "rotationAngleX" | "rotation_angle_y" | "rotationAngleY" | "rotation_angle_z" | "rotationAngleZ" | "scale_center_x" | "scaleCenterX" | "scale_center_y" | "scaleCenterY" | "scale_x" | "scaleX" | "scale_y" | "scaleY" | "scale_z" | "scaleZ" | "translation_x" | "translationX" | "translation_y" | "translationY" | "translation_z" | "translationZ" | "width" | "x" | "y" | "z_position" | "zPosition";
+
+    interface EasingParams {
+        // milliseconds
+        duration: number;
+        // milliseconds
+        delay?: number;
+        mode?: Clutter.AnimationMode;
+        repeatCount?: number;
+        autoReverse?: boolean;
+        onComplete?: ()=>void;
+        onStopped?: (isFinished: boolean)=>void;
+    }
+
+    // Any number of extra fields for the properties to be animated (e.g. "opacity: 0").
+    interface EasingParamsWithProperties extends EasingParams, Partial<Pick<Clutter.Actor, AnimatableActorFields>> {
+    }
+
     interface Actor extends Rectangular, GObject.Object {
         // add(child: Actor): void;
         // add_child(child: Actor): void;
         // destroy(): void;
         // destroy_all_children(): void;
-        ease(params: Object): void;
+
+        // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
+        ease(params: EasingParamsWithProperties): void;
+        ease_property(propName: AnimatableActorFields, target: number, params: EasingParams): void;
+
         // hide(): void;
         // get_child_at_index(nth: number): Actor | null;
         // get_n_children(): number;
