@@ -7,7 +7,7 @@ import * as GLib from 'GLib';
 /* exported RippleBackground */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-let RippleWave = GObject.registerClass(
+export const RippleWave = GObject.registerClass(
     class RippleWave extends St.Widget {
         _init(mouseX, mouseY, size) {
             super._init({
@@ -58,7 +58,7 @@ let RippleWave = GObject.registerClass(
     }
 );
 
-var RippleBackground = GObject.registerClass(
+export const RippleBackground = GObject.registerClass(
     class RippleBackground extends St.Widget {
         _init(eventListener) {
             super._init({
