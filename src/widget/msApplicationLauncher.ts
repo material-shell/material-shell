@@ -287,7 +287,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                             return Clutter.EVENT_PROPAGATE;
                         }
                     case Clutter.KEY_Left:
-                        if (
+                        if (this.filteredAppButtonList.length > 0 &&
                             this.currentButtonFocused !=
                             this.filteredAppButtonList[0]
                         ) {
@@ -298,7 +298,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                         }
                     case Clutter.KEY_Return:
                     case Clutter.KEY_KP_Enter:
-                        this.currentButtonFocused.emit('clicked', 0);
+                        if (this.currentButtonFocused) this.currentButtonFocused.emit('clicked', 0);
                         return Clutter.EVENT_STOP;
                 }
             } else {
@@ -339,7 +339,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                         }
                     case Clutter.KEY_Return:
                     case Clutter.KEY_KP_Enter:
-                        this.currentButtonFocused.emit('clicked', 0);
+                        if (this.currentButtonFocused) this.currentButtonFocused.emit('clicked', 0);
                         return Clutter.EVENT_STOP;
                 }
             }
@@ -484,11 +484,11 @@ export class MsApplicationButtonContainer extends St.Widget {
         return true;
     }
 
-    // Get current focused button index, resets to 0 if value is invalid
+    // Get current focused button index, highlights the initial button if current button is invalid (but returns -1 in that case)
     getCurrentIndex() {
-        const index = this.filteredAppButtonList.indexOf(
+        const index = this.currentButtonFocused ? this.filteredAppButtonList.indexOf(
             this.currentButtonFocused
-        );
+        ) : -1;
         if (index < 0 || index > this.maxIndex) {
             this.highlightInitialButton();
         }
