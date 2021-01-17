@@ -1,12 +1,11 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
 import * as St from 'St';
 import * as Clutter from 'Clutter';
 import * as GObject from 'GObject';
 import * as GLib from 'GLib';
 import { registerGObjectClass } from 'src/utils/gjs';
-
-/* exported RippleBackground */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
 export class RippleWave extends St.Widget {

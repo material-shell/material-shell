@@ -95,7 +95,7 @@ export class MsApplicationLauncher extends St.Widget {
         this.appListContainer.initFilteredAppButtonList();
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
@@ -135,6 +135,7 @@ export class MsApplicationLauncher extends St.Widget {
     }
 }
 
+@registerGObjectClass
 export class MsApplicationButtonContainer extends St.Widget {
     appButtonList: MsApplicationButton[];
     currentButtonFocused: MsApplicationButton | null;
@@ -716,6 +717,10 @@ export class MsApplicationButtonContainer extends St.Widget {
 
 @registerGObjectClass
 export class MsApplicationButton extends MatButton {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: 'MsApplicationButton',
+    }
+
     app: any;
     buttonSize: number;
     layout: St.BoxLayout;
