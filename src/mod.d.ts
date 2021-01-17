@@ -184,7 +184,7 @@ declare module "Clutter" {
     //     EASE_OUT_QUAD = 3,
     // }
 
-    type AnimatableActorFields = "anchor_x" | "anchorX" | "anchor_y" | "anchorY" | "depth" | "fixed_x" | "fixedX" | "fixed_y" | "fixedY" | "height" | "margin_bottom" | "marginBottom" | "margin_left" | "marginLeft" | "margin_right" | "marginRight" | "margin_top" | "marginTop" | "min_height" | "minHeight" | "min_width" | "minWidth" | "natural_height" | "naturalHeight" | "natural_width" | "naturalWidth" | "opacity" | "pivot_point_z" | "pivotPointZ" | "rotation_angle_x" | "rotationAngleX" | "rotation_angle_y" | "rotationAngleY" | "rotation_angle_z" | "rotationAngleZ" | "scale_center_x" | "scaleCenterX" | "scale_center_y" | "scaleCenterY" | "scale_x" | "scaleX" | "scale_y" | "scaleY" | "scale_z" | "scaleZ" | "translation_x" | "translationX" | "translation_y" | "translationY" | "translation_z" | "translationZ" | "width" | "x" | "y" | "z_position" | "zPosition";
+    type AnimatableActorFields = "anchor_x" | "anchor_y" | "depth" | "fixed_x" | "fixed_y" | "height" | "margin_bottom" | "margin_left" | "margin_right" | "margin_top" | "min_height" | "min_width" | "natural_height" | "natural_width" | "opacity" | "pivot_point_z" | "rotation_angle_x" | "rotation_angle_y" | "rotation_angle_z" | "scale_center_x" | "scale_center_y" | "scale_x" | "scale_y" | "scale_z" | "translation_x" | "translation_y" | "translation_z" | "width" | "x" | "y" | "z_position";
 
     interface EasingParams {
         // milliseconds
