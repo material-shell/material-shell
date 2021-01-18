@@ -129,9 +129,9 @@ export class MsWindowManager extends MsManager {
     }
 
     createNewMsWindow(
-        appId,
-        description,
-        metaWindow,
+        appId: any,
+        description: string | null,
+        metaWindow: any,
         msWorkspace: {
             msWorkspace: MsWorkspace,
             focus: boolean,
