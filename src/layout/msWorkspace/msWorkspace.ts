@@ -48,7 +48,7 @@ export class MsWorkspace extends WithSignals {
     tileableList: Tileable[];
     msWorkspaceCategory: MsWorkspaceCategory;
     precedentIndex: number;
-    private msWorkspaceActor: MsWorkspaceActor;
+    msWorkspaceActor: MsWorkspaceActor;
     layout: any;
     destroyed: boolean | undefined;
     monitorIsExternal: any;
@@ -249,7 +249,7 @@ export class MsWorkspace extends WithSignals {
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         const oldTileableList: (Tileable | null)[] = [...this.tileableList];
-        oldTileableList.splice(tileableIndex, 1, [null]);
+        oldTileableList[tileableIndex] = null;
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
         if (
@@ -274,7 +274,7 @@ export class MsWorkspace extends WithSignals {
         this.refreshFocus();
     }
 
-    async emitTileableListChangedOnce(oldTileableList) {
+    async emitTileableListChangedOnce(oldTileableList: (Tileable | null)[]) {
         if (!this.emitTileableChangedInProgress) {
             this.emitTileableChangedInProgress = new Promise<void>((resolve) => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
