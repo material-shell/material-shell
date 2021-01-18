@@ -4,7 +4,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 /* exported MsWorkspaceCategory, MainCategories */
 
 //Ordered by specificity in case of equality the most specific category will be chosen
-var MainCategories = [
+export const MainCategories = [
     'Game',
     'Development',
     'Video',
@@ -24,7 +24,7 @@ var MainCategories = [
 
 var meaningfulCategories = ['IDE', 'WebBrowser', 'Player'];
 
-var MsWorkspaceCategory = class MsWorkspaceCategory {
+export const MsWorkspaceCategory = class MsWorkspaceCategory {
     constructor(msWorkspace, forcedCategory) {
         this.msWorkspace = msWorkspace;
         this.forcedCategory = forcedCategory;

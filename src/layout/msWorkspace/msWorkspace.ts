@@ -9,14 +9,14 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
-const {
+import {
     HorizontalPanel,
-} = Me.imports.src.layout.msWorkspace.horizontalPanel.horizontalPanel;
+} from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { reparentActor } from 'src/utils/index';
-const {
+import {
     MsWorkspaceCategory,
-} = Me.imports.src.layout.msWorkspace.msWorkspaceCategory;
+} from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { getSettings } from 'src/utils/settings';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
