@@ -403,7 +403,8 @@ export class MsWorkspace extends WithSignals {
             return;
         }
 
-        this.tileableFocused.grab_key_focus();
+        let focused = this.tileableFocused;
+        if (focused !== null) focused.grab_key_focus();
     }
 
     setTileableBefore(tileableToMove: Tileable, tileableRelative: Tileable) {
