@@ -271,7 +271,7 @@ export class MsWorkspace extends WithSignals {
 
     async emitTileableListChangedOnce(oldTileableList) {
         if (!this.emitTileableChangedInProgress) {
-            this.emitTileableChangedInProgress = new Promise((resolve) => {
+            this.emitTileableChangedInProgress = new Promise<void>((resolve) => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     delete this.emitTileableChangedInProgress;
                     this.emit(
