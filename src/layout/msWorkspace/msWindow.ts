@@ -21,14 +21,28 @@ import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import { MsWorkspace } from './msWorkspace';
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
+interface Dialog {
+    metaWindow: any,
+    clone: Clutter.Clone
+}
+
 export interface MsWindowState {
     appId: number,
-    metaWindowIdentifier: string,
+    metaWindowIdentifier: string | null,
     persistent: boolean | undefined,
     x: number,
     y: number,
     width: number,
     height: number,
+}
+
+export interface MsWindowConstructProps {
+    app: any,
+    metaWindowIdentifier: string | null,
+    metaWindow: any,
+    persistent?: boolean,
+    initialAllocation?: Rectangular,
+    msWorkspace: MsWorkspace,
 }
 
 @registerGObjectClass
@@ -53,8 +67,8 @@ export class MsWindow extends Clutter.Actor {
 
     public app: any;
     _persistent: boolean | undefined;
-    dialogs: any[];
-    metaWindowIdentifier: any;
+    dialogs: Dialog[];
+    metaWindowIdentifier: string | null;
     windowClone: Clutter.Clone;
     placeholder: AppPlaceholder;
     destroyId: number;
@@ -74,7 +88,7 @@ export class MsWindow extends Clutter.Actor {
         persistent,
         initialAllocation,
         msWorkspace,
-    }: { app: any, metaWindowIdentifier: any, metaWindow: any, persistent?: boolean, initialAllocation?: Rectangular, msWorkspace: MsWorkspace}) {
+    }: MsWindowConstructProps) {
         super({
             reactive: true,
             x: initialAllocation ? initialAllocation.x || 0 : 0,
@@ -146,12 +160,12 @@ export class MsWindow extends Clutter.Actor {
             : this.app.get_name();
     }
 
-    set persistent(boolean) {
+    set persistent(boolean: boolean) {
         this._persistent = boolean;
         Me.stateManager.stateChanged();
     }
 
-    delayGetMetaWindowActor(metaWindow, delayedCount, resolve, reject) {
+    delayGetMetaWindowActor(metaWindow, delayedCount: number, resolve, reject) {
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
@@ -222,7 +236,7 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
@@ -260,13 +274,13 @@ export class MsWindow extends Clutter.Actor {
     }
 
     // eslint-disable-next-line camelcase
-    set_position(x, y) {
+    set_position(x: number, y: number) {
         if (this.followMetaWindow) return;
         super.set_position(x, y);
     }
 
     // eslint-disable-next-line camelcase
-    set_size(width, height) {
+    set_size(width: number, height: number) {
         if (this.followMetaWindow) return;
         super.set_size(width, height);
     }
@@ -630,7 +644,7 @@ export class MsWindow extends Clutter.Actor {
         this.metaWindowSignals = [];
     }
 
-    setMsWorkspace(msWorkspace) {
+    setMsWorkspace(msWorkspace: MsWorkspace) {
         this.msWorkspace = msWorkspace;
         [
             ...this.dialogs.map((dialog) => dialog.metaWindow),
@@ -699,7 +713,7 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
-    removeDialog(dialog) {
+    removeDialog(dialog: Dialog) {
         this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
         this.remove_child(dialog.clone);
         dialog.clone.destroy();
@@ -892,7 +906,7 @@ export class MsWindowContent extends St.Widget {
         GTypeName: 'MsWindowContent',
     }
 
-    constructor({ placeholder, clone }) {
+    constructor({ placeholder, clone }: { placeholder: Clutter.Actor, clone: Clutter.Clone }) {
         super({ clip_to_allocation: true });
         this.placeholder = placeholder;
         this.clone = clone;
@@ -900,7 +914,7 @@ export class MsWindowContent extends St.Widget {
         this.add_child(this.placeholder);
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
