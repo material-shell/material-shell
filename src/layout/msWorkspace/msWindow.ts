@@ -762,17 +762,14 @@ export class MsWindow extends Clutter.Actor {
      */
     metaWindowUnManaged(metaWindow) {
         const isMainMetaWindow = metaWindow === this._metaWindow;
-        const isDialogMetaWindow = this.dialogs
-            .map((dialog) => dialog.metaWindow)
-            .includes(metaWindow);
+        const dialog = this.dialogs.find(
+            (dialog) => dialog.metaWindow === metaWindow
+        );
         // If it's neither the MainMetaWindow or a Dialog we ignore but this shouldn't happen
-        if (!isMainMetaWindow && !isDialogMetaWindow) {
+        if (!isMainMetaWindow && dialog === undefined) {
             return;
         }
-        if (isDialogMetaWindow) {
-            const dialog = this.dialogs.find(
-                (dialog) => dialog.metaWindow === metaWindow
-            );
+        if (dialog) {
             this.removeDialog(dialog);
         }
         if (isMainMetaWindow) {
