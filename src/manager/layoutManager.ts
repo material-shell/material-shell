@@ -35,7 +35,7 @@ const layouts = [
     FloatLayout,
 ];
 
-var TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
+export const TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
 }, {});
