@@ -9,9 +9,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { Widget_ConstructProps } from 'St';
+import { Widget } from 'St';
 
-interface MatButtonParams extends Widget_ConstructProps {
+interface MatButtonParams extends Partial<Widget.ConstructorProperties> {
     primary?: boolean,
     child?: St.Widget,
 }
@@ -42,7 +42,7 @@ export class MatButton extends St.Widget {
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
         const child = params.child;
-        let super_params: Widget_ConstructProps = params;
+        let super_params: Partial<Widget.ConstructorProperties> = params;
         delete super_params.child;
         delete super_params.primary;
         Object.assign(super_params, {
@@ -101,10 +101,11 @@ export class MatButton extends St.Widget {
                     delete this._longPressLater;
                     if (this.clicked) {
                         delete this.clicked;
-                        return;
+                        return false;
                     }
                     action.release();
                     this.emit('drag-start', event);
+                    return false;
                 }
             );
         }
