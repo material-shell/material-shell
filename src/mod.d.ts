@@ -40,7 +40,7 @@ declare global {
         session_mode: string,
         stage: Clutter.Stage & { key_focus: any },
         window_group: Clutter.Actor,
-        window_manager: Meta.WindowManager,
+        window_manager: any,
         workspace_manager: Meta.WorkspaceManager,
         top_window_group: Clutter.Actor,
     };
@@ -138,7 +138,7 @@ declare module "GObject" {
     }
 
     export interface MetaInfo {
-        GTypeName: string;
+        GTypeName?: string;
         GTypeFlags?: TypeFlags;
         Implements?: Function[];
         Properties?: {[K: string]: ParamSpec};

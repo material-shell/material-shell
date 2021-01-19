@@ -2,13 +2,13 @@
     "version": "1.1.0",
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "es2016",
+        "target": "es2017",
         "strict": true,
         "outDir": "./target",
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true,
         "lib": [
-            "es2016"
+            "es2017"
         ],
         "pretty": true,
         "sourceMap": false,
@@ -32,9 +32,11 @@
             "Gtk": ["src/gtk"],
             "Shell": ["src/shell"],
             "Soup": ["src/soup"],
-            "St": ["src/st"],
+            // "St": ["src/st"],
+            "St": ["types/st"],
             // "St": ["@types/Gjs/St-1.0"],
-            "Meta": ["src/meta"],
+            // "Meta": ["src/meta"],
+            "Meta": ["types/meta", "src/meta"],
             "Gjs": ["@types/Gjs/Gjs"],
 
             // "GLib": ["@types/Gjs/GLib-2.0"],
