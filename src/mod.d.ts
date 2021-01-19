@@ -138,7 +138,7 @@ declare module "GObject" {
     }
 
     export interface MetaInfo {
-        GTypeName?: string;
+        GTypeName: string;
         GTypeFlags?: TypeFlags;
         Implements?: Function[];
         Properties?: {[K: string]: ParamSpec};
