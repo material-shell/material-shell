@@ -9,9 +9,11 @@ const Signals = imports.signals;
 /// export class MyThing extends GObject.Object { ... }
 /// ```
 export function registerGObjectClass<K, T extends { metaInfo?: GObject.MetaInfo, new(...params: any[]): K }>(target: T) {
-    if (target.metaInfo) {
+    // Note that we use 'hasOwnProperty' because otherwise we would get inherited meta infos.
+    // This would be bad because we would inherit the GObjectName too, which is supposed to be unique.
+    if (target.hasOwnProperty("metaInfo")) {
         return GObject.registerClass<K,T>(
-            target.metaInfo,
+            target.metaInfo!,
             target
         ) as typeof target;
     } else {
