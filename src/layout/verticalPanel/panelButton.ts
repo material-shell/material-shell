@@ -11,7 +11,7 @@ export class MatPanelButton extends MatButton {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MatPanelButton',
     };
-    monitor: number;
+    monitorIndex: number;
 
     constructor(params = {}) {
         super(params);
@@ -19,10 +19,10 @@ export class MatPanelButton extends MatButton {
         const panelSizeSignal = Me.msThemeManager.connect('panel-size-changed', () => {
             this.queue_relayout();
         });
-        this.monitor = this.findMonitor();
+        this.monitorIndex = this.findMonitor();
         const monitorSignal = Main.layoutManager.connect('monitors-changed', () => {
             GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                this.monitor = this.findMonitor();
+                this.monitorIndex = this.findMonitor();
                 return false;
             });
         });
@@ -46,8 +46,8 @@ export class MatPanelButton extends MatButton {
      */
     vfunc_get_preferred_width(_forHeight) : [number, number] {
         return [
-            Me.msThemeManager.getPanelSize(this.monitor.index),
-            Me.msThemeManager.getPanelSize(this.monitor.index),
+            Me.msThemeManager.getPanelSize(this.monitorIndex),
+            Me.msThemeManager.getPanelSize(this.monitorIndex),
         ];
     }
 
@@ -56,8 +56,8 @@ export class MatPanelButton extends MatButton {
      */
     vfunc_get_preferred_height(_forWidth): [number, number]  {
         return [
-            Me.msThemeManager.getPanelSize(this.monitor.index),
-            Me.msThemeManager.getPanelSize(this.monitor.index),
+            Me.msThemeManager.getPanelSize(this.monitorIndex),
+            Me.msThemeManager.getPanelSize(this.monitorIndex),
         ];
     }
 }
