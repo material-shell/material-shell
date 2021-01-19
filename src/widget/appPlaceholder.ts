@@ -158,14 +158,14 @@ export class AppPlaceholder extends St.Widget {
             : Clutter.ActorAlign.START;
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
-        const width = box.get_width();
-        const height = box.get_height();
+    vfunc_allocate(...args: [Clutter.ActorBox]) {
+        const width = args[0].get_width();
+        const height = args[0].get_height();
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this.setOrientation(width, height);
             return GLib.SOURCE_REMOVE;
         });
-        super.vfunc_allocate(box, flags);
+        super.vfunc_allocate(...args);
     }
 
     activate(button) {

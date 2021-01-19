@@ -164,6 +164,9 @@ declare module "Clutter" {
         metaWindow?: any;
         msWorkspace?: MsWorkspace
     }
+
+    // Existed in older versions of clutter, needed for compatibility
+    export interface AllocationFlags {}
 }
 
 declare namespace Gtk {

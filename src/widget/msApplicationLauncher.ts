@@ -95,7 +95,7 @@ export class MsApplicationLauncher extends St.Widget {
         this.appListContainer.initFilteredAppButtonList();
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
@@ -586,7 +586,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.add_child(button);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
@@ -704,7 +704,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         }
     }
 
-    hideButton(button, contentBox: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    hideButton(button, contentBox: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         const hiddenBox = new Clutter.ActorBox();
         hiddenBox.x1 = contentBox.x1;
         hiddenBox.x2 = contentBox.x1;

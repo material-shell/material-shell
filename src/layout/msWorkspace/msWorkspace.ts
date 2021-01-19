@@ -607,7 +607,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.visible = !monitorInFullScreen;
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();

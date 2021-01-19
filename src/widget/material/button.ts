@@ -130,7 +130,7 @@ export class MatButton extends St.Widget {
         return this.child.vfunc_get_preferred_height(forWidth);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);

@@ -236,7 +236,7 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
@@ -914,7 +914,7 @@ export class MsWindowContent extends St.Widget {
         this.add_child(this.placeholder);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         let themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
