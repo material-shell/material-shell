@@ -117,8 +117,8 @@ export class AppPlaceholder extends St.Widget {
 
             if (ShellVersionMatch('3.34')) {
                 switch (symbol) {
-                    case Clutter.Return:
-                    case Clutter.KP_Enter:
+                    case Clutter.KEY_Return:
+                    case Clutter.KEY_KP_Enter:
                         this.activate(0);
                         return Clutter.EVENT_STOP;
                 }

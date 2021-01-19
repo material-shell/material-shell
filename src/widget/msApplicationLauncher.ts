@@ -263,30 +263,30 @@ export class MsApplicationButtonContainer extends St.Widget {
             let symbol = event.get_key_symbol();
             if (ShellVersionMatch('3.34')) {
                 switch (symbol) {
-                    case Clutter.Escape:
+                    case Clutter.KEY_Escape:
                         this.reset(); // Reset both
                         this.removeHighlightButton();
                         return Clutter.EVENT_STOP;
-                    case Clutter.Tab:
+                    case Clutter.KEY_Tab:
                         this.highlightNextButton();
                         return Clutter.EVENT_STOP;
-                    case Clutter.ISO_Left_Tab:
+                    case Clutter.KEY_ISO_Left_Tab:
                         this.highlightPreviousButton();
                         return Clutter.EVENT_STOP;
-                    case Clutter.Down:
+                    case Clutter.KEY_Down:
                         this.highlightButtonBelow();
                         return Clutter.EVENT_STOP;
-                    case Clutter.Up:
+                    case Clutter.KEY_Up:
                         this.highlightButtonAbove();
                         return Clutter.EVENT_STOP;
-                    case Clutter.Right:
+                    case Clutter.KEY_Right:
                         if (this._text.cursor_position === -1) {
                             this.highlightNextButton();
                             return Clutter.EVENT_STOP;
                         } else {
                             return Clutter.EVENT_PROPAGATE;
                         }
-                    case Clutter.Left:
+                    case Clutter.KEY_Left:
                         if (
                             this.currentButtonFocused !=
                             this.filteredAppButtonList[0]
@@ -296,8 +296,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                         } else {
                             return Clutter.EVENT_PROPAGATE;
                         }
-                    case Clutter.Return:
-                    case Clutter.KP_Enter:
+                    case Clutter.KEY_Return:
+                    case Clutter.KEY_KP_Enter:
                         this.currentButtonFocused.emit('clicked', 0);
                         return Clutter.EVENT_STOP;
                 }
