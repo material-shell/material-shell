@@ -8,7 +8,7 @@ const Signals = imports.signals;
 /// @registerGObjectClass
 /// export class MyThing extends GObject.Object { ... }
 /// ```
-export function registerGObjectClass<K, T extends { metaInfo?: GObject.MetaInfo, new(params: any): K }>(target: T) {
+export function registerGObjectClass<K, T extends { metaInfo?: GObject.MetaInfo, new(...params: any[]): K }>(target: T) {
     if (target.metaInfo) {
         return GObject.registerClass<K,T>(
             target.metaInfo,
@@ -24,6 +24,7 @@ export function registerGObjectClass<K, T extends { metaInfo?: GObject.MetaInfo,
 export class WithSignals {
     // Note: these will be replaced by the addSignalMethods function
     emit(name: string, ...params: any[]): void {}
-    connect(name: string, callback: (...params: any[])=>void): void {}
+    connect(name: string, callback: (...params: any[])=>void): number { return 0; }
+    disconnect(id: number): void {}
 }
 Signals.addSignalMethods(WithSignals.prototype);
