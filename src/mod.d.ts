@@ -205,7 +205,7 @@ declare module "Clutter" {
     //     EASE_OUT_QUAD = 3,
     // }
 
-    type AnimatableActorFields = "anchor_x" | "anchor_y" | "depth" | "fixed_x" | "fixed_y" | "height" | "margin_bottom" | "margin_left" | "margin_right" | "margin_top" | "min_height" | "min_width" | "natural_height" | "natural_width" | "opacity" | "pivot_point_z" | "rotation_angle_x" | "rotation_angle_y" | "rotation_angle_z" | "scale_center_x" | "scale_center_y" | "scale_x" | "scale_y" | "scale_z" | "translation_x" | "translation_y" | "translation_z" | "width" | "x" | "y" | "z_position";
+    type AnimatableActorFields = "fixed_x" | "fixed_y" | "height" | "margin_bottom" | "margin_left" | "margin_right" | "margin_top" | "min_height" | "min_width" | "natural_height" | "natural_width" | "opacity" | "pivot_point_z" | "rotation_angle_x" | "rotation_angle_y" | "rotation_angle_z" | "scale_x" | "scale_y" | "scale_z" | "translation_x" | "translation_y" | "translation_z" | "width" | "x" | "y" | "z_position";
 
     interface EasingParams {
         // milliseconds
