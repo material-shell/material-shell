@@ -213,8 +213,7 @@ export class ReorderableList extends Clutter.Actor {
             actor._draggable.disconnect(connectCancelId);
             actor._draggable.disconnect(connectEndId);
             delete this.foreignActor;
-            // TODO: Incorrect if placeholderIndex == 0
-            if (placeholderIndex) {
+            if (placeholderIndex !== undefined) {
                 this.emit(
                     'foreign-actor-inserted',
                     actor,
