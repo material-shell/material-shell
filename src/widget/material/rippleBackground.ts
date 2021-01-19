@@ -73,7 +73,7 @@ export class RippleBackground extends St.Widget {
             clip_to_allocation: true,
         });
         this.displayed = true;
-        eventListener.connect('event', (actor, event) => {
+        eventListener.connect('event', (actor: Clutter.Actor, event: Clutter.Event) => {
             let eventType = event.type();
             if (
                 [
