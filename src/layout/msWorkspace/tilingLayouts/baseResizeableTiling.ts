@@ -13,387 +13,400 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
 
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { Portion } from 'src/layout/msWorkspace/portion';
+import { Portion, PortionBorder } from 'src/layout/msWorkspace/portion';
 
 import { FocusEffectEnum } from 'src/manager/msThemeManager';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { MsWorkspace, Tileable } from '../msWorkspace';
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import { Rectangular } from 'src/mod';
 
 const BORDER_WIDTH = 2;
 @registerGObjectClass
 export class BaseResizeableTilingLayout extends BaseTilingLayout {
-    constructor(msWorkspace, state = {}) {
-            this.mainPortion = new Portion();
+    mainPortion: Portion;
+    currentFocusEffect: number;
+    borderContainer: Clutter.Actor | undefined;
+    borderActorList: Clutter.Actor[] | undefined;
+    mainPortionConnectionId: number | undefined;
 
-            if (state.mainPortion) {
-                this.mainPortion.state = state.mainPortion;
+    constructor(msWorkspace: MsWorkspace, state = {}) {
+        this.mainPortion = new Portion();
 
-                delete state.mainPortion;
-            }
-            Me.layoutManager.connect(
-                'gap-changed',
-                this.onGapChange.bind(this)
-            );
-            this.currentFocusEffect = Me.msThemeManager.focusEffect;
-            super(msWorkspace, state);
-            this.onGapChange();
-            Me.msThemeManager.connect(
-                'focus-effect-changed',
-                this.onFocusEffectChanged.bind(this)
-            );
+        if (state.mainPortion) {
+            this.mainPortion.state = state.mainPortion;
+
+            delete state.mainPortion;
         }
+        Me.layoutManager.connect(
+            'gap-changed',
+            this.onGapChange.bind(this)
+        );
+        this.currentFocusEffect = Me.msThemeManager.focusEffect;
+        super(msWorkspace, state);
+        this.onGapChange();
+        Me.msThemeManager.connect(
+            'focus-effect-changed',
+            this.onFocusEffectChanged.bind(this)
+        );
+    }
 
-        get state() {
-            return Object.assign({}, this._state, {
-                mainPortion: this.mainPortion.state,
-            });
-        }
-        onGapChange() {
-            if (!Me.layoutManager.someGap) {
-                if (!this.borderContainer) {
-                    this.borderActorList = [];
-                    this.borderContainer = new Clutter.Actor();
-                    this.msWorkspace.msWorkspaceActor.add_child(
-                        this.borderContainer
-                    );
-                    this.updateBordersActor();
-                }
-            } else {
-                if (this.borderContainer) {
-                    this.mainPortion.disconnect(this.mainPortionConnectionId);
-                    delete this.mainPortionConnectionId;
-                    this.borderContainer.destroy();
-                    delete this.borderContainer;
-                    delete this.borderActorList;
-                }
-            }
-        }
-
-        getTileableIndex(tileable) {
-            return this.tileableListVisible.indexOf(tileable);
-        }
-
-        getTileablePortionRatio(tileable) {
-            const index = this.getTileableIndex(tileable);
-
-            if (index < 0) {
-                return;
-            }
-
-            return this.mainPortion.getRatioForIndex(index);
-        }
-
-        getTileableBorder(tileable, vertical = false, after = false) {
-            const index = this.getTileableIndex(tileable);
-
-            if (index < 0) {
-                return;
-            }
-
-            return this.mainPortion.getBorderForIndex(index, vertical, after);
-        }
-
-        applyBoxRatio(box, ratio) {
-            return {
-                x: round(box.x1 + ratio.x * box.get_width()),
-                y: round(box.y1 + ratio.y * box.get_height()),
-                width: round(ratio.width * box.get_width()),
-                height: round(ratio.height * box.get_height()),
-            };
-        }
-
-        applyBoxRatioAndGaps(box, ratio) {
-            const { x, y, width, height } = this.applyBoxRatio(box, ratio);
-
-            return this.applyGaps(x, y, width, height);
-        }
-
-        tileTileable(tileable, box) {
-            let ratio = this.getTileablePortionRatio(tileable);
-
-            if (!ratio) {
-                return;
-            }
-
-            const { x, y, width, height } = this.applyBoxRatioAndGaps(
-                box,
-                ratio
-            );
-
-            tileable.x = x;
-            tileable.y = y;
-            tileable.width = width;
-            tileable.height = height;
-        }
-
-        applyGaps(x, y, width, height) {
-            const gap = Me.layoutManager.gap || BORDER_WIDTH;
-            const screenGap = Me.layoutManager.useScreenGap
-                ? Me.layoutManager.screenGap
-                : Me.layoutManager.gap;
-            return super.applyGaps(x, y, width, height, screenGap, gap);
-        }
-
-        updateMainPortionLength(length) {
-            while (this.mainPortion.portionLength > length) {
-                this.mainPortion.pop();
-            }
-
-            while (length > 1 && this.mainPortion.portionLength < length) {
-                this.mainPortion.push();
-            }
-        }
-
-        tileAll(box) {
-            box = this.resolveBox(box);
-            this.updateMainPortionLength(this.tileableListVisible.length);
-            if (this.borderContainer) {
-                this.updateBordersActor();
-                this.updateBordersPosition(box);
-            }
-            super.tileAll(box);
-        }
-
-        updateBordersActor() {
-            const borderLength = this.mainPortion.concatBorders.length;
-
-            if (this.borderActorList.length < borderLength) {
-                for (
-                    let i = 0;
-                    i <= borderLength - this.borderActorList.length;
-                    i++
-                ) {
-                    const actor = new ResizableBorderActor();
-                    this.borderActorList.push(actor);
-                    this.borderContainer.add_child(actor);
-                }
-            } else if (this.borderActorList.length > borderLength) {
-                this.borderActorList
-                    .splice(
-                        borderLength,
-                        this.borderActorList.length - borderLength
-                    )
-                    .forEach((actor) => {
-                        actor.destroy();
-                    });
-            }
-        }
-
-        updateBordersPosition(box) {
-            this.mainPortion.concatBorders.forEach((portionBorder, index) => {
-                let actor = this.borderActorList[index];
-                actor.portionBorder = portionBorder;
-                let ratio = this.mainPortion.getRatioForPortion(
-                    portionBorder.firstPortion
+    get state() {
+        return Object.assign({}, this._state, {
+            mainPortion: this.mainPortion.state,
+        });
+    }
+    onGapChange() {
+        if (!Me.layoutManager.someGap) {
+            if (!this.borderContainer) {
+                this.borderActorList = [];
+                this.borderContainer = new Clutter.Actor();
+                this.msWorkspace.msWorkspaceActor.add_child(
+                    this.borderContainer
                 );
-                const { x, y, width, height } = this.applyBoxRatio(box, ratio);
-                if (portionBorder.vertical) {
-                    actor.x = x + width - BORDER_WIDTH / 2;
-                    actor.y = y;
-                    actor.height = height;
-                    actor.width = BORDER_WIDTH;
-                } else {
-                    actor.x = x;
-                    actor.y = y + height - BORDER_WIDTH / 2;
-                    actor.height = BORDER_WIDTH;
-                    actor.width = width;
-                }
-            });
+                this.updateBordersActor();
+            }
+        } else {
+            if (this.borderContainer) {
+                this.mainPortion.disconnect(this.mainPortionConnectionId);
+                delete this.mainPortionConnectionId;
+                this.borderContainer.destroy();
+                delete this.borderContainer;
+                delete this.borderActorList;
+            }
+        }
+    }
+
+    getTileableIndex(tileable: Tileable): number {
+        return this.tileableListVisible.indexOf(tileable);
+    }
+
+    getTileablePortionRatio(tileable: Tileable): Rectangular | undefined {
+        const index = this.getTileableIndex(tileable);
+
+        if (index < 0) {
+            return;
         }
 
-        alterTileable(tileable) {
+        return this.mainPortion.getRatioForIndex(index);
+    }
+
+    getTileableBorder(tileable, vertical = false, after = false) {
+        const index = this.getTileableIndex(tileable);
+
+        if (index < 0) {
+            return;
+        }
+
+        return this.mainPortion.getBorderForIndex(index, vertical, after);
+    }
+
+    applyBoxRatio(box: Clutter.ActorBox, ratio: Rectangular): Rectangular {
+        return {
+            x: round(box.x1 + ratio.x * box.get_width()),
+            y: round(box.y1 + ratio.y * box.get_height()),
+            width: round(ratio.width * box.get_width()),
+            height: round(ratio.height * box.get_height()),
+        };
+    }
+
+    applyBoxRatioAndGaps(box: Clutter.ActorBox, ratio: Rectangular): Rectangular {
+        const { x, y, width, height } = this.applyBoxRatio(box, ratio);
+
+        return this.applyGaps(x, y, width, height);
+    }
+
+    tileTileable(tileable: Tileable, box: Clutter.ActorBox) {
+        let ratio = this.getTileablePortionRatio(tileable);
+
+        if (!ratio) {
+            return;
+        }
+
+        const { x, y, width, height } = this.applyBoxRatioAndGaps(
+            box,
+            ratio
+        );
+
+        tileable.x = x;
+        tileable.y = y;
+        tileable.width = width;
+        tileable.height = height;
+    }
+
+    applyGaps(x: number, y: number, width: number, height: number): Rectangular {
+        const gap = Me.layoutManager.gap || BORDER_WIDTH;
+        const screenGap = Me.layoutManager.useScreenGap
+            ? Me.layoutManager.screenGap
+            : Me.layoutManager.gap;
+        return super.applyGaps(x, y, width, height, screenGap, gap);
+    }
+
+    updateMainPortionLength(length: number) {
+        while (this.mainPortion.portionLength > length) {
+            this.mainPortion.pop();
+        }
+
+        while (length > 1 && this.mainPortion.portionLength < length) {
+            this.mainPortion.push();
+        }
+    }
+
+    tileAll(box?: Clutter.ActorBox) {
+        box = this.resolveBox(box);
+        this.updateMainPortionLength(this.tileableListVisible.length);
+        if (this.borderContainer) {
+            this.updateBordersActor();
+            this.updateBordersPosition(box);
+        }
+        super.tileAll(box);
+    }
+
+    updateBordersActor() {
+        const borderLength = this.mainPortion.concatBorders.length;
+
+        if (this.borderActorList.length < borderLength) {
+            for (
+                let i = 0;
+                i <= borderLength - this.borderActorList.length;
+                i++
+            ) {
+                const actor = new ResizableBorderActor();
+                this.borderActorList.push(actor);
+                this.borderContainer.add_child(actor);
+            }
+        } else if (this.borderActorList.length > borderLength) {
+            this.borderActorList
+                .splice(
+                    borderLength,
+                    this.borderActorList.length - borderLength
+                )
+                .forEach((actor) => {
+                    actor.destroy();
+                });
+        }
+    }
+
+    updateBordersPosition(box: Clutter.ActorBox) {
+        this.mainPortion.concatBorders.forEach((portionBorder, index) => {
+            let actor = this.borderActorList[index];
+            actor.portionBorder = portionBorder;
+            let ratio = this.mainPortion.getRatioForPortion(
+                portionBorder.firstPortion
+            );
+            const { x, y, width, height } = this.applyBoxRatio(box, ratio);
+            if (portionBorder.vertical) {
+                actor.x = x + width - BORDER_WIDTH / 2;
+                actor.y = y;
+                actor.height = height;
+                actor.width = BORDER_WIDTH;
+            } else {
+                actor.x = x;
+                actor.y = y + height - BORDER_WIDTH / 2;
+                actor.height = BORDER_WIDTH;
+                actor.width = width;
+            }
+        });
+    }
+
+    alterTileable(tileable: Tileable) {
+        this.addUnFocusEffect(
+            tileable,
+            this.currentFocusEffect,
+            tileable === this.msWorkspace.tileableFocused
+        );
+        super.alterTileable(tileable);
+    }
+
+    restoreTileable(tileable: Tileable) {
+        this.removeUnFocusEffect(tileable, this.currentFocusEffect);
+        super.restoreTileable(tileable);
+    }
+
+    onFocusEffectChanged() {
+        const oldFocusEffect = this.currentFocusEffect;
+        this.currentFocusEffect = Me.msThemeManager.focusEffect;
+        this.msWorkspace.tileableList.forEach((tileable) => {
+            this.removeUnFocusEffect(tileable, oldFocusEffect);
             this.addUnFocusEffect(
                 tileable,
                 this.currentFocusEffect,
                 tileable === this.msWorkspace.tileableFocused
             );
-            super.alterTileable(tileable);
-        }
+        });
+    }
 
-        restoreTileable(tileable) {
-            this.removeUnFocusEffect(tileable, this.currentFocusEffect);
-            super.restoreTileable(tileable);
-        }
-
-        onFocusEffectChanged() {
-            const oldFocusEffect = this.currentFocusEffect;
-            this.currentFocusEffect = Me.msThemeManager.focusEffect;
-            this.msWorkspace.tileableList.forEach((tileable) => {
-                this.removeUnFocusEffect(tileable, oldFocusEffect);
-                this.addUnFocusEffect(
-                    tileable,
-                    this.currentFocusEffect,
-                    tileable === this.msWorkspace.tileableFocused
-                );
-            });
-        }
-
-        onFocusChanged(tileable, oldTileable) {
-            this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
-            if (oldTileable) {
-                if (
-                    oldTileable instanceof MsWindow &&
-                    oldTileable.metaWindow &&
-                    oldTileable.metaWindow.fullscreen
-                ) {
-                    oldTileable.metaWindow.unmake_fullscreen();
-                }
-                this.setUnFocusEffect(
-                    oldTileable,
-                    this.currentFocusEffect,
-                    false
-                );
+    onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
+        this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
+        if (oldTileable) {
+            if (
+                oldTileable instanceof MsWindow &&
+                oldTileable.metaWindow &&
+                oldTileable.metaWindow.fullscreen
+            ) {
+                oldTileable.metaWindow.unmake_fullscreen();
             }
-            super.onFocusChanged(tileable, oldTileable);
+            this.setUnFocusEffect(
+                oldTileable,
+                this.currentFocusEffect,
+                false
+            );
         }
+        super.onFocusChanged(tileable, oldTileable);
+    }
 
-        addUnFocusEffect(tileable, effect, focused) {
-            if (!tileable || tileable.focusEffects) return;
-            if (effect === FocusEffectEnum.DEFAULT) {
-                tileable.focusEffects = {
-                    dimmer: new Clutter.BrightnessContrastEffect({
-                        name: 'dimmer',
-                        brightness: focused
-                            ? Clutter.Color.new(127, 127, 127, 255)
-                            : Clutter.Color.new(100, 100, 100, 255),
-                    }),
-                };
-                tileable.add_effect(tileable.focusEffects.dimmer);
-            } else if (effect === FocusEffectEnum.BORDER) {
-                tileable.focusEffects = {
-                    border: new PrimaryBorderEffect({
-                        name: 'border',
-                        opacity: focused ? 1.0 : 0.0,
-                    }),
-                };
-                tileable.add_effect(tileable.focusEffects.border);
-            }
+    addUnFocusEffect(tileable: Tileable, effect: number, focused: boolean) {
+        if (!tileable || tileable.focusEffects) return;
+        if (effect === FocusEffectEnum.DEFAULT) {
+            tileable.focusEffects = {
+                dimmer: new Clutter.BrightnessContrastEffect({
+                    name: 'dimmer',
+                    brightness: focused
+                        ? Clutter.Color.new(127, 127, 127, 255)
+                        : Clutter.Color.new(100, 100, 100, 255),
+                }),
+            };
+            tileable.add_effect(tileable.focusEffects.dimmer);
+        } else if (effect === FocusEffectEnum.BORDER) {
+            tileable.focusEffects = {
+                border: new PrimaryBorderEffect({
+                    name: 'border',
+                    opacity: focused ? 1.0 : 0.0,
+                }),
+            };
+            tileable.add_effect(tileable.focusEffects.border);
         }
+    }
 
-        removeUnFocusEffect(tileable, effect) {
-            if (!tileable || !tileable.focusEffects) return;
-            tileable.remove_all_transitions();
-            if (effect === FocusEffectEnum.DEFAULT) {
-                tileable.remove_effect(tileable.focusEffects.dimmer);
-            } else if (effect === FocusEffectEnum.BORDER) {
-                tileable.remove_effect(tileable.focusEffects.border);
-            }
-            delete tileable.focusEffects;
+    removeUnFocusEffect(tileable: Tileable, effect: number) {
+        if (!tileable || !tileable.focusEffects) return;
+        tileable.remove_all_transitions();
+        if (effect === FocusEffectEnum.DEFAULT) {
+            tileable.remove_effect(tileable.focusEffects.dimmer);
+        } else if (effect === FocusEffectEnum.BORDER) {
+            tileable.remove_effect(tileable.focusEffects.border);
         }
+        delete tileable.focusEffects;
+    }
 
-        setUnFocusEffect(tileable, effect, focused) {
-            if (!tileable) return;
-            if (effect === FocusEffectEnum.DEFAULT) {
-                if (!focused) {
-                    this.addUnFocusEffect(tileable, effect, !focused);
-                    if (tileable.get_effect('dimmer')) {
-                        tileable.ease_property(
-                            '@effects.dimmer.brightness',
-
-                            Clutter.Color.new(100, 100, 100, 255),
-                            {
-                                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                                duration: 150,
-                            }
-                        );
-                    }
-                } else {
-                    if (tileable.get_effect('dimmer')) {
-                        tileable.ease_property(
-                            '@effects.dimmer.brightness',
-                            Clutter.Color.new(127, 127, 127, 255),
-                            {
-                                duration: 150,
-                                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                                onComplete: () => {},
-                            }
-                        );
-                    }
-                }
-
-                /* if (tileable.get_effect('dimmer')) {
+    setUnFocusEffect(tileable: Tileable, effect: number, focused: boolean) {
+        if (!tileable) return;
+        if (effect === FocusEffectEnum.DEFAULT) {
+            if (!focused) {
+                this.addUnFocusEffect(tileable, effect, !focused);
+                if (tileable.get_effect('dimmer')) {
                     tileable.ease_property(
                         '@effects.dimmer.brightness',
-                        focused
-                            ? Clutter.Color.new(127, 127, 127, 255)
-                            : Clutter.Color.new(10, 10, 10, 255),
+
+                        Clutter.Color.new(100, 100, 100, 255),
                         {
-                            duration: 2500,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                            onComplete: () => {
-                                GLib.idle_add(
-                                    GLib.PRIORITY_DEFAULT_IDLE,
-                                    () => {
-                                        if (focused) {
-                                            this.removeUnFocusEffect(
-                                                tileable,
-                                                effect
-                                            );
-                                        }
-                                        return GLib.SOURCE_REMOVE;
-                                    }
-                                );
-                            },
+                            duration: 150,
                         }
                     );
-                } */
-            } else if (effect === FocusEffectEnum.BORDER) {
-                if (focused) {
-                    this.addUnFocusEffect(tileable, effect, focused);
-                } else {
-                    this.removeUnFocusEffect(tileable, effect);
+                }
+            } else {
+                if (tileable.get_effect('dimmer')) {
+                    tileable.ease_property(
+                        '@effects.dimmer.brightness',
+                        Clutter.Color.new(127, 127, 127, 255),
+                        {
+                            duration: 150,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            onComplete: () => { },
+                        }
+                    );
                 }
             }
-        }
 
-        onDestroy() {
-            if (this.borderContainer) {
-                this.borderContainer.destroy();
+            /* if (tileable.get_effect('dimmer')) {
+                tileable.ease_property(
+                    '@effects.dimmer.brightness',
+                    focused
+                        ? Clutter.Color.new(127, 127, 127, 255)
+                        : Clutter.Color.new(10, 10, 10, 255),
+                    {
+                        duration: 2500,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onComplete: () => {
+                            GLib.idle_add(
+                                GLib.PRIORITY_DEFAULT_IDLE,
+                                () => {
+                                    if (focused) {
+                                        this.removeUnFocusEffect(
+                                            tileable,
+                                            effect
+                                        );
+                                    }
+                                    return GLib.SOURCE_REMOVE;
+                                }
+                            );
+                        },
+                    }
+                );
+            } */
+        } else if (effect === FocusEffectEnum.BORDER) {
+            if (focused) {
+                this.addUnFocusEffect(tileable, effect, focused);
+            } else {
+                this.removeUnFocusEffect(tileable, effect);
             }
-            super.onDestroy();
         }
+    }
+
+    onDestroy() {
+        if (this.borderContainer) {
+            this.borderContainer.destroy();
+        }
+        super.onDestroy();
+    }
 }
 
-var ResizableBorderActor = GObject.registerClass(
-    {
+@registerGObjectClass
+export class ResizableBorderActor extends St.Widget {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: "ResizableBorderActor",
         Signals: {
             'drag-start': {},
         },
-    },
-    class ResizeableBorderActor extends St.Widget {
-        constructor() {
-            super({ reactive: true, track_hover: true });
-            this.set_background_color(
-                new Clutter.Color({ red: 10, green: 10, blue: 10, alpha: 255 })
-            );
-
-            this.connect('event', (actor, event) => {
-                let eventType = event.type();
-                switch (eventType) {
-                    case Clutter.EventType.BUTTON_PRESS:
-                    case Clutter.EventType.TOUCH_BEGIN:
-                        Me.msWindowManager.msResizeManager.startResize(
-                            this.portionBorder
-                        );
-                        break;
-
-                    case Clutter.EventType.ENTER:
-                        global.display.set_cursor(
-                            Meta.Cursor.MOVE_OR_RESIZE_WINDOW
-                        );
-                        break;
-                    case Clutter.EventType.LEAVE:
-                        global.display.set_cursor(Meta.Cursor.DEFAULT);
-                        break;
-                }
-            });
-        }
-        get vertical() {
-            return this.height > this.width;
-        }
     }
-);
 
-var PrimaryBorderEffect = GObject.registerClass(
-    {
+    constructor() {
+        super({ reactive: true, track_hover: true });
+        this.set_background_color(
+            new Clutter.Color({ red: 10, green: 10, blue: 10, alpha: 255 })
+        );
+
+        this.connect('event', (actor, event) => {
+            let eventType = event.type();
+            switch (eventType) {
+                case Clutter.EventType.BUTTON_PRESS:
+                case Clutter.EventType.TOUCH_BEGIN:
+                    Me.msWindowManager.msResizeManager.startResize(
+                        this.portionBorder
+                    );
+                    break;
+
+                case Clutter.EventType.ENTER:
+                    global.display.set_cursor(
+                        Meta.Cursor.MOVE_OR_RESIZE_WINDOW
+                    );
+                    break;
+                case Clutter.EventType.LEAVE:
+                    global.display.set_cursor(Meta.Cursor.DEFAULT);
+                    break;
+            }
+        });
+    }
+    get vertical() {
+        return this.height > this.width;
+    }
+}
+
+@registerGObjectClass
+export class PrimaryBorderEffect extends Clutter.Effect {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: "PrimaryBorderEffect",
         Properties: {
             opacity: GObject.ParamSpec.float(
                 'opacity',
@@ -405,65 +418,67 @@ var PrimaryBorderEffect = GObject.registerClass(
                 1
             ),
         },
-    },
-    class PrimaryBorderEffect extends Clutter.Effect {
-        constructor(params) {
-            super(params);
-            this._pipeline = null;
-            this.color = new Cogl.Color();
-        }
-
-        vfunc_paint(paintContext) {
-            let framebuffer = paintContext.get_framebuffer();
-            let coglContext = framebuffer.get_context();
-            let actor = this.get_actor();
-            actor.continue_paint(paintContext);
-
-            if (!this._pipeline) {
-                this._pipeline = new Cogl.Pipeline(coglContext);
-            }
-
-            this.color.init_from_4ub(
-                parseInt(Me.msThemeManager.primary.substring(1, 3), 16),
-                parseInt(Me.msThemeManager.primary.substring(3, 5), 16),
-                parseInt(Me.msThemeManager.primary.substring(5, 7), 16),
-                parseInt((this.opacity.toFixed(2) * 255).toString(16), 16)
-            );
-            this.color.premultiply();
-            this._pipeline.set_color(this.color);
-
-            let alloc = actor.get_allocation_box();
-            let width = 2;
-
-            // clockwise order
-            framebuffer.draw_rectangle(
-                this._pipeline,
-                0,
-                0,
-                alloc.get_width(),
-                width
-            );
-            framebuffer.draw_rectangle(
-                this._pipeline,
-                alloc.get_width() - width,
-                width,
-                alloc.get_width(),
-                alloc.get_height()
-            );
-            framebuffer.draw_rectangle(
-                this._pipeline,
-                0,
-                alloc.get_height(),
-                alloc.get_width() - width,
-                alloc.get_height() - width
-            );
-            framebuffer.draw_rectangle(
-                this._pipeline,
-                0,
-                alloc.get_height() - width,
-                width,
-                width
-            );
-        }
     }
-);
+    private _pipeline: Cogl.Pipeline | null;
+    color: Cogl.Color;
+    opacity: number | undefined;
+
+    constructor(params: Partial<Clutter.Effect.ConstructorProperties>) {
+        super(params);
+        this._pipeline = null;
+        this.color = new Cogl.Color();
+    }
+
+    vfunc_paint(paintContext: Clutter.PaintContext) {
+        let framebuffer = paintContext.get_framebuffer();
+        let coglContext = framebuffer.get_context();
+        let actor = this.get_actor();
+        actor.continue_paint(paintContext);
+
+        if (!this._pipeline) {
+            this._pipeline = new Cogl.Pipeline(coglContext);
+        }
+
+        this.color.init_from_4ub(
+            parseInt(Me.msThemeManager.primary.substring(1, 3), 16),
+            parseInt(Me.msThemeManager.primary.substring(3, 5), 16),
+            parseInt(Me.msThemeManager.primary.substring(5, 7), 16),
+            parseInt((this.opacity.toFixed(2) * 255).toString(16), 16)
+        );
+        this.color.premultiply();
+        this._pipeline.set_color(this.color);
+
+        let alloc = actor.get_allocation_box();
+        let width = 2;
+
+        // clockwise order
+        framebuffer.draw_rectangle(
+            this._pipeline,
+            0,
+            0,
+            alloc.get_width(),
+            width
+        );
+        framebuffer.draw_rectangle(
+            this._pipeline,
+            alloc.get_width() - width,
+            width,
+            alloc.get_width(),
+            alloc.get_height()
+        );
+        framebuffer.draw_rectangle(
+            this._pipeline,
+            0,
+            alloc.get_height(),
+            alloc.get_width() - width,
+            alloc.get_height() - width
+        );
+        framebuffer.draw_rectangle(
+            this._pipeline,
+            0,
+            alloc.get_height() - width,
+            width,
+            width
+        );
+    }
+}

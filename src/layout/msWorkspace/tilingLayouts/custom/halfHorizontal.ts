@@ -4,13 +4,14 @@ import * as GObject from 'GObject';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { HalfLayout, } from "src/layout/msWorkspace/tilingLayouts/custom/half";
+import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class HalfHorizontalLayout extends HalfLayout {
-    isVerticalLayout() {
-            return false;
-        }
-}
+    static state = { key: 'half-horizontal' };
+    static label = 'Half horizontal';
 
-HalfHorizontalLayout.state = { key: 'half-horizontal' };
-HalfHorizontalLayout.label = 'Half horizontal';
+    isVerticalLayout() {
+        return false;
+    }
+}

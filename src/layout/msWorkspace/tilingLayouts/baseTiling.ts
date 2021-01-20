@@ -7,9 +7,11 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation,
+import {
+    SetAllocation,
     Allocate,
-    AllocatePreferredSize, } from "src/utils/compatibility";
+    AllocatePreferredSize,
+} from "src/utils/compatibility";
 import { getSettings } from 'src/utils/settings';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { InfinityTo0 } from 'src/utils/index';
@@ -203,12 +205,12 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         });
     }
 
-    onTileableListChanged(tileableList: Tileable[], oldTileableList: (Tileable |null)[]) {
+    onTileableListChanged(tileableList: Tileable[], oldTileableList: (Tileable | null)[]) {
         const enteringTileableList = tileableList.filter(
             (tileable) => !oldTileableList.includes(tileable)
         );
 
-        const leavingPredicate = function(tileable: Tileable | null): tileable is MsWindow {
+        const leavingPredicate = function (tileable: Tileable | null): tileable is MsWindow {
             return tileable instanceof MsWindow && !tileableList.includes(tileable) &&
                 Me.msWindowManager.msWindowList.includes(tileable);
         }
@@ -224,7 +226,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         if (
             this.msWorkspace.appLauncher.visible &&
             this.msWorkspace.tileableFocused !==
-                this.msWorkspace.appLauncher
+            this.msWorkspace.appLauncher
         ) {
             this.hideAppLauncher();
         }
@@ -240,7 +242,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         );
     }
 
-    onFocusChanged(tileable: Tileable, oldTileable) {
+    onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
         if (tileable === this.msWorkspace.appLauncher) {
             this.tileAll();
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -350,10 +352,8 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
                 signal.from.disconnect(signal.id);
             } catch (error) {
                 Me.log(
-                    `Failed to disconnect signal ${signal.id} from ${
-                        signal.from
-                    } ${
-                        signal.from.constructor.name
+                    `Failed to disconnect signal ${signal.id} from ${signal.from
+                    } ${signal.from.constructor.name
                     } ${signal.from.toString()}  `
                 );
             }
