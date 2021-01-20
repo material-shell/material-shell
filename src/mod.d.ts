@@ -65,12 +65,15 @@ declare global {
         monitorsLength: number,
         loaded: boolean,
         locked: boolean | undefined,
+        reparentInProgress: boolean | undefined,
         stateManager: StateManager,
         showSplashScreens: ()=>void,
         hideSplashScreens: ()=>void,
         closing: boolean,
         disableInProgress: boolean | undefined,
         imports: any,
+        dir: any,
+        metadata: any,
         layout: any,
         uuid: string,
         path: string,
@@ -274,6 +277,7 @@ declare module "Clutter" {
         // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
         ease(params: EasingParamsWithProperties): void;
         ease_property(propName: AnimatableActorFields, target: number, params: EasingParams): void;
+        ease_property(propName: "@effects.dimmer.brightness", target: Clutter.Color, params: EasingParams): void;
 
         // hide(): void;
         // get_child_at_index(nth: number): Actor | null;
