@@ -5,16 +5,14 @@ import * as GLib from 'GLib';
 import * as GObject from 'GObject';
 
 /** Extension imports */
-const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
-const WindowUtils = Me.imports.src.utils.windows;
+import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
+import * as WindowUtils from "src/utils/windows";
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
-export const FloatLayout = GObject.registerClass(
-    class FloatLayout extends BaseTilingLayout {
-        _init(msWorkspace, state) {
-            super._init(msWorkspace, state);
+@registerGObjectClass
+export class FloatLayout extends BaseTilingLayout {
+    constructor(msWorkspace, state) {
+            super(msWorkspace, state);
             global.display.connect(
                 'restacked',
                 this.windowsRestacked.bind(this)
@@ -110,8 +108,7 @@ export const FloatLayout = GObject.registerClass(
                 }
             });
         }
-    }
-);
+}
 
 FloatLayout.state = { key: 'float' };
 FloatLayout.label = 'Float';

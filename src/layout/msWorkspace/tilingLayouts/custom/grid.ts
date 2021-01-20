@@ -3,13 +3,11 @@ import * as GObject from 'GObject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
 
-export const GridLayout = GObject.registerClass(
-    class GridLayout extends BaseResizeableTilingLayout {
-        updateMainPortionLength(length) {
+@registerGObjectClass
+export class GridLayout extends BaseResizeableTilingLayout {
+    updateMainPortionLength(length) {
             const columnLength = Math.ceil(Math.sqrt(length));
             const rowLength = Math.ceil(length / columnLength);
 
@@ -47,8 +45,7 @@ export const GridLayout = GObject.registerClass(
                 }
             }
         }
-    }
-);
+}
 
 GridLayout.state = { key: 'grid' };
 GridLayout.label = 'Grid';

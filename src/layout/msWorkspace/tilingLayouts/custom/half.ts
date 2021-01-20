@@ -4,13 +4,11 @@ import * as Clutter from 'Clutter';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
 
-export const HalfLayout = GObject.registerClass(
-    class HalfLayout extends BaseResizeableTilingLayout {
-        updateMainPortionLength(length) {
+@registerGObjectClass
+export class HalfLayout extends BaseResizeableTilingLayout {
+    updateMainPortionLength(length) {
             while (this.mainPortion.portionLength > length) {
                 this.mainPortion.pop();
             }
@@ -39,8 +37,7 @@ export const HalfLayout = GObject.registerClass(
 
             super.tileAll(box);
         }
-    }
-);
+}
 
 HalfLayout.state = { key: 'half' };
 HalfLayout.label = 'Half';

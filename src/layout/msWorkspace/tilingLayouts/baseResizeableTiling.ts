@@ -10,9 +10,7 @@ import * as Cogl from 'Cogl';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
 
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Portion } from 'src/layout/msWorkspace/portion';
@@ -20,9 +18,9 @@ import { Portion } from 'src/layout/msWorkspace/portion';
 import { FocusEffectEnum } from 'src/manager/msThemeManager';
 
 const BORDER_WIDTH = 2;
-export const BaseResizeableTilingLayout = GObject.registerClass(
-    class BaseResizeableTilingLayout extends BaseTilingLayout {
-        _init(msWorkspace, state = {}) {
+@registerGObjectClass
+export class BaseResizeableTilingLayout extends BaseTilingLayout {
+    constructor(msWorkspace, state = {}) {
             this.mainPortion = new Portion();
 
             if (state.mainPortion) {
@@ -35,7 +33,7 @@ export const BaseResizeableTilingLayout = GObject.registerClass(
                 this.onGapChange.bind(this)
             );
             this.currentFocusEffect = Me.msThemeManager.focusEffect;
-            super._init(msWorkspace, state);
+            super(msWorkspace, state);
             this.onGapChange();
             Me.msThemeManager.connect(
                 'focus-effect-changed',
@@ -352,8 +350,7 @@ export const BaseResizeableTilingLayout = GObject.registerClass(
             }
             super.onDestroy();
         }
-    }
-);
+}
 
 var ResizableBorderActor = GObject.registerClass(
     {
@@ -362,8 +359,8 @@ var ResizableBorderActor = GObject.registerClass(
         },
     },
     class ResizeableBorderActor extends St.Widget {
-        _init() {
-            super._init({ reactive: true, track_hover: true });
+        constructor() {
+            super({ reactive: true, track_hover: true });
             this.set_background_color(
                 new Clutter.Color({ red: 10, green: 10, blue: 10, alpha: 255 })
             );
@@ -410,8 +407,8 @@ var PrimaryBorderEffect = GObject.registerClass(
         },
     },
     class PrimaryBorderEffect extends Clutter.Effect {
-        _init(params) {
-            super._init(params);
+        constructor(params) {
+            super(params);
             this._pipeline = null;
             this.color = new Cogl.Color();
         }

@@ -3,13 +3,11 @@ import * as GObject from 'GObject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
 
-export const RatioLayout = GObject.registerClass(
-    class RatioLayout extends BaseResizeableTilingLayout {
-        updateMainPortionLength(length) {
+@registerGObjectClass
+export class RatioLayout extends BaseResizeableTilingLayout {
+    updateMainPortionLength(length) {
             const pushInPortion = (portion) => {
                 if (portion.children.length === 2) {
                     pushInPortion(portion.children[1]);
@@ -26,8 +24,7 @@ export const RatioLayout = GObject.registerClass(
                 pushInPortion(this.mainPortion);
             }
         }
-    }
-);
+}
 
 RatioLayout.state = { key: 'ratio' };
 RatioLayout.label = 'Ratio';

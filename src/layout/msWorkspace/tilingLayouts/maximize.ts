@@ -4,17 +4,15 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import * as GObject from 'GObject';
 
 /** Extension imports */
-const {
-    BaseTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseTiling;
+import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { InfinityTo0 } from 'src/utils/index';
 import { reparentActor } from 'src/utils/index';
 
-export const MaximizeLayout = GObject.registerClass(
-    class MaximizeLayout extends BaseTilingLayout {
-        _init(msWorkspace, state) {
-            super._init(msWorkspace, state);
+@registerGObjectClass
+export class MaximizeLayout extends BaseTilingLayout {
+    constructor(msWorkspace, state) {
+            super(msWorkspace, state);
             this.translationAnimator = new TranslationAnimator();
             this.translationAnimator.connect('transition-completed', () => {
                 this.endTransition();
@@ -150,8 +148,7 @@ export const MaximizeLayout = GObject.registerClass(
             this.displayTileable(this.msWorkspace.tileableFocused);
             this.tileableContainer.remove_child(this.translationAnimator);
         }
-    }
-);
+}
 
 MaximizeLayout.state = { key: 'maximize' };
 MaximizeLayout.label = 'Maximize';

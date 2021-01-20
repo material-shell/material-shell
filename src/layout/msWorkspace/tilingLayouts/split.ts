@@ -3,9 +3,7 @@ import * as GObject from 'GObject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
 import { reparentActor } from 'src/utils/index';
@@ -13,10 +11,10 @@ import { reparentActor } from 'src/utils/index';
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;
 
-export const SplitLayout = GObject.registerClass(
-    class SplitLayout extends BaseResizeableTilingLayout {
-        _init(msWorkspace, state) {
-            super._init(msWorkspace, state);
+@registerGObjectClass
+export class SplitLayout extends BaseResizeableTilingLayout {
+    constructor(msWorkspace, state) {
+            super(msWorkspace, state);
             this.updateActiveTileableListFromFocused();
             this.vertical = this.monitor.width < this.monitor.height;
             this.translationAnimator = new TranslationAnimator();
@@ -229,8 +227,7 @@ export const SplitLayout = GObject.registerClass(
             });
             return widget;
         }
-    }
-);
+}
 
 SplitLayout.state = { key: 'split', nbOfColumns: 2 };
 SplitLayout.label = 'Split';

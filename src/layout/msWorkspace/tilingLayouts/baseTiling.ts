@@ -7,11 +7,9 @@ const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    SetAllocation,
+import { SetAllocation,
     Allocate,
-    AllocatePreferredSize,
-} = Me.imports.src.utils.compatibility;
+    AllocatePreferredSize, } from "src/utils/compatibility";
 import { getSettings } from 'src/utils/settings';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { InfinityTo0 } from 'src/utils/index';
