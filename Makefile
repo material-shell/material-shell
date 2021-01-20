@@ -36,7 +36,8 @@ build_prod: schemas sass
 	zip dist.zip style-primary-theme.css
 
 compile:
-	tsc
+	-tsc
+	comby -config comby.toml -in-place -f .js -directory target/
 	./transpile.py
 	cp metadata.json target
 	cp *.css target
