@@ -30,7 +30,8 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     static state: any;
 
     constructor(msWorkspace: MsWorkspace, state = {}) {
-        this._state = Object.assign({}, this.constructor.state, state);
+        super();
+        this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
         );
@@ -38,7 +39,6 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         this.themeSettings = getSettings('theme');
         this.signals = [];
         this.registerToSignals();
-        super();
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.afterInit();
             return GLib.SOURCE_REMOVE;
@@ -209,11 +209,13 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         const enteringTileableList = tileableList.filter(
             (tileable) => !oldTileableList.includes(tileable)
         );
-        const leavingTileableList = oldTileableList.filter(
-            (tileable) =>
-                !tileableList.includes(tileable) &&
-                Me.msWindowManager.msWindowList.includes(tileable)
-        );
+
+        const leavingPredicate = function(tileable: Tileable | null): tileable is MsWindow {
+            return tileable instanceof MsWindow && !tileableList.includes(tileable) &&
+                Me.msWindowManager.msWindowList.includes(tileable);
+        }
+
+        const leavingTileableList = oldTileableList.filter(leavingPredicate);
 
         enteringTileableList.forEach((tileable) => {
             this.alterTileable(tileable);
@@ -253,7 +255,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         }
     }
 
-    animateSetPosition(actor: Clutter.Actor, x: number, y: number) {
+    animateSetPosition(actor, x: number, y: number) {
         if (actor.dragged) return;
         const { x: oldX, y: oldY } = actor;
         actor.set_position(x, y);
@@ -371,7 +373,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     vfunc_allocate(container: Clutter.Actor, box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         this.tileAll(box);
         container.get_children().forEach((actor) => {
-            if (this.msWorkspace.tileableList.includes(actor)) {
+            if (this.msWorkspace.tileableList.includes(actor as any)) {
                 AllocatePreferredSize(actor, flags);
             } else {
                 Allocate(actor, box, flags);
