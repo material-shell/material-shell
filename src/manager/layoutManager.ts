@@ -9,18 +9,17 @@ import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 
-import * as layoutsFolder from "src/layout/msWorkspace/tilingLayouts";
-const { MaximizeLayout } = layoutsFolder.maximize;
-const { SplitLayout } = layoutsFolder.split;
-const { FloatLayout } = layoutsFolder.float;
-const { HalfLayout } = layoutsFolder.custom.half;
-const { HalfHorizontalLayout } = layoutsFolder.custom.halfHorizontal;
-const { HalfVerticalLayout } = layoutsFolder.custom.halfVertical;
-const { SimpleLayout } = layoutsFolder.custom.simple;
-const { SimpleHorizontalLayout } = layoutsFolder.custom.simpleHorizontal;
-const { SimpleVerticalLayout } = layoutsFolder.custom.simpleVertical;
-const { RatioLayout } = layoutsFolder.custom.ratio;
-const { GridLayout } = layoutsFolder.custom.grid;
+import { MaximizeLayout } from "src/layout/msWorkspace/tilingLayouts/maximize";
+import { SplitLayout } from "src/layout/msWorkspace/tilingLayouts/split";
+import { FloatLayout } from "src/layout/msWorkspace/tilingLayouts/float";
+import { HalfLayout } from "src/layout/msWorkspace/tilingLayouts/custom/half";
+import { HalfHorizontalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/halfHorizontal";
+import { HalfVerticalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/halfVertical";
+import { SimpleLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simple";
+import { SimpleHorizontalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simpleHorizontal";
+import { SimpleVerticalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simpleVertical";
+import { RatioLayout } from "src/layout/msWorkspace/tilingLayouts/custom/ratio";
+import { GridLayout } from "src/layout/msWorkspace/tilingLayouts/custom/grid";
 
 type LayoutType = typeof BaseTilingLayout;
 
