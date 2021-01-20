@@ -19,6 +19,7 @@ import {
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import { MsWorkspace } from './msWorkspace';
+import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
 interface Dialog {
@@ -80,7 +81,11 @@ export class MsWindow extends Clutter.Actor {
     metaWindowUpdateInProgressPromise: any;
     updateDelayed: boolean | undefined;
     decription: string | undefined;
-    
+    focusEffects?: {
+        dimmer?: Clutter.BrightnessContrastEffect,
+        border?: PrimaryBorderEffect,
+    }
+
     constructor({
         app,
         metaWindowIdentifier,

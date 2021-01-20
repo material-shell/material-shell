@@ -45,7 +45,7 @@ export class TranslationAnimator extends Clutter.Actor {
         this.add_actor(this.transitionContainer);
     }
 
-    setTranslation(initialActors: Clutter.Actor[], enteringActors: Clutter.Actor[], direction: number) {
+    setTranslation(initialActors: (Clutter.Actor | null)[], enteringActors: Clutter.Actor[], direction: number) {
         if (this.animationInProgress) {
             this.transitionContainer.remove_all_transitions();
             this.animationInProgress = false;

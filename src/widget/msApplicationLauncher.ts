@@ -15,6 +15,7 @@ import { AppsManager } from 'src/manager/appsManager';
 import { MatButton } from 'src/widget/material/button';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 
 /* exported MsApplicationLauncher */
 
@@ -27,6 +28,10 @@ export class MsApplicationLauncher extends St.Widget {
     };
     appListContainer: MsApplicationButtonContainer;
     msWorkspace: MsWorkspace;
+    focusEffects?: {
+        dimmer: Clutter.BrightnessContrastEffect,
+        border?: PrimaryBorderEffect,
+    }
 
     constructor(msWorkspace: MsWorkspace) {
         super({
@@ -56,6 +61,10 @@ export class MsApplicationLauncher extends St.Widget {
         this.connect('key-focus-out', () => {
             //this._searchResults.highlightDefault(false);
         });
+    }
+
+    get dragged() {
+        return false;
     }
 
     restartAppListContainer() {

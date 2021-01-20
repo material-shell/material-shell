@@ -20,6 +20,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { Rectangular } from 'src/mod';
+import { assert } from 'src/utils/assert';
 
 const BORDER_WIDTH = 2;
 @registerGObjectClass
@@ -29,7 +30,8 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
     borderContainer: Clutter.Actor | undefined;
     borderActorList: Clutter.Actor[] | undefined;
 
-    constructor(msWorkspace: MsWorkspace, state = {}) {
+    constructor(msWorkspace: MsWorkspace, state: { mainPortion?: Portion } = {}) {
+        super(msWorkspace, state);
         this.mainPortion = new Portion();
 
         if (state.mainPortion) {
@@ -42,7 +44,6 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
             this.onGapChange.bind(this)
         );
         this.currentFocusEffect = Me.msThemeManager.focusEffect;
-        super(msWorkspace, state);
         this.onGapChange();
         Me.msThemeManager.connect(
             'focus-effect-changed',
@@ -88,7 +89,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
         return this.mainPortion.getRatioForIndex(index);
     }
 
-    getTileableBorder(tileable, vertical = false, after = false) {
+    getTileableBorder(tileable: Tileable, vertical = false, after = false) {
         const index = this.getTileableIndex(tileable);
 
         if (index < 0) {
@@ -160,6 +161,9 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
     }
 
     updateBordersActor() {
+        assert(this.borderActorList !== undefined, "Layout has no borders");
+        assert(this.borderContainer !== undefined, "Layout has no borders");
+
         const borderLength = this.mainPortion.concatBorders.length;
 
         if (this.borderActorList.length < borderLength) {
@@ -185,8 +189,11 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
     }
 
     updateBordersPosition(box: Clutter.ActorBox) {
+        const borderActorList = this.borderActorList;
+        assert(borderActorList !== undefined, "Layout has no borders");
+
         this.mainPortion.concatBorders.forEach((portionBorder, index) => {
-            let actor = this.borderActorList[index];
+            let actor = borderActorList[index] as Clutter.Actor & { portionBorder?: PortionBorder };
             actor.portionBorder = portionBorder;
             let ratio = this.mainPortion.getRatioForPortion(
                 portionBorder.firstPortion
@@ -263,7 +270,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
                         : Clutter.Color.new(100, 100, 100, 255),
                 }),
             };
-            tileable.add_effect(tileable.focusEffects.dimmer);
+            tileable.add_effect(tileable.focusEffects.dimmer!);
         } else if (effect === FocusEffectEnum.BORDER) {
             tileable.focusEffects = {
                 border: new PrimaryBorderEffect({
@@ -271,7 +278,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
                     opacity: focused ? 1.0 : 0.0,
                 }),
             };
-            tileable.add_effect(tileable.focusEffects.border);
+            tileable.add_effect(tileable.focusEffects.border!);
         }
     }
 
@@ -279,8 +286,10 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
         if (!tileable || !tileable.focusEffects) return;
         tileable.remove_all_transitions();
         if (effect === FocusEffectEnum.DEFAULT) {
+            assert(tileable.focusEffects.dimmer !== undefined, "Tilable doesn't have the dimmer effect");
             tileable.remove_effect(tileable.focusEffects.dimmer);
         } else if (effect === FocusEffectEnum.BORDER) {
+            assert(tileable.focusEffects.border !== undefined, "Tilable doesn't have the border effect");
             tileable.remove_effect(tileable.focusEffects.border);
         }
         delete tileable.focusEffects;
@@ -380,7 +389,7 @@ export class ResizableBorderActor extends St.Widget {
                 case Clutter.EventType.BUTTON_PRESS:
                 case Clutter.EventType.TOUCH_BEGIN:
                     Me.msWindowManager.msResizeManager.startResize(
-                        this.portionBorder
+                        (this as Clutter.Actor & { portionBorder?: PortionBorder }).portionBorder
                     );
                     break;
 
@@ -418,7 +427,9 @@ export class PrimaryBorderEffect extends Clutter.Effect {
     }
     private _pipeline: Cogl.Pipeline | null;
     color: Cogl.Color;
-    opacity: number | undefined;
+
+    // Note: Default value set by GObject due to the metaInfo declaration above
+    opacity!: number;
 
     constructor(params: Partial<Clutter.Effect.ConstructorProperties>) {
         super(params);

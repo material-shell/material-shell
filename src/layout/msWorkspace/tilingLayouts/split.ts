@@ -101,11 +101,12 @@ export class SplitLayout extends BaseResizeableTilingLayout {
             return;
         }
 
+        // TODO: What happens if newIndex=1 and oldIndex=2 and columns=3?
         const newIndex = this.msWorkspace.tileableList.indexOf(
             tileableFocused
         );
         const oldIndex = this.msWorkspace.tileableList.indexOf(
-            oldTileableFocused
+            oldTileableFocused as any
         );
         const oldTileableList = this.activeTileableList;
         if (oldIndex < newIndex) {

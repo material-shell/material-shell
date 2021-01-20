@@ -113,7 +113,7 @@ export class MaximizeLayout extends BaseTilingLayout {
     /*
      * Animations
      */
-    startTransition(nextActor: Tileable, prevActor: Tileable) {
+    startTransition(nextActor: Tileable, prevActor: Tileable | null) {
         if (!this.translationAnimator.get_parent()) {
             this.translationAnimator.width = InfinityTo0(
                 this.tileableContainer.allocation.get_width()

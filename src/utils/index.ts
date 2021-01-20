@@ -85,7 +85,7 @@ export const isParentOfActor = (parent: Clutter.Actor, actor: Clutter.Actor) => 
     return isParent;
 };
 
-export const reparentActor = (actor: Clutter.Actor, parent: Clutter.Actor) => {
+export const reparentActor = (actor: Clutter.Actor | null, parent: Clutter.Actor | null) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
 

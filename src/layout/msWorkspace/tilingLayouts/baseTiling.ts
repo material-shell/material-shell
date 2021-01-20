@@ -33,7 +33,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         super();
         this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${this.state.key}-symbolic.svg`
+            `${Me.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
         );
         this.msWorkspace = msWorkspace;
         this.themeSettings = getSettings('theme');

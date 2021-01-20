@@ -368,7 +368,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    focusTileable(tileable: MsWindow | MsApplicationLauncher, forced: boolean = false) {
+    focusTileable(tileable: MsWindow | MsApplicationLauncher | null, forced: boolean = false) {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
