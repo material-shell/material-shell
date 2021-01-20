@@ -453,7 +453,7 @@ export class PrimaryBorderEffect extends Clutter.Effect {
             parseInt(Me.msThemeManager.primary.substring(1, 3), 16),
             parseInt(Me.msThemeManager.primary.substring(3, 5), 16),
             parseInt(Me.msThemeManager.primary.substring(5, 7), 16),
-            parseInt((this.opacity.toFixed(2) * 255).toString(16), 16)
+            this.opacity * 255,
         );
         this.color.premultiply();
         this._pipeline.set_color(this.color);
