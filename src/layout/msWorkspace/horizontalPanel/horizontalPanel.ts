@@ -12,13 +12,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace } from '../msWorkspace';
-const {
-    TaskBar,
-    TaskBarItem,
-} = Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar;
-const {
-    LayoutSwitcher,
-} = Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher;
+import { TaskBar,
+    TaskBarItem, } from "src/layout/msWorkspace/horizontalPanel/taskBar";
+import { LayoutSwitcher, } from "src/layout/msWorkspace/horizontalPanel/layoutSwitcher";
 
 @registerGObjectClass
 export class HorizontalPanel extends St.BoxLayout {

@@ -9,7 +9,7 @@ import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 
-const layoutsFolder = Me.imports.src.layout.msWorkspace.tilingLayouts;
+import * as layoutsFolder from "src/layout/msWorkspace/tilingLayouts";
 const { MaximizeLayout } = layoutsFolder.maximize;
 const { SplitLayout } = layoutsFolder.split;
 const { FloatLayout } = layoutsFolder.float;
