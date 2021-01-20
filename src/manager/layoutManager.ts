@@ -7,6 +7,7 @@ import * as Meta from 'Meta';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
+import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 
 const layoutsFolder = Me.imports.src.layout.msWorkspace.tilingLayouts;
 const { MaximizeLayout } = layoutsFolder.maximize;
@@ -21,7 +22,9 @@ const { SimpleVerticalLayout } = layoutsFolder.custom.simpleVertical;
 const { RatioLayout } = layoutsFolder.custom.ratio;
 const { GridLayout } = layoutsFolder.custom.grid;
 
-const layouts = [
+type LayoutType = typeof BaseTilingLayout;
+
+const layouts: LayoutType[] = [
     MaximizeLayout,
     SplitLayout,
     GridLayout,
@@ -35,12 +38,10 @@ const layouts = [
     FloatLayout,
 ];
 
-export const TilingLayoutByKey = layouts.reduce((layoutsByKey, layout) => {
+export const TilingLayoutByKey: {[key: string]: typeof BaseTilingLayout} = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
 }, {});
-
-type LayoutType = new ()=>any;
 
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;

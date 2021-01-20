@@ -23,9 +23,9 @@ import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { logAssert } from 'src/utils/assert';
 
-type Tileable = MsWindow | MsApplicationLauncher;
+export type Tileable = MsWindow | MsApplicationLauncher;
 
-function isMsWindow<T>(argument: any): argument is MsWindow {
+function isMsWindow(argument: any): argument is MsWindow {
     return argument instanceof MsWindow;
 }
 
@@ -97,7 +97,7 @@ export class MsWorkspace extends WithSignals {
                     focus: false,
                     insert: false,
                 },
-                msWindowData.persistent ? msWindowData.persistent : null,
+                msWindowData.persistent ? msWindowData.persistent : undefined,
                 {
                     x: msWindowData.x,
                     y: msWindowData.y,
@@ -453,7 +453,7 @@ export class MsWorkspace extends WithSignals {
         this.setLayoutByKey(newLayoutState.key);
     }
 
-    setLayoutByKey(layoutKey) {
+    setLayoutByKey(layoutKey: string) {
         logAssert(!this.destroyed, "Workspace is destroyed");
 
         if (this.layout) {
