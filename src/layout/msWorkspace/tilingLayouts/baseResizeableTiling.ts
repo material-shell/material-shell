@@ -28,7 +28,6 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
     currentFocusEffect: number;
     borderContainer: Clutter.Actor | undefined;
     borderActorList: Clutter.Actor[] | undefined;
-    mainPortionConnectionId: number | undefined;
 
     constructor(msWorkspace: MsWorkspace, state = {}) {
         this.mainPortion = new Portion();
@@ -68,8 +67,6 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
             }
         } else {
             if (this.borderContainer) {
-                this.mainPortion.disconnect(this.mainPortionConnectionId);
-                delete this.mainPortionConnectionId;
                 this.borderContainer.destroy();
                 delete this.borderContainer;
                 delete this.borderActorList;
