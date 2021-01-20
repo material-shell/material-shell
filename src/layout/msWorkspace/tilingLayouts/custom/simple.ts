@@ -1,36 +1,37 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
 import * as GObject from 'GObject';
 import * as Clutter from 'Clutter';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
+import {
     BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+} from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
 
-export const SimpleLayout = GObject.registerClass(
-    class SimpleLayout extends BaseResizeableTilingLayout {
-        isVerticalLayout(box) {
-            return box.get_width() < box.get_height();
-        }
+@registerGObjectClass
+export class SimpleLayout extends BaseResizeableTilingLayout {
+    static state = { key: 'simple' };
+    static label = 'Simple';
 
-        tileAll(box) {
-            if (!box) {
-                box = new Clutter.ActorBox();
-                box.x2 = this.tileableContainer.allocation.get_width();
-                box.y2 = this.tileableContainer.allocation.get_height();
-            }
-
-            const vertical = this.isVerticalLayout(box);
-
-            if (this.mainPortion.vertical !== vertical) {
-                this.mainPortion.convert();
-            }
-
-            super.tileAll(box);
-        }
+    isVerticalLayout(box: Clutter.ActorBox) {
+        return box.get_width() < box.get_height();
     }
-);
 
-SimpleLayout.state = { key: 'simple' };
-SimpleLayout.label = 'Simple';
+    tileAll(box?: Clutter.ActorBox) {
+        if (!box) {
+            box = new Clutter.ActorBox();
+            box.x2 = this.tileableContainer.allocation.get_width();
+            box.y2 = this.tileableContainer.allocation.get_height();
+        }
+
+        const vertical = this.isVerticalLayout(box);
+
+        if (this.mainPortion.vertical !== vertical) {
+            this.mainPortion.convert();
+        }
+
+        super.tileAll(box);
+    }
+}
