@@ -16,7 +16,7 @@ export class Portion {
     private _basis: number;
 
     constructor(basis = 100, vertical = false) {
-        this.basis = basis;
+        this._basis = basis;
         this.vertical = vertical;
         this.children = [];
         this.borders = [];
@@ -73,7 +73,7 @@ export class Portion {
 
     updateBorders() {
         this.borders = [];
-        if (this.children < 2) {
+        if (this.children.length < 2) {
             return;
         }
         for (let i = 0; i < this.children.length - 1; i++) {
@@ -193,12 +193,13 @@ export class Portion {
 
     isBorderInSubPortion(index: number, after = false) {
         let portionIndex = 0;
+        let afterOffset = after ? 1 : 0;
 
         for (let i = 0; i < this.children.length; i++) {
             const portion = this.children[i];
 
             if (portionIndex === index) {
-                if (after || i - after < 0 || portion.children.length === 0) {
+                if (after || i - afterOffset < 0 || portion.children.length === 0) {
                     return false;
                 }
             }
@@ -252,6 +253,7 @@ export class Portion {
 
     getBorderForIndex(index: number, vertical = false, after = false) {
         let portionIndex = 0;
+        let afterOffset = after ? 1 : 0;
 
         if (index >= this.portionLength) {
             return;
@@ -261,7 +263,7 @@ export class Portion {
             const portion = this.children[i];
 
             if (portionIndex === index) {
-                if (i - after < 0) {
+                if (i - afterOffset < 0) {
                     return;
                 }
             }
@@ -271,7 +273,7 @@ export class Portion {
                     this.vertical === vertical &&
                     !portion.isBorderInSubPortion(index - portionIndex, after)
                 ) {
-                    return this.borders[i - after];
+                    return this.borders[i - afterOffset];
                 }
 
                 return portion.getBorderForIndex(
