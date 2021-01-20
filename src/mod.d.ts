@@ -5,6 +5,15 @@ import * as Clutter from 'Clutter';
 import * as St from 'St';
 import * as Meta from 'Meta';
 import { MsWorkspace } from './layout/msWorkspace/msWorkspace';
+import { LayoutManager } from './manager/layoutManager';
+import { TooltipManager } from './manager/tooltipManager';
+import { MsWindowManager } from './manager/msWindowManager';
+import { MsWorkspaceManager } from './manager/msWorkspaceManager';
+import { MsNotificationManager } from './manager/msNotificationManager';
+import { MsThemeManager } from './manager/msThemeManager';
+import { StateManager } from './manager/stateManager';
+import { HotKeysModule } from './module/hotKeysModule';
+import { WithSignals } from './utils/gjs';
 
 declare global {
     function log(msg: string): void;
@@ -35,7 +44,7 @@ declare global {
         get_pointer(): [number, number],
         get_window_actors(): Array<Meta.WindowActor>,
         // Material shell
-        ms: any,
+        ms: Extension,
         display: Meta.Display,
         session_mode: string,
         stage: Clutter.Stage & { key_focus: any },
@@ -45,7 +54,40 @@ declare global {
         top_window_group: Clutter.Actor,
     };
 
-    const imports: any;
+    interface Extension extends WithSignals {
+        layoutManager: LayoutManager,
+        tooltipManager: TooltipManager,
+        msWindowManager: MsWindowManager,
+        msWorkspaceManager: MsWorkspaceManager,
+        msNotificationManager: MsNotificationManager,
+        msThemeManager: MsThemeManager,
+        hotKeysModule: HotKeysModule,
+        monitorsLength: number,
+        loaded: boolean,
+        locked: boolean | undefined,
+        stateManager: StateManager,
+        showSplashScreens: ()=>void,
+        hideSplashScreens: ()=>void,
+        closing: boolean,
+        disableInProgress: boolean | undefined,
+        imports: any,
+        layout: any,
+        uuid: string,
+        path: string,
+        logFocus: (message: string, ...args: any[])=>void;
+        logBlank: ()=>void;
+        log: (message: string, ...args: any[])=>void,
+    }
+
+    const imports: {
+        misc: {
+            extensionUtils: {
+                getCurrentExtension(): Extension;
+            }
+            [key: string]: any;
+        }
+        [key: string]: any;
+    };
     function run_at_leisure(func: () => void): void;
 
     // GJS extends the prototype of all objects with some functions
