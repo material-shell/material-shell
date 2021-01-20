@@ -74,7 +74,6 @@ export class MaximizeLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(windowFocused: Tileable, oldWindowFocused: Tileable | null) {
-        super.onFocusChanged();
         if (windowFocused.dragged) {
             this.displayTileable(windowFocused);
         } else {
