@@ -255,41 +255,6 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         }
     }
 
-    animateSetPosition(actor, x: number, y: number) {
-        if (actor.dragged) return;
-        const { x: oldX, y: oldY } = actor;
-        actor.set_position(x, y);
-        if (actor.metaWindow && actor.metaWindow.fullscreen) {
-            return;
-        }
-        actor.translation_x = oldX - x;
-        actor.translation_y = oldY - y;
-
-        actor.ease({
-            translation_x: 0,
-            translation_y: 0,
-            duration: 250,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-        });
-    }
-
-    animateSetSize(actor: Clutter.Actor, width: number, height: number) {
-        const { width: oldWidth, height: oldHeight } = actor;
-        actor.set_size(width, height);
-        if (actor.metaWindow && actor.metaWindow.fullscreen) {
-            return;
-        }
-        actor.scale_x = oldWidth / width;
-        actor.scale_y = oldHeight / height;
-
-        actor.ease({
-            scale_x: 1.0,
-            scale_y: 1.0,
-            duration: 250,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-        });
-    }
-
     getWorkspaceBounds() {
         const box = this.msWorkspace.msWorkspaceActor.tileableContainer
             .allocation;
