@@ -4,11 +4,17 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import * as GObject from 'GObject';
 import * as Clutter from 'Clutter';
 import * as St from 'St';
+import { Rectangular } from 'src/mod';
 const Signals = imports.signals;
 
 const MIN_BASIS_RATIO = 0.1;
 
-class Portion {
+export class Portion {
+    vertical: boolean;
+    children: Portion[];
+    borders: PortionBorder[];
+    private _basis: number;
+
     constructor(basis = 100, vertical = false) {
         this.basis = basis;
         this.vertical = vertical;
@@ -57,7 +63,7 @@ class Portion {
         return this._basis;
     }
 
-    set basis(value) {
+    set basis(value: number) {
         if (value < 0) {
             value = 0;
         }
@@ -79,7 +85,7 @@ class Portion {
         }
     }
 
-    hasPortion(portion) {
+    hasPortion(portion: Portion) {
         for (let i = 0; i < this.children.length; i++) {
             const possiblePortion = this.children[i];
 
@@ -95,7 +101,7 @@ class Portion {
         return false;
     }
 
-    insert(basis = 100, vertical) {
+    insert(basis = 100, vertical: boolean | undefined) {
         if (vertical === undefined) {
             vertical = !this.vertical;
         }
@@ -117,7 +123,7 @@ class Portion {
         this.insert(basis, false);
     }
 
-    push(basis = 100, vertical) {
+    push(basis = 100, vertical?: boolean) {
         if (vertical === undefined) {
             vertical = !this.vertical;
         }
@@ -185,7 +191,7 @@ class Portion {
         this.updateBorders();
     }
 
-    isBorderInSubPortion(index, after = false) {
+    isBorderInSubPortion(index: number, after = false) {
         let portionIndex = 0;
 
         for (let i = 0; i < this.children.length; i++) {
@@ -244,7 +250,7 @@ class Portion {
         return false;
     }
 
-    getBorderForIndex(index, vertical = false, after = false) {
+    getBorderForIndex(index: number, vertical = false, after = false) {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -279,7 +285,7 @@ class Portion {
         }
     }
 
-    getRatioForIndex(index, ratio = { x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForIndex(index: number, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }) {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -306,7 +312,7 @@ class Portion {
         return ratio;
     }
 
-    getRatioForPortion(portion, ratio = { x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForPortion(portion: Portion, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }) {
         const basisTotal = this.children.reduce(
             (sum, child) => sum + child.basis,
             0
@@ -346,8 +352,12 @@ class Portion {
     }
 }
 
-class PortionBorder {
-    constructor(firstPortion, secondPortion, parentPortion) {
+export class PortionBorder {
+    firstPortion: Portion;
+    secondPortion: Portion;
+    parentPortion: Portion;
+
+    constructor(firstPortion: Portion, secondPortion: Portion, parentPortion: Portion) {
         this.firstPortion = firstPortion;
         this.secondPortion = secondPortion;
         this.parentPortion = parentPortion;
@@ -356,7 +366,7 @@ class PortionBorder {
         return !this.parentPortion.vertical;
     }
 
-    updateBasis(basisRatio) {
+    updateBasis(basisRatio: number) {
         if (basisRatio < 0) {
             basisRatio = 0;
         }
