@@ -1,18 +1,20 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
 const Signals = imports.signals;
 import * as Clutter from 'Clutter';
+import { WithSignals } from 'src/utils/gjs';
 
-interface Signal {
+export interface Signal {
     from: any,
     id: number,
 }
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-export class MsManager {
+export class MsManager extends WithSignals {
     signals: Signal[];
 
     constructor() {
+        super();
         this.signals = [];
     }
 
@@ -49,4 +51,3 @@ export class MsManager {
         });
     }
 };
-Signals.addSignalMethods(MsManager.prototype);
