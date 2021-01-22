@@ -307,12 +307,6 @@ export class WorkspaceList extends St.Widget {
         });
     }
 
-    getButtonFromCategoryKey(categoryKey: string) {
-        return this.buttonList.get_children().find((workspaceButton) => {
-            return workspaceButton.categoryKey === categoryKey;
-        });
-    }
-
     /**
      * Just the parent width
      */
