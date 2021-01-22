@@ -388,8 +388,10 @@ export class ResizableBorderActor extends St.Widget {
             switch (eventType) {
                 case Clutter.EventType.BUTTON_PRESS:
                 case Clutter.EventType.TOUCH_BEGIN:
+                    let border = (this as Clutter.Actor & { portionBorder?: PortionBorder }).portionBorder;
+                    assert(border !== undefined, "Actor has no border");
                     Me.msWindowManager.msResizeManager.startResize(
-                        (this as Clutter.Actor & { portionBorder?: PortionBorder }).portionBorder
+                        border
                     );
                     break;
 
