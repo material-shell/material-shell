@@ -148,7 +148,7 @@ export class MsStatusArea extends Clutter.Actor {
             });
         }
 
-        recursivelySetVertical(actor: Clutter.Actor, value: boolean) {
+        recursivelySetVertical(actor: Clutter.Actor & { has_style_class_name?: (name: string)=>void }, value: boolean) {
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
                 actor.set_x_align(Clutter.ActorAlign.CENTER);
@@ -159,6 +159,7 @@ export class MsStatusArea extends Clutter.Actor {
             ) {
                 actor.visible = !value;
             }
+            // TODO: Is `actor instanceof St.Button` enough?
             if (
                 actor.has_style_class_name &&
                 actor.has_style_class_name('panel-button')
