@@ -31,7 +31,7 @@
             "GnomeDesktop": ["src/gnome_desktop"],
             "Gtk": ["src/gtk"],
             "Shell": ["src/shell"],
-            "Soup": ["src/soup"],
+            "Soup": ["types/soup"],
             // "St": ["src/st"],
             "St": ["types/st"],
             // "St": ["@types/Gjs/St-1.0"],
