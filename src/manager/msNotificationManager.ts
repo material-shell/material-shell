@@ -54,18 +54,18 @@ export class MsNotificationManager extends MsManager {
                 global.log(`error unpack notification error ${e.toString()}`);
                 return;
             }
-            this.source = new MsNotificationSource();
+            const source = new MsNotificationSource();
             notifications.forEach((notificationData) => {
-                Main.messageTray.add(this.source);
+                Main.messageTray.add(source);
                 const notification = new MsNotification(
-                    this.source,
+                    source,
                     notificationData.title,
                     notificationData.content,
                     notificationData.icon,
                     notificationData.action
                 );
 
-                this.source.showNotification(notification);
+                source.showNotification(notification);
             });
         });
         Me.stateManager.setState(

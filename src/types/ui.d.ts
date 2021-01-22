@@ -19,6 +19,7 @@ declare module "ui" {
         class Source {
             constructor(name: string);
             getIcon(): Gio.Icon;
+            showNotification(notification: Notification): void;
         }
     }
 }
