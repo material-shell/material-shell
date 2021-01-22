@@ -29,28 +29,32 @@ var meaningfulCategories = ['IDE', 'WebBrowser', 'Player'];
 export class MsWorkspaceCategory {
     msWorkspace: MsWorkspace;
     forcedCategory: string | null | undefined;
-    category: string;
+    category: string | null;
 
     constructor(msWorkspace: MsWorkspace, forcedCategory: string | null | undefined) {
         this.msWorkspace = msWorkspace;
         this.forcedCategory = forcedCategory;
-        this.determineCategory();
+        this.category = this.determineCategory();
     }
 
     forceCategory(category: string | undefined) {
         this.forcedCategory = category;
-        this.determineCategory();
+        this.refreshCategory();
         Me.stateManager.stateChanged();
     }
 
-    determineCategory() {
+    refreshCategory() {
+        this.category = this.determineCategory();
+    }
+
+    private determineCategory(): string | null {
         if (this.forcedCategory) {
-            return (this.category = this.forcedCategory);
+            return this.forcedCategory;
         }
         let appList = this.msWorkspace.msWindowList.map((msWindow) => {
             return msWindow.app;
         });
-        if (!appList.length) return;
+        if (!appList.length) return null;
         const categoryScoreMap = new Map();
 
         appList.forEach((app) => {
@@ -61,7 +65,7 @@ export class MsWorkspaceCategory {
             const categories = categoriesString
                 ? categoriesString.split(';')
                 : [];
-            categories.forEach((category) => {
+            categories.forEach((category: string) => {
                 if (MainCategories.includes(category)) {
                     appMainCategories.push(category);
                 }
@@ -81,7 +85,7 @@ export class MsWorkspaceCategory {
                 }
             });
         });
-        let mostRatedCategoryEntry;
+        let mostRatedCategoryEntry: [string, number]|null = null;
         for (const entry of categoryScoreMap.entries()) {
             if (!mostRatedCategoryEntry || entry[1] > mostRatedCategoryEntry[1])
                 mostRatedCategoryEntry = entry;
@@ -94,7 +98,7 @@ export class MsWorkspaceCategory {
                 mostRatedCategoryEntry = entry;
             }
         }
-        if (!mostRatedCategoryEntry) return;
-        this.category = mostRatedCategoryEntry[0];
+        if (!mostRatedCategoryEntry) return null;
+        return mostRatedCategoryEntry[0];
     }
 };

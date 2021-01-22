@@ -107,13 +107,13 @@ export class MsWorkspace extends WithSignals {
             )
         });
 
-        this.msWorkspaceCategory.determineCategory();
+        this.msWorkspaceCategory.refreshCategory();
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.setLayoutByKey(this._state.layoutKey);
 
         this.connect('tileableList-changed', () => {
-            this.msWorkspaceCategory.determineCategory();
+            this.msWorkspaceCategory.refreshCategory();
         });
     }
 
