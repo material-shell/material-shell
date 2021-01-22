@@ -11,6 +11,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { reparentActor } from 'src/utils/index';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { assert } from 'src/utils/assert';
 
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
@@ -18,8 +19,8 @@ export class MsStatusArea extends Clutter.Actor {
         GTypeName: 'MsStatusArea',
     }
     gnomeShellPanel: any;
-    leftBoxActors: never[];
-    rightBoxActors: never[];
+    leftBoxActors: Clutter.Actor[];
+    rightBoxActors: Clutter.Actor[];
     dateMenu: any;
     originalDateMenuBox: any;
     msDateMenuBox?: MsDateMenuBox;
@@ -50,6 +51,7 @@ export class MsStatusArea extends Clutter.Actor {
         }
 
         verticaliseDateMenuButton() {
+            assert(this.msDateMenuBox === undefined, "date menu button has alreayd been verticalized");
             this.originalDateMenuBox = this.dateMenu._clockDisplay.get_parent();
             this.dateMenu.remove_child(this.originalDateMenuBox);
             this.msDateMenuBox = new MsDateMenuBox(this.dateMenu);
@@ -57,6 +59,7 @@ export class MsStatusArea extends Clutter.Actor {
         }
 
         unVerticaliseDateMenuButton() {
+            assert(this.msDateMenuBox !== undefined, "date menu button hasn't been verticalized");
             this.msDateMenuBox.destroy();
             delete this.msDateMenuBox;
             this.dateMenu.add_child(this.originalDateMenuBox);
