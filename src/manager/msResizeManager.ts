@@ -16,6 +16,8 @@ import { MsWindowManager } from './msWindowManager';
 import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
 import { PortionBorder } from 'src/layout/msWorkspace/portion';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { assert } from 'src/utils/assert';
+import { Rectangular } from 'src/mod';
 
 const RESIZE_CODES = [
     Meta.GrabOp.RESIZING_N,
@@ -37,21 +39,25 @@ const RESIZE_AFTER_CODES = [
 
 const CHECK_TIMEOUT_MS = 100;
 
+interface CurrentResize {
+    msWorkspace: MsWorkspace;
+    border: PortionBorder;
+}
+
 export class MsResizeManager extends MsManager {
     msWindowManager: MsWindowManager;
     signalMap: Map<any, any>;
-    resizeInProgress: boolean;
     inputResizer: InputResizer;
     msWorkspace: MsWorkspace | undefined;
+    resizeInProgress: CurrentResize | null;
     throttledCheckPointerPosition: () => void;
-    border?: PortionBorder;
 
     constructor(msWindowManager: MsWindowManager) {
         super();
 
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
-        this.resizeInProgress = false;
+        this.resizeInProgress = null;
         this.inputResizer = new InputResizer();
 
         this.observe(
@@ -93,7 +99,7 @@ export class MsResizeManager extends MsManager {
         );
 
         this.observe(global.stage, 'captured-event', (_, event: Clutter.Event) => {
-            if (this.resizeInProgress) {
+            if (this.resizeInProgress !== null) {
                 switch (event.type()) {
                     case Clutter.EventType.MOTION:
                         this.checkPointerPosition();
@@ -114,41 +120,45 @@ export class MsResizeManager extends MsManager {
     }
 
     checkPointerPosition() {
-        if (this.resizeInProgress) {
+        if (this.resizeInProgress !== null) {
             this.updateResize();
         }
     }
 
     endPointerChecker() {
-        if (this.resizeInProgress) {
+        if (this.resizeInProgress !== null) {
             this.endResize();
         }
     }
 
-    getPointerPositionRelativeToWorkspace() {
-        const { msWorkspaceActor } = this.msWorkspace;
+    getPointerPositionRelativeToWorkspace(): [number, number] {
+        assert(this.resizeInProgress !== null, "No resize in progress");
+        const { msWorkspaceActor } = this.resizeInProgress.msWorkspace;
 
         const [
             containerX,
             containerY,
         ] = msWorkspaceActor.tileableContainer.get_transformed_position();
         const [globalX, globalY] = global.get_pointer();
-        return [globalX - containerX, globalY - containerY];
+        return [globalX - containerX!, globalY - containerY!];
     }
 
-    getFirstPortionPositionAndSize() {
-        const { layout } = this.msWorkspace;
+    getFirstPortionPositionAndSize(): Rectangular {
+        assert(this.resizeInProgress !== null, "No resize in progress");
+        const { layout } = this.resizeInProgress.msWorkspace;
         const ratio = layout.mainPortion.getRatioForPortion(
-            this.border.firstPortion
+            this.resizeInProgress.border.firstPortion
         );
 
         return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }
 
     startResize(border: PortionBorder) {
-        this.border = border;
-        this.msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-        this.resizeInProgress = true;
+        assert(this.resizeInProgress === null, "Resize already in progress");
+        this.resizeInProgress = {
+            border: border,
+            msWorkspace: Me.msWorkspaceManager.getActiveMsWorkspace(),
+        };
 
         global.stage.add_child(this.inputResizer);
         Main.pushModal(this.inputResizer);
@@ -157,28 +167,28 @@ export class MsResizeManager extends MsManager {
     }
 
     updateResize() {
+        assert(this.resizeInProgress !== null, "No resize in progress");
         const [
             pointerX,
             pointerY,
         ] = this.getPointerPositionRelativeToWorkspace();
         const { x, y, width, height } = this.getFirstPortionPositionAndSize();
         const [relativeX, relativeY] = [pointerX - x, pointerY - y];
-        let basisRatio;
+        let basisRatio: number;
 
-        if (!this.border.vertical) {
+        if (!this.resizeInProgress.border.vertical) {
             basisRatio = relativeY / height;
         } else {
             basisRatio = relativeX / width;
         }
 
-        this.border.updateBasis(basisRatio);
-        this.msWorkspace.layout.tileAll();
+        this.resizeInProgress.border.updateBasis(basisRatio);
+        this.resizeInProgress.msWorkspace.layout.tileAll();
     }
 
     endResize() {
-        this.resizeInProgress = false;
-        delete this.msWorkspace;
-        delete this.border;
+        assert(this.resizeInProgress !== null, "No resize in progress");
+        this.resizeInProgress = null;
 
         Main.popModal(this.inputResizer);
         Me.stateManager.stateChanged();
