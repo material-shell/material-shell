@@ -35,20 +35,41 @@ rewrite="const { :[name] } = imports.gi;"
 rule="where :[name] == :[source]"
 
 [gjsImports]
-match = 'import { :[imports] } from "Gjs";'
+match = 'import { :[imports] } from ":[~Gjs]";'
 rewrite="const { :[imports] } = imports;"
 
 [gjsImports-singlequote]
-match = "import { :[imports] } from 'Gjs';"
+match = "import { :[imports] } from ':[~Gjs]';"
 rewrite="const { :[imports] } = imports;"
 
 [gjsImports2]
-match = 'import * as Gjs from "Gjs";'
-rewrite="const { Gjs } = imports;"
+match = 'import * as :[import:~Gjs] from ":[source]";'
+rewrite="const { :[import] } = imports;"
+rule="where :[import] == :[source]"
 
 [gjsImports2-singlequote]
-match = "import * as Gjs from 'Gjs';"
-rewrite="const { Gjs } = imports;"
+match = "import * as :[import:~Gjs] from ':[source]';"
+rewrite="const { :[import] } = imports;"
+rule="where :[import] == :[source]"
+
+[uiImports]
+match = 'import { :[imports] } from ":[~ui]";'
+rewrite="const { :[imports] } = imports.ui;"
+
+[uiImports-singlequote]
+match = "import { :[imports] } from ':[~ui]';"
+rewrite="const { :[imports] } = imports.ui;"
+
+[uiImports2]
+match = 'import * as :[import:~ui] from ":[source]";'
+rewrite="const { :[import] } = imports;"
+rule="where :[import] == :[source]"
+
+[uiImports2-singlequote]
+match = "import * as :[import:~ui] from ':[source]';"
+rewrite="const { :[import] } = imports;"
+rule="where :[import] == :[source]"
+
 
 # Replace `import * as Something from 'a/b/c` with `const Something = Me.imports.a.b.c`
 [imports1]

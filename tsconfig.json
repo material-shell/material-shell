@@ -32,6 +32,7 @@
             "Gtk": ["src/gtk"],
             "Shell": ["src/shell"],
             "Soup": ["types/soup"],
+            "ui": ["src/ui"],
             // "St": ["src/st"],
             "St": ["types/st"],
             // "St": ["@types/Gjs/St-1.0"],

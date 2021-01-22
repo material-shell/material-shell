@@ -43,7 +43,13 @@ declare global {
         get_current_time(): number,
         get_pointer(): [number, number],
         get_window_actors(): Array<Meta.WindowActor>,
-        // Material shell
+
+        /** Create a GAppLaunchContext set up with the correct timestamp, and targeted to activate on the current workspace.
+        * @param timestamp the timestamp for the launch (or 0 for current time)
+        * @param workspace a workspace index, or -1 to indicate the current one
+        */
+        create_app_launch_context(timestep: number, workspace: number);
+        /** Material shell */
         ms: Extension,
         display: Meta.Display,
         session_mode: string,
