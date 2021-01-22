@@ -11,9 +11,11 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { reparentActor, throttle } from 'src/utils/index';
 import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
-const {
-    BaseResizeableTilingLayout,
-} = Me.imports.src.layout.msWorkspace.tilingLayouts.baseResizeableTiling;
+import { BaseResizeableTilingLayout, ResizableBorderActor, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import { MsWindowManager } from './msWindowManager';
+import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
+import { PortionBorder } from 'src/layout/msWorkspace/portion';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 const RESIZE_CODES = [
     Meta.GrabOp.RESIZING_N,
@@ -36,7 +38,15 @@ const RESIZE_AFTER_CODES = [
 const CHECK_TIMEOUT_MS = 100;
 
 export class MsResizeManager extends MsManager {
-    constructor(msWindowManager) {
+    msWindowManager: MsWindowManager;
+    signalMap: Map<any, any>;
+    resizeInProgress: boolean;
+    inputResizer: InputResizer;
+    msWorkspace: MsWorkspace | undefined;
+    throttledCheckPointerPosition: () => void;
+    border?: PortionBorder;
+
+    constructor(msWindowManager: MsWindowManager) {
         super();
 
         this.msWindowManager = msWindowManager;
@@ -47,7 +57,7 @@ export class MsResizeManager extends MsManager {
         this.observe(
             global.display,
             'grab-op-begin',
-            (_, display, metaWindow, directionOp) => {
+            (_, display, metaWindow, directionOp: Meta.GrabOp) => {
                 if (RESIZE_CODES.includes(directionOp)) {
                     const msWindow = metaWindow.msWindow;
 
@@ -82,7 +92,7 @@ export class MsResizeManager extends MsManager {
             }
         );
 
-        this.observe(global.stage, 'captured-event', (_, event) => {
+        this.observe(global.stage, 'captured-event', (_, event: Clutter.Event) => {
             if (this.resizeInProgress) {
                 switch (event.type()) {
                     case Clutter.EventType.MOTION:
@@ -135,7 +145,7 @@ export class MsResizeManager extends MsManager {
         return layout.applyBoxRatio(layout.resolveBox(), ratio);
     }
 
-    startResize(border) {
+    startResize(border: PortionBorder) {
         this.border = border;
         this.msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
         this.resizeInProgress = true;
@@ -177,7 +187,7 @@ export class MsResizeManager extends MsManager {
         global.display.set_cursor(Meta.Cursor.DEFAULT);
     }
 
-    resizeTileable(tileable, directionOp, percent) {
+    resizeTileable(tileable: Tileable, directionOp: Meta.GrabOp, percent: number) {
         const { layout } = tileable.msWorkspace;
 
         if (!(layout instanceof BaseResizeableTilingLayout)) {
@@ -193,19 +203,18 @@ export class MsResizeManager extends MsManager {
     }
 };
 
-export const InputResizer = GObject.registerClass(
-    class InputResizer extends Clutter.Actor {
-        _init() {
-            super._init({
-                name: 'InputResizer',
-                reactive: true,
-            });
-            this.add_constraint(
-                new Clutter.BindConstraint({
-                    source: global.stage,
-                    coordinate: Clutter.BindCoordinate.ALL,
-                })
-            );
-        }
+@registerGObjectClass
+export class InputResizer extends Clutter.Actor {
+    constructor() {
+        super({
+            name: 'InputResizer',
+            reactive: true,
+        });
+        this.add_constraint(
+            new Clutter.BindConstraint({
+                source: global.stage,
+                coordinate: Clutter.BindCoordinate.ALL,
+            })
+        );
     }
-);
+}

@@ -35,15 +35,15 @@ export class MsWorkspace extends WithSignals {
         // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
         external: boolean;
         focusedIndex: number;
-        forcedCategory: null;
+        forcedCategory: string | null | undefined;
         msWindowList: MsWindowState[];
         layoutStateList: any;
-        layoutKey: any;
+        layoutKey: string;
     };
     insertedMsWindow: MsWindow | null;
     appLauncher: MsApplicationLauncher;
     tileableList: Tileable[];
-    msWorkspaceCategory: any;
+    msWorkspaceCategory: MsWorkspaceCategory;
     precedentIndex: number;
     private msWorkspaceActor: MsWorkspaceActor;
     layout: any;

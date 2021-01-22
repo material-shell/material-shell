@@ -11,9 +11,20 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { reparentActor, throttle } from 'src/utils/index';
 import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
+import { MsWindowManager } from './msWindowManager';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 export class MsDndManager extends MsManager {
-    constructor(msWindowManager) {
+    msWindowDragged: MsWindow | null | undefined;
+    msWindowManager: MsWindowManager;
+    signalMap: Map<any, any>;
+    dragInProgress: boolean;
+    originalParent: any;
+    inputGrabber: InputGrabber;
+    throttledCheckUnderPointer: (this: any) => any;
+    originPointerAnchor: number[] | undefined;
+
+    constructor(msWindowManager: MsWindowManager) {
         super();
         this.msWindowDragged = null;
         this.msWindowManager = msWindowManager;
@@ -75,13 +86,13 @@ export class MsDndManager extends MsManager {
                         this.msWindowDragged.set_position(
                             Math.round(
                                 stageX -
-                                    this.msWindowDragged.width *
-                                        this.originPointerAnchor[0]
+                                this.msWindowDragged.width *
+                                this.originPointerAnchor[0]
                             ),
                             Math.round(
                                 stageY -
-                                    this.msWindowDragged.height *
-                                        this.originPointerAnchor[1]
+                                this.msWindowDragged.height *
+                                this.originPointerAnchor[1]
                             )
                         );
                         this.throttledCheckUnderPointer();
@@ -212,7 +223,7 @@ export class MsDndManager extends MsManager {
                     tileable instanceof MsWindow &&
                     tileable.visible &&
                     tileable.get_parent() ===
-                        msWorkspace.msWorkspaceActor.tileableContainer
+                    msWorkspace.msWorkspaceActor.tileableContainer
             )
             .forEach((tileable) => {
                 if (
@@ -227,52 +238,52 @@ export class MsDndManager extends MsManager {
     }
 };
 
-export const InputGrabber = GObject.registerClass(
-    class InputGrabber extends Clutter.Actor {
-        _init() {
-            super._init({
-                name: 'InputGrabber',
-                reactive: true,
-            });
-            this.add_constraint(
-                new Clutter.BindConstraint({
-                    source: global.stage,
-                    coordinate: Clutter.BindCoordinate.ALL,
-                })
+@registerGObjectClass
+export class InputGrabber extends Clutter.Actor {
+    constructor() {
+        super({
+            name: 'InputGrabber',
+            reactive: true,
+        });
+        this.add_constraint(
+            new Clutter.BindConstraint({
+                source: global.stage,
+                coordinate: Clutter.BindCoordinate.ALL,
+            })
+        );
+    }
+    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+        let actionId = global.display.get_keybinding_action(
+            keyEvent.hardware_keycode,
+            keyEvent.modifier_state
+        );
+        if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
+            const actionName = Me.hotKeysModule.actionIdToNameMap.get(
+                actionId
             );
-        }
-        vfunc_key_press_event(keyEvent) {
-            let actionId = global.display.get_keybinding_action(
-                keyEvent.hardware_keycode,
-                keyEvent.modifier_state
-            );
-            if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
-                const actionName = Me.hotKeysModule.actionIdToNameMap.get(
-                    actionId
-                );
-                switch (actionName) {
-                    case KeyBindingAction.PREVIOUS_WINDOW:
-                        Me.hotKeysModule.actionNameToActionMap.get(
-                            KeyBindingAction.MOVE_WINDOW_LEFT
-                        )();
-                        break;
-                    case KeyBindingAction.NEXT_WINDOW:
-                        Me.hotKeysModule.actionNameToActionMap.get(
-                            KeyBindingAction.MOVE_WINDOW_RIGHT
-                        )();
-                        break;
-                    case KeyBindingAction.PREVIOUS_WORKSPACE:
-                        Me.hotKeysModule.actionNameToActionMap.get(
-                            KeyBindingAction.MOVE_WINDOW_TOP
-                        )();
-                        break;
-                    case KeyBindingAction.NEXT_WORKSPACE:
-                        Me.hotKeysModule.actionNameToActionMap.get(
-                            KeyBindingAction.MOVE_WINDOW_BOTTOM
-                        )();
-                        break;
-                }
+            switch (actionName) {
+                case KeyBindingAction.PREVIOUS_WINDOW:
+                    Me.hotKeysModule.actionNameToActionMap.get(
+                        KeyBindingAction.MOVE_WINDOW_LEFT
+                    )();
+                    break;
+                case KeyBindingAction.NEXT_WINDOW:
+                    Me.hotKeysModule.actionNameToActionMap.get(
+                        KeyBindingAction.MOVE_WINDOW_RIGHT
+                    )();
+                    break;
+                case KeyBindingAction.PREVIOUS_WORKSPACE:
+                    Me.hotKeysModule.actionNameToActionMap.get(
+                        KeyBindingAction.MOVE_WINDOW_TOP
+                    )();
+                    break;
+                case KeyBindingAction.NEXT_WORKSPACE:
+                    Me.hotKeysModule.actionNameToActionMap.get(
+                        KeyBindingAction.MOVE_WINDOW_BOTTOM
+                    )();
+                    break;
             }
         }
+        return false;
     }
-);
+}

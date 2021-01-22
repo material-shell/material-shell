@@ -10,14 +10,22 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MsStatusArea } from 'src/layout/verticalPanel/statusArea';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import { WorkspaceList } from 'src/layout/verticalPanel/workspaceList';
+import { registerGObjectClass } from 'src/utils/gjs';
 
-export const MsPanel = GObject.registerClass(
-    {
+@registerGObjectClass
+export class MsPanel extends St.BoxLayout {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsPanel',
-    },
-    class MsPanel extends St.BoxLayout {
-        _init() {
-            super._init({
+    }
+    gnomeShellPanel: any;
+    topBox: St.BoxLayout;
+    searchButton: MatPanelButton;
+    workspaceList: WorkspaceList;
+    statusArea: MsStatusArea;
+    disableConnect: number;
+
+    constructor() {
+            super({
                 name: 'msPanel',
                 vertical: true,
                 y_align: Clutter.ActorAlign.START,
@@ -84,18 +92,17 @@ export const MsPanel = GObject.registerClass(
             this.statusArea.disable();
         }
 
-        vfunc_get_preferred_width(_forHeight) {
+        vfunc_get_preferred_width(_forHeight): [number, number]{
             return [
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
             ];
         }
 
-        vfunc_get_preferred_height(_forWidth) {
+        vfunc_get_preferred_height(_forWidth): [number, number] {
             return [
                 Main.layoutManager.primaryMonitor.height,
                 Main.layoutManager.primaryMonitor.height,
             ];
         }
-    }
-);
+}

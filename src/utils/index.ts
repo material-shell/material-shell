@@ -38,7 +38,7 @@ export const range = (to: any) =>
 // as much as it can, without ever going more than once per `wait` duration;
 // but if you'd like to disable the execution on the leading edge, pass
 // `{leading: false}`. To disable execution on the trailing edge, ditto.
-export function throttle<T extends any[]> (func: (...args: T)=>void, wait: number, options: { trailing?: boolean; leading?: boolean; }) {
+export function throttle<T extends any[]> (func: (...args: T)=>void, wait: number, options: { trailing?: boolean; leading?: boolean; }): (...args: T)=>void {
     var context: any;
     var args, result;
     var timeout: number | null = null;

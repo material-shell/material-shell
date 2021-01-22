@@ -12,7 +12,7 @@ import { TilingLayoutByKey } from 'src/manager/layoutManager';
 
 /* exported HotKeysModule, KeyBindingAction */
 
-var KeyBindingAction = {
+export const KeyBindingAction = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
@@ -45,16 +45,26 @@ var KeyBindingAction = {
 };
 
 export class HotKeysModule {
+    workspaceManager: Meta.WorkspaceManager;
+    settings: import("/home/arong/projects/gnome/material-shell/types/gio").Settings;
+    actionIdToNameMap: Map<any, any>;
+    actionNameToActionMap: Map<any, any>;
+    connectId: number;
+    lastStash: number | null;
+    nextStash: number | null;
+
     constructor() {
         this.workspaceManager = global.workspace_manager;
         this.settings = getSettings('bindings');
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
+        this.lastStash = null;
+        this.nextStash = null;
 
         this.resetStash();
         this.connectId = global.window_manager.connect(
             'switch-workspace',
-            (_, from, _to) => {
+            (_, from: number, _to: number) => {
                 if (this.lastStash !== null && from != this.lastStash) {
                     this.resetStash();
                 }

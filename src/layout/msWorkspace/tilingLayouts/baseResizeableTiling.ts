@@ -89,7 +89,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
         return this.mainPortion.getRatioForIndex(index);
     }
 
-    getTileableBorder(tileable: Tileable, vertical = false, after = false) {
+    getTileableBorder(tileable: Tileable, vertical = false, after = false): PortionBorder | undefined {
         const index = this.getTileableIndex(tileable);
 
         if (index < 0) {

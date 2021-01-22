@@ -1,3 +1,5 @@
+import { MsWorkspace } from "./msWorkspace";
+
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
@@ -24,14 +26,18 @@ export const MainCategories = [
 
 var meaningfulCategories = ['IDE', 'WebBrowser', 'Player'];
 
-export const MsWorkspaceCategory = class MsWorkspaceCategory {
-    constructor(msWorkspace, forcedCategory) {
+export class MsWorkspaceCategory {
+    msWorkspace: MsWorkspace;
+    forcedCategory: string | null | undefined;
+    category: string;
+
+    constructor(msWorkspace: MsWorkspace, forcedCategory: string | null | undefined) {
         this.msWorkspace = msWorkspace;
         this.forcedCategory = forcedCategory;
         this.determineCategory();
     }
 
-    forceCategory(category) {
+    forceCategory(category: string | undefined) {
         this.forcedCategory = category;
         this.determineCategory();
         Me.stateManager.stateChanged();
@@ -49,7 +55,7 @@ export const MsWorkspaceCategory = class MsWorkspaceCategory {
 
         appList.forEach((app) => {
             if (app.is_window_backed()) return;
-            let appMainCategories = [];
+            let appMainCategories: string[] = [];
             let multiplier = 1;
             const categoriesString = app.get_app_info().get_categories();
             const categories = categoriesString

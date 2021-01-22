@@ -10,13 +10,26 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { reparentActor } from 'src/utils/index';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
-export const MsStatusArea = GObject.registerClass(
-    {
+import { registerGObjectClass } from 'src/utils/gjs';
+
+@registerGObjectClass
+export class MsStatusArea extends Clutter.Actor {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsStatusArea',
-    },
-    class MsStatusArea extends Clutter.Actor {
-        _init() {
-            super._init({
+    }
+    gnomeShellPanel: any;
+    leftBoxActors: never[];
+    rightBoxActors: never[];
+    dateMenu: any;
+    originalDateMenuBox: any;
+    msDateMenuBox?: MsDateMenuBox;
+    leftBoxActorAddedSignal: any;
+    centerBoxActorAddedSignal: any;
+    centerBoxActors: any;
+    rightBoxActorAddedSignal: any;
+
+    constructor() {
+            super({
                 layout_manager: new Clutter.BoxLayout({
                     orientation: Clutter.Orientation.VERTICAL,
                     pack_start: true,
@@ -93,7 +106,7 @@ export const MsStatusArea = GObject.registerClass(
             );
         }
 
-        stealActor(actor, container) {
+        stealActor(actor: Clutter.Actor, container: Clutter.Actor[]) {
             container.push(actor);
             actor.connect('destroy', () => {
                 container.splice(container.indexOf(actor), 1);
@@ -132,7 +145,7 @@ export const MsStatusArea = GObject.registerClass(
             });
         }
 
-        recursivelySetVertical(actor, value) {
+        recursivelySetVertical(actor: Clutter.Actor, value: boolean) {
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
                 actor.set_x_align(Clutter.ActorAlign.CENTER);
@@ -186,16 +199,27 @@ export const MsStatusArea = GObject.registerClass(
             this.restorePanelActors();
             this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
         }
-    }
-);
+}
 
-var MsDateMenuBox = GObject.registerClass(
-    {
+@registerGObjectClass
+export class MsDateMenuBox extends St.Widget {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsDateMenuBox',
-    },
-    class MsDateMenuBox extends St.Widget {
-        _init(dateMenu) {
-            super._init({
+    }
+    dateMenu: any;
+    indicatorActor: any;
+    private _wallClock: any;
+    clockLabel: St.Label<Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>>;
+    notificationIcon: St.Icon<Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>>;
+    notificationIconRing: St.Icon<Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>>;
+    dndIcon: St.Icon<Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>>;
+    private _settings: Gio.Settings;
+    iconDisplay: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
+    dateMenuSignal: any;
+    indicatorSignal: any;
+
+    constructor(dateMenu: any) {
+            super({
                 x_align: Clutter.ActorAlign.CENTER,
                 layout_manager: new Clutter.BinLayout(),
             });
@@ -280,7 +304,7 @@ var MsDateMenuBox = GObject.registerClass(
              *
              * Deliberately separates HH:MM into distinct sections
              */
-            let clockSections = this._wallClock.clock
+            let clockSections: string[] = this._wallClock.clock
                 .replace(/∶/g, ' ')
                 .split(' ');
             if (!clockSections[0]) clockSections.shift();
@@ -325,5 +349,4 @@ var MsDateMenuBox = GObject.registerClass(
                 }
             }
         }
-    }
-);
+}

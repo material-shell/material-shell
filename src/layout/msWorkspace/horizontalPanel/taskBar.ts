@@ -21,7 +21,7 @@ import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace } from '../msWorkspace';
+import { MsWorkspace, Tileable } from '../msWorkspace';
 
 let dragData = null;
 
@@ -125,7 +125,7 @@ export class TaskBar extends St.Widget {
         this.updateItems();
     }
 
-    onFocusChanged(tileableFocused, oldTileableFocused) {
+    onFocusChanged(tileableFocused: Tileable, oldTileableFocused: Tileable | null) {
         if (tileableFocused === oldTileableFocused) {
             return;
         }
@@ -266,6 +266,8 @@ export class TaskBarItem extends MatButton {
     contentActor: any;
     monitor: any;
     menu: any;
+    tileable: MsWindow | undefined;
+
     constructor(contentActor, draggable) {
         super({
             style_class: 'task-bar-item ',

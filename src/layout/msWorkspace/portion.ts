@@ -251,7 +251,7 @@ export class Portion {
         return false;
     }
 
-    getBorderForIndex(index: number, vertical = false, after = false) {
+    getBorderForIndex(index: number, vertical = false, after = false): PortionBorder | undefined {
         let portionIndex = 0;
         let afterOffset = after ? 1 : 0;
 
@@ -287,7 +287,7 @@ export class Portion {
         }
     }
 
-    getRatioForIndex(index: number, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForIndex(index: number, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }): Rectangular | undefined {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -314,7 +314,7 @@ export class Portion {
         return ratio;
     }
 
-    getRatioForPortion(portion: Portion, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }) {
+    getRatioForPortion(portion: Portion, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }): Rectangular {
         const basisTotal = this.children.reduce(
             (sum, child) => sum + child.basis,
             0

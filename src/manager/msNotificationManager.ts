@@ -6,7 +6,7 @@ import * as St from 'St';
 import * as Soup from 'Soup';
 import * as Meta from 'Meta';
 import * as GLib from 'GLib';
-const MessageTray = imports.ui.messageTray;
+import { MessageTray } from 'ui';
 const Main = imports.ui.main;
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
@@ -16,9 +16,12 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/compatibility';
 import { MsManager } from 'src/manager/msManager';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 const API_SERVER = 'http://api.material-shell.com';
 export class MsNotificationManager extends MsManager {
+    httpSession: Soup.Session;
+
     constructor() {
         super();
         this.httpSession = new Soup.Session({ ssl_use_system_ca_file: true });
@@ -44,7 +47,7 @@ export class MsNotificationManager extends MsManager {
                 return;
             }
 
-            let notifications = [];
+            let notifications: NotificationResponseItem[] = [];
             try {
                 notifications = JSON.parse(message.response_body.data);
             } catch (e) {
@@ -71,7 +74,21 @@ export class MsNotificationManager extends MsManager {
         );
     }
 };
-let MsNotificationSource, MsNotification;
+
+interface NotificationResponseItem {
+    title: string,
+    content: string,
+    icon: string,
+    action: any,
+}
+
+interface IMsNotification {
+    action: any
+}
+
+let MsNotificationSource: { new(): MessageTray.Source };
+let MsNotification: { new(source: MessageTray.Source, title: string, text: string, icon: string, action: any): MessageTray.Notification & IMsNotification };
+
 if (ShellVersionMatch('3.34')) {
     MsNotificationSource = class MsNotificationSource extends MessageTray.Source {
         constructor() {
@@ -85,8 +102,10 @@ if (ShellVersionMatch('3.34')) {
         }
     };
     MsNotification = class MsNotification extends MessageTray.Notification {
-        constructor(source, title, text, icon, action) {
-            let params = {};
+        action: any;
+
+        constructor(source: MessageTray.Source, title: string, text: string, icon: string, action: any) {
+            let params: MessageTray.NotificationParams = {};
             if (icon) {
                 params.gicon = Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/${icon}.svg`
@@ -110,8 +129,8 @@ if (ShellVersionMatch('3.34')) {
 } else {
     MsNotificationSource = GObject.registerClass(
         class MsNotificationSource extends MessageTray.Source {
-            _init() {
-                super._init('Material Shell');
+            constructor() {
+                super('Material Shell');
             }
 
             getIcon() {
@@ -124,14 +143,15 @@ if (ShellVersionMatch('3.34')) {
 
     MsNotification = GObject.registerClass(
         class MsNotification extends MessageTray.Notification {
-            _init(source, title, text, icon, action) {
-                let params = {};
+            action: any;
+            constructor(source: MessageTray.Source, title: string, text: string, icon: string, action: any) {
+                let params: MessageTray.NotificationParams = {};
                 if (icon) {
                     params.gicon = Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/${icon}.svg`
                     );
                 }
-                super._init(source, title, text, params);
+                super(source, title, text, params);
                 this.action = action;
                 this.bannerBodyMarkup = true;
             }
@@ -149,11 +169,18 @@ if (ShellVersionMatch('3.34')) {
     );
 }
 
-const MsNotificationDialog = GObject.registerClass(
-    class MsNotificationDialog extends ModalDialog.ModalDialog {
-        _init(title, text, action) {
-            super._init({ styleClass: '' });
-            const actions = [
+interface Action {
+    default?: boolean,
+    label: string,
+    key?: number,
+    action: ()=>void,
+}
+
+@registerGObjectClass
+export class MsNotificationDialog extends ModalDialog.ModalDialog {
+    constructor(title: string, text: string, action?: { url: string, label: string }) {
+            super({ styleClass: '' });
+            const actions: Action[] = [
                 {
                     label: _('Cancel'),
                     action: this._onCancelButtonPressed.bind(this),
@@ -188,5 +215,4 @@ const MsNotificationDialog = GObject.registerClass(
         _onCancelButtonPressed() {
             this.close();
         }
-    }
-);
+}
