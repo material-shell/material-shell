@@ -184,7 +184,7 @@ export class MsNotificationDialog extends ModalDialog.ModalDialog {
                 {
                     label: _('Cancel'),
                     action: this._onCancelButtonPressed.bind(this),
-                    key: Clutter.Escape || Clutter.KEY_Escape,
+                    key: Clutter.KEY_Escape,
                 },
             ];
             if (action) {
