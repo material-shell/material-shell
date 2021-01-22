@@ -347,12 +347,13 @@ export class WorkspaceButton extends MatButton {
     _draggable: any;
 
     constructor(msWorkspaceManager: MsWorkspaceManager, msWorkspace: MsWorkspace) {
+        const workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
+        super({
+            child: workspaceButtonIcon,
+        });
         this.msWorkspaceManager = msWorkspaceManager;
         this.msWorkspace = msWorkspace;
-        this.workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
-        super({
-            child: this.workspaceButtonIcon,
-        });
+        this.workspaceButtonIcon = workspaceButtonIcon;
         this._delegate = this;
 
         this.buildMenu();
