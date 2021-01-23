@@ -1,9 +1,16 @@
 /** Gnome libs imports */
 const Util = imports.misc.util;
+import * as Meta from 'Meta';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
 /* exported updateTitleBarVisibility */
 
-export const updateTitleBarVisibility = function (metaWindow) {
+interface MetaWindowWithVisiblity extends Meta.Window {
+    titleBarVisible?: boolean;
+    msWindow: MsWindow;
+}
+
+export const updateTitleBarVisibility = function (metaWindow: MetaWindowWithVisiblity) {
     let msWorkspaceIsInFloatLayout =
         metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
     let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
@@ -15,7 +22,7 @@ export const updateTitleBarVisibility = function (metaWindow) {
     }
 };
 
-export const setTitleBarVisibility = function (metaWindow, visible) {
+export const setTitleBarVisibility = function (metaWindow: MetaWindowWithVisiblity, visible: boolean) {
     let windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
@@ -35,7 +42,7 @@ export const setTitleBarVisibility = function (metaWindow, visible) {
     metaWindow.titleBarVisible = visible;
 };
 
-export const getWindowXID = function (win) {
+export const getWindowXID = function (win: Meta.Window) {
     let desc = win.get_description() || '';
     let match = desc.match(/0x[0-9a-f]+/) || [null];
 
