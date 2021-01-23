@@ -105,6 +105,14 @@ declare global {
     }
 }
 
+export interface Monitor {
+    readonly index: number,
+    readonly x: number,
+    readonly y: number,
+    readonly width: number,
+    readonly height: number,
+}
+
 export interface Rectangular {
     x: number;
     y: number;

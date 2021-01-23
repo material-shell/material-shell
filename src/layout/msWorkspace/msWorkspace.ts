@@ -22,6 +22,7 @@ import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { logAssert } from 'src/utils/assert';
+import { Monitor } from 'src/mod';
 
 export type Tileable = MsWindow | MsApplicationLauncher;
 
@@ -29,17 +30,19 @@ function isMsWindow(argument: any): argument is MsWindow {
     return argument instanceof MsWindow;
 }
 
+export interface MsWorkspaceState {
+    // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
+    external: boolean;
+    focusedIndex: number;
+    forcedCategory: string | null | undefined;
+    msWindowList: MsWindowState[];
+    layoutStateList: any;
+    layoutKey: string;
+}
+
 export class MsWorkspace extends WithSignals {
     msWorkspaceManager: MsWorkspaceManager;
-    private _state: {
-        // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
-        external: boolean;
-        focusedIndex: number;
-        forcedCategory: string | null | undefined;
-        msWindowList: MsWindowState[];
-        layoutStateList: any;
-        layoutKey: string;
-    };
+    private _state: MsWorkspaceState;
     insertedMsWindow: MsWindow | null;
     appLauncher: MsApplicationLauncher;
     tileableList: Tileable[];
@@ -51,10 +54,11 @@ export class MsWorkspace extends WithSignals {
     monitorIsExternal: any;
     apps: any;
     categorizedAppCard: any;
-    monitor: any;
+    // Definitely set because we call `setMonitor` in the constructor
+    monitor!: Monitor;
     emitTileableChangedInProgress: any;
 
-    constructor(msWorkspaceManager: MsWorkspaceManager, monitor, state = {}) {
+    constructor(msWorkspaceManager: MsWorkspaceManager, monitor: Monitor, state: Partial<MsWorkspaceState> = {}) {
         super();
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
@@ -136,7 +140,7 @@ export class MsWorkspace extends WithSignals {
         Me.stateManager.stateChanged();
     }
 
-    get state() {
+    get state(): MsWorkspaceState {
         this._state.msWindowList = this.tileableList
             .filter(isMsWindow)
             .filter((msWindow) => {
@@ -559,7 +563,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    setMonitor(monitor) {
+    setMonitor(monitor: Monitor) {
         this.monitor = monitor;
         this.monitorIsExternal =
             monitor.index !== Main.layoutManager.primaryIndex;
