@@ -672,16 +672,15 @@ export class MsWorkspaceManager extends MsManager {
             ? metaWindow.msWindow.msWorkspace
             : null;
         //Ignore unHandle metaWindow and metaWindow on secondary screens
+        const msWorkspace = this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
         if (
             !metaWindow.handledByMaterialShell ||
             global.display.get_n_monitors() !== this.numOfMonitors ||
-            currentMsWorkspaceOfMetaWindow ===
-            this.getMsWorkspacesOfMonitorIndex(monitorIndex) ||
+            currentMsWorkspaceOfMetaWindow === msWorkspace ||
             monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
         }
-        const msWorkspace = this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
 
         if (!msWorkspace || !metaWindow.msWindow) {
             return;
