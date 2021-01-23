@@ -21,10 +21,9 @@ import { isNonNull } from 'src/utils/predicates';
 
 interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[],
-    externalWorkspaces?: MsWorkspace[],
-    primaryWorkspaceList?: MsWorkspaceState[],
     primaryWorkspaceActiveIndex: number,
 }
+
 export class MsWorkspaceManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
     private _state: MsWorkspaceManagerState;
@@ -256,14 +255,7 @@ export class MsWorkspaceManager extends MsManager {
         this.restoringState = true;
         this.removeEmptyWorkspaces();
 
-        let msWorkspaceListToRestore = this._state
-            ? this._state.msWorkspaceList
-                ? [...this._state.msWorkspaceList]
-                : [
-                    ...this._state.primaryWorkspaceList,
-                    ...this._state.externalWorkspaces,
-                ]
-            : [];
+        let msWorkspaceListToRestore = [...this._state.msWorkspaceList];
 
         // First restore the external monitors
         Main.layoutManager.monitors
