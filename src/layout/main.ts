@@ -10,26 +10,37 @@ const Background = imports.ui.background;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const {
-    SetAllocation,
+import { SetAllocation,
     Allocate,
-    AllocatePreferredSize,
-} = Me.imports.src.utils.compatibility;
+    AllocatePreferredSize, } from "src/utils/compatibility";
 import { MsPanel } from 'src/layout/verticalPanel/verticalPanel';
 import { reparentActor } from 'src/utils/index';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
-const {
-    VerticalPanelPositionEnum,
-    HorizontalPanelPositionEnum,
-} = Me.imports.src.manager.msThemeManager;
+import { VerticalPanelPositionEnum,
+    HorizontalPanelPositionEnum, } from "src/manager/msThemeManager";
+import { registerGObjectClass } from 'src/utils/gjs';
+import { Signal } from 'src/manager/msManager';
+import { Monitor } from 'src/mod';
+import { assert } from 'src/utils/assert';
 
-export const MsMain = GObject.registerClass(
-    {
+@registerGObjectClass
+export class MsMain extends St.Widget {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsMain',
-    },
-    class MsMain extends St.Widget {
-        _init() {
-            super._init({});
+    }
+    panelsVisible: any;
+    monitorsContainer: MonitorContainer[];
+    aboveContainer: Clutter.Actor;
+    backgroundGroup: Meta.BackgroundGroup<Clutter.Actor>;
+    primaryMonitorContainer: PrimaryMonitorContainer;
+    panel: any;
+    blurEffect: any;
+    private _scaleChangedId: number | undefined;
+    // Definitely assigned because we call registerToSignals
+    signals!: Signal[];
+
+    constructor() {
+            super({});
             Me.layout = this;
             this.panelsVisible = Me.stateManager.getState('panels-visible');
             this.panelsVisible =
@@ -281,7 +292,7 @@ export const MsMain = GObject.registerClass(
         }
 
         // eslint-disable-next-line camelcase
-        add_child(actor) {
+        add_child(actor: Clutter.Actor) {
             super.add_child(actor);
             this.set_child_above_sibling(this.aboveContainer, null);
         }
@@ -289,25 +300,30 @@ export const MsMain = GObject.registerClass(
         setActorAbove(actor) {
             reparentActor(actor, this.aboveContainer);
         }
-        vfunc_get_preferred_width(_forHeight) {
+        vfunc_get_preferred_width(_forHeight: number): [number, number] {
             let width = global.stage.width;
             return [width, width];
         }
 
-        vfunc_get_preferred_height(_forWidth) {
+        vfunc_get_preferred_height(_forWidth: number): [number, number] {
             let height = global.stage.height;
             return [height, height];
         }
-    }
-);
+}
 
-export const MonitorContainer = GObject.registerClass(
-    {
+@registerGObjectClass
+export class MonitorContainer extends St.Widget {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MonitorContainer',
-    },
-    class MonitorContainer extends St.Widget {
-        _init(monitor, bgGroup, params) {
-            super._init(params);
+    }
+    bgGroup: any;
+    horizontalPanelSpacer: St.Widget<Clutter.LayoutManager, Clutter.ContentPrototype, Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>>;
+    bgManager: any;
+    msWorkspaceActor: any;
+    monitor: any;
+
+    constructor(monitor: Monitor, bgGroup: Meta.BackgroundGroup, params?: Partial<St.Widget.ConstructorProperties>) {
+            super(params);
             this.bgGroup = bgGroup;
 
             this.horizontalPanelSpacer = new St.Widget({
@@ -337,13 +353,13 @@ export const MonitorContainer = GObject.registerClass(
             });
         }
 
-        setFullscreen(monitorIsFullscreen) {
+        setFullscreen(monitorIsFullscreen: boolean) {
             this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
             this.horizontalPanelSpacer.visible =
                 Me.layout.panelsVisible && !monitorIsFullscreen;
         }
 
-        setMsWorkspaceActor(actor) {
+        setMsWorkspaceActor(actor: Clutter.Actor) {
             if (actor === this.msWorkspaceActor) return;
             if (
                 this.msWorkspaceActor &&
@@ -371,7 +387,7 @@ export const MonitorContainer = GObject.registerClass(
                     : this.monitor.height - panelHeight
             );
         }
-        setMonitor(monitor) {
+        setMonitor(monitor: Monitor) {
             if (this.bgManager) {
                 this.bgManager.destroy();
             }
@@ -385,11 +401,11 @@ export const MonitorContainer = GObject.registerClass(
             });
         }
 
-        allocateHorizontalPanelSpacer(box, flags) {
+        allocateHorizontalPanelSpacer(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
             AllocatePreferredSize(this.horizontalPanelSpacer, flags);
         }
 
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
@@ -412,17 +428,19 @@ export const MonitorContainer = GObject.registerClass(
                 AllocatePreferredSize(actor, flags);
             });
         }
-    }
-);
+}
 
-export const PrimaryMonitorContainer = GObject.registerClass(
-    {
+@registerGObjectClass
+export class PrimaryMonitorContainer extends MonitorContainer {
+    static metaInfo: GObject.MetaInfo = {
         GTypeName: 'PrimaryMonitorContainer',
-    },
-    class PrimaryMonitorContainer extends MonitorContainer {
-        _init(monitor, bgGroup, params) {
+    }
+    panel: MsPanel;
+    translationAnimator: TranslationAnimator;
+
+    constructor(monitor: Monitor, bgGroup: Meta.BackgroundGroup, params?: Partial<St.Widget.ConstructorProperties>) {
             this.panel = new MsPanel();
-            super._init(monitor, bgGroup, params);
+            super(monitor, bgGroup, params);
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {
@@ -447,13 +465,13 @@ export const PrimaryMonitorContainer = GObject.registerClass(
             });
         }
 
-        setFullscreen(monitorIsFullscreen) {
+        setFullscreen(monitorIsFullscreen: boolean) {
             this.panel.visible =
                 Me.layout.panelsVisible && !monitorIsFullscreen;
             super.setFullscreen(monitorIsFullscreen);
         }
 
-        setTranslation(prevActor, nextActor) {
+        setTranslation(prevActor: Clutter.Actor, nextActor: Clutter.Actor) {
             if (!this.translationAnimator.get_parent()) {
                 this.translationAnimator.width = this.width;
                 this.translationAnimator.height =
@@ -484,7 +502,7 @@ export const PrimaryMonitorContainer = GObject.registerClass(
             );
         }
 
-        setMsWorkspaceActor(actor) {
+        setMsWorkspaceActor(actor: Clutter.Actor) {
             if (actor === this.msWorkspaceActor) return;
             let prevActor;
             if (this.msWorkspaceActor) {
@@ -508,21 +526,21 @@ export const PrimaryMonitorContainer = GObject.registerClass(
             }
         }
 
-        vfunc_allocate(box, flags) {
+        vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
             SetAllocation(this, box, flags);
             let themeNode = this.get_theme_node();
             box = themeNode.get_content_box(box);
             let panelBox = new Clutter.ActorBox();
             let panelPosition = Me.msThemeManager.verticalPanelPosition;
             if (this.panel) {
-                const panelWidth = this.panel.get_preferred_width(-1)[1];
+                const panelWidth = this.panel.get_preferred_width(-1)[1]!;
                 panelBox.x1 =
                     panelPosition === VerticalPanelPositionEnum.LEFT
                         ? box.x1
                         : box.x2 - panelWidth;
                 panelBox.x2 = panelBox.x1 + panelWidth;
                 panelBox.y1 = box.y1;
-                panelBox.y2 = this.panel.get_preferred_height(-1)[1];
+                panelBox.y2 = this.panel.get_preferred_height(-1)[1]!;
             }
 
             let msWorkspaceActorBox = new Clutter.ActorBox();
@@ -549,5 +567,4 @@ export const PrimaryMonitorContainer = GObject.registerClass(
                 Allocate(child, msWorkspaceActorBox, flags);
             });
         }
-    }
-);
+}
