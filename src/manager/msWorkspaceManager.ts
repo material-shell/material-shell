@@ -278,7 +278,7 @@ export class MsWorkspaceManager extends MsManager {
                             firstExternalStateIndex,
                             1
                         )[0]
-                        : null
+                        : undefined
                 );
             });
 
