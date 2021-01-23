@@ -13,23 +13,27 @@ import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
 import { MsWindowManager } from './msWindowManager';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { assert } from 'src/utils/assert';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+
+interface CurrentDrag {
+    msWindow: MsWindow;
+    originPointerAnchor: [number, number];
+    originalParent: any;
+}
 
 export class MsDndManager extends MsManager {
-    msWindowDragged: MsWindow | null | undefined;
     msWindowManager: MsWindowManager;
     signalMap: Map<any, any>;
-    dragInProgress: boolean;
-    originalParent: any;
+    dragInProgress: CurrentDrag | null;
     inputGrabber: InputGrabber;
     throttledCheckUnderPointer: (this: any) => any;
-    originPointerAnchor: number[] | undefined;
 
     constructor(msWindowManager: MsWindowManager) {
         super();
-        this.msWindowDragged = null;
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
-        this.dragInProgress = false;
+        this.dragInProgress = null;
         this.inputGrabber = new InputGrabber();
         this.observe(this.msWindowManager, 'ms-window-created', () => {
             this.listenForMsWindowsSignal();
@@ -40,21 +44,21 @@ export class MsDndManager extends MsManager {
             global.workspace_manager,
             'active-workspace-changed',
             () => {
-                if (this.dragInProgress) {
+                if (this.dragInProgress !== null) {
                     const newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
-                    if (this.msWindowDragged.metaWindow) {
-                        this.msWindowDragged.metaWindow.change_workspace_by_index(
+                    if (this.dragInProgress.msWindow.metaWindow) {
+                        this.dragInProgress.msWindow.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
                             true
                         );
                     } else {
                         Me.msWorkspaceManager.setWindowToMsWorkspace(
-                            this.msWindowDragged,
+                            this.dragInProgress.msWindow,
                             newMsWorkspace
                         );
                     }
 
-                    this.originalParent =
+                    this.dragInProgress.originalParent =
                         newMsWorkspace.msWorkspaceActor.tileableContainer;
                 }
             }
@@ -79,20 +83,21 @@ export class MsDndManager extends MsManager {
         );
 
         this.observe(global.stage, 'captured-event', (_, event) => {
-            if (this.dragInProgress) {
+            if (this.dragInProgress !== null) {
                 let [stageX, stageY] = event.get_coords();
+                const msWindowDragged = this.dragInProgress.msWindow;
                 switch (event.type()) {
                     case Clutter.EventType.MOTION:
-                        this.msWindowDragged.set_position(
+                        msWindowDragged.set_position(
                             Math.round(
                                 stageX -
-                                this.msWindowDragged.width *
-                                this.originPointerAnchor[0]
+                                msWindowDragged.width *
+                                this.dragInProgress.originPointerAnchor[0]
                             ),
                             Math.round(
                                 stageY -
-                                this.msWindowDragged.height *
-                                this.originPointerAnchor[1]
+                                msWindowDragged.height *
+                                this.dragInProgress.originPointerAnchor[1]
                             )
                         );
                         this.throttledCheckUnderPointer();
@@ -132,11 +137,9 @@ export class MsDndManager extends MsManager {
         });
     }
 
-    startDrag(msWindow) {
+    startDrag(msWindow: MsWindow) {
         global.stage.add_child(this.inputGrabber);
-        this.dragInProgress = true;
-        this.msWindowDragged = msWindow;
-        this.originalParent = msWindow.get_parent();
+        const originalParent = msWindow.get_parent();
         msWindow.freezeAllocation();
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
@@ -146,30 +149,35 @@ export class MsDndManager extends MsManager {
             globalX,
             globalY
         );
-        this.originPointerAnchor = [
-            relativeX / msWindow.width,
-            relativeY / msWindow.height,
-        ];
+
+        this.dragInProgress = {
+            msWindow,
+            originPointerAnchor: [
+                relativeX / msWindow.width,
+                relativeY / msWindow.height,
+            ],
+            originalParent,
+        };
 
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
-            Math.round(globalX - msWindow.width * this.originPointerAnchor[0]),
-            Math.round(globalY - msWindow.height * this.originPointerAnchor[1])
+            Math.round(globalX - msWindow.width * this.dragInProgress.originPointerAnchor[0]),
+            Math.round(globalY - msWindow.height * this.dragInProgress.originPointerAnchor[1])
         );
         Main.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
+        assert(this.dragInProgress !== null, "No drag in progress");
+        const { msWindow, originalParent } = this.dragInProgress;
+        this.dragInProgress = null;
+
         Main.popModal(this.inputGrabber);
         global.stage.remove_child(this.inputGrabber);
-        this.msWindowDragged.unFreezeAllocation();
-        reparentActor(this.msWindowDragged, this.originalParent);
-        this.dragInProgress = false;
-        delete this.originPointerAnchor;
-        delete this.originalParent;
-        delete this.msWindowDragged;
+        msWindow.unFreezeAllocation();
+        reparentActor(msWindow, originalParent);
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
@@ -177,7 +185,7 @@ export class MsDndManager extends MsManager {
     }
 
     checkUnderThePointerRoutine() {
-        if (!this.dragInProgress) return;
+        if (this.dragInProgress === null) return;
         this.throttledCheckUnderPointer();
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();
@@ -187,13 +195,16 @@ export class MsDndManager extends MsManager {
 
     /**  */
     checkUnderThePointer() {
+        assert(this.dragInProgress !== null, "No drag in progress");
+
         let [x, y] = global.get_pointer();
         let monitor = Main.layoutManager.currentMonitor;
 
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
-        const msWorkspace = this.msWindowDragged.msWorkspace;
+        const msWindowDragged = this.dragInProgress.msWindow;
+        const msWorkspace = msWindowDragged.msWorkspace;
         if (monitor !== msWorkspace.monitor) {
-            let newMsWorkspace;
+            let newMsWorkspace: MsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
                 newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             } else {
@@ -203,11 +214,11 @@ export class MsDndManager extends MsManager {
             }
 
             Me.msWorkspaceManager.setWindowToMsWorkspace(
-                this.msWindowDragged,
+                msWindowDragged,
                 newMsWorkspace
             );
 
-            this.originalParent =
+            this.dragInProgress.originalParent =
                 newMsWorkspace.msWorkspaceActor.tileableContainer;
         }
 
@@ -232,7 +243,7 @@ export class MsDndManager extends MsManager {
                     relativeY >= tileable.y &&
                     relativeY <= tileable.y + tileable.height
                 ) {
-                    msWorkspace.swapTileable(this.msWindowDragged, tileable);
+                    msWorkspace.swapTileable(msWindowDragged, tileable);
                 }
             });
     }

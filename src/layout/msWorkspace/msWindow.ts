@@ -193,7 +193,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     get dragged() {
-        return Me.msWindowManager.msDndManager.msWindowDragged === this;
+        return Me.msWindowManager.msDndManager.dragInProgress?.msWindow === this;
     }
 
     get followMetaWindow() {
