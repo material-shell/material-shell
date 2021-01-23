@@ -6,7 +6,7 @@ import * as St from 'St';
 import * as Soup from 'Soup';
 import * as Meta from 'Meta';
 import * as GLib from 'GLib';
-import { MessageTray } from 'ui';
+import { messageTray } from 'ui';
 const Main = imports.ui.main;
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
@@ -86,11 +86,11 @@ interface IMsNotification {
     action: any
 }
 
-let MsNotificationSource: { new(): MessageTray.Source };
-let MsNotification: { new(source: MessageTray.Source, title: string, text: string, icon: string, action: any): MessageTray.Notification & IMsNotification };
+let MsNotificationSource: { new(): messageTray.Source };
+let MsNotification: { new(source: messageTray.Source, title: string, text: string, icon: string, action: any): messageTray.Notification & IMsNotification };
 
 if (ShellVersionMatch('3.34')) {
-    MsNotificationSource = class MsNotificationSource extends MessageTray.Source {
+    MsNotificationSource = class MsNotificationSource extends messageTray.Source {
         constructor() {
             super('Material Shell');
         }
@@ -101,11 +101,11 @@ if (ShellVersionMatch('3.34')) {
             );
         }
     };
-    MsNotification = class MsNotification extends MessageTray.Notification {
+    MsNotification = class MsNotification extends messageTray.Notification {
         action: any;
 
-        constructor(source: MessageTray.Source, title: string, text: string, icon: string, action: any) {
-            let params: MessageTray.NotificationParams = {};
+        constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
+            let params: messageTray.NotificationParams = {};
             if (icon) {
                 params.gicon = Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/${icon}.svg`
@@ -128,7 +128,7 @@ if (ShellVersionMatch('3.34')) {
     };
 } else {
     MsNotificationSource = GObject.registerClass(
-        class MsNotificationSource extends MessageTray.Source {
+        class MsNotificationSource extends messageTray.Source {
             constructor() {
                 super('Material Shell');
             }
@@ -142,10 +142,10 @@ if (ShellVersionMatch('3.34')) {
     );
 
     MsNotification = GObject.registerClass(
-        class MsNotification extends MessageTray.Notification {
+        class MsNotification extends messageTray.Notification {
             action: any;
-            constructor(source: MessageTray.Source, title: string, text: string, icon: string, action: any) {
-                let params: MessageTray.NotificationParams = {};
+            constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
+                let params: messageTray.NotificationParams = {};
                 if (icon) {
                     params.gicon = Gio.icon_new_for_string(
                         `${Me.path}/assets/icons/${icon}.svg`

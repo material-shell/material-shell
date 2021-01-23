@@ -1,7 +1,7 @@
 import * as Gio from 'Gio';
 
 declare module "ui" {
-    export namespace MessageTray {
+    export namespace messageTray {
         interface NotificationParams {
             gicon?: Gio.Icon,
         }
