@@ -127,46 +127,46 @@ if (ShellVersionMatch('3.34')) {
         }
     };
 } else {
-    MsNotificationSource = GObject.registerClass(
-        class MsNotificationSource extends messageTray.Source {
-            constructor() {
-                super('Material Shell');
-            }
+    @registerGObjectClass
+    class MsNotificationSourceClass extends messageTray.Source {
+        constructor() {
+            super('Material Shell');
+        }
 
-            getIcon() {
-                return Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/on-dark-small.svg`
+        getIcon() {
+            return Gio.icon_new_for_string(
+                `${Me.path}/assets/icons/on-dark-small.svg`
+            );
+        }
+    }
+    MsNotificationSource = MsNotificationSourceClass;
+
+    @registerGObjectClass
+    class MsNotificationClass extends messageTray.Notification {
+        action: any;
+        constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
+            let params: messageTray.NotificationParams = {};
+            if (icon) {
+                params.gicon = Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/${icon}.svg`
                 );
             }
+            super(source, title, text, params);
+            this.action = action;
+            this.bannerBodyMarkup = true;
         }
-    );
 
-    MsNotification = GObject.registerClass(
-        class MsNotification extends messageTray.Notification {
-            action: any;
-            constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
-                let params: messageTray.NotificationParams = {};
-                if (icon) {
-                    params.gicon = Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/${icon}.svg`
-                    );
-                }
-                super(source, title, text, params);
-                this.action = action;
-                this.bannerBodyMarkup = true;
-            }
-
-            activate() {
-                super.activate();
-                let dialog = new MsNotificationDialog(
-                    this.title,
-                    this.bannerBodyText,
-                    this.action
-                );
-                dialog.open(global.get_current_time());
-            }
+        activate() {
+            super.activate();
+            let dialog = new MsNotificationDialog(
+                this.title,
+                this.bannerBodyText,
+                this.action
+            );
+            dialog.open(global.get_current_time());
         }
-    );
+    }
+    MsNotification = MsNotificationClass;
 }
 
 interface Action {
