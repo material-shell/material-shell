@@ -10,18 +10,19 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MsManager } from 'src/manager/msManager';
 import { SetAllocation } from 'src/utils/compatibility';
 import * as GLib from 'GLib';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 export class TooltipManager extends MsManager {
     constructor() {
         super();
     }
-    add(actor, params = {}) {
+    add(actor: Clutter.Actor, params: Partial<MatTooltipParams> = {}) {
         let actorDestroyed = false;
         actor.set_reactive(true);
         const tooltipCallback = () => {
-            let tooltip;
+            let tooltip: MatTooltip | null | undefined;
             let left = false;
-            let timeoutId;
+            let timeoutId: number;
             const leaveCallback = () => {
                 left = true;
                 if (tooltip) {
@@ -60,12 +61,12 @@ export class TooltipManager extends MsManager {
         this.observe(actor, 'enter-event', tooltipCallback);
     }
 
-    createTooltip(actor, params) {
+    createTooltip(actor: Clutter.Actor, params: Partial<MatTooltipParams>): MatTooltip | undefined {
         // If actor has text, use it instead because it may be updated
-        let actorText;
+        let actorText: string | undefined;
         if (actor instanceof St.Label || actor instanceof Clutter.Text) {
             const clutterText =
-                actor instanceof St.Label ? actor.get_clutter_text() : actor;
+                actor instanceof St.Label ? actor.get_clutter_text() as Clutter.Text : actor;
             if (clutterText.get_layout().is_ellipsized()) {
                 actorText = clutterText.get_text();
             }
@@ -82,102 +83,112 @@ export class TooltipManager extends MsManager {
     }
 };
 
-var TooltipSide = {
-    LEFT: 0,
-    TOP: 1,
-    RIGHT: 2,
-    BOTTOM: 3,
+enum TooltipSide {
+    LEFT = 0,
+    TOP = 1,
+    RIGHT = 2,
+    BOTTOM = 3,
 };
 
-export const MatTooltip = GObject.registerClass(
-    {
-        GTypeName: 'MatTooltip',
-    },
-    class MatTooltip extends St.Label {
-        _init(sourceActor, params = {}) {
-            params = Object.assign(
-                {
-                    text: '',
-                    relativeActor: null,
-                    offsetX: 0,
-                    offsetY: 0,
-                    side: TooltipSide.BOTTOM,
-                },
-                params
-            );
-            super._init({
-                text: params.text,
-                opacity: 0,
-                scale_x: 0.8,
-                scale_y: 0.8,
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            this.set_pivot_point(0.5, 0.5);
-            this.params = params;
-            this.get_clutter_text().y_align = Clutter.ActorAlign.CENTER;
-            this.sourceActor = sourceActor;
-        }
-        show() {
-            this.ease({
-                opacity: 255,
-                scale_x: 1,
-                scale_y: 1,
-                duration: 300,
-            });
-        }
-        remove() {
-            this.ease({
-                opacity: 0,
-                duration: 500,
-                onComplete: () => {
-                    Main.layoutManager.removeChrome(this);
-                    this.destroy();
-                },
-            });
-        }
-        vfunc_allocate(...args) {
-            const relativeActor = this.params.relativeActor || this.sourceActor;
-            let [stageX, stageY] = relativeActor.get_transformed_position();
-            let x, y;
-            switch (this.params.side) {
-                case TooltipSide.LEFT:
-                    x = stageX - this.get_width();
-                    y =
-                        stageY +
-                        relativeActor.get_height() / 2 -
-                        this.get_height() / 2;
-                    break;
-                case TooltipSide.TOP:
-                    x =
-                        stageX +
-                        relativeActor.get_width() / 2 -
-                        this.get_width() / 2;
-                    y = stageY - this.get_height();
-                    break;
-                case TooltipSide.RIGHT:
-                    x = stageX + relativeActor.get_width();
-                    y =
-                        stageY +
-                        relativeActor.get_height() / 2 -
-                        this.get_height() / 2;
-                    break;
-                case TooltipSide.BOTTOM:
-                    x =
-                        stageX +
-                        relativeActor.get_width() / 2 -
-                        this.get_width() / 2;
-                    y = stageY + relativeActor.get_height();
-                    break;
-            }
-            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                this.set_position(
-                    Math.max(Math.round(x + this.params.offsetX), 0),
-                    Math.max(Math.round(y + this.params.offsetY), 0)
-                );
-                return GLib.SOURCE_REMOVE;
-            });
+interface MatTooltipParams {
+    text: string,
+    relativeActor: Clutter.Actor | null,
+    offsetX: number,
+    offsetY: number,
+    side: TooltipSide,
+}
 
-            super.vfunc_allocate(...args);
-        }
+@registerGObjectClass
+export class MatTooltip extends St.Label {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: 'MatTooltip',
     }
-);
+    params: MatTooltipParams;
+    sourceActor: Clutter.Actor;
+
+    constructor(sourceActor: Clutter.Actor, params: Partial<MatTooltipParams> = {}) {
+        let allParams: MatTooltipParams = Object.assign(
+            {
+                text: '',
+                relativeActor: null,
+                offsetX: 0,
+                offsetY: 0,
+                side: TooltipSide.BOTTOM,
+            },
+            params
+        );
+        super({
+            text: allParams.text,
+            opacity: 0,
+            scale_x: 0.8,
+            scale_y: 0.8,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this.set_pivot_point(0.5, 0.5);
+        this.params = allParams;
+        this.get_clutter_text().y_align = Clutter.ActorAlign.CENTER;
+        this.sourceActor = sourceActor;
+    }
+    show() {
+        this.ease({
+            opacity: 255,
+            scale_x: 1,
+            scale_y: 1,
+            duration: 300,
+        });
+    }
+    remove() {
+        this.ease({
+            opacity: 0,
+            duration: 500,
+            onComplete: () => {
+                Main.layoutManager.removeChrome(this);
+                this.destroy();
+            },
+        });
+    }
+    vfunc_allocate(...args: [Clutter.ActorBox]) {
+        const relativeActor = this.params.relativeActor || this.sourceActor;
+        let [stageX, stageY] = relativeActor.get_transformed_position();
+        let x, y;
+        switch (this.params.side) {
+            case TooltipSide.LEFT:
+                x = stageX! - this.get_width();
+                y =
+                    stageY! +
+                    relativeActor.get_height() / 2 -
+                    this.get_height() / 2;
+                break;
+            case TooltipSide.TOP:
+                x =
+                    stageX! +
+                    relativeActor.get_width() / 2 -
+                    this.get_width() / 2;
+                y = stageY! - this.get_height();
+                break;
+            case TooltipSide.RIGHT:
+                x = stageX! + relativeActor.get_width();
+                y =
+                    stageY! +
+                    relativeActor.get_height() / 2 -
+                    this.get_height() / 2;
+                break;
+            case TooltipSide.BOTTOM:
+                x =
+                    stageX! +
+                    relativeActor.get_width() / 2 -
+                    this.get_width() / 2;
+                y = stageY! + relativeActor.get_height();
+                break;
+        }
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this.set_position(
+                Math.max(Math.round(x + this.params.offsetX), 0),
+                Math.max(Math.round(y + this.params.offsetY), 0)
+            );
+            return GLib.SOURCE_REMOVE;
+        });
+
+        super.vfunc_allocate(...args);
+    }
+}
