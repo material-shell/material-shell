@@ -16,6 +16,7 @@ import { MatButton } from 'src/widget/material/button';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { SignalHandle } from 'src/utils/signal';
 
 /* exported MsApplicationLauncher */
 
@@ -32,6 +33,8 @@ export class MsApplicationLauncher extends St.Widget {
         dimmer: Clutter.BrightnessContrastEffect,
         border?: PrimaryBorderEffect,
     }
+    launcherChangedSignal: SignalHandle;
+    installedChangedSignal: SignalHandle;
 
     constructor(msWorkspace: MsWorkspace) {
         super({
@@ -44,10 +47,10 @@ export class MsApplicationLauncher extends St.Widget {
             this.msWorkspace
         );
         this.initAppListContainer();
-        Me.msThemeManager.connect('clock-app-launcher-changed', () => {
+        this.launcherChangedSignal = SignalHandle.connect(Me.msThemeManager, 'clock-app-launcher-changed', () => {
             this.restartAppListContainer();
         });
-        Shell.AppSystem.get_default().connect('installed-changed', () => {
+        this.installedChangedSignal = SignalHandle.connect(Shell.AppSystem.get_default(), 'installed-changed', () => {
             this.restartAppListContainer();
         });
         this.connect('key-focus-in', () => {
@@ -61,6 +64,11 @@ export class MsApplicationLauncher extends St.Widget {
         this.connect('key-focus-out', () => {
             //this._searchResults.highlightDefault(false);
         });
+    }
+
+    onDestroy() {
+        this.launcherChangedSignal.disconnect();
+        this.installedChangedSignal.disconnect();
     }
 
     get dragged() {

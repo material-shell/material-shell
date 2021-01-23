@@ -124,6 +124,7 @@ export class MsWorkspace extends WithSignals {
     destroy() {
         logAssert(!this.destroyed, "Workspace is destroyed");
 
+        this.appLauncher.onDestroy();
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
