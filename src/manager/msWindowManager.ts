@@ -2,6 +2,7 @@
 import * as Shell from 'Shell';
 import * as Meta from 'Meta';
 import * as GLib from 'GLib';
+import * as Clutter from 'Clutter';
 const Signals = imports.signals;
 
 /** Extension imports */
@@ -84,7 +85,7 @@ export class MsWindowManager extends MsManager {
 
         if (!this._handleWindow(metaWindow)) {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
-            let actor = metaWindow.get_compositor_private();
+            let actor = metaWindow.get_compositor_private<Clutter.Actor>();
             if (actor.get_parent() != global.top_window_group) {
                 actor
                     .get_parent()
