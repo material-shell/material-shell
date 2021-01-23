@@ -220,7 +220,8 @@ export class MsWorkspaceManager extends MsManager {
             WorkspaceTracker.prototype._oldCheckWorkspaces;
         delete WorkspaceTracker.prototype._oldCheckWorkspaces;
         for (var i = 0; i < this.workspaceManager.n_workspaces; i++) {
-            let workspace = this.workspaceManager.get_workspace_by_index(i);
+            // _keepAliveId is an internal field in gnome-shell
+            let workspace = this.workspaceManager.get_workspace_by_index(i) as Meta.Workspace & { _keepAliveId?: number };
             delete workspace._keepAliveId;
         }
         for (let msWorkspace of this.msWorkspaceList) {
