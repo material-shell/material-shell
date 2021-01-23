@@ -3,16 +3,40 @@ import * as Shell from 'Shell';
 import * as Meta from 'Meta';
 import * as GLib from 'GLib';
 import * as Clutter from 'Clutter';
+import * as Gio from 'Gio';
+
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsWorkspace, MsWorkspaceState } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
 const { WorkspaceTracker } = imports.ui.windowManager;
 import { getSettings } from 'src/utils/settings';
+import { MsWindow, MsWindowConstructProps } from 'src/layout/msWorkspace/msWindow';
+import { MsWindowManager } from './msWindowManager';
+import { Monitor } from 'src/mod';
 
+interface MsWorkspaceManagerState {
+    msWorkspaceList: MsWorkspaceState[],
+    externalWorkspaces?: MsWorkspace[],
+    primaryWorkspaceList?: MsWorkspaceState[],
+    primaryWorkspaceActiveIndex: number,
+}
 export class MsWorkspaceManager extends MsManager {
+    workspaceManager: Meta.WorkspaceManager;
+    private _state: MsWorkspaceManagerState;
+    windowTracker: any;
+    msWorkspaceList: MsWorkspace[];
+    settings: Gio.Settings;
+    metaWindowFocused: Meta.Window | null;
+    numOfMonitors: number;
+    primaryIndex: number;
+    workspaceTracker: any;
+    private _updatingMonitors: boolean | undefined;
+    restoringState: any;
+    stateChangedTriggered: any;
+
     constructor(state = {}) {
         super();
         this.workspaceManager = global.workspace_manager;
@@ -35,7 +59,7 @@ export class MsWorkspaceManager extends MsManager {
         WorkspaceTracker.prototype._checkWorkspaces = function () {
             let workspaceManager = global.workspace_manager;
             let i;
-            let emptyWorkspaces = [];
+            let emptyWorkspaces: boolean[] = [];
 
             if (!Meta.prefs_get_dynamic_workspaces()) {
                 this._checkWorkspacesId = 0;
@@ -64,9 +88,9 @@ export class MsWorkspaceManager extends MsManager {
                         (lastRemoved.get_window_type() ==
                             Meta.WindowType.SPLASHSCREEN ||
                             lastRemoved.get_window_type() ==
-                                Meta.WindowType.DIALOG ||
+                            Meta.WindowType.DIALOG ||
                             lastRemoved.get_window_type() ==
-                                Meta.WindowType.MODAL_DIALOG)) ||
+                            Meta.WindowType.MODAL_DIALOG)) ||
                     this._workspaces[i]._keepAliveId
                 )
                     emptyWorkspaces[i] = false;
@@ -233,9 +257,9 @@ export class MsWorkspaceManager extends MsManager {
             ? this._state.msWorkspaceList
                 ? [...this._state.msWorkspaceList]
                 : [
-                      ...this._state.primaryWorkspaceList,
-                      ...this._state.externalWorkspaces,
-                  ]
+                    ...this._state.primaryWorkspaceList,
+                    ...this._state.externalWorkspaces,
+                ]
             : [];
 
         // First restore the external monitors
@@ -249,9 +273,9 @@ export class MsWorkspaceManager extends MsManager {
                     monitor,
                     firstExternalStateIndex > -1
                         ? msWorkspaceListToRestore.splice(
-                              firstExternalStateIndex,
-                              1
-                          )[0]
+                            firstExternalStateIndex,
+                            1
+                        )[0]
                         : null
                 );
             });
@@ -304,7 +328,7 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     removeEmptyWorkspaces() {
-        let emptyWorkspaces = [];
+        let emptyWorkspaces: boolean[] = [];
         let i;
         for (i = 0; i < this.workspaceManager.n_workspaces; i++) {
             emptyWorkspaces[i] = true;
@@ -342,8 +366,8 @@ export class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         // First manage external screen
-        const externalMonitors = Main.layoutManager.monitors.filter(
-            (monitor) => monitor != Main.layoutManager.primaryMonitor
+        const externalMonitors: Monitor[] = Main.layoutManager.monitors.filter(
+            (monitor: Monitor) => monitor != Main.layoutManager.primaryMonitor
         );
 
         externalMonitors.forEach((externalMonitor) => {
@@ -408,7 +432,7 @@ export class MsWorkspaceManager extends MsManager {
                         this.msWorkspaceList.splice(
                             this.msWorkspaceList.indexOf(
                                 this.primaryMsWorkspaces[
-                                    this.primaryMsWorkspaces.length - 1
+                                this.primaryMsWorkspaces.length - 1
                                 ]
                             ),
                             1,
@@ -430,14 +454,14 @@ export class MsWorkspaceManager extends MsManager {
         this.emit('dynamic-super-workspaces-changed');
     }
 
-    get primaryMsWorkspaces() {
+    get primaryMsWorkspaces(): MsWorkspace[] {
         if (!this.msWorkspaceList) return [];
         return this.msWorkspaceList.filter((msWorkspace) => {
             return !msWorkspace.monitorIsExternal;
         });
     }
 
-    setupNewWorkspace(workspace, initialState) {
+    setupNewWorkspace(workspace: Meta.Workspace, initialState?: Partial<MsWorkspaceState>) {
         this.createNewMsWorkspace(
             Main.layoutManager.primaryMonitor,
             initialState
@@ -447,7 +471,7 @@ export class MsWorkspaceManager extends MsManager {
         });
     }
 
-    createNewMsWorkspace(monitor, initialState) {
+    createNewMsWorkspace(monitor: Monitor, initialState?: Partial<MsWorkspaceState>) {
         let msWorkspace = new MsWorkspace(this, monitor, initialState);
         msWorkspace.connect('tileableList-changed', (_) => {
             this.stateChanged();
@@ -475,7 +499,7 @@ export class MsWorkspaceManager extends MsManager {
         this.emit('dynamic-super-workspaces-changed');
     }
 
-    removeMsWorkspaceAtIndex(index) {
+    removeMsWorkspaceAtIndex(index: number) {
         const msWorkspaceToDelete = this.primaryMsWorkspaces[index];
         if (msWorkspaceToDelete) {
             const globalIndex = this.msWorkspaceList.indexOf(
@@ -488,7 +512,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    closeMsWorkspace(_msWorkspace) {}
+    closeMsWorkspace(_msWorkspace: MsWorkspace) { }
 
     stateChanged() {
         if (
@@ -505,7 +529,7 @@ export class MsWorkspaceManager extends MsManager {
             return GLib.SOURCE_REMOVE;
         });
     }
-    setMsWorkspaceAt(msWorkspaceToMove, toIndex) {
+    setMsWorkspaceAt(msWorkspaceToMove: MsWorkspace, toIndex: number) {
         let sourceIndex = this.msWorkspaceList.indexOf(msWorkspaceToMove);
         let realIndex = this.msWorkspaceList.indexOf(
             this.primaryMsWorkspaces[toIndex]
@@ -522,7 +546,7 @@ export class MsWorkspaceManager extends MsManager {
         this.emit('dynamic-super-workspaces-changed');
     }
 
-    get state() {
+    get state(): MsWorkspaceManagerState {
         let msWorkspaceList = this.msWorkspaceList;
 
         if (Meta.prefs_get_dynamic_workspaces()) {
@@ -546,7 +570,7 @@ export class MsWorkspaceManager extends MsManager {
         });
     }
 
-    getActiveMsWorkspace() {
+    getActiveMsWorkspace(): MsWorkspace {
         const currentMonitorIndex = global.display.get_current_monitor();
         let activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
 
@@ -554,8 +578,8 @@ export class MsWorkspaceManager extends MsManager {
             currentMonitorIndex === Main.layoutManager.primaryIndex
                 ? this.primaryMsWorkspaces[activeWorkspaceIndex]
                 : Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                      currentMonitorIndex
-                  )[0];
+                    currentMonitorIndex
+                )[0];
         return msWorkspace;
     }
 
@@ -564,19 +588,19 @@ export class MsWorkspaceManager extends MsManager {
         return this.primaryMsWorkspaces[activeWorkspaceIndex];
     }
 
-    getWorkspaceOfMsWorkspace(msWorkspace) {
+    getWorkspaceOfMsWorkspace(msWorkspace: MsWorkspace) {
         return this.workspaceManager.get_workspace_by_index(
             this.primaryMsWorkspaces.indexOf(msWorkspace)
         );
     }
 
-    getMsWorkspacesOfMonitorIndex(monitorIndex) {
+    getMsWorkspacesOfMonitorIndex(monitorIndex: number) {
         return this.msWorkspaceList.filter((msWorkspace) => {
             return msWorkspace.monitor.index === monitorIndex;
         });
     }
 
-    getMsWorkspaceOfMetaWindow(metaWindow) {
+    getMsWorkspaceOfMetaWindow(metaWindow: Meta.Window) {
         const windowMonitorIndex = metaWindow.get_monitor();
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             return this.getMsWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
@@ -585,13 +609,13 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    getMsWorkspaceOfMsWindow(msWindow) {
+    getMsWorkspaceOfMsWindow(msWindow: MsWindow) {
         return this.msWorkspaceList.find((msWorkspace) => {
             return msWorkspace.msWindowList.includes(msWindow);
         });
     }
 
-    determineAppropriateMsWorkspace(metaWindow) {
+    determineAppropriateMsWorkspace(metaWindow: Meta.Window) {
         const windowMonitorIndex = metaWindow.get_monitor();
         const currentWindowWorkspace = metaWindow.get_workspace();
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
@@ -605,7 +629,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    metaWindowEnteredWorkspace(metaWindow, workspace) {
+    metaWindowEnteredWorkspace(metaWindow: Meta.Window, workspace: Meta.Workspace) {
         if (this.updatingMonitors || !metaWindow.get_compositor_private())
             return;
 
@@ -628,7 +652,7 @@ export class MsWorkspaceManager extends MsManager {
             metaWindow.msWindow.msWorkspace.workspace &&
             metaWindow.msWindow.msWorkspace != msWorkspace &&
             global.display.get_current_time_roundtrip() - metaWindow.createdAt <
-                2000
+            2000
         ) {
             return metaWindow.change_workspace(
                 metaWindow.msWindow.msWorkspace.workspace
@@ -637,7 +661,7 @@ export class MsWorkspaceManager extends MsManager {
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
-    windowEnteredMonitor(metaWindow, monitorIndex) {
+    windowEnteredMonitor(metaWindow: Meta.Window, monitorIndex: number) {
         if (this.updatingMonitors) return;
 
         const currentMsWorkspaceOfMetaWindow = metaWindow.msWindow
@@ -648,7 +672,7 @@ export class MsWorkspaceManager extends MsManager {
             !metaWindow.handledByMaterialShell ||
             global.display.get_n_monitors() !== this.numOfMonitors ||
             currentMsWorkspaceOfMetaWindow ===
-                this.getMsWorkspacesOfMonitorIndex(monitorIndex) ||
+            this.getMsWorkspacesOfMonitorIndex(monitorIndex) ||
             monitorIndex === Main.layoutManager.primaryIndex
         ) {
             return;
@@ -661,7 +685,7 @@ export class MsWorkspaceManager extends MsManager {
         this.setWindowToMsWorkspace(metaWindow.msWindow, msWorkspace);
     }
 
-    setWindowToMsWorkspace(msWindow, newMsWorkspace, insert = false) {
+    setWindowToMsWorkspace(msWindow: MsWindow, newMsWorkspace: MsWorkspace, insert = false) {
         let oldMsWorkspace = msWindow.msWorkspace;
 
         if (oldMsWorkspace) {
@@ -680,7 +704,7 @@ export class MsWorkspaceManager extends MsManager {
         return getSettings('tweaks').get_boolean('cycle-through-workspaces');
     }
 
-    _handleWindow(metaWindow) {
+    _handleWindow(metaWindow: Meta.Window) {
         let meta = Meta.WindowType;
         let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
         return types.includes(metaWindow.window_type);
@@ -712,7 +736,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    focusMsWorkspace(msWorkspace) {
+    focusMsWorkspace(msWorkspace: MsWorkspace) {
         if (!msWorkspace) return;
         let backend = Clutter.get_default_backend();
         let seat = backend.get_default_seat();
@@ -721,14 +745,14 @@ export class MsWorkspaceManager extends MsManager {
             containerY,
         ] = msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position();
         seat.warp_pointer(
-            containerX +
-                Math.floor(
-                    msWorkspace.msWorkspaceActor.tileableContainer.width / 2
-                ),
-            containerY +
-                Math.floor(
-                    msWorkspace.msWorkspaceActor.tileableContainer.height / 2
-                )
+            containerX! +
+            Math.floor(
+                msWorkspace.msWorkspaceActor.tileableContainer.width / 2
+            ),
+            containerY! +
+            Math.floor(
+                msWorkspace.msWorkspaceActor.tileableContainer.height / 2
+            )
         );
 
         msWorkspace.refreshFocus();
