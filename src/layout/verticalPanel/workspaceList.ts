@@ -565,6 +565,10 @@ export class WorkspaceButton extends MatButton {
     }
 }
 
+function isMsWindow(argument: any): argument is MsWindow {
+    return argument instanceof MsWindow;
+}
+
 @registerGObjectClass
 export class WorkspaceButtonIcon extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
@@ -601,9 +605,7 @@ export class WorkspaceButtonIcon extends St.Widget {
         });
 
         const appList = this.msWorkspace.tileableList
-            .filter((tileable) => {
-                return tileable instanceof MsWindow;
-            })
+            .filter(isMsWindow)
             .map((msWindow) => {
                 return msWindow.app;
             });
