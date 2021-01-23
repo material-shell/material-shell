@@ -274,23 +274,9 @@ export class MsMain extends St.Widget {
         }
 
         updateFullscreenMonitors() {
-            for (let monitor of Main.layoutManager.monitors) {
-                const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
-                    monitor.index
-                );
-                if (monitor === this.primaryMonitor) {
-                    this.primaryMonitorContainer.setFullscreen(
-                        monitorInFullScreen
-                    );
-                } else {
-                    const container = this.monitorsContainer
-                        .find((container) => {
-                            return container.monitor === monitor;
-                        });
-                    if (container !== undefined) {
-                        container.setFullscreen(monitorInFullScreen);
-                    }
-                }
+            this.primaryMonitorContainer.refreshFullscreen();
+            for (let container of this.monitorsContainer) {
+                container.refreshFullscreen();
             }
             Me.msWorkspaceManager.refreshMsWorkspaceUI();
         }
@@ -336,9 +322,6 @@ export class MonitorContainer extends St.Widget {
             this.setMonitor(monitor);
 
             this.add_child(this.horizontalPanelSpacer);
-            this.setFullscreen(
-                global.display.get_monitor_in_fullscreen(monitor.index)
-            );
             const panelSizeSignal = Me.msThemeManager.connect(
                 'panel-size-changed',
                 () => {
@@ -357,7 +340,13 @@ export class MonitorContainer extends St.Widget {
             });
         }
 
-        setFullscreen(monitorIsFullscreen: boolean) {
+        refreshFullscreen() {
+            this.setFullscreen(
+                global.display.get_monitor_in_fullscreen(this.monitor.index)
+            );
+        }
+
+        protected setFullscreen(monitorIsFullscreen: boolean) {
             this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
             this.horizontalPanelSpacer.visible =
                 Me.layout.panelsVisible && !monitorIsFullscreen;
@@ -443,8 +432,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     translationAnimator: TranslationAnimator;
 
     constructor(monitor: Monitor, bgGroup: Meta.BackgroundGroup, params?: Partial<St.Widget.ConstructorProperties>) {
-            this.panel = new MsPanel();
             super(monitor, bgGroup, params);
+            this.panel = new MsPanel();
             this.add_child(this.panel);
             this.translationAnimator = new TranslationAnimator(true);
             this.translationAnimator.connect('transition-completed', () => {
@@ -469,7 +458,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             });
         }
 
-        setFullscreen(monitorIsFullscreen: boolean) {
+        protected setFullscreen(monitorIsFullscreen: boolean) {
             this.panel.visible =
                 Me.layout.panelsVisible && !monitorIsFullscreen;
             super.setFullscreen(monitorIsFullscreen);
