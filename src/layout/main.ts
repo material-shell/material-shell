@@ -22,6 +22,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { Signal } from 'src/manager/msManager';
 import { Monitor } from 'src/mod';
 import { assert } from 'src/utils/assert';
+import { SignalHandle } from 'src/utils/signal';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
@@ -35,7 +36,7 @@ export class MsMain extends St.Widget {
     primaryMonitorContainer: PrimaryMonitorContainer;
     panel: any;
     blurEffect: any;
-    private _scaleChangedId: number | undefined;
+    private _scaleChangedId: SignalHandle | undefined;
     // Definitely assigned because we call registerToSignals
     signals!: Signal[];
 
@@ -97,12 +98,12 @@ export class MsMain extends St.Widget {
                 (monitor) => monitor !== this.primaryMonitor
             );
         }
-        setBlurBackground(blur) {
+        setBlurBackground(blur: boolean) {
             const themeContext = St.ThemeContext.get_for_stage(global.stage);
             if ((this.blurEffect && blur) || (!this.blurEffect && !blur)) {
                 return;
             } else if (this.blurEffect && !blur) {
-                themeContext.disconnect(this._scaleChangedId);
+                this._scaleChangedId?.disconnect();
                 this.backgroundGroup.remove_effect(this.blurEffect);
                 delete this.blurEffect;
                 return;
@@ -113,7 +114,7 @@ export class MsMain extends St.Widget {
                 sigma: 60 * themeContext.scale_factor,
             });
 
-            this._scaleChangedId = themeContext.connect(
+            this._scaleChangedId = SignalHandle.connect(themeContext,
                 'notify::scale-factor',
                 () => {
                     this.blurEffect.sigma = 60 * themeContext.scale_factor;
@@ -205,6 +206,7 @@ export class MsMain extends St.Widget {
                             i++
                         ) {
                             let container = this.monitorsContainer.pop();
+                            assert(container !== undefined, "monitorsContainer was empty");
                             if (container.msWorkspaceActor) {
                                 container.remove_child(
                                     container.msWorkspaceActor
@@ -281,11 +283,13 @@ export class MsMain extends St.Widget {
                         monitorInFullScreen
                     );
                 } else {
-                    this.monitorsContainer
+                    const container = this.monitorsContainer
                         .find((container) => {
                             return container.monitor === monitor;
-                        })
-                        .setFullscreen(monitorInFullScreen);
+                        });
+                    if (container !== undefined) {
+                        container.setFullscreen(monitorInFullScreen);
+                    }
                 }
             }
             Me.msWorkspaceManager.refreshMsWorkspaceUI();
