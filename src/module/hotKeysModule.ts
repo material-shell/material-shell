@@ -359,7 +359,12 @@ export class HotKeysModule {
                 () => {
                     const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
                     const focused = currentMsWorkspace.tileableFocused;
-                    if (focused === null) return;
+                    if (
+                        focused instanceof MsApplicationLauncher ||
+                        focused === null
+                    ) {
+                        return;
+                    }
 
                     const monitorIndex = global.display.get_monitor_neighbor_index(
                         currentMsWorkspace.monitor.index,
