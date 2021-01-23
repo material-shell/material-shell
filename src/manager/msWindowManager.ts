@@ -73,7 +73,7 @@ export class MsWindowManager extends MsManager {
         });
     }
 
-    onNewMetaWindow(metaWindow) {
+    onNewMetaWindow(metaWindow: Meta.Window & { createdAt?: number, firstFrameDrawn?: boolean, handledByMaterialShell?: boolean }) {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
         metaWindow
