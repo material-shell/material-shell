@@ -14,7 +14,7 @@ import { MsResizeManager } from 'src/manager/msResizeManager';
 import { MsFocusManager } from 'src/manager/msFocusManager';
 
 import { getSettings } from 'src/utils/settings';
-import { Rectangular } from 'src/mod';
+import { Rectangular } from 'src/types/mod';
 import { MsWorkspaceManager } from './msWorkspaceManager';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 

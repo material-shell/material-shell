@@ -28,16 +28,16 @@
             "GObject": ["types/gobject"],
             "Cogl": ["types/cogl"],
             "Gdk": ["types/gdk"],
-            "GnomeDesktop": ["src/gnome_desktop"],
-            "Gtk": ["src/gtk"],
-            "Shell": ["src/shell"],
+            "GnomeDesktop": ["src/types/gnome_desktop"],
+            "Gtk": ["src/types/gtk"],
+            "Shell": ["src/types/shell"],
             "Soup": ["types/soup"],
-            "ui": ["src/ui"],
-            // "St": ["src/st"],
+            "ui": ["src/types/ui"],
+            // "St": ["src/types/st"],
             "St": ["types/st"],
             // "St": ["@types/Gjs/St-1.0"],
-            // "Meta": ["src/meta"],
-            "Meta": ["types/meta", "src/meta"],
+            // "Meta": ["src/types/meta"],
+            "Meta": ["types/meta", "src/types/meta"],
             "Gjs": ["@types/Gjs/Gjs"],
 
             // "GLib": ["@types/Gjs/GLib-2.0"],
@@ -61,5 +61,5 @@
         // "prefs.js",
         "src/**/*.ts",
         "src/**/*.js"
-    ]
+, "shell.ts"    ]
 }

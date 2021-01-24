@@ -7,7 +7,7 @@ import * as GObject from 'GObject';
 import * as GLib from 'GLib';
 import * as Meta from 'Meta';
 import * as St from 'St';
-import { Rectangular } from 'src/mod';
+import { Rectangular } from 'src/types/mod';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */

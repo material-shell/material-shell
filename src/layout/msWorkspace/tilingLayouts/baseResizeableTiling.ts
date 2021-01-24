@@ -19,7 +19,7 @@ import { FocusEffectEnum } from 'src/manager/msThemeManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { Rectangular } from 'src/mod';
+import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 
 const BORDER_WIDTH = 2;

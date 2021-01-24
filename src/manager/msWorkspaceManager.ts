@@ -15,7 +15,7 @@ const { WorkspaceTracker } = imports.ui.windowManager;
 import { getSettings } from 'src/utils/settings';
 import { MsWindow, MsWindowConstructProps } from 'src/layout/msWorkspace/msWindow';
 import { MsWindowManager } from './msWindowManager';
-import { Monitor } from 'src/mod';
+import { Monitor } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { isNonNull } from 'src/utils/predicates';
 

@@ -22,7 +22,7 @@ import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { logAssert } from 'src/utils/assert';
-import { Monitor } from 'src/mod';
+import { Monitor } from 'src/types/mod';
 
 export type Tileable = MsWindow | MsApplicationLauncher;
 

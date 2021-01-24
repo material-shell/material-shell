@@ -20,7 +20,7 @@ import { VerticalPanelPositionEnum,
     HorizontalPanelPositionEnum, } from "src/manager/msThemeManager";
 import { registerGObjectClass } from 'src/utils/gjs';
 import { Signal } from 'src/manager/msManager';
-import { Monitor } from 'src/mod';
+import { Monitor } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { SignalHandle } from 'src/utils/signal';
 

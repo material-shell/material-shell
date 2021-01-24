@@ -4,16 +4,16 @@ import * as GObject from 'GObject';
 import * as Clutter from 'Clutter';
 import * as St from 'St';
 import * as Meta from 'Meta';
-import { MsWorkspace } from './layout/msWorkspace/msWorkspace';
-import { LayoutManager } from './manager/layoutManager';
-import { TooltipManager } from './manager/tooltipManager';
-import { MsWindowManager } from './manager/msWindowManager';
-import { MsWorkspaceManager } from './manager/msWorkspaceManager';
-import { MsNotificationManager } from './manager/msNotificationManager';
-import { MsThemeManager } from './manager/msThemeManager';
-import { StateManager } from './manager/stateManager';
-import { HotKeysModule } from './module/hotKeysModule';
-import { WithSignals } from './utils/gjs';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { LayoutManager } from 'src/manager/layoutManager';
+import { TooltipManager } from 'src/manager/tooltipManager';
+import { MsWindowManager } from 'src/manager/msWindowManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { MsNotificationManager } from 'src/manager/msNotificationManager';
+import { MsThemeManager } from 'src/manager/msThemeManager';
+import { StateManager } from 'src/manager/stateManager';
+import { HotKeysModule } from 'src/module/hotKeysModule';
+import { WithSignals } from 'src/utils/gjs';
 
 declare global {
     function log(msg: string): void;

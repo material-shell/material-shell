@@ -17,7 +17,7 @@ import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
 import { PortionBorder } from 'src/layout/msWorkspace/portion';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { assert } from 'src/utils/assert';
-import { Rectangular } from 'src/mod';
+import { Rectangular } from 'src/types/mod';
 
 const RESIZE_CODES = [
     Meta.GrabOp.RESIZING_N,

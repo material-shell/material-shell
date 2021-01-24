@@ -4,7 +4,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import * as GObject from 'GObject';
 import * as Clutter from 'Clutter';
 import * as St from 'St';
-import { Rectangular } from 'src/mod';
+import { Rectangular } from 'src/types/mod';
 const Signals = imports.signals;
 
 const MIN_BASIS_RATIO = 0.1;

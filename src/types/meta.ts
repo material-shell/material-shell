@@ -1,7 +1,7 @@
 import * as GObject from 'GObject';
 import * as Clutter from 'Clutter';
-import { Rectangular } from 'src/mod';
-import { MsWindow } from './layout/msWorkspace/msWindow';
+import { Rectangular } from './mod';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
 declare module "Meta" {
     export interface Window {
