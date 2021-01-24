@@ -19,7 +19,7 @@ import { MsWindowManager } from 'src/manager/msWindowManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { MsThemeManager } from 'src/manager/msThemeManager';
 import { TooltipManager } from 'src/manager/tooltipManager';
-
+import * as debug from 'src/utils/debug';
 import { MsMain } from 'src/layout/main';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { getSettings } from 'src/utils/settings';
@@ -59,7 +59,7 @@ function enable() {
         Me.layout.panel.enable();
         return;
     }
-    Me.imports.src.utils.debug.init();
+    debug.init();
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {

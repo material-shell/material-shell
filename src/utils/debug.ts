@@ -7,7 +7,8 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const DEBUG = true;
 const FOCUS_ONLY = false;
 let indent = 0;
-var init = function () {
+export function init () {
+    // TODO: Essentially dead code
     var AddLogToFunctions = function (prototype) {
         if (!DEBUG) return;
         for (let key of Object.getOwnPropertyNames(prototype)) {
@@ -43,7 +44,7 @@ var init = function () {
         }
     };
 
-    Me.log = function (...args) {
+    Me.log = function (message: string, ...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;
         let fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
         let domain = 'Material Shell';
@@ -51,7 +52,7 @@ var init = function () {
         GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
     };
 
-    Me.logFocus = function (...args) {
+    Me.logFocus = function (message: string, ...args: any[]) {
         if (!DEBUG) return;
         let fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
         let domain = 'Material Shell';
@@ -88,7 +89,7 @@ var init = function () {
     if (DEBUG) {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            [
+            let objects: any[] = [
                 /* Me.imports.src.manager.msWindowManager.MsWindowManager,
                 Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
                 Me.imports.src.manager.msThemeManager.MsThemeManager,
@@ -110,9 +111,10 @@ var init = function () {
                 Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
                     .TilingLayoutMenuItem,
                 Me.imports.src.widget.reorderableList.ReorderableList, */
-            ]
-                .filter((object) => object)
+            ];
+            objects.filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));
+            return false;
         });
     }
 };
