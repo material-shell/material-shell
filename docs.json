@@ -1,0 +1,54 @@
+{
+    "options": {
+        "inferGenerics": true,
+        "promisify": false,
+        "propertyCase": "underscore",
+        "versionedOutput": false,
+        "versionedImports": false,
+        "noAdvancedVariants": true
+    },
+    "libraries": {
+        "Meta": [
+            "7"
+        ],
+        "Atk": [
+            "1.0"
+        ],
+        "Cally": [
+            "7"
+        ],
+        "St": [
+            "1.0"
+        ],
+        "Clutter": [
+            "7"
+        ],
+        "Cogl": [
+            "7"
+        ],
+        "Gdk": [
+            "3.0"
+        ],
+        "Gio": [
+            "2.0"
+        ],
+        "GLib": [
+            "2.0"
+        ],
+        "GObject": [
+            "2.0"
+        ],
+        "Gtk": [
+            "3.0"
+        ],
+        "JavaScriptCore": [
+            "4.0"
+        ],
+        "Json": [
+            "1.0"
+        ],
+        "Soup": [
+            "2.4"
+        ]
+    }
+}
