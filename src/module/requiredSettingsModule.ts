@@ -1,11 +1,39 @@
 /** Gnome libs imports */
 import * as Gio from 'Gio';
+import { Signal } from 'src/manager/msManager';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { getSettings } from 'src/utils/settings';
 
+interface Setting {
+    schema: string;
+    key: string;
+    value: boolean | string;
+    valueType: string;
+}
+
+interface RestoreSetting {
+    setting: Gio.Settings,
+    key: string;
+    value: boolean | string;
+    valueType: string;
+}
+
+interface RestoreKey {
+    setting: Gio.Settings,
+    key: string,
+    shortcut: string[]
+}
+
 export class RequiredSettingsModule {
+    mutterSettings: Gio.Settings;
+    settingsToForce: Setting[];
+    signals: Signal[];
+    settingsToRestore: RestoreSetting[];
+    hotkeysToRemove: string[];
+    keysToRestore: RestoreKey[];
+
     constructor() {
         this.mutterSettings = new Gio.Settings({
             schema_id: 'org.gnome.mutter',
@@ -39,7 +67,7 @@ export class RequiredSettingsModule {
                 settingToForce.valueType
             );
 
-            let signalId = setting.connect(
+            let id = setting.connect(
                 `changed::${settingToForce.key}`,
                 () => {
                     this.setValueIfDifferent(
@@ -53,7 +81,7 @@ export class RequiredSettingsModule {
 
             this.signals.push({
                 from: setting,
-                signalId: signalId,
+                id,
             });
         });
 
@@ -93,7 +121,7 @@ export class RequiredSettingsModule {
 
     destroy() {
         this.signals.forEach((signal) => {
-            signal.from.disconnect(signal.signalId);
+            signal.from.disconnect(signal.id);
         });
         this.signals = [];
         this.settingsToRestore.forEach((settingToRestore) => {
@@ -109,7 +137,7 @@ export class RequiredSettingsModule {
         this.keysToRestore = [];
     }
 
-    setValueIfDifferent(setting, key, value, valueType) {
+    setValueIfDifferent(setting: Gio.Settings, key: string, value: string | boolean, valueType: string) {
         if (setting[`get_${valueType}`](key) !== value) {
             this.settingsToRestore.push({
                 setting,
