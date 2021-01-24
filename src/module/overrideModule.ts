@@ -4,16 +4,21 @@ const { WindowManager } = imports.ui.windowManager;
 
 /* exported OverrideModule */
 export class OverrideModule {
+    orignalMetaWorkspaceOnPrimary: () => boolean;
+    windowManagersFunctionToRestore: any[];
+
     constructor() {
+        this.windowManagersFunctionToRestore = [];
         this.overrideWindowManagerFunctions();
         this.orignalMetaWorkspaceOnPrimary =
             Meta.prefs_get_workspaces_only_on_primary;
-        Meta.prefs_get_workspaces_only_on_primary = () => true;
+        // Typescript doesn't allow us to modify this method by default, but we can trick it into allowing us
+        (Meta as any).prefs_get_workspaces_only_on_primary = () => true;
     }
 
     destroy() {
         this.restoreWindowManagersFunctions();
-        Meta.prefs_get_workspaces_only_on_primary = this.orignalMetaWorkspaceOnPrimary;
+        (Meta as any).prefs_get_workspaces_only_on_primary = this.orignalMetaWorkspaceOnPrimary;
     }
 
     overrideWindowManagerFunctions() {
