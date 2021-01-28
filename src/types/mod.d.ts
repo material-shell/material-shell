@@ -36,29 +36,32 @@ declare global {
         toLocaleFormat(format: string): string;
     }
 
-    const global: {
-        log: (msg: string) => void,
-        get_persistent_state: (_: String, key: String) => any,
-        set_persistent_state: (key: String, data: GLib.Variant) => void,
-        get_current_time(): number,
-        get_pointer(): [number, number],
-        get_window_actors(): Array<Meta.WindowActor>,
-
-        /** Create a GAppLaunchContext set up with the correct timestamp, and targeted to activate on the current workspace.
-        * @param timestamp the timestamp for the launch (or 0 for current time)
-        * @param workspace a workspace index, or -1 to indicate the current one
-        */
-        create_app_launch_context(timestep: number, workspace: number);
-        /** Material shell */
-        ms: Extension,
-        display: Meta.Display,
-        session_mode: string,
-        stage: Clutter.Stage & { key_focus: any },
-        window_group: Clutter.Actor,
-        window_manager: any,
-        workspace_manager: Meta.WorkspaceManager,
-        top_window_group: Clutter.Actor,
-    };
+    namespace NodeJS {
+        interface Global {
+            log: (msg: string) => void,
+            get_persistent_state: (_: String, key: String) => any,
+            set_persistent_state: (key: String, data: GLib.Variant) => void,
+            get_current_time(): number,
+            get_pointer(): [number, number],
+            get_window_actors(): Array<Meta.WindowActor>,
+    
+            /** Create a GAppLaunchContext set up with the correct timestamp, and targeted to activate on the current workspace.
+            * @param timestamp the timestamp for the launch (or 0 for current time)
+            * @param workspace a workspace index, or -1 to indicate the current one
+            */
+            create_app_launch_context(timestep: number, workspace: number);
+            /** Material shell */
+            ms: Extension,
+            display: Meta.Display,
+            session_mode: string,
+            stage: Clutter.Stage & { key_focus: any },
+            window_group: Clutter.Actor,
+            window_manager: any,
+            workspace_manager: Meta.WorkspaceManager,
+            top_window_group: Clutter.Actor,
+        }
+    }
+    
 
     interface Extension extends WithSignals {
         layoutManager: LayoutManager,
@@ -73,8 +76,8 @@ declare global {
         locked: boolean | undefined,
         reparentInProgress: boolean | undefined,
         stateManager: StateManager,
-        showSplashScreens: ()=>void,
-        hideSplashScreens: ()=>void,
+        showSplashScreens: () => void,
+        hideSplashScreens: () => void,
         closing: boolean,
         disableInProgress: boolean | undefined,
         imports: any,
@@ -83,9 +86,9 @@ declare global {
         layout: any,
         uuid: string,
         path: string,
-        logFocus: (message: string, ...args: any[])=>void;
-        logBlank: ()=>void;
-        log: (message: string, ...args: any[])=>void,
+        logFocus: (message: string, ...args: any[]) => void;
+        logBlank: () => void;
+        log: (message: string, ...args: any[]) => void,
     }
 
     const imports: {
@@ -130,7 +133,7 @@ interface DialogButtonAction {
 declare type ProcessResult = [boolean, any, any, number];
 declare type SignalID = number;
 
-declare module "GObject" {
+declare module "gobject" {
     // Why these are not in the documentation or auto-generated typedefs, I do not know.
     export const TYPE_INT: GObject.GType<number>;
     export const TYPE_STRING: GObject.GType<string>;
@@ -211,8 +214,8 @@ declare module "clutter" {
         mode?: Clutter.AnimationMode;
         repeatCount?: number;
         autoReverse?: boolean;
-        onComplete?: ()=>void;
-        onStopped?: (isFinished: boolean)=>void;
+        onComplete?: () => void;
+        onStopped?: (isFinished: boolean) => void;
     }
 
     // Any number of extra fields for the properties to be animated (e.g. "opacity: 0").
