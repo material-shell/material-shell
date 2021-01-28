@@ -1,10 +1,10 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as St from 'St';
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
-import * as GLib from 'GLib';
+import * as St from 'st';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as GLib from 'glib';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass

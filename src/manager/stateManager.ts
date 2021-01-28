@@ -3,8 +3,8 @@
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { getSettings } from 'src/utils/settings';
-import * as Gio from 'Gio';
-import * as GLib from 'GLib';
+import * as Gio from 'gio';
+import * as GLib from 'glib';
 
 /** Gnome libs imports */
 const FileTest = GLib.FileTest;

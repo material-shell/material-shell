@@ -1,5 +1,5 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import * as GObject from 'GObject';
+import * as GObject from 'gobject';
 const Signals = imports.signals;
 
 /// Decorator function to call `GObject.registerClass` with the given class.

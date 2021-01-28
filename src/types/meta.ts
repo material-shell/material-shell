@@ -1,6 +1,6 @@
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
-declare module "Meta" {
+declare module "meta" {
     export interface Window {
         msWindow: MsWindow | undefined | null;
     }

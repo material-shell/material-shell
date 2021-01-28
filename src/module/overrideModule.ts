@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Meta from 'Meta';
+import * as Meta from 'meta';
 const { WindowManager } = imports.ui.windowManager;
 
 /* exported OverrideModule */

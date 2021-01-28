@@ -1,6 +1,6 @@
 /** Gnome libs imports */
-import * as GLib from 'GLib';
-import * as Clutter from 'Clutter';
+import * as GLib from 'glib';
+import * as Clutter from 'clutter';
 const Main = imports.ui.main;
 
 /** Extension imports */

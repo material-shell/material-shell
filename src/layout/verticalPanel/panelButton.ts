@@ -1,6 +1,6 @@
-import * as GObject from 'GObject';
-import * as GLib from 'GLib';
-import * as Meta from 'Meta';
+import * as GObject from 'gobject';
+import * as GLib from 'glib';
+import * as Meta from 'meta';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MatButton } from 'src/widget/material/button';
 import { registerGObjectClass } from 'src/utils/gjs';

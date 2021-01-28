@@ -1,4 +1,4 @@
-import * as GLib from 'GLib';
+import * as GLib from 'glib';
 
 export function assert (shouldBeTrue: boolean, message: string): asserts shouldBeTrue {
     if (!shouldBeTrue) {

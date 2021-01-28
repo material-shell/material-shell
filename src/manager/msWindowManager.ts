@@ -1,8 +1,8 @@
 /** Gnome libs imports */
-import * as Shell from 'Shell';
-import * as Meta from 'Meta';
-import * as GLib from 'GLib';
-import * as Clutter from 'Clutter';
+import * as Shell from 'shell';
+import * as Meta from 'meta';
+import * as GLib from 'glib';
+import * as Clutter from 'clutter';
 const Signals = imports.signals;
 
 /** Extension imports */

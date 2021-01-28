@@ -1,9 +1,9 @@
-import * as GLib from 'GLib';
-export * as GObject from 'GObject';
-import * as GObject from 'GObject';
-import * as Clutter from 'Clutter';
-import * as St from 'St';
-import * as Meta from 'Meta';
+import * as GLib from 'glib';
+export * as GObject from 'gobject';
+import * as GObject from 'gobject';
+import * as Clutter from 'clutter';
+import * as St from 'st';
+import * as Meta from 'meta';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { TooltipManager } from 'src/manager/tooltipManager';
@@ -167,7 +167,7 @@ declare module "GObject" {
     // export function registerClass<T extends MetaInfo | Function, K, C extends new (...args: any[])=>K>(a: T, b?: C): C;
 }
 
-declare module "Clutter" {
+declare module "clutter" {
     export interface Actor {
         metaWindow?: any;
         msWorkspace?: MsWorkspace
@@ -200,7 +200,7 @@ declare namespace Gtk {
     }
 }
 
-declare module "Clutter" {
+declare module "clutter" {
     type AnimatableActorFields = "fixed_x" | "fixed_y" | "height" | "margin_bottom" | "margin_left" | "margin_right" | "margin_top" | "min_height" | "min_width" | "natural_height" | "natural_width" | "opacity" | "pivot_point_z" | "rotation_angle_x" | "rotation_angle_y" | "rotation_angle_z" | "scale_x" | "scale_y" | "scale_z" | "translation_x" | "translation_y" | "translation_z" | "width" | "x" | "y" | "z_position";
 
     interface EasingParams {

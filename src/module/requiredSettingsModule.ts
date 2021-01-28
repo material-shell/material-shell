@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Gio from 'Gio';
+import * as Gio from 'gio';
 import { Signal } from 'src/manager/msManager';
 
 /** Extension imports */

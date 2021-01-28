@@ -1,10 +1,11 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as GLib from 'GLib';
-import * as Gio from 'Gio';
-import * as GObject from 'GObject';
-import * as St from 'St';
+import * as GLib from 'glib';
+import * as Gio from 'gio';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as St from 'st';
 const Main = imports.ui.main;
 const Signals = imports.signals;
 

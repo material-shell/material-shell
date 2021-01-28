@@ -1,7 +1,7 @@
 /** Gnome libs imports */
-import * as Meta from 'Meta';
-import * as Shell from 'Shell';
-import * as GLib from 'GLib';
+import * as Meta from 'meta';
+import * as Shell from 'shell';
+import * as GLib from 'glib';
 const Main = imports.ui.main;
 
 /** Extension imports */

@@ -1,6 +1,6 @@
 /** Gnome libs imports */
 const Util = imports.misc.util;
-import * as Meta from 'Meta';
+import * as Meta from 'meta';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 
 /* exported updateTitleBarVisibility */

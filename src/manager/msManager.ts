@@ -2,7 +2,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
 const Signals = imports.signals;
-import * as Clutter from 'Clutter';
+import * as Clutter from 'clutter';
 import { WithSignals } from 'src/utils/gjs';
 
 export interface Signal {

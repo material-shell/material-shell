@@ -1,1 +1,1 @@
-declare module "Shell";
+declare module "shell";

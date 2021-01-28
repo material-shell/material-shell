@@ -1,1 +1,1 @@
-declare module "Gdk";
+declare module "gdk";

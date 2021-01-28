@@ -2,11 +2,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
 const Main = imports.ui.main;
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
-import * as GLib from 'GLib';
-import * as Meta from 'Meta';
-import * as St from 'St';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as GLib from 'glib';
+import * as Meta from 'meta';
+import * as St from 'st';
 import { Rectangular } from 'src/types/mod';
 import { registerGObjectClass } from 'src/utils/gjs';
 

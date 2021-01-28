@@ -1,8 +1,8 @@
 /** Gnome libs imports */
-import * as GLib from 'GLib';
-import * as Meta from 'Meta';
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
+import * as GLib from 'glib';
+import * as Meta from 'meta';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
 const Main = imports.ui.main;
 
 /** Extension imports */

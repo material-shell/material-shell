@@ -1,10 +1,10 @@
 /** Gnome libs imports */
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
-import * as Gio from 'Gio';
-import * as St from 'St';
-import * as Meta from 'Meta';
-import * as GLib from 'GLib';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as Gio from 'gio';
+import * as St from 'st';
+import * as Meta from 'meta';
+import * as GLib from 'glib';
 const Animation = imports.ui.animation;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;

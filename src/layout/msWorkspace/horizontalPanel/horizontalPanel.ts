@@ -1,9 +1,9 @@
 /** Gnome libs imports */
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
-import * as Gio from 'Gio';
-import * as St from 'St';
-import * as GnomeDesktop from 'GnomeDesktop';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as Gio from 'gio';
+import * as St from 'st';
+import * as GnomeDesktop from 'gnomedesktop';
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 

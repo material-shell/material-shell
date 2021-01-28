@@ -1,7 +1,7 @@
 /** Gnome libs imports */
-import * as St from 'St';
-import * as Gio from 'Gio';
-import * as GLib from 'GLib';
+import * as St from 'st';
+import * as Gio from 'gio';
+import * as GLib from 'glib';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -9,6 +9,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { ShellVersionMatch } from 'src/utils/compatibility';
 import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
+import { byteArray } from "gjs";
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 

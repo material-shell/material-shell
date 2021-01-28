@@ -1,4 +1,4 @@
-import * as Gio from 'Gio';
+import * as Gio from 'gio';
 
 declare module "ui" {
     export namespace messageTray {

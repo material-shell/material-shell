@@ -1,8 +1,8 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as GObject from 'GObject';
-import * as Clutter from 'Clutter';
+import * as GObject from 'gobject';
+import * as Clutter from 'clutter';
 
 /** Extension imports */
 import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";

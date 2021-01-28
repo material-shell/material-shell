@@ -1,11 +1,11 @@
 /** Gnome libs imports */
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
-import * as Gio from 'Gio';
-import * as St from 'St';
-import * as Soup from 'Soup';
-import * as Meta from 'Meta';
-import * as GLib from 'GLib';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import * as Gio from 'gio';
+import * as St from 'st';
+import * as Soup from 'soup';
+import * as Meta from 'meta';
+import * as GLib from 'glib';
 import { messageTray } from 'ui';
 const Main = imports.ui.main;
 const Dialog = imports.ui.dialog;

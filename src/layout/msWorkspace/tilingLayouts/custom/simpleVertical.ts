@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as GObject from 'GObject';
+import * as GObject from 'gobject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

@@ -1,7 +1,7 @@
 /** Gnome libs imports */
-import * as St from 'St';
-import * as Clutter from 'Clutter';
-import * as GObject from 'GObject';
+import * as St from 'st';
+import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -9,7 +9,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 import { MsManager } from 'src/manager/msManager';
 import { SetAllocation } from 'src/utils/compatibility';
-import * as GLib from 'GLib';
+import * as GLib from 'glib';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 export class TooltipManager extends MsManager {

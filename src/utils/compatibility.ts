@@ -1,6 +1,6 @@
 /** Gnome libs imports */
 const { PACKAGE_VERSION } = imports.misc.config;
-import * as Clutter from 'Clutter';
+import * as Clutter from 'clutter';
 
 /* exported ShellVersionMatch, SetAllocation, Allocate, AllocatePreferredSize */
 export var ShellVersionMatch = function (version) {

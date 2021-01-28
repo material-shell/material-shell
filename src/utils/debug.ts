@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as GLib from 'GLib';
+import * as GLib from 'glib';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
