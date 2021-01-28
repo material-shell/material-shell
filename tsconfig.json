@@ -2,13 +2,14 @@
     "version": "1.1.0",
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "es2017",
+        "module": "es2020",
+        "target": "es2018",
         "strict": true,
         "outDir": "./target",
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true,
         "lib": [
-            "es2017"
+            "es2018"
         ],
         "pretty": true,
         "sourceMap": false,
@@ -20,6 +21,7 @@
         "noUnusedParameters": false,
         "allowJs": true,
         "moduleResolution": "node",
+        "importHelpers": true,
         "baseUrl": ".",
         "paths": {
             "glib": ["types/glib"],
