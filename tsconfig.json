@@ -36,14 +36,14 @@
             "ui": ["src/types/ui"],
             "st": ["types/st"],
             "meta": ["types/meta", "src/types/meta"],
-            "gjs": ["src/types/gjs"],
+            "gjs": ["src/types/gjs"]
         },
         "experimentalDecorators": true
     },
     "include": [
         "extension.ts",
-        // "prefs.js",
         "src/**/*.ts",
-        "src/**/*.js"
-, "shell.ts"    ]
+        "src/**/*.js",
+        "shell.ts"
+    ]
 }
