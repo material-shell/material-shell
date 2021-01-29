@@ -60,7 +60,7 @@ function enable() {
         Me.layout.panel.enable();
         return;
     }
-    debug.init();
+    debug.initDebug();
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {

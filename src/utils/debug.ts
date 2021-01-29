@@ -7,7 +7,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const DEBUG = true;
 const FOCUS_ONLY = false;
 let indent = 0;
-export function init () {
+export function initDebug() {
     // TODO: Essentially dead code
     var AddLogToFunctions = function (prototype) {
         if (!DEBUG) return;
