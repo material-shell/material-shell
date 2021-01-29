@@ -148,7 +148,7 @@ export class MsStatusArea extends Clutter.Actor {
             });
         }
 
-        recursivelySetVertical(actor: Clutter.Actor & { has_style_class_name?: (name: string)=>void }, value: boolean) {
+        recursivelySetVertical(actor: Clutter.Actor & { has_style_class_name?: (name: string)=>boolean }, value: boolean) {
             if (actor instanceof St.BoxLayout) {
                 actor.vertical = value;
                 actor.set_x_align(Clutter.ActorAlign.CENTER);
