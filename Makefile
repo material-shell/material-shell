@@ -36,9 +36,9 @@ build_prod: schemas sass
 	zip dist.zip style-primary-theme.css
 
 compile:
-	tsc
-	tsc scripts/transpile.ts --outDir build && node build/transpile.js
-	rollup -c rollup.config.js
+	npx tsc
+	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
+	npx rollup -c rollup.config.js
 	
 	cp metadata.json target
 	cp *.css target
