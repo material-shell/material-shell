@@ -1,11 +1,11 @@
 import { parse, print } from "recast";
-import { format } from 'path';
 import { walk } from 'estree-walker';
 import {BaseNode, Program, ClassDeclaration, Identifier, MethodDefinition, SimpleCallExpression, BlockStatement, ClassExpression, ExpressionStatement, AssignmentExpression, FunctionDeclaration, ArrayExpression, ImportDeclaration, VariableDeclaration, ImportSpecifier} from 'estree';
 import { glob } from 'glob';
 import * as fs from 'fs';
-import { isLiteralExpression, isVariableDeclaration } from "typescript";
 
+/// Test case that this script should pass.
+/// It should transpile `testInput` to `testOutput`.
 const testInput = `
 import * as GLib from 'glib';
 import { a, b } from 'glib';
@@ -100,12 +100,6 @@ function isArrayExpression(arg: BaseNode): arg is ArrayExpression {
     return arg.type == "ArrayExpression";
 }
 
-function assert(x: boolean): asserts x {
-    if (!x) {
-        throw "Assertion failed";
-    }
-}
-
 /** The name of the decorated class if it's a block on the form
 ...
 ... = __decorate([registerGObjectClass, ...], NameOfDecoratedClass);
@@ -143,7 +137,7 @@ function getDecoratorTargets(node: BaseNode): string[] | null {
     return null;
 }
 
-/// Converts imports on the forms
+/// Converts imports on the form
 /// import * from 'source'
 /// and
 /// import { a, b, c } from 'source'
