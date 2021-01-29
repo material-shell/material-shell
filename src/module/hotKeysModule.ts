@@ -2,6 +2,7 @@
 import * as Meta from 'meta';
 import * as Shell from 'shell';
 import * as GLib from 'glib';
+import * as Gio from 'gio';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -46,7 +47,7 @@ export const KeyBindingAction = {
 
 export class HotKeysModule {
     workspaceManager: Meta.WorkspaceManager;
-    settings: import("/home/arong/projects/gnome/material-shell/types/gio").Settings;
+    settings: Gio.Settings;
     actionIdToNameMap: Map<any, any>;
     actionNameToActionMap: Map<any, any>;
     connectId: number;
