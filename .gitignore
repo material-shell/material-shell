@@ -3,3 +3,4 @@ node_modules/
 yarn.lock
 dist.zip
 target/
+build/

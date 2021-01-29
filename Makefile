@@ -36,9 +36,10 @@ build_prod: schemas sass
 	zip dist.zip style-primary-theme.css
 
 compile:
-	-tsc
-	comby -config comby.toml -in-place -f .js -directory target/
-	./transpile.py
+	tsc
+	tsc scripts/transpile.ts --outDir build && node build/transpile.js
+	rollup -c rollup.config.js
+	
 	cp metadata.json target
 	cp *.css target
 	cp -r schemas target/schemas

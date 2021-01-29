@@ -4,8 +4,7 @@
     "compilerOptions": {
         "module": "es2020",
         "target": "es2018",
-        "strict": true,
-        "outDir": "./target",
+        "outDir": "./build",
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true,
         "lib": [
