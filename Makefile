@@ -45,3 +45,6 @@ compile:
 	cp *.css target
 	cp -r schemas target/schemas
 	cp -r assets target/assets
+
+install:
+	./scripts/install.py
