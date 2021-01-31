@@ -65,27 +65,7 @@ def install():
 
     # Check if material-shell is already installed
     if os.path.exists(install_path):
-        if os.path.realpath(install_path) == os.path.realpath(os.getcwd()):
-            # The user has installed the extension by cloning directly in the extension folder.
-            # We can't handle that when using typescript because we need the `target` directory to be the one that gnome knows about.
-            # So we ask the user to move the install instead.
-            printc(RED, f"You have installed material-shell directly in the extensions folder. This is not supported anymore.")
-            response = input(f"{RED}Would you like to move the installation to your home folder? [y/N]{RESET}")
-            if response in ["y", "yes"]:
-                new_path = os.path.expanduser("~/material-shell")
-                printc(GREEN, f"Moving install to '{new_path}`...")
-
-                if os.path.exists(new_path):
-                    printc(RED, f"Cannot move install, the target direcory ({new_path}) already exists")
-                    exit(1)
-
-                os.rename(install_path, new_path)
-
-                create_link()
-            else:
-                printc(RED, f"Aborting installation...")
-                exit(1)
-        elif os.path.realpath(install_path) == os.path.realpath(target_dir):
+        if os.path.realpath(install_path) == os.path.realpath(target_dir):
             # There's already a symlink there pointing to the right directory
             printc(GREEN, f"Extension is already installed, skipping")
         elif os.path.islink(install_path):
@@ -94,6 +74,26 @@ def install():
             printc(GREEN, f"Removing previous install symlink...")
             os.remove(install_path)
             create_link()
+        elif os.path.realpath(install_path) == os.path.realpath(os.getcwd()):
+            # The user has installed the extension by cloning directly in the extension folder.
+            # We can't handle that when using typescript because we need the `target` directory to be the one that gnome knows about.
+            # So we ask the user to move the install instead.
+            printc(RED, f"You have installed material-shell directly in the extensions folder. This is not supported anymore.")
+            response = input(f"{RED}Would you like to move the installation to your home folder? [y/N]{RESET}")
+            if response in ["y", "yes"]:
+                new_path = os.path.expanduser("~/material-shell")
+                printc(GREEN, f"Moving installation to '{new_path}`...")
+
+                if os.path.exists(new_path):
+                    printc(RED, f"Cannot move installation, the target direcory ({new_path}) already exists")
+                    exit(1)
+
+                os.rename(install_path, new_path)
+
+                create_link()
+            else:
+                printc(RED, f"Aborting installation...")
+                exit(1)
         else:
             # There's already an actual folder (not a symlink) with a material-shell install.
             # We need to delete that folder if we want to be able to install this version of the extension.
