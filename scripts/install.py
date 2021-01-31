@@ -4,13 +4,17 @@ import os
 import shutil
 from shutil import which
 
+# Ansi escape codes to get colors in terminals
+RED = "\33[31m"
+GREEN = "\33[32m"
+YELLOW = "\33[33m"
+RESET = "\33[0m"
+
+''' Prints some text with a color '''
+def printc(color: str, text: str):
+    print(f"{color}{text}{RESET}")
 
 def install():
-    RED = "\33[31m"
-    GREEN = "\33[32m"
-    YELLOW = "\33[33m"
-    RESET = "\33[0m"
-
     package_dir = os.path.join(os.path.dirname(__file__), "..")
 
     # Guard against users potentially running this script from the wrong directory
@@ -29,32 +33,32 @@ def install():
 
     # Check if node and npm are installed
     if which("npm") is None:
-        print(RED + "npm could not be found. You need to install npm to build material-shell. See https://www.npmjs.com/get-npm" + RESET)
+        printc(RED, "npm could not be found. You need to install npm to build material-shell. See https://www.npmjs.com/get-npm")
         exit(1)
 
     if which("node") is None:
-        print(RED + "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/" + RESET)
+        printc(RED, "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/")
         exit(1)
 
     # Check if the extensions directory exists
     if not os.path.isdir(install_directory):
-        print(
-            RED + f"Cannot find the gnome extensions directory '{install_directory}'. Are you sure you are running gnome-shell?" + RESET)
+        printc(
+            RED, f"Cannot find the gnome extensions directory '{install_directory}'. Are you sure you are running gnome-shell?")
         exit(1)
 
     # Install dependencies
-    print(f"{GREEN}Installing dependencies...{RESET}")
+    printc(GREEN, f"Installing dependencies...")
     if subprocess.call(["npm", "install", "--silent"]) != 0:
-        print(f"{RED}Failed to install dependencies{RESET}")
+        printc(RED, f"Failed to install dependencies")
         exit(1)
 
     # Compile the typescript code
-    print(f"{GREEN}Compiling...{RESET}")
+    printc(GREEN, f"Compiling...")
     if subprocess.call(["make", "compile"]) != 0:
-        print(f"{RED}Compilation failed{RESET}")
+        printc(RED, f"Compilation failed")
         exit(1)
 
-    print(f"{GREEN}Installing extension...{RESET}")
+    printc(GREEN, f"Installing extension...")
 
     def create_link():
         os.symlink(os.path.realpath(target_dir), install_path)
@@ -65,50 +69,50 @@ def install():
             # The user has installed the extension by cloning directly in the extension folder.
             # We can't handle that when using typescript because we need the `target` directory to be the one that gnome knows about.
             # So we ask the user to move the install instead.
-            print(f"{RED}You have installed material-shell directly in the extensions folder. This is not supported anymore.{RESET}")
+            printc(RED, f"You have installed material-shell directly in the extensions folder. This is not supported anymore.")
             response = input(f"{RED}Would you like to move the installation to your home folder? [y/N]{RESET}")
             if response in ["y", "yes"]:
                 new_path = os.path.expanduser("~/material-shell")
-                print(f"{GREEN}Moving install to '{new_path}`...")
+                printc(GREEN, f"Moving install to '{new_path}`...")
 
                 if os.path.exists(new_path):
-                    print(f"{RED}Cannot move install, the target direcory ({new_path}) already exists{RESET}")
+                    printc(RED, f"Cannot move install, the target direcory ({new_path}) already exists")
                     exit(1)
 
                 os.rename(install_path, new_path)
 
                 create_link()
             else:
-                print(f"{RED}Aborting installation...{RESET}")
+                printc(RED, f"Aborting installation...")
                 exit(1)
         elif os.path.realpath(install_path) == os.path.realpath(target_dir):
             # There's already a symlink there pointing to the right directory
-            print(f"{GREEN}Extension is already installed, skipping")
+            printc(GREEN, f"Extension is already installed, skipping")
         elif os.path.islink(install_path):
             # There's a symlink pointing to another install.
             # Removing this is fine, it doesn't delete any data
-            print(f"{GREEN}Removing previous install symlink...{RESET}")
+            printc(GREEN, f"Removing previous install symlink...")
             os.remove(install_path)
             create_link()
         else:
             # There's already an actual folder (not a symlink) with a material-shell install.
             # We need to delete that folder if we want to be able to install this version of the extension.
-            print(f"{RED}Material-shell has already been installed separately, do you want to delete that installation?{RESET}")
+            printc(RED, f"Material-shell has already been installed separately, do you want to delete that installation?")
             response = input(f"{RED}Warning: This will delete the existing directory at '{install_path}' [y/N]{RESET}")
             if response in ["y", "yes"]:
-                print(f"{GREEN}Removing previous install...{RESET}")
+                printc(GREEN, f"Removing previous install...")
                 shutil.rmtree(install_path)
                 create_link()
             else:
-                print(f"{RED}Aborting installation...{RESET}")
+                printc(RED, f"Aborting installation...")
                 exit(1)
     else:
         # Easy path: the extension wasn't already installed
         create_link()
 
-    print(f"{GREEN}Enabling extension...{RESET}")
+    printc(GREEN, f"Enabling extension...")
     if subprocess.call(["gnome-extensions", "enable", install_name]) != 0:
-        print(f"{RED}Failed to enable extension. Try enabling it using the gnome extensions preferences instead{RESET}")
+        printc(RED, f"Failed to enable extension. Try enabling it using the gnome extensions preferences instead")
         exit(1)
 
     # Determine if we are using x11 or wayland
@@ -116,16 +120,16 @@ def install():
         ["bash", "-c", "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"]).decode('utf-8').strip()
 
     if window_manager == "Type=x11":
-        print(f"{GREEN}Installation succeeded, restarting gnome-shell...{RESET}")
+        printc(GREEN, "Installation succeeded, restarting gnome-shell...")
 
         # Restart gnome shell
         if subprocess.call(["killall", "-SIGQUIT", "gnome-shell"]) != 0:
-            print(f"{RED}Failed to restart gnome-shell{RESET}")
+            printc(RED, "Failed to restart gnome-shell")
             exit(1)
     else:
         # Probably wayland
         # It's not possible to restart gnome-shell gracefully when using wayland
-        print(f"{YELLOW}Installation succeeded. To activate material-shell, please log out and log in again.")
+        printc(YELLOW, "Installation succeeded. To activate material-shell, please log out and log in again.")
         exit(1)
 
 
