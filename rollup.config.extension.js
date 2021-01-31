@@ -11,7 +11,7 @@ const customResolver = resolve({
 export default {
   input: 'build/extension.js',
   output: {
-    file: 'target/extension.js',
+    file: 'dist/extension.js',
     format: 'es'
   },
   treeshake: false,

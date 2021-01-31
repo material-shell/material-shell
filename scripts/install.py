@@ -29,7 +29,7 @@ def install():
     # This folder contains all the compiled code and assets.
     # Note that this must be relative at this point because this whole directory
     # may be moved (see below)
-    target_dir = "./target"
+    dist_dir = "./dist"
 
     # Check if node and npm are installed
     if which("npm") is None:
@@ -61,11 +61,12 @@ def install():
     printc(GREEN, f"Installing extension...")
 
     def create_link():
-        os.symlink(os.path.realpath(target_dir), install_path)
+        os.symlink(os.path.realpath(dist_dir), install_path)
 
     # Check if material-shell is already installed
-    if os.path.exists(install_path):
-        if os.path.realpath(install_path) == os.path.realpath(target_dir):
+    # Note that os.path.exists returns false if a symlink exists at the path, but it is broken. So we need to check islink too.
+    if os.path.exists(install_path) or os.path.islink(install_path):
+        if os.path.realpath(install_path) == os.path.realpath(dist_dir):
             # There's already a symlink there pointing to the right directory
             printc(GREEN, f"Extension is already installed, skipping")
         elif os.path.islink(install_path):

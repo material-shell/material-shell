@@ -11,7 +11,7 @@ const customResolver = resolve({
 export default {
   input: 'build/prefs.js',
   output: {
-    file: 'target/prefs.js',
+    file: 'dist/prefs.js',
     format: 'es'
   },
   treeshake: false,
