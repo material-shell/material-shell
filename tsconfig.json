@@ -30,7 +30,7 @@
             "cogl": ["types/cogl"],
             "gdk": ["types/gdk"],
             "gnomedesktop": ["src/types/gnome_desktop"],
-            "gtk": ["src/types/gtk"],
+            "gtk": ["types/gtk"],
             "shell": ["src/types/shell"],
             "soup": ["types/soup"],
             "ui": ["src/types/ui"],
