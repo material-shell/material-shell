@@ -38,7 +38,8 @@ build_prod: schemas sass
 compile:
 	npx tsc
 	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
-	npx rollup -c rollup.config.js
+	npx rollup -c rollup.config.extension.js
+	npx rollup -c rollup.config.prefs.js
 	
 	cp metadata.json target
 	cp *.css target

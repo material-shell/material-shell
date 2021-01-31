@@ -42,6 +42,7 @@
     },
     "include": [
         "extension.ts",
+        "prefs.ts",
         "src/**/*.ts",
         "src/**/*.js",
         "shell.ts"
