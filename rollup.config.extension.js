@@ -20,7 +20,7 @@ export default {
       entries: [
         {
           find: 'src',
-          replacement: path.resolve(projectRootDir, 'src')
+          replacement: path.resolve(projectRootDir)
           // OR place `customResolver` here. See explanation below.
         }
       ],
