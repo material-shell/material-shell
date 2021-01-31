@@ -46,5 +46,10 @@ compile:
 	cp -r schemas target/schemas
 	cp -r assets target/assets
 
+update_git:
+	git pull --ff-only
+
+update: update_git install
+
 install:
 	./scripts/install.py
