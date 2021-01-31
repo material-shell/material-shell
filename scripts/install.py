@@ -8,6 +8,7 @@ from shutil import which
 def install():
     RED = "\33[31m"
     GREEN = "\33[32m"
+    YELLOW = "\33[33m"
     RESET = "\33[0m"
 
     package_dir = os.path.join(os.path.dirname(__file__), "..")
@@ -105,11 +106,26 @@ def install():
         # Easy path: the extension wasn't already installed
         create_link()
 
-    print(f"{GREEN}Installation succeeded, restarting gnome-shell...{RESET}")
+    print(f"{GREEN}Enabling extension...{RESET}")
+    if subprocess.call(["gnome-extensions", "enable", install_name]) != 0:
+        print(f"{RED}Failed to enable extension. Try enabling it using the gnome extensions preferences instead{RESET}")
+        exit(1)
 
-    # Restart gnome shell
-    if subprocess.call(["killall", "-SIGQUIT", "gnome-shell"]) != 0:
-        print(f"{RED}Failed to restart gnome-shell{RESET}")
+    # Determine if we are using x11 or wayland
+    window_manager = subprocess.check_output(
+        ["bash", "-c", "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"]).decode('utf-8').strip()
+
+    if window_manager == "Type=x11":
+        print(f"{GREEN}Installation succeeded, restarting gnome-shell...{RESET}")
+
+        # Restart gnome shell
+        if subprocess.call(["killall", "-SIGQUIT", "gnome-shell"]) != 0:
+            print(f"{RED}Failed to restart gnome-shell{RESET}")
+            exit(1)
+    else:
+        # Probably wayland
+        # It's not possible to restart gnome-shell gracefully when using wayland
+        print(f"{YELLOW}Installation succeeded. To activate material-shell, please log out and log in again.")
         exit(1)
 
 
