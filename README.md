@@ -117,30 +117,32 @@ This allow to **configure** the layouts **on the go** while using it.
 When opening a **new session** Material Shell will **restore every windows** previously present with a "**window placeholder** which allow you to reopen any of the previous window easily at the same spot you like to have them.
 
 
-#### Brief Tutorial 
-Learn the basics of Material Shell using the mouse and keyboard shortcuts.
+## Brief Tutorial
+Getting around using the mouse and keyboard shortcuts
 
 Setup
-1. For this tutorial, the first workspace will mimic traditional window behavior.
-2. Click on the tiling icon in the upper right corner. Click on 'Tweak available layout'.
-3. For this workspace, turn off all layout styles except floating. This window will be used to view this README.md file
-4. To open a second work space, click on the + on the left side of the screen, or use *`Super+s`
-5. Turn on the first 6 tiling choices on, e.g, maximize, split ... half vertical. Turn off the remaining, especially float.
-6. Click on the tiling icon again and select Split. Increase the number of layouts to 4.
-7. Use *`Super+x` to open the App Launcher and open 4 terminal windows. Once finished, there should be 4 vertical (Split) windows.
-8. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, ping --help, man ping.
-9. Cycle through the tiling layouts using Super+Spacebar. Notice that the tiling-layout icon updates to represent the current layout.
-10.Experiment with keyboard shortcuts below including moving the focus, moving a window, and resizing a window.
+1. The first workspace is used view this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
+2. In the first workspace, click on the tiling icon in the upper right corner. Click on `Tweak available layout`.
+3. Turn off all layout styles except 'floating'. Floating layout  mimics traditional floating windows behaviors.
+4. To open a second work space, click on the `+` on the left side of the screen, or use `Super+s`
+5. Turn on the first 6 tiling choices on, e.g., `maximize, split ... half vertical`. Turn off the remaining, especially float.
+6. Click on the tiling icon again and select `Grid` Increase the number of layouts to `4`.
+7. Use *`Super+x` to bring forth the App Launcher and open 4 terminal windows. Once finished, there should be a grid of 4 windows.
+8. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
+
+Practice
+9. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
+10. Experiment with keyboard shortcuts below including opening applications in their own workspaces, moving the focus, moving a window, and resizing a window.
 
 Take note of the following:
-1. The workspace icons are located on the left side of the screen and the window panes are located at the top of the screen.
-2. When using a browser, the browser tabs are located below the window panes. They can be similar in appearance.
-3. There isn't a keyboard/mouse equivalent of Maximize window. Use the tiling layout icon or Super+spacebar to return to a max window.
+1. The workspace icons are located on the left side of the screen and the window panes (tabs) are located at the top of the screen.
+2. When using a browser, the browser tabs are located below the window panes. Browser tabs and window panes can be similar in appearance.
+3. There isn't a keyboard/mouse equivalent of `Maximize` window. Use the tiling layout icon or `Super+spacebar` to return to a maximized window.
 4. Tiling layout preferences are unique to the each  workspace (the preferences are not global setting for all workspaces).
-5. To mimic traditional windows behavior, use the float setting. Tiling is turned off for that window.
 
 ## Hotkeys
-Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
+Material-Shell is often used in conjunction with Gnome keyboard-shortcuts, Firefox shortcuts, etc. 
+Note that some hotkeys might already be used by other applications - please check your keybindings first.
 
 #### Choosing tiling layout
 * `Super+Space` Cycle through the tiling options in the current workspace.
@@ -149,7 +151,7 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+x` Open the App Launcher within a new window.
 * `Super+q` Kill the current focused window.
 
-#### Navigation -- moving the focus 
+#### Moving the focus aka Navigation
 ... window panes 
 * `Super+d` Focus on the next window pane, left to right.
 * `Super+a` Focus on the previous window pane, right to left.
@@ -192,10 +194,10 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 * `Super+[MouseDrag]` Move window around.
 
 #### Resize a window
-* `Ctrl+Super+left` Enlarge a window to the left.
-* `Ctrl+Super+up` Enlarge a window upward.
-* `Ctrl+Super+right`Enlarge an window to the  right.
-* `Ctrl+Super+down` Enlarge a window downward.
+* `Ctrl+Super+left` Increase width moving border to the left.
+* `Ctrl+Super+up` Increase height moving border upward.
+* `Ctrl+Super+right` Increase width moving border to the right.
+* `Ctrl+Super+down` Increase height moving border downward.
 
 
 #### Extra Hotkeys
