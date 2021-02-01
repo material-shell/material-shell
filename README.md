@@ -121,24 +121,27 @@ When opening a **new session** Material Shell will **restore every windows** pre
 Getting around using the mouse and keyboard shortcuts
 
 Setup
+
 1. The first workspace is used view this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
 2. In the first workspace, click on the tiling icon in the upper right corner. Click on `Tweak available layout`.
 3. Turn off all layout styles except 'floating'. Floating layout  mimics traditional floating windows behaviors.
-4. To open a second work space, click on the `+` on the left side of the screen, or use `Super+s`
-5. Turn on the first 6 tiling choices on, e.g., `maximize, split ... half vertical`. Turn off the remaining, especially float.
+4. To open a second work space, click on the `+` on the left side of the screen, or use `Super+s`.
+5. Turn on the first 6 tiling choices on, e.g., `maximize, split ... half vertical`. Turn off the remaining, especially `Float`.
 6. Click on the tiling icon again and select `Grid` Increase the number of layouts to `4`.
-7. Use *`Super+x` to bring forth the App Launcher and open 4 terminal windows. Once finished, there should be a grid of 4 windows.
+7. Use `Super+x` to bring forth the App Launcher and open 4 terminal windows. Once finished, there should be a grid of 4 windows.
 8. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
 
 Practice
+
 9. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
 10. Experiment with keyboard shortcuts below including opening applications in their own workspaces, moving the focus, moving a window, and resizing a window.
 
 Take note of the following:
+
 1. The workspace icons are located on the left side of the screen and the window panes (tabs) are located at the top of the screen.
 2. When using a browser, the browser tabs are located below the window panes. Browser tabs and window panes can be similar in appearance.
 3. There isn't a keyboard/mouse equivalent of `Maximize` window. Use the tiling layout icon or `Super+spacebar` to return to a maximized window.
-4. Tiling layout preferences are unique to the each  workspace (the preferences are not global setting for all workspaces).
+4. Tiling layout preferences are unique to the each workspace (the preferences do not behave as workspace global settings).
 
 ## Hotkeys
 Material-Shell is often used in conjunction with Gnome keyboard-shortcuts, Firefox shortcuts, etc. 
