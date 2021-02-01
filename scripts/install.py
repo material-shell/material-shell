@@ -14,6 +14,16 @@ RESET = "\33[0m"
 def printc(color: str, text: str):
     print(f"{color}{text}{RESET}")
 
+# Tries to invoke a command line tool
+# Returns false if the program exited with a non-zero error code or if the program failed to be executed.
+def try_call(params):
+    try:
+        subprocess.check_call(params)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
 def install():
     package_dir = os.path.join(os.path.dirname(__file__), "..")
 
@@ -48,13 +58,13 @@ def install():
 
     # Install dependencies
     printc(GREEN, f"Installing dependencies...")
-    if subprocess.call(["npm", "install", "--silent"]) != 0:
+    if not try_call(["npm", "install", "--silent"]):
         printc(RED, f"Failed to install dependencies")
         exit(1)
 
     # Compile the typescript code
     printc(GREEN, f"Compiling...")
-    if subprocess.call(["make", "compile"]) != 0:
+    if not try_call(["make", "compile"]):
         printc(RED, f"Compilation failed")
         exit(1)
 
@@ -112,7 +122,7 @@ def install():
         create_link()
 
     printc(GREEN, f"Enabling extension...")
-    if subprocess.call(["gnome-extensions", "enable", install_name]) != 0:
+    if not try_call(["gnome-extensions", "enable", install_name]):
         printc(RED, f"Failed to enable extension. Try enabling it using the gnome extensions preferences instead")
         exit(1)
 
@@ -124,7 +134,7 @@ def install():
         printc(GREEN, "Installation succeeded, restarting gnome-shell...")
 
         # Restart gnome shell
-        if subprocess.call(["killall", "-SIGQUIT", "gnome-shell"]) != 0:
+        if not try_call(["killall", "-SIGQUIT", "gnome-shell"]):
             printc(RED, "Failed to restart gnome-shell")
             exit(1)
     else:
