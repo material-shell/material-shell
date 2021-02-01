@@ -24,6 +24,7 @@ import * as debug from 'src/utils/debug';
 import { MsMain } from 'src/layout/main';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { getSettings } from 'src/utils/settings';
+import { polyfillClutter } from './utils/compatibility';
 
 let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
 let modules: any[] | undefined;
@@ -37,6 +38,7 @@ function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
+    polyfillClutter();
     Signals.addSignalMethods(Me);
     global.ms = Me;
     Me.showSplashScreens = showSplashScreens;
