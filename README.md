@@ -129,19 +129,19 @@ Setup
 5. To open a second workspace, click on the `+` on the left side of the screen, or use or `Super+0`.
 6. Turn on the first 6 tiling choices on, e.g., `Maximize, Split ... Half vertical`. Turn off the remaining layouts, especially `Float`. Click on `Confirm layouts` to save.
 7. Click on the tiling icon again and select `Split` from the list of layouts. Increase the number of layouts to `4`.
-8. Use `Super+x` bring open App Launcher and then open a terminal window. Do this 4 times. There should 4 (Split) windows on the desktop.
-9. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
-10. Use `Super+0` to open another workspace, and then open two applications e.g. an  email client and Libre Writer.
+8. Use `Super+x` to open App Launcher, and then open a terminal window. Do this 4 times. There should 4 (Split) windows on the desktop.
+9. Execute a command in each terminal instance so that the terminal windows are distinguishable from each other. For example, execute `ls, nano, man ls, htop` respectively.
+10. Use `Super+0` to open another workspace, and then open two applications, for example, an email client and Libre Writer.
 11. Use `Super+End` to open another workspace, and then open an image editor.
 
 Practice
 
 1. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
-2. Experiment with keyboard shortcuts, including:
-	Opening applications in their own workspaces
-	Moving the focus within a workspace, to another workspace, and if applicable, to another monitor.
-	Moving a window within a workspace, to another workspace, and if applicable, to another monitor.
-	Resize a window.
+2. Experiment with keyboard shortcuts. Try the following:
+	-Move the focus within a workspace, to another workspace, and if applicable, to another monitor.
+	-Move a window within a workspace, to another workspace, and if applicable, to another monitor.
+	-Resize a window.
+	-Close an application.
 
 Take note of the following:
 
@@ -251,7 +251,7 @@ gnome-extensions enable material-shell@papyelgringo
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
-# Uninstallation 😢
+# Uninstallation (single-user) 😢
 We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
 
 1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using 
@@ -262,6 +262,9 @@ gnome-extensions disable material-shell@papyelgringo
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
+#(multi-user or development)
+1. Remove via the appropriate package manager.
+
 # History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
