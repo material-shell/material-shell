@@ -122,14 +122,16 @@ Getting around using the mouse and keyboard shortcuts
 
 Setup
 
-1. The first workspace is used view this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
+1. The first workspace will be used to view and refer to this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
 2. In the first workspace, click on the tiling icon in the upper right corner. Click on `Tweak available layout`.
 3. Turn off all layout styles except 'floating'. Floating layout  mimics traditional floating windows behaviors.
 4. To open a second work space, click on the `+` on the left side of the screen, or use `Super+s`.
-5. Turn on the first 6 tiling choices on, e.g., `maximize, split ... half vertical`. Turn off the remaining, especially `Float`.
-6. Click on the tiling icon again and select `Grid` Increase the number of layouts to `4`.
-7. Use `Super+x` to bring forth the App Launcher and open 4 terminal windows. Once finished, there should be a grid of 4 windows.
+5. Turn on the first 6 tiling choices on, e.g., `Maximize, Split ... Half vertical`. Turn off the remaining, especially `Float`. Click on `Confirm layouts` to save.
+6. Click on the tiling icon again and select `Split` from the list of layouts. Increase the number of layouts to `4`.
+7. Use `Super+x` to bring forth the App Launcher and open 4 terminal windows. Once finished, there should 4 (Split) windows on the desktop.
 8. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
+9. Use `Super+x` to bring forth the App Launcher and open an email client and LibreWriter.
+
 
 Practice
 
