@@ -124,19 +124,24 @@ Setup
 
 1. The first workspace will be used to view and refer to this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
 2. In the first workspace, click on the tiling icon in the upper right corner. Click on `Tweak available layout`.
-3. Turn off all layout styles except 'floating'. Floating layout  mimics traditional floating windows behaviors.
-4. To open a second work space, click on the `+` on the left side of the screen, or use `Super+s`.
-5. Turn on the first 6 tiling choices on, e.g., `Maximize, Split ... Half vertical`. Turn off the remaining, especially `Float`. Click on `Confirm layouts` to save.
-6. Click on the tiling icon again and select `Split` from the list of layouts. Increase the number of layouts to `4`.
-7. Use `Super+x` bring open App Launcher and then open a terminal window. Do this 4 times. There should 4 (Split) windows on the desktop.
-8. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
-9. Use `Super+0` to open another workspace, and then open two applications e.g. an  email client and Libre Writer.
-10. Use `Super+0` to open another workspace, and then open an image editor.
+3. Turn off all layout styles except `Float`. 
+4. Remember that you can return to workspace one, this README file, by using `Super+1`. 
+5. To open a second workspace, click on the `+` on the left side of the screen, or use or `Super+0`.
+6. Turn on the first 6 tiling choices on, e.g., `Maximize, Split ... Half vertical`. Turn off the remaining layouts, especially `Float`. Click on `Confirm layouts` to save.
+7. Click on the tiling icon again and select `Split` from the list of layouts. Increase the number of layouts to `4`.
+8. Use `Super+x` bring open App Launcher and then open a terminal window. Do this 4 times. There should 4 (Split) windows on the desktop.
+9. Execute a command in each terminal instance so that they are are distinguishable from each other, e.g. ls, nano, man ls, ping --help.
+10. Use `Super+0` to open another workspace, and then open two applications e.g. an  email client and Libre Writer.
+11. Use `Super+End` to open another workspace, and then open an image editor.
 
 Practice
 
-9. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
-10. Experiment with keyboard shortcuts below including opening applications in their own workspaces, moving the focus, moving a window, and resizing a window.
+1. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
+2. Experiment with keyboard shortcuts, including:
+	Opening applications in their own workspaces
+	Moving the focus within a workspace, to another workspace, and if applicable, to another monitor.
+	Moving a window within a workspace, to another workspace, and if applicable, to another monitor.
+	Resize a window.
 
 Take note of the following:
 
@@ -144,6 +149,7 @@ Take note of the following:
 2. When using a browser, the browser tabs are located below the window panes. Browser tabs and window panes can be similar in appearance.
 3. There isn't a keyboard/mouse equivalent of `Maximize` window. Use the tiling layout icon or `Super+spacebar` to return to a maximized window.
 4. Tiling layout preferences are unique to the each workspace (the preferences do not behave as workspace global settings).
+5. Note that a few Material-Shell keybindings duplicate some Gnome keybindings e.g. `Super+s, Super+PgDown`, `Super+Home`, `Super+End` etc..
 
 ## Hotkeys
 Material-Shell is often used in conjunction with Gnome keyboard-shortcuts, Firefox shortcuts, etc. 
