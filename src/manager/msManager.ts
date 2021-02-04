@@ -6,8 +6,8 @@ import * as Clutter from 'clutter';
 import { WithSignals } from 'src/utils/gjs';
 
 export interface Signal {
-    from: any,
-    id: number,
+    from: any;
+    id: number;
 }
 
 export class MsManager extends WithSignals {
@@ -18,8 +18,12 @@ export class MsManager extends WithSignals {
         this.signals = [];
     }
 
-    observe(subject: any, property: string, callback: (...args: any[])=>void) {
-        let signal = {
+    observe(
+        subject: any,
+        property: string,
+        callback: (...args: any[]) => void
+    ) {
+        const signal = {
             from: subject,
             id: subject.connect(property, callback),
         };
@@ -50,4 +54,4 @@ export class MsManager extends WithSignals {
             }
         });
     }
-};
+}

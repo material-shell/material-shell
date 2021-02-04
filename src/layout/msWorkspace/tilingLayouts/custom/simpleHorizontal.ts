@@ -3,7 +3,7 @@ import * as GObject from 'gobject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SimpleLayout, } from "src/layout/msWorkspace/tilingLayouts/custom/simple";
+import { SimpleLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simple';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass

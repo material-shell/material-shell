@@ -5,7 +5,7 @@ import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
 
 /** Extension imports */
-import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
+import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { InfinityTo0 } from 'src/utils/index';
 import { reparentActor } from 'src/utils/index';
@@ -43,9 +43,7 @@ export class MaximizeLayout extends BaseTilingLayout {
                     .get_children()
                     .includes(this.currentDisplayedActor)
             ) {
-                this.tileableContainer.remove_child(
-                    this.currentDisplayedActor
-                );
+                this.tileableContainer.remove_child(this.currentDisplayedActor);
             }
 
             this.currentDisplayedActor.disconnect(
@@ -65,7 +63,7 @@ export class MaximizeLayout extends BaseTilingLayout {
     }
 
     showAppLauncher() {
-        let actor = this.msWorkspace.appLauncher;
+        const actor = this.msWorkspace.appLauncher;
         actor.visible = true;
     }
 
@@ -122,12 +120,12 @@ export class MaximizeLayout extends BaseTilingLayout {
             );
             this.tileableContainer.add_child(this.translationAnimator);
         }
-        let indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
+        const indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
             (tileable) => {
                 return tileable === prevActor;
             }
         );
-        let indexOfNextActor = this.msWorkspace.tileableList.findIndex(
+        const indexOfNextActor = this.msWorkspace.tileableList.findIndex(
             (tileable) => {
                 return tileable === nextActor;
             }
@@ -135,14 +133,10 @@ export class MaximizeLayout extends BaseTilingLayout {
         [nextActor, prevActor].forEach((actor) => {
             if (actor) {
                 actor.set_width(
-                    InfinityTo0(
-                        this.tileableContainer.allocation.get_width()
-                    )
+                    InfinityTo0(this.tileableContainer.allocation.get_width())
                 );
                 actor.set_height(
-                    InfinityTo0(
-                        this.tileableContainer.allocation.get_height()
-                    )
+                    InfinityTo0(this.tileableContainer.allocation.get_height())
                 );
             }
         });

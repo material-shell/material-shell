@@ -69,7 +69,7 @@ export class MsDndManager extends MsManager {
             'grab-op-begin',
             (_, display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
-                    let msWindow = metaWindow.msWindow;
+                    const msWindow = metaWindow.msWindow;
                     if (
                         msWindow &&
                         msWindow.metaWindow === metaWindow &&
@@ -84,20 +84,22 @@ export class MsDndManager extends MsManager {
 
         this.observe(global.stage, 'captured-event', (_, event) => {
             if (this.dragInProgress !== null) {
-                let [stageX, stageY] = event.get_coords();
+                const [stageX, stageY] = event.get_coords();
                 const msWindowDragged = this.dragInProgress.msWindow;
                 switch (event.type()) {
                     case Clutter.EventType.MOTION:
                         msWindowDragged.set_position(
                             Math.round(
                                 stageX -
-                                msWindowDragged.width *
-                                this.dragInProgress.originPointerAnchor[0]
+                                    msWindowDragged.width *
+                                        this.dragInProgress
+                                            .originPointerAnchor[0]
                             ),
                             Math.round(
                                 stageY -
-                                msWindowDragged.height *
-                                this.dragInProgress.originPointerAnchor[1]
+                                    msWindowDragged.height *
+                                        this.dragInProgress
+                                            .originPointerAnchor[1]
                             )
                         );
                         this.throttledCheckUnderPointer();
@@ -144,8 +146,8 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        let [globalX, globalY] = global.get_pointer();
-        let [_, relativeX, relativeY] = msWindow.transform_stage_point(
+        const [globalX, globalY] = global.get_pointer();
+        const [_, relativeX, relativeY] = msWindow.transform_stage_point(
             globalX,
             globalY
         );
@@ -162,15 +164,21 @@ export class MsDndManager extends MsManager {
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
-            Math.round(globalX - msWindow.width * this.dragInProgress.originPointerAnchor[0]),
-            Math.round(globalY - msWindow.height * this.dragInProgress.originPointerAnchor[1])
+            Math.round(
+                globalX -
+                    msWindow.width * this.dragInProgress.originPointerAnchor[0]
+            ),
+            Math.round(
+                globalY -
+                    msWindow.height * this.dragInProgress.originPointerAnchor[1]
+            )
         );
         Main.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
-        assert(this.dragInProgress !== null, "No drag in progress");
+        assert(this.dragInProgress !== null, 'No drag in progress');
         const { msWindow, originalParent } = this.dragInProgress;
         this.dragInProgress = null;
 
@@ -195,10 +203,10 @@ export class MsDndManager extends MsManager {
 
     /**  */
     checkUnderThePointer() {
-        assert(this.dragInProgress !== null, "No drag in progress");
+        assert(this.dragInProgress !== null, 'No drag in progress');
 
-        let [x, y] = global.get_pointer();
-        let monitor = Main.layoutManager.currentMonitor;
+        const [x, y] = global.get_pointer();
+        const monitor = Main.layoutManager.currentMonitor;
 
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWindowDragged = this.dragInProgress.msWindow;
@@ -225,8 +233,8 @@ export class MsDndManager extends MsManager {
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             msWorkspace.monitor.index
         );
-        let relativeX = x - workArea.x;
-        let relativeY = y - workArea.y;
+        const relativeX = x - workArea.x;
+        const relativeY = y - workArea.y;
 
         msWorkspace.tileableList
             .filter(
@@ -234,7 +242,7 @@ export class MsDndManager extends MsManager {
                     tileable instanceof MsWindow &&
                     tileable.visible &&
                     tileable.get_parent() ===
-                    msWorkspace.msWorkspaceActor.tileableContainer
+                        msWorkspace.msWorkspaceActor.tileableContainer
             )
             .forEach((tileable) => {
                 if (
@@ -247,7 +255,7 @@ export class MsDndManager extends MsManager {
                 }
             });
     }
-};
+}
 
 @registerGObjectClass
 export class InputGrabber extends Clutter.Actor {
@@ -264,14 +272,12 @@ export class InputGrabber extends Clutter.Actor {
         );
     }
     vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
-        let actionId = global.display.get_keybinding_action(
+        const actionId = global.display.get_keybinding_action(
             keyEvent.hardware_keycode,
             keyEvent.modifier_state
         );
         if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
-            const actionName = Me.hotKeysModule.actionIdToNameMap.get(
-                actionId
-            );
+            const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
                     Me.hotKeysModule.actionNameToActionMap.get(

@@ -6,7 +6,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported getSettings */
 export const getSettings = (key: string) => {
-    let schema = Gio.SettingsSchemaSource.new_from_directory(
+    const schema = Gio.SettingsSchemaSource.new_from_directory(
         Me.dir.get_child('schemas').get_path(),
         Gio.SettingsSchemaSource.get_default(),
         false
@@ -17,6 +17,6 @@ export const getSettings = (key: string) => {
             settings_schema: schema,
         });
     } else {
-        throw Error("Cannot find schema");
+        throw Error('Cannot find schema');
     }
-}
+};

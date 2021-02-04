@@ -13,10 +13,10 @@ import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
 
-import { TaskBarItem, } from "src/layout/msWorkspace/horizontalPanel/taskBar";
+import { TaskBarItem } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
 
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { MainCategories, } from "src/layout/msWorkspace/msWorkspaceCategory";
+import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
@@ -49,10 +49,7 @@ export class WorkspaceList extends St.Widget {
 
         this.buttonList = new ReorderableList(true);
         this.buttonList.connect('actor-moved', (_, actor, index) => {
-            this.msWorkspaceManager.setMsWorkspaceAt(
-                actor.msWorkspace,
-                index
-            );
+            this.msWorkspaceManager.setMsWorkspaceAt(actor.msWorkspace, index);
         });
 
         this.add_child(this.buttonList);
@@ -66,9 +63,7 @@ export class WorkspaceList extends St.Widget {
 
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.workspaceActiveIndicator.set_height(
-                Me.msThemeManager.getPanelSize(
-                    Main.layoutManager.primaryIndex
-                )
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
             );
             this.queue_relayout();
         });
@@ -114,7 +109,7 @@ export class WorkspaceList extends St.Widget {
         this.msWorkspaceManager.primaryMsWorkspaces.forEach(
             (msWorkspace, index) => {
                 if (!this.msWorkspaceButtonMap.has(msWorkspace)) {
-                    let workspaceButton = new WorkspaceButton(
+                    const workspaceButton = new WorkspaceButton(
                         this.msWorkspaceManager,
                         msWorkspace
                     );
@@ -173,13 +168,10 @@ export class WorkspaceList extends St.Widget {
                         workspaceButton,
                         index
                     );
-                    this.msWorkspaceButtonMap.set(
-                        msWorkspace,
-                        workspaceButton
-                    );
+                    this.msWorkspaceButtonMap.set(msWorkspace, workspaceButton);
                 } else {
-                    let button = this.msWorkspaceButtonMap.get(msWorkspace);
-                    let index = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    const button = this.msWorkspaceButtonMap.get(msWorkspace);
+                    const index = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                         msWorkspace
                     );
                     this.buttonList.set_child_at_index(button, index);
@@ -294,8 +286,8 @@ export class WorkspaceList extends St.Widget {
             if (this.buttonActive.has_style_class_name('active')) {
                 this.buttonActive.remove_style_class_name('active');
             }
-            let child = this.buttonList.get_child_at_index(index);
-            assert(child instanceof St.Widget, "Child was not a widget");
+            const child = this.buttonList.get_child_at_index(index);
+            assert(child instanceof St.Widget, 'Child was not a widget');
             this.buttonActive = child;
             this.buttonActive.add_style_class_name('active');
         }
@@ -332,21 +324,29 @@ export class WorkspaceButton extends MatButton {
                 param_types: [GObject.TYPE_BOOLEAN],
             },
         },
-    }
+    };
 
     msWorkspace: MsWorkspace;
     msWorkspaceManager: MsWorkspaceManager;
     workspaceButtonIcon: WorkspaceButtonIcon;
     private _delegate: this;
     menu: any;
-    mouseData: { pressed: boolean; dragged: boolean; originalCoords: null; originalSequence: null; };
+    mouseData: {
+        pressed: boolean;
+        dragged: boolean;
+        originalCoords: null;
+        originalSequence: null;
+    };
     panelIconStyleHybridRadio: any;
     panelIconStyleCategoryRadio: any;
     panelIconStyleApplicationRadio: any;
     subMenu: any;
     _draggable: any;
 
-    constructor(msWorkspaceManager: MsWorkspaceManager, msWorkspace: MsWorkspace) {
+    constructor(
+        msWorkspaceManager: MsWorkspaceManager,
+        msWorkspace: MsWorkspace
+    ) {
         const workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
         super({
             child: workspaceButtonIcon,
@@ -406,28 +406,28 @@ export class WorkspaceButton extends MatButton {
         this.panelIconStyleHybridRadio = this.menu.addAction(
             _('Hybrid'),
             () => {
-                Me.msThemeManager.panelIconStyle =
-                    PanelIconStyleEnum.HYBRID;
+                Me.msThemeManager.panelIconStyle = PanelIconStyleEnum.HYBRID;
             },
             Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                `${Me.path}/assets/icons/radiobox-${
+                    Me.msThemeManager.panelIconStyle ===
                     PanelIconStyleEnum.HYBRID
-                    ? 'marked'
-                    : 'blank'
+                        ? 'marked'
+                        : 'blank'
                 }-symbolic.svg`
             )
         );
         this.panelIconStyleCategoryRadio = this.menu.addAction(
             _('Categories only'),
             () => {
-                Me.msThemeManager.panelIconStyle =
-                    PanelIconStyleEnum.CATEGORY;
+                Me.msThemeManager.panelIconStyle = PanelIconStyleEnum.CATEGORY;
             },
             Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                `${Me.path}/assets/icons/radiobox-${
+                    Me.msThemeManager.panelIconStyle ===
                     PanelIconStyleEnum.CATEGORY
-                    ? 'marked'
-                    : 'blank'
+                        ? 'marked'
+                        : 'blank'
                 }-symbolic.svg`
             )
         );
@@ -438,10 +438,11 @@ export class WorkspaceButton extends MatButton {
                     PanelIconStyleEnum.APPLICATION;
             },
             Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                `${Me.path}/assets/icons/radiobox-${
+                    Me.msThemeManager.panelIconStyle ===
                     PanelIconStyleEnum.APPLICATION
-                    ? 'marked'
-                    : 'blank'
+                        ? 'marked'
+                        : 'blank'
                 }-symbolic.svg`
             )
         );
@@ -449,28 +450,31 @@ export class WorkspaceButton extends MatButton {
         Me.msThemeManager.connect('panel-icon-style-changed', () => {
             this.panelIconStyleHybridRadio._icon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
                         PanelIconStyleEnum.HYBRID
-                        ? 'marked'
-                        : 'blank'
+                            ? 'marked'
+                            : 'blank'
                     }-symbolic.svg`
                 )
             );
             this.panelIconStyleCategoryRadio._icon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
                         PanelIconStyleEnum.CATEGORY
-                        ? 'marked'
-                        : 'blank'
+                            ? 'marked'
+                            : 'blank'
                     }-symbolic.svg`
                 )
             );
             this.panelIconStyleApplicationRadio._icon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${Me.msThemeManager.panelIconStyle ===
+                    `${Me.path}/assets/icons/radiobox-${
+                        Me.msThemeManager.panelIconStyle ===
                         PanelIconStyleEnum.APPLICATION
-                        ? 'marked'
-                        : 'blank'
+                            ? 'marked'
+                            : 'blank'
                     }-symbolic.svg`
                 )
             );
@@ -481,10 +485,9 @@ export class WorkspaceButton extends MatButton {
         );
         const autoSentence = _('Determined automatically');
         this.subMenu = new PopupMenu.PopupSubMenuMenuItem(
-            this.msWorkspace.msWorkspaceCategory.forcedCategory ||
-            autoSentence
+            this.msWorkspace.msWorkspaceCategory.forcedCategory || autoSentence
         );
-        let setCategory = (category?: string) => {
+        const setCategory = (category?: string) => {
             this.msWorkspace.msWorkspaceCategory.forceCategory(category);
             this.workspaceButtonIcon.buildIcons();
             this.subMenu.label.text = category || autoSentence;
@@ -499,7 +502,8 @@ export class WorkspaceButton extends MatButton {
                     setCategory(key);
                 },
                 Gio.icon_new_for_string(
-                    `${Me.path
+                    `${
+                        Me.path
                     }/assets/icons/category/${key.toLowerCase()}-symbolic.svg`
                 )
             );
@@ -573,7 +577,7 @@ function isMsWindow(argument: any): argument is MsWindow {
 export class WorkspaceButtonIcon extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'WorkspaceButtonIcon',
-    }
+    };
 
     msWorkspace: MsWorkspace;
     appIconList: St.Icon[];
@@ -623,9 +627,7 @@ export class WorkspaceButtonIcon extends St.Widget {
                     numberOfEachAppMap.set(app, 1);
                 }
             });
-            const sortedByInstanceAppList = [
-                ...numberOfEachAppMap.entries(),
-            ]
+            const sortedByInstanceAppList = [...numberOfEachAppMap.entries()]
                 .sort((a, b) => {
                     return b[1] - a[1];
                 })
@@ -635,20 +637,20 @@ export class WorkspaceButtonIcon extends St.Widget {
             if (
                 this.msWorkspace.msWorkspaceCategory.forcedCategory ||
                 Me.msThemeManager.panelIconStyle ===
-                PanelIconStyleEnum.CATEGORY ||
+                    PanelIconStyleEnum.CATEGORY ||
                 (Me.msThemeManager.panelIconStyle ===
                     PanelIconStyleEnum.HYBRID &&
                     sortedByInstanceAppList.length > 1)
             ) {
-                let category =
+                const category =
                     this.msWorkspace.msWorkspaceCategory.category || '';
-                let icon = new St.Icon({
+                const icon = new St.Icon({
                     gicon: Gio.icon_new_for_string(
-                        `${Me.path
+                        `${
+                            Me.path
                         }/assets/icons/category/${category.toLowerCase()}-symbolic.svg`
                     ),
-                    icon_size:
-                        Me.msThemeManager.getPanelSizeNotScaled() / 2,
+                    icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
                 });
                 this.appIconList.push(icon);
                 this.add_child(icon);
@@ -662,7 +664,7 @@ export class WorkspaceButtonIcon extends St.Widget {
                 });
             }
         } else {
-            let icon = new St.Icon({
+            const icon = new St.Icon({
                 gicon: Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/plus-symbolic.svg`
                 ),
@@ -673,14 +675,17 @@ export class WorkspaceButtonIcon extends St.Widget {
         }
     }
 
-    vfunc_allocate(allocationBox: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    vfunc_allocate(
+        allocationBox: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         SetAllocation(this, allocationBox, flags);
 
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         allocationBox = themeNode.get_content_box(allocationBox);
         const portion = (allocationBox.x2 - allocationBox.x1) / 8;
         if (this.appIconList.length === 1) {
-            let centerBox = new Clutter.ActorBox();
+            const centerBox = new Clutter.ActorBox();
             centerBox.x1 = allocationBox.x1 + 2 * portion;
             centerBox.x2 = allocationBox.x2 - 2 * portion;
             centerBox.y1 = allocationBox.y1 + 2 * portion;
@@ -688,7 +693,7 @@ export class WorkspaceButtonIcon extends St.Widget {
             Allocate(this.appIconList[0], centerBox, flags);
         } else {
             this.appIconList.forEach((icon, index) => {
-                let box = new Clutter.ActorBox();
+                const box = new Clutter.ActorBox();
                 switch (index) {
                     case 0:
                         box.x1 = allocationBox.x1 + portion;

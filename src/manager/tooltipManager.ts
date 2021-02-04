@@ -61,12 +61,17 @@ export class TooltipManager extends MsManager {
         this.observe(actor, 'enter-event', tooltipCallback);
     }
 
-    createTooltip(actor: Clutter.Actor, params: Partial<MatTooltipParams>): MatTooltip | undefined {
+    createTooltip(
+        actor: Clutter.Actor,
+        params: Partial<MatTooltipParams>
+    ): MatTooltip | undefined {
         // If actor has text, use it instead because it may be updated
         let actorText: string | undefined;
         if (actor instanceof St.Label || actor instanceof Clutter.Text) {
             const clutterText =
-                actor instanceof St.Label ? actor.get_clutter_text() as Clutter.Text : actor;
+                actor instanceof St.Label
+                    ? (actor.get_clutter_text() as Clutter.Text)
+                    : actor;
             if (clutterText.get_layout().is_ellipsized()) {
                 actorText = clutterText.get_text();
             }
@@ -81,33 +86,36 @@ export class TooltipManager extends MsManager {
         tooltip.show();
         return tooltip;
     }
-};
+}
 
 enum TooltipSide {
     LEFT = 0,
     TOP = 1,
     RIGHT = 2,
     BOTTOM = 3,
-};
+}
 
 interface MatTooltipParams {
-    text: string,
-    relativeActor: Clutter.Actor | null,
-    offsetX: number,
-    offsetY: number,
-    side: TooltipSide,
+    text: string;
+    relativeActor: Clutter.Actor | null;
+    offsetX: number;
+    offsetY: number;
+    side: TooltipSide;
 }
 
 @registerGObjectClass
 export class MatTooltip extends St.Label {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MatTooltip',
-    }
+    };
     params: MatTooltipParams;
     sourceActor: Clutter.Actor;
 
-    constructor(sourceActor: Clutter.Actor, params: Partial<MatTooltipParams> = {}) {
-        let allParams: MatTooltipParams = Object.assign(
+    constructor(
+        sourceActor: Clutter.Actor,
+        params: Partial<MatTooltipParams> = {}
+    ) {
+        const allParams: MatTooltipParams = Object.assign(
             {
                 text: '',
                 relativeActor: null,
@@ -149,7 +157,7 @@ export class MatTooltip extends St.Label {
     }
     vfunc_allocate(...args: [Clutter.ActorBox]) {
         const relativeActor = this.params.relativeActor || this.sourceActor;
-        let [stageX, stageY] = relativeActor.get_transformed_position();
+        const [stageX, stageY] = relativeActor.get_transformed_position();
         let x, y;
         switch (this.params.side) {
             case TooltipSide.LEFT:

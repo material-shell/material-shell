@@ -1,1 +1,1 @@
-declare module "gnomedesktop";
+declare module 'gnomedesktop';

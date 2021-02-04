@@ -1,9 +1,9 @@
 import * as Gio from 'gio';
 
-declare module "ui" {
+declare module 'ui' {
     export namespace messageTray {
         interface NotificationParams {
-            gicon?: Gio.Icon,
+            gicon?: Gio.Icon;
         }
 
         class Notification {
@@ -12,7 +12,12 @@ declare module "ui" {
             bannerBodyText: string;
             bannerBodyMarkup?: boolean;
 
-            constructor(source: Source, title: string, text: string, params: NotificationParams);
+            constructor(
+                source: Source,
+                title: string,
+                text: string,
+                params: NotificationParams
+            );
             activate(): void;
         }
 

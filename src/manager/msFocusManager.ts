@@ -1,15 +1,12 @@
 /** Gnome libs imports */
 import * as GLib from 'glib';
-import * as Meta from 'meta';
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsManager } from 'src/manager/msManager';
+import { MsWindowManagerType } from './msWindowManager';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { MsManager } from 'src/manager/msManager';
-import { MsWindowManager, MsWindowManagerType } from './msWindowManager';
 
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
@@ -141,8 +138,4 @@ export class MsFocusManager extends MsManager {
             !this.msWindowManager.msDndManager.dragInProgress
         );
     }
-
-    determineFocusedMsWindow() {}
-
-    onNewMsWindow(msWindow) {}
-};
+}

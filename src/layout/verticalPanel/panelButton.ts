@@ -16,16 +16,22 @@ export class MatPanelButton extends MatButton {
     constructor(params = {}) {
         super(params);
         this.add_style_class_name('mat-panel-button');
-        const panelSizeSignal = Me.msThemeManager.connect('panel-size-changed', () => {
-            this.queue_relayout();
-        });
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.queue_relayout();
+            }
+        );
         this.monitorIndex = this.findMonitor();
-        const monitorSignal = Main.layoutManager.connect('monitors-changed', () => {
-            GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                this.monitorIndex = this.findMonitor();
-                return false;
-            });
-        });
+        const monitorSignal = Main.layoutManager.connect(
+            'monitors-changed',
+            () => {
+                GLib.idle_add(GLib.PRIORITY_LOW, () => {
+                    this.monitorIndex = this.findMonitor();
+                    return false;
+                });
+            }
+        );
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(panelSizeSignal);
             Main.layoutManager.disconnect(monitorSignal);
@@ -33,7 +39,7 @@ export class MatPanelButton extends MatButton {
     }
 
     findMonitor() {
-        let [x, y] = this.get_transformed_position();
+        const [x, y] = this.get_transformed_position();
         return (
             global.display.get_monitor_index_for_rect(
                 new Meta.Rectangle({ x: x!, y: y!, width: 0, height: 0 })
@@ -44,7 +50,7 @@ export class MatPanelButton extends MatButton {
     /**
      * Just the panel width
      */
-    vfunc_get_preferred_width(_forHeight) : [number, number] {
+    vfunc_get_preferred_width(_forHeight): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(this.monitorIndex),
             Me.msThemeManager.getPanelSize(this.monitorIndex),
@@ -54,7 +60,7 @@ export class MatPanelButton extends MatButton {
     /**
      * Just the panel height
      */
-    vfunc_get_preferred_height(_forWidth): [number, number]  {
+    vfunc_get_preferred_height(_forWidth): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(this.monitorIndex),
             Me.msThemeManager.getPanelSize(this.monitorIndex),

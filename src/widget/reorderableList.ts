@@ -1,30 +1,39 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GObject from 'gobject';
+import { assert } from 'src/utils/assert';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
-import * as GLib from 'glib';
 const DND = imports.ui.dnd;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { reparentActor } from 'src/utils/index';
-import { MatButton } from 'src/widget/material/button';
-import { assert, logAssert } from 'src/utils/assert';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 interface DraggableActor extends Clutter.Actor {
     draggable: any;
     _draggable: any;
-    originalHandleDragOver?: (source: DraggableActor, actor: Clutter.Actor, x: number, y: number)=>any;
-    handleDragOver?: (source: DraggableActor, actor: Clutter.Actor, x: number, y: number)=>any;
-    originalAcceptDrop: (source: DraggableActor)=>boolean;
-    acceptDrop: (source: DraggableActor)=>boolean;
+    originalHandleDragOver?: (
+        source: DraggableActor,
+        actor: Clutter.Actor,
+        x: number,
+        y: number
+    ) => any;
+    handleDragOver?: (
+        source: DraggableActor,
+        actor: Clutter.Actor,
+        x: number,
+        y: number
+    ) => any;
+    originalAcceptDrop: (source: DraggableActor) => boolean;
+    acceptDrop: (source: DraggableActor) => boolean;
 }
 
 @registerGObjectClass
 export class ReorderableList extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
-        GTypeName: "ReorderableList",
+        GTypeName: 'ReorderableList',
         Signals: {
             'drag-start': {},
             'drag-end': {},
@@ -35,7 +44,7 @@ export class ReorderableList extends Clutter.Actor {
                 param_types: [Clutter.Actor.$gtype, GObject.TYPE_INT],
             },
         },
-    }
+    };
     foreignActor: DraggableActor | undefined;
     placeHolder: DropPlaceholder;
     draggedActor: DraggableActor | null | undefined;
@@ -68,7 +77,7 @@ export class ReorderableList extends Clutter.Actor {
     }
 
     makeActorDraggable(nonDraggableActor: Clutter.Actor) {
-        let actor = nonDraggableActor as DraggableActor;
+        const actor = nonDraggableActor as DraggableActor;
         actor.originalHandleDragOver = actor.handleDragOver;
         actor.originalAcceptDrop = actor.acceptDrop;
         actor.handleDragOver = (source, _, x, y) => {
@@ -77,17 +86,12 @@ export class ReorderableList extends Clutter.Actor {
                 : null;
             const isForeignActor =
                 source != this.draggedActor &&
-                this.classAccepted.some(
-                    (aClass) => source instanceof aClass
-                );
+                this.classAccepted.some((aClass) => source instanceof aClass);
             if (isForeignActor && !this.foreignActor) {
                 this.foreignEntered(source);
             }
             if (source === this.draggedActor || isForeignActor) {
-                if (
-                    actor.draggable != undefined &&
-                    actor.draggable === false
-                )
+                if (actor.draggable != undefined && actor.draggable === false)
                     return DND.DragMotionResult.NO_DROP;
 
                 const actorIndex = this.get_children()
@@ -108,10 +112,7 @@ export class ReorderableList extends Clutter.Actor {
             if (source._draggable._dragActor.get_parent()) {
                 source._draggable._dragActor.get_parent().remove_child(source);
             }
-            if (
-                source === this.draggedActor ||
-                source === this.foreignActor
-            ) {
+            if (source === this.draggedActor || source === this.foreignActor) {
                 return true;
             }
 
@@ -128,7 +129,7 @@ export class ReorderableList extends Clutter.Actor {
 
         if (isMatButton) {
             actor.connect('drag-start', (_, event) => {
-                let [x, y] = event.get_coords();
+                const [x, y] = event.get_coords();
 
                 actor._draggable.startDrag(
                     x,
@@ -151,7 +152,10 @@ export class ReorderableList extends Clutter.Actor {
         });
 
         actor._draggable.connect('drag-cancelled', () => {
-            assert(originalIndex !== null, "drag cancelled before it was started");
+            assert(
+                originalIndex !== null,
+                'drag cancelled before it was started'
+            );
             this.set_child_at_index(this.placeHolder, originalIndex);
         });
         actor._draggable.connect('drag-end', () => {
@@ -163,10 +167,7 @@ export class ReorderableList extends Clutter.Actor {
 
             if (this.draggedActor) {
                 reparentActor(this.draggedActor, this);
-                this.set_child_at_index(
-                    this.draggedActor,
-                    placeholderIndex
-                );
+                this.set_child_at_index(this.draggedActor, placeholderIndex);
                 if (placeholderIndex !== originalIndex) {
                     this.emit(
                         'actor-moved',
@@ -201,8 +202,8 @@ export class ReorderableList extends Clutter.Actor {
         );
         const connectEndId = actor._draggable.connect('drag-end', () => {
             let placeholderIndex: number | undefined = undefined;
-            let actor = this.foreignActor;
-            assert(actor !== undefined, "drag ended before it was started");
+            const actor = this.foreignActor;
+            assert(actor !== undefined, 'drag ended before it was started');
 
             if (this.placeHolder.get_parent()) {
                 placeholderIndex = this.get_children().indexOf(
@@ -214,11 +215,7 @@ export class ReorderableList extends Clutter.Actor {
             actor._draggable.disconnect(connectEndId);
             delete this.foreignActor;
             if (placeholderIndex !== undefined) {
-                this.emit(
-                    'foreign-actor-inserted',
-                    actor,
-                    placeholderIndex
-                );
+                this.emit('foreign-actor-inserted', actor, placeholderIndex);
             }
         });
     }
@@ -227,14 +224,14 @@ export class ReorderableList extends Clutter.Actor {
 @registerGObjectClass
 export class DropPlaceholder extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
-        GTypeName: "DropPlaceHolder",
+        GTypeName: 'DropPlaceHolder',
         Signals: {
             'drag-dropped': {
                 param_types: [Clutter.Actor.$gtype],
             },
             'drag-over': {},
         },
-    }
+    };
     private _delegate: this;
 
     constructor() {

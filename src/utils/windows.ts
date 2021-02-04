@@ -10,10 +10,12 @@ interface MetaWindowWithVisiblity extends Meta.Window {
     msWindow: MsWindow;
 }
 
-export const updateTitleBarVisibility = function (metaWindow: MetaWindowWithVisiblity) {
-    let msWorkspaceIsInFloatLayout =
+export const updateTitleBarVisibility = function (
+    metaWindow: MetaWindowWithVisiblity
+) {
+    const msWorkspaceIsInFloatLayout =
         metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
-    let shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
+    const shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
     if (
         !metaWindow.titleBarVisible ||
         metaWindow.titleBarVisible !== shouldTitleBarBeVisible
@@ -22,8 +24,11 @@ export const updateTitleBarVisibility = function (metaWindow: MetaWindowWithVisi
     }
 };
 
-export const setTitleBarVisibility = function (metaWindow: MetaWindowWithVisiblity, visible: boolean) {
-    let windowXID = getWindowXID(metaWindow);
+export const setTitleBarVisibility = function (
+    metaWindow: MetaWindowWithVisiblity,
+    visible: boolean
+) {
+    const windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
 
@@ -43,8 +48,8 @@ export const setTitleBarVisibility = function (metaWindow: MetaWindowWithVisibli
 };
 
 export const getWindowXID = function (win: Meta.Window) {
-    let desc = win.get_description() || '';
-    let match = desc.match(/0x[0-9a-f]+/) || [null];
+    const desc = win.get_description() || '';
+    const match = desc.match(/0x[0-9a-f]+/) || [null];
 
     return match[0];
 };

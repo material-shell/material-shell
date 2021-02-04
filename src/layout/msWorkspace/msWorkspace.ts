@@ -9,14 +9,10 @@ const Main = imports.ui.main;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
-import {
-    HorizontalPanel,
-} from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
+import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { reparentActor } from 'src/utils/index';
-import {
-    MsWorkspaceCategory,
-} from 'src/layout/msWorkspace/msWorkspaceCategory';
+import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { getSettings } from 'src/utils/settings';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
@@ -58,7 +54,11 @@ export class MsWorkspace extends WithSignals {
     monitor!: Monitor;
     emitTileableChangedInProgress: any;
 
-    constructor(msWorkspaceManager: MsWorkspaceManager, monitor: Monitor, state: Partial<MsWorkspaceState> = {}) {
+    constructor(
+        msWorkspaceManager: MsWorkspaceManager,
+        monitor: Monitor,
+        state: Partial<MsWorkspaceState> = {}
+    ) {
         super();
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
@@ -108,7 +108,7 @@ export class MsWorkspace extends WithSignals {
                     width: msWindowData.width,
                     height: msWindowData.height,
                 }
-            )
+            );
         });
 
         this.msWorkspaceCategory.refreshCategory();
@@ -122,7 +122,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     destroy() {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         this.appLauncher.onDestroy();
         this.layout.onDestroy();
@@ -166,7 +166,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     get tileableFocused() {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (!this.tileableList) return null;
         return this.tileableList[this.focusedIndex];
@@ -192,7 +192,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     close() {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         Promise.all(
             this.msWindowList.map((msWindow) => {
@@ -216,8 +216,12 @@ export class MsWorkspace extends WithSignals {
 
     /// Assumes that msWindow.msWorkspace == this already but that
     /// it hasn't been added to this workspace.
-    async addMsWindowUnchecked(msWindow: MsWindow, focus = false, insert = false) {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+    async addMsWindowUnchecked(
+        msWindow: MsWindow,
+        focus = false,
+        insert = false
+    ) {
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.msWorkspaceActor && !msWindow.dragged) {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
@@ -243,7 +247,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     async removeMsWindow(msWindow) {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
@@ -276,18 +280,20 @@ export class MsWorkspace extends WithSignals {
 
     async emitTileableListChangedOnce(oldTileableList: (Tileable | null)[]) {
         if (!this.emitTileableChangedInProgress) {
-            this.emitTileableChangedInProgress = new Promise<void>((resolve) => {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    delete this.emitTileableChangedInProgress;
-                    this.emit(
-                        'tileableList-changed',
-                        this.tileableList,
-                        oldTileableList
-                    );
-                    resolve();
-                    return GLib.SOURCE_REMOVE;
-                });
-            });
+            this.emitTileableChangedInProgress = new Promise<void>(
+                (resolve) => {
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                        delete this.emitTileableChangedInProgress;
+                        this.emit(
+                            'tileableList-changed',
+                            this.tileableList,
+                            oldTileableList
+                        );
+                        resolve();
+                        return GLib.SOURCE_REMOVE;
+                    });
+                }
+            );
         }
         return this.emitTileableChangedInProgress;
     }
@@ -305,7 +311,7 @@ export class MsWorkspace extends WithSignals {
         const index = this.tileableList.indexOf(tileable);
         if (index === -1) return;
         if (index > 0 && tileable != this.appLauncher) {
-            let previousTileable = this.tileableList[index - 1];
+            const previousTileable = this.tileableList[index - 1];
             this.swapTileable(tileable, previousTileable);
             this.focusPreviousTileable();
         }
@@ -318,7 +324,7 @@ export class MsWorkspace extends WithSignals {
             index < this.tileableList.length - 1 &&
             tileable != this.appLauncher
         ) {
-            let nextTileable = this.tileableList[index + 1];
+            const nextTileable = this.tileableList[index + 1];
             if (nextTileable === this.appLauncher) {
                 return;
             }
@@ -373,7 +379,10 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    focusTileable(tileable: MsWindow | MsApplicationLauncher | null, forced: boolean = false) {
+    focusTileable(
+        tileable: MsWindow | MsApplicationLauncher | null,
+        forced = false
+    ) {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
@@ -395,7 +404,7 @@ export class MsWorkspace extends WithSignals {
         this.emit('tileable-focus-changed', tileable, oldTileableFocused);
     }
 
-    refreshFocus(forced: boolean = false) {
+    refreshFocus(forced = false) {
         if (
             this.msWorkspaceManager.getActiveMsWorkspace() !== this &&
             !forced
@@ -403,33 +412,37 @@ export class MsWorkspace extends WithSignals {
             return;
         }
 
-        let focused = this.tileableFocused;
+        const focused = this.tileableFocused;
         if (focused !== null) focused.grab_key_focus();
     }
 
     setTileableBefore(tileableToMove: Tileable, tileableRelative: Tileable) {
         const oldTileableList = [...this.tileableList];
-        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
+        const tileableRelativeIndex = this.tileableList.indexOf(
+            tileableRelative
+        );
         this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
     setTileableAfter(tileableToMove: Tileable, tileableRelative: Tileable) {
         const oldTileableList = [...this.tileableList];
-        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        let tileableRelativeIndex = this.tileableList.indexOf(tileableRelative);
+        const tileableRelativeIndex = this.tileableList.indexOf(
+            tileableRelative
+        );
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
     setTileableAtIndex(tileableToMove: Tileable, index: number) {
         const oldTileableList = [...this.tileableList];
-        let tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
+        const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
         this.tileableList.splice(index, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
@@ -460,7 +473,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     setLayoutByKey(layoutKey: string) {
-        logAssert(!this.destroyed, "Workspace is destroyed");
+        logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.layout) {
             this.layout.onDestroy();
@@ -537,7 +550,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     activate() {
-        let workspace = this.workspace;
+        const workspace = this.workspace;
         if (workspace === null) return;
 
         if (
@@ -556,7 +569,7 @@ export class MsWorkspace extends WithSignals {
 
     focusLastTileable() {
         if (this.tileableList.length) {
-            let lastTileable =
+            const lastTileable =
                 this.tileableList[this.focusedIndex] ||
                 this.tileableList.slice(-1)[0];
             this.focusTileable(lastTileable);
@@ -573,14 +586,17 @@ export class MsWorkspace extends WithSignals {
             msWindow.setMsWorkspace(this);
         });
     }
-};
+}
 
 @registerGObjectClass
 export class MsWorkspaceActor extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsWorkspaceActor',
     };
-    tileableContainer: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
+    tileableContainer: Clutter.Actor<
+        Clutter.LayoutManager,
+        Clutter.ContentPrototype
+    >;
     panel: any;
     msWorkspace: MsWorkspace;
 
@@ -607,20 +623,19 @@ export class MsWorkspaceActor extends Clutter.Actor {
         );
         if (this.panel) {
             this.panel.visible =
-                this.msWorkspace.shouldPanelBeVisible() &&
-                !monitorInFullScreen;
+                this.msWorkspace.shouldPanelBeVisible() && !monitorInFullScreen;
         }
         this.visible = !monitorInFullScreen;
     }
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
-        let contentBox = new Clutter.ActorBox();
+        const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
-        let panelPosition = Me.msThemeManager.horizontalPanelPosition;
+        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         const panelHeight = this.panel.get_preferred_height(-1)[1];
-        let panelBox = new Clutter.ActorBox();
+        const panelBox = new Clutter.ActorBox();
         panelBox.x1 = contentBox.x1;
         panelBox.x2 = contentBox.x2;
 
@@ -630,7 +645,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
                 : contentBox.y2 - panelHeight;
         panelBox.y2 = panelBox.y1 + panelHeight;
         Allocate(this.panel, panelBox, flags);
-        let containerBox = new Clutter.ActorBox();
+        const containerBox = new Clutter.ActorBox();
         containerBox.x1 = contentBox.x1;
         containerBox.x2 = contentBox.x2;
         containerBox.y1 = contentBox.y1;
@@ -646,8 +661,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.get_children()
             .filter(
                 (actor) =>
-                    [this.panel, this.tileableContainer].indexOf(actor) ===
-                    -1
+                    [this.panel, this.tileableContainer].indexOf(actor) === -1
             )
             .forEach((actor) => {
                 Allocate(actor, containerBox, flags);

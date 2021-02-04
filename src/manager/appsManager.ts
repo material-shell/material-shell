@@ -2,14 +2,12 @@
 import * as Shell from 'shell';
 
 export class AppsManager {
-    constructor() {}
-
     static getApps() {
-        let usage = Shell.AppUsage.get_default();
-        let appSystem = Shell.AppSystem.get_default();
-        let appsInstalled = appSystem.get_installed().filter((appInfo) => {
+        const usage = Shell.AppUsage.get_default();
+        const appSystem = Shell.AppSystem.get_default();
+        const appsInstalled = appSystem.get_installed().filter((appInfo) => {
             try {
-                let _ = appInfo.get_id(); // catch invalid file encodings
+                const _ = appInfo.get_id(); // catch invalid file encodings
             } catch (e) {
                 return false;
             }
@@ -24,4 +22,4 @@ export class AppsManager {
                 return appSystem.lookup_app(appInfo.get_id());
             });
     }
-};
+}

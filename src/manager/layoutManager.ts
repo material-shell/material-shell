@@ -9,17 +9,17 @@ import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 
-import { MaximizeLayout } from "src/layout/msWorkspace/tilingLayouts/maximize";
-import { SplitLayout } from "src/layout/msWorkspace/tilingLayouts/split";
-import { FloatLayout } from "src/layout/msWorkspace/tilingLayouts/float";
-import { HalfLayout } from "src/layout/msWorkspace/tilingLayouts/custom/half";
-import { HalfHorizontalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/halfHorizontal";
-import { HalfVerticalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/halfVertical";
-import { SimpleLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simple";
-import { SimpleHorizontalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simpleHorizontal";
-import { SimpleVerticalLayout } from "src/layout/msWorkspace/tilingLayouts/custom/simpleVertical";
-import { RatioLayout } from "src/layout/msWorkspace/tilingLayouts/custom/ratio";
-import { GridLayout } from "src/layout/msWorkspace/tilingLayouts/custom/grid";
+import { MaximizeLayout } from 'src/layout/msWorkspace/tilingLayouts/maximize';
+import { SplitLayout } from 'src/layout/msWorkspace/tilingLayouts/split';
+import { FloatLayout } from 'src/layout/msWorkspace/tilingLayouts/float';
+import { HalfLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/half';
+import { HalfHorizontalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/halfHorizontal';
+import { HalfVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/halfVertical';
+import { SimpleLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simple';
+import { SimpleHorizontalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simpleHorizontal';
+import { SimpleVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simpleVertical';
+import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
+import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
 
 type LayoutType = typeof BaseTilingLayout;
 
@@ -37,7 +37,9 @@ const layouts: LayoutType[] = [
     FloatLayout,
 ];
 
-export const TilingLayoutByKey: {[key: string]: typeof BaseTilingLayout} = layouts.reduce((layoutsByKey, layout) => {
+export const TilingLayoutByKey: {
+    [key: string]: typeof BaseTilingLayout;
+} = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
 }, {});
@@ -51,8 +53,8 @@ export class LayoutManager extends MsManager {
     useScreenGap: boolean;
     tweenTime: number;
     gap: number;
-    availableLayouts: LayoutType[]|undefined;
-    tilingInProgress: boolean|undefined;
+    availableLayouts: LayoutType[] | undefined;
+    tilingInProgress: boolean | undefined;
 
     constructor() {
         super();
@@ -141,7 +143,7 @@ export class LayoutManager extends MsManager {
 
         this.tilingInProgress = true;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            for (let monitor of Main.layoutManager.monitors) {
+            for (const monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
                     msWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
@@ -150,7 +152,7 @@ export class LayoutManager extends MsManager {
                         monitor.index
                     )[0];
                 }
-                let layout = msWorkspace.layout;
+                const layout = msWorkspace.layout;
 
                 layout.tileAll();
                 //this.dialogLayout.onTile(dialogWindows, monitor);
@@ -160,4 +162,4 @@ export class LayoutManager extends MsManager {
             return GLib.SOURCE_REMOVE;
         });
     }
-};
+}

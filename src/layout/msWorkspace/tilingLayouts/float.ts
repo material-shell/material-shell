@@ -5,8 +5,8 @@ import * as GLib from 'glib';
 import * as GObject from 'gobject';
 
 /** Extension imports */
-import { BaseTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseTiling";
-import * as WindowUtils from "src/utils/windows";
+import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
+import * as WindowUtils from 'src/utils/windows';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
@@ -20,10 +20,7 @@ export class FloatLayout extends BaseTilingLayout {
 
     constructor(msWorkspace: MsWorkspace, state) {
         super(msWorkspace, state);
-        global.display.connect(
-            'restacked',
-            this.windowsRestacked.bind(this)
-        );
+        global.display.connect('restacked', this.windowsRestacked.bind(this));
         this.windowsRestacked();
     }
 
@@ -57,7 +54,7 @@ export class FloatLayout extends BaseTilingLayout {
     }
 
     showAppLauncher() {
-        let actor = this.msWorkspace.appLauncher;
+        const actor = this.msWorkspace.appLauncher;
         actor.x = 0;
         actor.y = 0;
         actor.width = this.tileableContainer.allocation.get_width();
@@ -103,9 +100,7 @@ export class FloatLayout extends BaseTilingLayout {
             const metaWindow = actor.metaWindow;
             if (metaWindow && metaWindow.msWindow) {
                 if (
-                    this.msWorkspace.tileableList.includes(
-                        metaWindow.msWindow
-                    )
+                    this.msWorkspace.tileableList.includes(metaWindow.msWindow)
                 ) {
                     this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
                         metaWindow.msWindow,

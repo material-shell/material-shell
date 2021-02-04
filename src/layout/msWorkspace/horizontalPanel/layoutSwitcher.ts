@@ -83,7 +83,7 @@ export class LayoutSwitcher extends St.BoxLayout {
             return;
         }
 
-        let quickWidget = this.msWorkspace.layout.buildQuickWidget();
+        const quickWidget = this.msWorkspace.layout.buildQuickWidget();
         if (quickWidget) {
             this.layoutQuickWidgetBin.set_child(quickWidget);
             this.layoutQuickWidgetBin.show();
@@ -129,11 +129,9 @@ export class LayoutSwitcher extends St.BoxLayout {
             return true;
 
         // Add the layout in the right order
-        const wantedIndex = Me.layoutManager.layoutList.findIndex(
-            (layout) => {
-                return layoutKey === layout.state.key;
-            }
-        );
+        const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
+            return layoutKey === layout.state.key;
+        });
         const newState = Me.layoutManager.getLayoutByKey(layoutKey).state;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
@@ -149,8 +147,7 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     removeLayout(layoutKey: string) {
-        if (this.msWorkspace.state.layoutStateList.length === 1)
-            return false;
+        if (this.msWorkspace.state.layoutStateList.length === 1) return false;
         if (
             this.msWorkspace.state.layoutStateList.find(
                 (layoutState) => layoutState.key === layoutKey
@@ -167,7 +164,7 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
-        let box = args[0];
+        const box = args[0];
         const height = box.get_height() / 2;
 
         if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
@@ -255,7 +252,7 @@ export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
         if (visible) {
             if (this.height === 0) {
                 this.height = -1;
-                let height = this.height;
+                const height = this.height;
                 this.height = 0;
                 this.ease({
                     height: height,

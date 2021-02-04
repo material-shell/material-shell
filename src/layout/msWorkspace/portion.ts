@@ -155,7 +155,7 @@ export class Portion {
             return;
         }
 
-        let child = this.children[0];
+        const child = this.children[0];
 
         if (child) {
             if (child.children.length) {
@@ -178,7 +178,7 @@ export class Portion {
             return;
         }
 
-        let child = this.children[this.children.length - 1];
+        const child = this.children[this.children.length - 1];
 
         if (child) {
             if (child.children.length) {
@@ -193,13 +193,17 @@ export class Portion {
 
     isBorderInSubPortion(index: number, after = false) {
         let portionIndex = 0;
-        let afterOffset = after ? 1 : 0;
+        const afterOffset = after ? 1 : 0;
 
         for (let i = 0; i < this.children.length; i++) {
             const portion = this.children[i];
 
             if (portionIndex === index) {
-                if (after || i - afterOffset < 0 || portion.children.length === 0) {
+                if (
+                    after ||
+                    i - afterOffset < 0 ||
+                    portion.children.length === 0
+                ) {
                     return false;
                 }
             }
@@ -251,9 +255,13 @@ export class Portion {
         return false;
     }
 
-    getBorderForIndex(index: number, vertical = false, after = false): PortionBorder | undefined {
+    getBorderForIndex(
+        index: number,
+        vertical = false,
+        after = false
+    ): PortionBorder | undefined {
         let portionIndex = 0;
-        let afterOffset = after ? 1 : 0;
+        const afterOffset = after ? 1 : 0;
 
         if (index >= this.portionLength) {
             return;
@@ -287,7 +295,10 @@ export class Portion {
         }
     }
 
-    getRatioForIndex(index: number, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }): Rectangular | undefined {
+    getRatioForIndex(
+        index: number,
+        ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }
+    ): Rectangular | undefined {
         let portionIndex = 0;
 
         if (index >= this.portionLength) {
@@ -314,7 +325,10 @@ export class Portion {
         return ratio;
     }
 
-    getRatioForPortion(portion: Portion, ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }): Rectangular {
+    getRatioForPortion(
+        portion: Portion,
+        ratio: Rectangular = { x: 0, y: 0, width: 1, height: 1 }
+    ): Rectangular {
         const basisTotal = this.children.reduce(
             (sum, child) => sum + child.basis,
             0
@@ -359,7 +373,11 @@ export class PortionBorder {
     secondPortion: Portion;
     parentPortion: Portion;
 
-    constructor(firstPortion: Portion, secondPortion: Portion, parentPortion: Portion) {
+    constructor(
+        firstPortion: Portion,
+        secondPortion: Portion,
+        parentPortion: Portion
+    ) {
         this.firstPortion = firstPortion;
         this.secondPortion = secondPortion;
         this.parentPortion = parentPortion;

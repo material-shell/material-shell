@@ -19,7 +19,7 @@ export class MatNumberPicker extends St.BoxLayout {
                 param_types: [GObject.TYPE_INT],
             },
         },
-    }
+    };
 
     value: number;
     params: any;
@@ -73,17 +73,11 @@ export class MatNumberPicker extends St.BoxLayout {
         this.add_child(this.plusButton);
     }
     decrement() {
-        this.value = Math.max(
-            this.params.min,
-            this.value - this.params.step
-        );
+        this.value = Math.max(this.params.min, this.value - this.params.step);
         this.updateValue();
     }
     increment() {
-        this.value = Math.min(
-            this.params.max,
-            this.value + this.params.step
-        );
+        this.value = Math.min(this.params.max, this.value + this.params.step);
         this.updateValue();
     }
     updateValue() {

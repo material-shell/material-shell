@@ -3,7 +3,7 @@ import * as GObject from 'gobject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
@@ -29,4 +29,3 @@ export class RatioLayout extends BaseResizeableTilingLayout {
         }
     }
 }
-

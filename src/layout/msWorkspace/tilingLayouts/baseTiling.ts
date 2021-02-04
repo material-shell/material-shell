@@ -11,7 +11,7 @@ import {
     SetAllocation,
     Allocate,
     AllocatePreferredSize,
-} from "src/utils/compatibility";
+} from 'src/utils/compatibility';
 import { getSettings } from 'src/utils/settings';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { InfinityTo0 } from 'src/utils/index';
@@ -119,28 +119,31 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
             this.tileableContainer.add_child(tileable);
         }
         /*
-            * Function called automatically at the layout init or when a new window enter
-            */
+         * Function called automatically at the layout init or when a new window enter
+         */
     }
 
     restoreTileable(tileable: Tileable) {
         /*
-            * Function called automatically at the layout destroy or when a window leave
-            */
+         * Function called automatically at the layout destroy or when a window leave
+         */
     }
 
-    tileTileable(tileable: Tileable, box: Clutter.ActorBox, index: number, siblingLength: number) {
+    tileTileable(
+        tileable: Tileable,
+        box: Clutter.ActorBox,
+        index: number,
+        siblingLength: number
+    ) {
         /*
-            * Function called automatically size of the container change
-            */
+         * Function called automatically size of the container change
+         */
     }
 
     resolveBox(box?: Clutter.ActorBox): Clutter.ActorBox {
         if (!box) {
             box = new Clutter.ActorBox();
-            box.x2 = InfinityTo0(
-                this.tileableContainer.allocation.get_width()
-            );
+            box.x2 = InfinityTo0(this.tileableContainer.allocation.get_width());
             box.y2 = InfinityTo0(
                 this.tileableContainer.allocation.get_height()
             );
@@ -167,7 +170,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     showAppLauncher() {
-        let actor = this.msWorkspace.appLauncher;
+        const actor = this.msWorkspace.appLauncher;
 
         actor.visible = true;
         actor.set_scale(0.8, 0.8);
@@ -186,7 +189,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     hideAppLauncher() {
-        let actor = this.msWorkspace.appLauncher;
+        const actor = this.msWorkspace.appLauncher;
         actor.ease({
             scale_x: 0.8,
             scale_y: 0.8,
@@ -205,15 +208,23 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         });
     }
 
-    onTileableListChanged(tileableList: Tileable[], oldTileableList: (Tileable | null)[]) {
+    onTileableListChanged(
+        tileableList: Tileable[],
+        oldTileableList: (Tileable | null)[]
+    ) {
         const enteringTileableList = tileableList.filter(
             (tileable) => !oldTileableList.includes(tileable)
         );
 
-        const leavingPredicate = function (tileable: Tileable | null): tileable is MsWindow {
-            return tileable instanceof MsWindow && !tileableList.includes(tileable) &&
-                Me.msWindowManager.msWindowList.includes(tileable);
-        }
+        const leavingPredicate = function (
+            tileable: Tileable | null
+        ): tileable is MsWindow {
+            return (
+                tileable instanceof MsWindow &&
+                !tileableList.includes(tileable) &&
+                Me.msWindowManager.msWindowList.includes(tileable)
+            );
+        };
 
         const leavingTileableList = oldTileableList.filter(leavingPredicate);
 
@@ -225,8 +236,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         });
         if (
             this.msWorkspace.appLauncher.visible &&
-            this.msWorkspace.tileableFocused !==
-            this.msWorkspace.appLauncher
+            this.msWorkspace.tileableFocused !== this.msWorkspace.appLauncher
         ) {
             this.hideAppLauncher();
         }
@@ -266,7 +276,14 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         };
     }
 
-    applyGaps(x: number, y: number, width: number, height: number, screenGap?: number, gap?: number) {
+    applyGaps(
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        screenGap?: number,
+        gap?: number
+    ) {
         // Reduces box size according to gap setting
         gap = gap || Me.layoutManager.gap;
         if (screenGap == undefined) {
@@ -327,15 +344,25 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         // return a widget to add to the panel
     }
 
-    vfunc_get_preferred_width(_container, _forHeight: number): [number, number] {
+    vfunc_get_preferred_width(
+        _container,
+        _forHeight: number
+    ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_get_preferred_height(_container, _forWidth: number): [number, number] {
+    vfunc_get_preferred_height(
+        _container,
+        _forWidth: number
+    ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_allocate(container: Clutter.Actor, box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    vfunc_allocate(
+        container: Clutter.Actor,
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         this.tileAll(box);
         container.get_children().forEach((actor) => {
             if (this.msWorkspace.tileableList.includes(actor as any)) {
@@ -352,8 +379,10 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
                 signal.from.disconnect(signal.id);
             } catch (error) {
                 Me.log(
-                    `Failed to disconnect signal ${signal.id} from ${signal.from
-                    } ${signal.from.constructor.name
+                    `Failed to disconnect signal ${signal.id} from ${
+                        signal.from
+                    } ${
+                        signal.from.constructor.name
                     } ${signal.from.toString()}  `
                 );
             }

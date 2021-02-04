@@ -35,8 +35,7 @@ build_prod: all
 compile: dist
 	npx tsc
 	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
-	npx rollup -c rollup.config.extension.js
-	npx rollup -c rollup.config.prefs.js
+	npm run rollup-extension && npm run rollup-prefs
 
 	cp metadata.json dist
 	cp -r schemas dist/schemas

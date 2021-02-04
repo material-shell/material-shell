@@ -9,19 +9,19 @@ const FOCUS_ONLY = false;
 let indent = 0;
 export function initDebug() {
     // TODO: Essentially dead code
-    var AddLogToFunctions = function (prototype) {
+    const AddLogToFunctions = function (prototype) {
         if (!DEBUG) return;
-        for (let key of Object.getOwnPropertyNames(prototype)) {
+        for (const key of Object.getOwnPropertyNames(prototype)) {
             if (key === 'constructor') continue;
             const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
             if (descriptor) {
                 const value = descriptor.value;
                 if (typeof value === 'function') {
-                    prototype[key] = function () {
+                    prototype[key] = function (...args) {
                         // Before
                         Me.log(
                             `${prototype.constructor.name}.${key} (${Array.from(
-                                arguments
+                                args
                             )
                                 .map((param) => {
                                     try {
@@ -33,7 +33,7 @@ export function initDebug() {
                                 .join(',')})`
                         );
                         indent++;
-                        var result = value.apply(this, arguments); // use .apply() to call it
+                        const result = value.apply(this, args); // use .apply() to call it
                         // After
 
                         indent--;
@@ -46,23 +46,23 @@ export function initDebug() {
 
     Me.log = function (message: string, ...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;
-        let fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
-        let domain = 'Material Shell';
+        const fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
+        const domain = 'Material Shell';
 
         GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
     };
 
     Me.logFocus = function (message: string, ...args: any[]) {
         if (!DEBUG) return;
-        let fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
-        let domain = 'Material Shell';
+        const fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
+        const domain = 'Material Shell';
 
         GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
     };
 
     let doLogTick = false;
     /* exported startLogTick */
-    var startLogTick = function () {
+    const startLogTick = function () {
         doLogTick = true;
         logTick();
     };
@@ -76,7 +76,7 @@ export function initDebug() {
         });
     }
     /* exported stopLogTick */
-    var stopLogTick = function () {
+    const stopLogTick = function () {
         doLogTick = false;
     };
 
@@ -89,7 +89,7 @@ export function initDebug() {
     if (DEBUG) {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            let objects: any[] = [
+            const objects: any[] = [
                 /* Me.imports.src.manager.msWindowManager.MsWindowManager,
                 Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
                 Me.imports.src.manager.msThemeManager.MsThemeManager,
@@ -112,9 +112,10 @@ export function initDebug() {
                     .TilingLayoutMenuItem,
                 Me.imports.src.widget.reorderableList.ReorderableList, */
             ];
-            objects.filter((object) => object)
+            objects
+                .filter((object) => object)
                 .forEach((object) => AddLogToFunctions(object.prototype));
             return false;
         });
     }
-};
+}

@@ -12,8 +12,8 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { Widget } from 'st';
 
 interface MatButtonParams extends Partial<Widget.ConstructorProperties> {
-    primary?: boolean,
-    child?: St.Widget,
+    primary?: boolean;
+    child?: St.Widget;
 }
 
 @registerGObjectClass
@@ -38,11 +38,10 @@ export class MatButton extends St.Widget {
     private _longPressLater: any;
     child: St.Widget | undefined;
 
-
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
         const child = params.child;
-        let super_params: Partial<Widget.ConstructorProperties> = params;
+        const super_params: Partial<Widget.ConstructorProperties> = params;
         delete super_params.child;
         delete super_params.primary;
         Object.assign(super_params, {
@@ -59,7 +58,7 @@ export class MatButton extends St.Widget {
             this.add_style_class_name('primary');
         }
 
-        let clickAction = new Clutter.ClickAction();
+        const clickAction = new Clutter.ClickAction();
         clickAction.connect('clicked', (action) => {
             this.clicked = true;
             const button = action.get_button();
@@ -84,12 +83,16 @@ export class MatButton extends St.Widget {
         });
     }
 
-    _onLongPress(action: Clutter.ClickAction, actor: Clutter.Actor, state: Clutter.LongPressState) {
+    _onLongPress(
+        action: Clutter.ClickAction,
+        actor: Clutter.Actor,
+        state: Clutter.LongPressState
+    ) {
         // Take advantage of the Clutter policy to consider
         // a long-press canceled when the pointer movement
         // exceeds dnd-drag-threshold to manually start the drag
         if (state == Clutter.LongPressState.CANCEL) {
-            let event = Clutter.get_current_event();
+            const event = Clutter.get_current_event();
 
             if (this._longPressLater) return true;
 
@@ -133,7 +136,7 @@ export class MatButton extends St.Widget {
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         if (this.child) {
             Allocate(this.child, contentBox, flags);

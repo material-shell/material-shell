@@ -14,7 +14,15 @@ export class RippleWave extends St.Widget {
     mouseY: number;
     fullSize: number;
 
-    constructor({ mouseX, mouseY, size } : { mouseX: number, mouseY: number, size: number }) {
+    constructor({
+        mouseX,
+        mouseY,
+        size,
+    }: {
+        mouseX: number;
+        mouseY: number;
+        size: number;
+    }) {
         super({
             style_class: 'ripple-wave',
         });
@@ -73,29 +81,32 @@ export class RippleBackground extends St.Widget {
             clip_to_allocation: true,
         });
         this.displayed = true;
-        eventListener.connect('event', (actor: Clutter.Actor, event: Clutter.Event) => {
-            let eventType = event.type();
-            if (
-                [
-                    Clutter.EventType.BUTTON_PRESS,
-                    Clutter.EventType.TOUCH_BEGIN,
-                ].indexOf(eventType) > -1
-            ) {
-                let [_, x, y] = this.transform_stage_point(
-                    ...event.get_coords()
-                );
-                this.createRippleWave(x, y);
-            } else if (
-                [
-                    Clutter.EventType.BUTTON_RELEASE,
-                    Clutter.EventType.TOUCH_END,
-                    Clutter.EventType.LEAVE,
-                ].indexOf(eventType) > -1
-            ) {
-                this.removeRippleWave();
+        eventListener.connect(
+            'event',
+            (actor: Clutter.Actor, event: Clutter.Event) => {
+                const eventType = event.type();
+                if (
+                    [
+                        Clutter.EventType.BUTTON_PRESS,
+                        Clutter.EventType.TOUCH_BEGIN,
+                    ].indexOf(eventType) > -1
+                ) {
+                    const [_, x, y] = this.transform_stage_point(
+                        ...event.get_coords()
+                    );
+                    this.createRippleWave(x, y);
+                } else if (
+                    [
+                        Clutter.EventType.BUTTON_RELEASE,
+                        Clutter.EventType.TOUCH_END,
+                        Clutter.EventType.LEAVE,
+                    ].indexOf(eventType) > -1
+                ) {
+                    this.removeRippleWave();
+                }
+                return false;
             }
-            return false;
-        });
+        );
 
         const deactivateId = global.stage.connect(
             'deactivate',
@@ -110,15 +121,14 @@ export class RippleBackground extends St.Widget {
         this.lastWave = new RippleWave({
             mouseX: x,
             mouseY: y,
-            size: Math.max(this.width, this.height)
-        }
-        );
+            size: Math.max(this.width, this.height),
+        });
         this.add_child(this.lastWave);
     }
 
     removeRippleWave() {
         if (this.lastWave) {
-            let waveToDelete = this.lastWave;
+            const waveToDelete = this.lastWave;
             delete this.lastWave;
             waveToDelete.removeIn(0.8);
         }

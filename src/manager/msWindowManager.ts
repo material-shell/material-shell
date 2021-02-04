@@ -21,7 +21,11 @@ import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 export type MsWindowManagerType = InstanceType<typeof MsWindowManager>;
 export class MsWindowManager extends MsManager {
     windowTracker: any;
-    msWindowWaitingForMetaWindowList: { timestamp: number, msWindow: MsWindow, checked: boolean }[];
+    msWindowWaitingForMetaWindowList: {
+        timestamp: number;
+        msWindow: MsWindow;
+        checked: boolean;
+    }[];
     msWindowList: MsWindow[];
     metaWindowFocused: null; // TODO: Remove?
     msDndManager: MsDndManager;
@@ -59,7 +63,7 @@ export class MsWindowManager extends MsManager {
             metaWindow.createdAt = metaWindow.user_time;
             if (metaWindow.msWindow) delete metaWindow.msWindow;
             if (this._handleWindow(metaWindow)) {
-                let msWindow = this.msWindowList.find((msWindow) => {
+                const msWindow = this.msWindowList.find((msWindow) => {
                     return (
                         msWindow.metaWindowIdentifier ===
                         this.buildMetaWindowIdentifier(metaWindow)
@@ -74,7 +78,13 @@ export class MsWindowManager extends MsManager {
         });
     }
 
-    onNewMetaWindow(metaWindow: Meta.Window & { createdAt?: number, firstFrameDrawn?: boolean, handledByMaterialShell?: boolean }) {
+    onNewMetaWindow(
+        metaWindow: Meta.Window & {
+            createdAt?: number;
+            firstFrameDrawn?: boolean;
+            handledByMaterialShell?: boolean;
+        }
+    ) {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
         metaWindow
@@ -85,7 +95,7 @@ export class MsWindowManager extends MsManager {
 
         if (!this._handleWindow(metaWindow)) {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
-            let actor = metaWindow.get_compositor_private<Clutter.Actor>();
+            const actor = metaWindow.get_compositor_private<Clutter.Actor>();
             if (actor.get_parent() != global.top_window_group) {
                 actor
                     .get_parent()
@@ -134,21 +144,21 @@ export class MsWindowManager extends MsManager {
         description: string | null,
         metaWindow: any,
         msWorkspace: {
-            msWorkspace: MsWorkspace,
-            focus: boolean,
-            insert: boolean
+            msWorkspace: MsWorkspace;
+            focus: boolean;
+            insert: boolean;
         },
         persistent?: boolean,
-        initialAllocation?: Rectangular,
+        initialAllocation?: Rectangular
     ) {
-        let appSys = Shell.AppSystem.get_default();
+        const appSys = Shell.AppSystem.get_default();
         const app =
             appSys.lookup_app(appId) ||
             (metaWindow && this.windowTracker.get_window_app(metaWindow));
         if (!app) {
             return;
         }
-        let msWindow = new MsWindow({
+        const msWindow = new MsWindow({
             app,
             metaWindowIdentifier: description,
             metaWindow,
@@ -156,7 +166,11 @@ export class MsWindowManager extends MsManager {
             initialAllocation,
             msWorkspace: msWorkspace.msWorkspace,
         });
-        msWorkspace.msWorkspace.addMsWindowUnchecked(msWindow, msWorkspace.focus, msWorkspace.insert);
+        msWorkspace.msWorkspace.addMsWindowUnchecked(
+            msWindow,
+            msWorkspace.focus,
+            msWorkspace.insert
+        );
         msWindow.connect('request-new-meta-window', () => {
             this.openAppForMsWindow(msWindow);
         });
@@ -193,7 +207,7 @@ export class MsWindowManager extends MsManager {
         // For every waiting Window we do
         this.metaWindowWaitingForAssignationList.forEach(
             (waitingMetaWindow) => {
-                let app = this.windowTracker.get_window_app(
+                const app = this.windowTracker.get_window_app(
                     waitingMetaWindow.metaWindow
                 );
                 let msWindowFound: MsWindow | null = null;
@@ -213,7 +227,7 @@ export class MsWindowManager extends MsManager {
                     } else if (app) {
                         // But sometime the we failed to found one.
                         // So we try to find a regular window with the same app
-                        let sameAppMsWindowList = this.msWindowList.filter(
+                        const sameAppMsWindowList = this.msWindowList.filter(
                             (msWindow) => {
                                 return (
                                     msWindow.metaWindow &&
@@ -293,7 +307,7 @@ export class MsWindowManager extends MsManager {
                         msWindowFound.setWindow(waitingMetaWindow.metaWindow);
                     }
                 } else {
-                    let app = this.windowTracker.get_window_app(
+                    const app = this.windowTracker.get_window_app(
                         waitingMetaWindow.metaWindow
                     );
                     if (
@@ -301,7 +315,7 @@ export class MsWindowManager extends MsManager {
                             !app.is_window_backed()) ||
                         timestamp - waitingMetaWindow.timestamp > 2000
                     ) {
-                        let msWorkspace = Me.msWorkspaceManager.determineAppropriateMsWorkspace(
+                        const msWorkspace = Me.msWorkspaceManager.determineAppropriateMsWorkspace(
                             waitingMetaWindow.metaWindow
                         );
                         this.createNewMsWindow(
@@ -364,7 +378,7 @@ export class MsWindowManager extends MsManager {
 
     openAppForMsWindow(msWindow) {
         this.setMsWindowAsWaitingForMetaWindow(msWindow);
-        let workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+        const workspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
             msWindow.msWorkspace
         );
         msWindow.app.launch(0, workspaceIndex, false);
@@ -384,13 +398,18 @@ export class MsWindowManager extends MsManager {
             metaWindow.stick();
             return false;
         }
-        let meta = Meta.WindowType;
-        let types = [meta.NORMAL, meta.DIALOG, meta.MODAL_DIALOG, meta.UTILITY];
+        const meta = Meta.WindowType;
+        const types = [
+            meta.NORMAL,
+            meta.DIALOG,
+            meta.MODAL_DIALOG,
+            meta.UTILITY,
+        ];
         return types.includes(metaWindow.window_type);
     }
 
     isMetaWindowDialog(metaWindow) {
-        let dialogTypes = [
+        const dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
             Meta.WindowType.UTILITY,
@@ -424,5 +443,5 @@ export class MsWindowManager extends MsManager {
                 delete metaWindow.handledByMaterialShell;
         });
     }
-};
+}
 Signals.addSignalMethods(MsWindowManager.prototype);

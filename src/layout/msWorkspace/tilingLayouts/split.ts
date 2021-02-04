@@ -3,7 +3,7 @@ import * as GObject from 'gobject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
 import { reparentActor } from 'src/utils/index';
@@ -58,8 +58,8 @@ export class SplitLayout extends BaseResizeableTilingLayout {
             Math.min(
                 this.msWorkspace.focusedIndex,
                 this.msWorkspace.tileableList.length -
-                this._state.nbOfColumns -
-                1
+                    this._state.nbOfColumns -
+                    1
             )
         );
         this.activeTileableList = this.msWorkspace.tileableList.slice(
@@ -68,7 +68,10 @@ export class SplitLayout extends BaseResizeableTilingLayout {
         );
     }
 
-    onTileableListChanged(newWindows: Tileable[], oldWindows: (Tileable | null)[]) {
+    onTileableListChanged(
+        newWindows: Tileable[],
+        oldWindows: (Tileable | null)[]
+    ) {
         super.onTileableListChanged(newWindows, oldWindows);
         this.updateActiveTileableListFromFocused();
         this.refreshVisibleActors();
@@ -76,7 +79,7 @@ export class SplitLayout extends BaseResizeableTilingLayout {
 
     refreshVisibleActors() {
         this.msWorkspace.tileableList.forEach((tileable) => {
-            let willBeDisplay = this.activeTileableList.includes(tileable);
+            const willBeDisplay = this.activeTileableList.includes(tileable);
             if (
                 willBeDisplay &&
                 tileable.get_parent() !== this.tileableContainer
@@ -89,7 +92,10 @@ export class SplitLayout extends BaseResizeableTilingLayout {
         this.msWorkspace.refreshFocus();
     }
 
-    onFocusChanged(tileableFocused: Tileable, oldTileableFocused: Tileable | null) {
+    onFocusChanged(
+        tileableFocused: Tileable,
+        oldTileableFocused: Tileable | null
+    ) {
         if (this.activeTileableList.includes(tileableFocused)) {
             this.activeTileableList.forEach((tileable) => {
                 this.setUnFocusEffect(
@@ -102,9 +108,7 @@ export class SplitLayout extends BaseResizeableTilingLayout {
         }
 
         // TODO: What happens if newIndex=1 and oldIndex=2 and columns=3?
-        const newIndex = this.msWorkspace.tileableList.indexOf(
-            tileableFocused
-        );
+        const newIndex = this.msWorkspace.tileableList.indexOf(tileableFocused);
         const oldIndex = this.msWorkspace.tileableList.indexOf(
             oldTileableFocused as any
         );
@@ -125,19 +129,17 @@ export class SplitLayout extends BaseResizeableTilingLayout {
         );
 
         this.startTransition(oldTileableList, this.activeTileableList);
-        [...oldTileableList, ...this.activeTileableList].forEach(
-            (tileable) => {
-                this.setUnFocusEffect(
-                    tileable,
-                    this.currentFocusEffect,
-                    tileable === tileableFocused
-                );
-            }
-        );
+        [...oldTileableList, ...this.activeTileableList].forEach((tileable) => {
+            this.setUnFocusEffect(
+                tileable,
+                this.currentFocusEffect,
+                tileable === tileableFocused
+            );
+        });
     }
 
     showAppLauncher() {
-        let actor = this.msWorkspace.appLauncher;
+        const actor = this.msWorkspace.appLauncher;
         actor.visible = true;
     }
 
@@ -162,9 +164,7 @@ export class SplitLayout extends BaseResizeableTilingLayout {
 
     updateMainPortionLength(length: number) {
         super.updateMainPortionLength(
-            length > this._state.nbOfColumns
-                ? this._state.nbOfColumns
-                : length
+            length > this._state.nbOfColumns ? this._state.nbOfColumns : length
         );
     }
 
@@ -179,33 +179,34 @@ export class SplitLayout extends BaseResizeableTilingLayout {
     /*
      * Animations
      */
-    startTransition(previousTileableList: Tileable[], nextTileableList: Tileable[]) {
+    startTransition(
+        previousTileableList: Tileable[],
+        nextTileableList: Tileable[]
+    ) {
         if (!this.translationAnimator.get_parent()) {
             this.translationAnimator.width = this.tileableContainer.allocation.get_width();
             this.translationAnimator.height = this.tileableContainer.allocation.get_height();
             this.tileableContainer.add_child(this.translationAnimator);
         }
 
-        let direction = nextTileableList.includes(previousTileableList[0])
+        const direction = nextTileableList.includes(previousTileableList[0])
             ? -1
             : 1;
         [...previousTileableList, ...nextTileableList].forEach((actor) => {
-            let parent = actor.get_parent();
+            const parent = actor.get_parent();
             if (parent && parent === this.tileableContainer) {
                 parent.remove_child(actor);
             }
             if (this.vertical) {
-                actor.set_width(
-                    this.tileableContainer.allocation.get_width()
-                );
+                actor.set_width(this.tileableContainer.allocation.get_width());
                 actor.set_height(
                     this.tileableContainer.allocation.get_height() /
-                    this._state.nbOfColumns
+                        this._state.nbOfColumns
                 );
             } else {
                 actor.set_width(
                     this.tileableContainer.allocation.get_width() /
-                    this._state.nbOfColumns
+                        this._state.nbOfColumns
                 );
                 actor.set_height(
                     this.tileableContainer.allocation.get_height()

@@ -1,12 +1,11 @@
-import * as GObject from 'gobject';
-import * as Gtk from 'gtk';
 import * as Gdk from 'gdk';
 import * as Gio from 'gio';
-import * as GLib from 'glib';
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import * as GObject from 'gobject';
+import * as Gtk from 'gtk';
 import { ShellVersionMatch } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),
@@ -22,12 +21,12 @@ enum WidgetType {
     INPUT = 4,
     COLOR = 5,
     CUSTOM = 6,
-};
+}
 
-// eslint-disable-next-line no-unused-vars
-function init() { }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+function init() {}
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
     const tabsContainer = new TabsContainer();
     const settingsTab = new SettingsTab();
@@ -172,8 +171,8 @@ class TabsContainer extends Gtk.Box {
                 const action = model.get_value(iter, 1).toLowerCase();
                 const keys = hotkeysTab.settings
                     .get_strv(index)[0]
-                    .replace(/\>/gi, '+')
-                    .replace(/\</gi, '')
+                    .replace(/>/gi, '+')
+                    .replace(/</gi, '')
                     .toLowerCase();
                 if (
                     action.includes(key.toLowerCase()) ||
@@ -189,9 +188,9 @@ class TabsContainer extends Gtk.Box {
         // Move search widget to top (it is hidden in Float layout)
         hotkeysTab.treeView.set_search_position_func((treeView, search) => {
             // TODO: Do we assume this is a Gtk.Window?
-            let window = this.get_toplevel() as any;
-            let [x, y] = window.get_position();
-            let [width, height] = window.get_size();
+            const window = this.get_toplevel() as any;
+            const [x, y] = window.get_position();
+            const [width, height] = window.get_size();
             search.move(x + width / 2 + 64, y);
         });
 
@@ -247,9 +246,7 @@ class HotkeysTab extends Gtk.ScrolledWindow {
                 const [accelKey, mods] = Gtk.accelerator_parse(
                     this.settings.get_strv(key)[0]
                 );
-                const settingKey = this.settings.settings_schema.get_key(
-                    key
-                );
+                const settingKey = this.settings.settings_schema.get_key(key);
                 const summary = settingKey.get_summary();
 
                 return {
@@ -343,7 +340,7 @@ class SettingCategory extends Gtk.ListBox {
     }
 
     addTitle(title: string) {
-        let titleRow = new Gtk.ListBoxRow({
+        const titleRow = new Gtk.ListBoxRow({
             activatable: false,
             selectable: false,
         });
@@ -397,13 +394,13 @@ class SettingCategory extends Gtk.ListBox {
 
             case WidgetType.COMBO:
                 widget = new Gtk.ComboBoxText();
-                let values = settingKey
+                settingKey
                     .get_range()
                     .get_child_value(1)
-                    .recursiveUnpack();
-                values.forEach((value) => {
-                    widget.append(value, value);
-                });
+                    .recursiveUnpack()
+                    .forEach((value) => {
+                        widget.append(value, value);
+                    });
                 this.settings.bind(
                     key,
                     widget,
@@ -412,19 +409,19 @@ class SettingCategory extends Gtk.ListBox {
                 );
                 break;
 
-            case WidgetType.COLOR:
+            case WidgetType.COLOR: {
                 widget = new Gtk.ColorButton();
-                let rgba = new Gdk.RGBA();
+                const rgba = new Gdk.RGBA();
                 rgba.parse(this.settings.get_string(key));
                 widget.set_rgba(rgba);
                 widget.connect('notify::color', (button) => {
-                    let rgba = button.get_rgba();
-                    let css = rgba.to_string();
-                    let hexString = cssHexString(css);
+                    const rgba = button.get_rgba();
+                    const css = rgba.to_string();
+                    const hexString = cssHexString(css);
                     this.settings.set_string(key, hexString);
                 });
                 break;
-
+            }
             case WidgetType.INT:
                 widget = Gtk.SpinButton.new_with_range(0, 1000, 1);
                 this.settings.bind(
@@ -477,8 +474,8 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            while (true) {
-                let x = css.slice(end, end + 1);
+            for (;;) {
+                const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;
             }
@@ -495,9 +492,12 @@ function cssHexString(css: string) {
     return rrggbb;
 }
 
-function getDefaultLayoutComboBox(tilingLayouts: string[], setting: Gio.Settings) {
-    let widget = new Gtk.ComboBoxText();
-    let refreshComboBox = () => {
+function getDefaultLayoutComboBox(
+    tilingLayouts: string[],
+    setting: Gio.Settings
+) {
+    const widget = new Gtk.ComboBoxText();
+    const refreshComboBox = () => {
         widget.remove_all();
         tilingLayouts.forEach((layoutKey) => {
             if (setting.get_boolean(layoutKey)) {

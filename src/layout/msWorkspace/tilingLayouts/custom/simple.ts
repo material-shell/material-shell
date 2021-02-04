@@ -6,9 +6,7 @@ import * as Clutter from 'clutter';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
-import {
-    BaseResizeableTilingLayout,
-} from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 
 @registerGObjectClass
 export class SimpleLayout extends BaseResizeableTilingLayout {

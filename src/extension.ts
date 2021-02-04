@@ -1,30 +1,28 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as GLib from 'glib';
-import * as Gio from 'gio';
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as St from 'st';
-const Main = imports.ui.main;
-const Signals = imports.signals;
-
-/** Extension imports */
-import { DisableIncompatibleExtensionsModule } from 'src/module/disableIncompatibleExtensionsModule';
-import { OverrideModule } from 'src/module/overrideModule';
-import { HotKeysModule } from 'src/module/hotKeysModule';
-import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
+import * as Gio from 'gio';
+import * as GLib from 'glib';
+import { MsMain } from 'src/layout/main';
 import { LayoutManager } from 'src/manager/layoutManager';
-import { StateManager } from 'src/manager/stateManager';
+import { MsNotificationManager } from 'src/manager/msNotificationManager';
+import { MsThemeManager } from 'src/manager/msThemeManager';
 import { MsWindowManager } from 'src/manager/msWindowManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { MsThemeManager } from 'src/manager/msThemeManager';
+import { StateManager } from 'src/manager/stateManager';
 import { TooltipManager } from 'src/manager/tooltipManager';
+/** Extension imports */
+import { DisableIncompatibleExtensionsModule } from 'src/module/disableIncompatibleExtensionsModule';
+import { HotKeysModule } from 'src/module/hotKeysModule';
+import { OverrideModule } from 'src/module/overrideModule';
+import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
 import * as debug from 'src/utils/debug';
-import { MsMain } from 'src/layout/main';
-import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { getSettings } from 'src/utils/settings';
+import * as St from 'st';
 import { polyfillClutter } from './utils/compatibility';
+const Main = imports.ui.main;
+const Signals = imports.signals;
 
 let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
 let modules: any[] | undefined;
@@ -169,13 +167,13 @@ function showSplashScreens() {
     log('show splashscreen');
     splashscreenCalled = true;
     Main.layoutManager.monitors.forEach((monitor) => {
-        let icon = new St.Icon({
+        const icon = new St.Icon({
             gicon: Gio.icon_new_for_string(
                 `${Me.path}/assets/icons/on-dark-small.svg`
             ),
             icon_size: 200,
         });
-        let splashscreen = new St.Bin({
+        const splashscreen = new St.Bin({
             style_class: 'ms-splashscreen',
             style: 'background: rgb(25,25,25)',
             child: icon,

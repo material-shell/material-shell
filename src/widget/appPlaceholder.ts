@@ -21,10 +21,10 @@ export class AppPlaceholder extends St.Widget {
                 accumulator: 0.0,
             },
         },
-    }
+    };
     app: any;
     icon: any;
-    pressed: boolean = false;
+    pressed = false;
     waitForReset: boolean | undefined;
     clickableContainer: any;
     box: any;
@@ -32,7 +32,7 @@ export class AppPlaceholder extends St.Widget {
     appTitle: any;
     callToAction: any;
     spinnerContainer: any;
-    vertical: boolean = true;
+    vertical = true;
     private _spinner: any;
 
     constructor(app) {
@@ -88,7 +88,7 @@ export class AppPlaceholder extends St.Widget {
         this.clickableContainer.y_expand = true;
         this.add_child(this.clickableContainer);
         this.connect('event', (actor, event) => {
-            let eventType = event.type();
+            const eventType = event.type();
             if (
                 [
                     Clutter.EventType.BUTTON_PRESS,
@@ -113,7 +113,7 @@ export class AppPlaceholder extends St.Widget {
         });
 
         this.connect('key-press-event', (entry, event) => {
-            let symbol = event.hardware_keycode;
+            const symbol = event.hardware_keycode;
 
             if (ShellVersionMatch('3.34')) {
                 switch (symbol) {
@@ -143,7 +143,7 @@ export class AppPlaceholder extends St.Widget {
     }
 
     setOrientation(width, height) {
-        let vertical = width < height;
+        const vertical = width < height;
         if (vertical === this.vertical) return;
         this.vertical = vertical;
         this.box.vertical = this.vertical;

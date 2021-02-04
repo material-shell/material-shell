@@ -9,7 +9,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { ShellVersionMatch } from 'src/utils/compatibility';
 import { getSettings } from 'src/utils/settings';
 import { MsManager } from 'src/manager/msManager';
-import { byteArray } from "gjs";
+import { byteArray } from 'gjs';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
@@ -165,12 +165,12 @@ export class MsThemeManager extends MsManager {
 
     isColorDark(color) {
         color = color.replace('#', '');
-        let r = parseInt(color.substring(0, 2), 16);
-        let g = parseInt(color.substring(2, 4), 16);
-        let b = parseInt(color.substring(4, 6), 16);
-        let linearColors = [r / 255, g / 255, b / 255];
+        const r = parseInt(color.substring(0, 2), 16);
+        const g = parseInt(color.substring(2, 4), 16);
+        const b = parseInt(color.substring(4, 6), 16);
+        const linearColors = [r / 255, g / 255, b / 255];
 
-        for (var i = 0; i < linearColors.length; ++i) {
+        for (let i = 0; i < linearColors.length; ++i) {
             if (linearColors[i] <= 0.03928) {
                 linearColors[i] = linearColors[i] / 12.92;
             } else {
@@ -181,7 +181,7 @@ export class MsThemeManager extends MsManager {
             }
         }
 
-        let luminance =
+        const luminance =
             0.2126 * linearColors[0] +
             0.7152 * linearColors[1] +
             0.0722 * linearColors[2];
@@ -191,10 +191,10 @@ export class MsThemeManager extends MsManager {
     async readFileContent(file: Gio.File) {
         return new Promise<string>((resolve, reject) => {
             file.load_contents_async(null, (obj, res) => {
-                let [success, contents] = obj!.load_contents_finish(res);
+                const [success, contents] = obj!.load_contents_finish(res);
                 if (success) {
                     //Read the binay content as string
-                    let content = byteArray.toString(contents);
+                    const content = byteArray.toString(contents);
                     resolve(content);
                 } else {
                     reject(success);
@@ -213,7 +213,7 @@ export class MsThemeManager extends MsManager {
                 GLib.PRIORITY_DEFAULT,
                 null,
                 (file, res) => {
-                    let stream = file!.replace_finish(res);
+                    const stream = file!.replace_finish(res);
 
                     stream.write_bytes_async(
                         contentBytes,
@@ -231,7 +231,7 @@ export class MsThemeManager extends MsManager {
     }
 
     async buildThemeStylesheetToFile(file) {
-        let originThemeFile = Gio.file_new_for_path(
+        const originThemeFile = Gio.file_new_for_path(
             `${Me.path}/style-${this.themeValue}-theme.css`
         );
         let content = await this.readFileContent(originThemeFile);
@@ -275,4 +275,4 @@ export class MsThemeManager extends MsManager {
             this.unloadStylesheet();
         }
     }
-};
+}

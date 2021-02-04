@@ -3,7 +3,7 @@ import * as GObject from 'gobject';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
@@ -21,7 +21,10 @@ export class GridLayout extends BaseResizeableTilingLayout {
             this.mainPortion.pop();
         }
 
-        while (columnLength > 1 && this.mainPortion.children.length < columnLength) {
+        while (
+            columnLength > 1 &&
+            this.mainPortion.children.length < columnLength
+        ) {
             this.mainPortion.push();
         }
 
@@ -40,13 +43,16 @@ export class GridLayout extends BaseResizeableTilingLayout {
         const lastColumn = this.mainPortion.children[columnLength - 1];
 
         if (lastColumn) {
-            const lastRowLength = length - ((columnLength - 1) * rowLength);
+            const lastRowLength = length - (columnLength - 1) * rowLength;
 
             while (lastColumn.children.length > lastRowLength) {
                 lastColumn.pop();
             }
 
-            while (lastRowLength > 1 && lastColumn.children.length < lastRowLength) {
+            while (
+                lastRowLength > 1 &&
+                lastColumn.children.length < lastRowLength
+            ) {
                 lastColumn.push();
             }
         }

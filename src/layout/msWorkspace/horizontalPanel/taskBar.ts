@@ -23,7 +23,7 @@ import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
-let dragData = null;
+const dragData = null;
 
 @registerGObjectClass
 export class TaskBar extends St.Widget {
@@ -48,16 +48,11 @@ export class TaskBar extends St.Widget {
             style_class: 'task-active-indicator',
         });
         this.add_child(this.taskActiveIndicator);
-        this.taskButtonContainer = new ReorderableList(false, [
-            TaskBarItem,
-        ]);
-        this.taskButtonContainer.connect(
-            'actor-moved',
-            (_, item, index) => {
-                this.msWorkspace.setTileableAtIndex(item.tileable, index);
-                this.msWorkspace.focusTileable(item.tileable);
-            }
-        );
+        this.taskButtonContainer = new ReorderableList(false, [TaskBarItem]);
+        this.taskButtonContainer.connect('actor-moved', (_, item, index) => {
+            this.msWorkspace.setTileableAtIndex(item.tileable, index);
+            this.msWorkspace.focusTileable(item.tileable);
+        });
         this.taskButtonContainer.connect(
             'foreign-actor-inserted',
             (_, actor, index) => {
@@ -66,10 +61,7 @@ export class TaskBar extends St.Widget {
                         actor.tileable,
                         this.msWorkspace
                     );
-                    this.msWorkspace.setTileableAtIndex(
-                        actor.tileable,
-                        index
-                    );
+                    this.msWorkspace.setTileableAtIndex(actor.tileable, index);
                     this.msWorkspace.focusTileable(actor.tileable);
                     Me.msWorkspaceManager.stateChanged();
                 }
@@ -125,15 +117,16 @@ export class TaskBar extends St.Widget {
         this.updateItems();
     }
 
-    onFocusChanged(tileableFocused: Tileable, oldTileableFocused: Tileable | null) {
+    onFocusChanged(
+        tileableFocused: Tileable,
+        oldTileableFocused: Tileable | null
+    ) {
         if (tileableFocused === oldTileableFocused) {
             return;
         }
 
-        let previousItem = this.getTaskBarItemOfTileable(
-            oldTileableFocused
-        );
-        let nextItem = this.getTaskBarItemOfTileable(tileableFocused);
+        const previousItem = this.getTaskBarItemOfTileable(oldTileableFocused);
+        const nextItem = this.getTaskBarItemOfTileable(tileableFocused);
 
         if (previousItem) {
             if (previousItem.has_style_class_name('active')) {
@@ -154,33 +147,31 @@ export class TaskBar extends St.Widget {
 
     updateItems() {
         this.items.forEach((item) => item.destroy());
-        this.items = this.msWorkspace.tileableList.map(
-            (tileable, _index) => {
-                let item: TileableItem | IconTaskBarItem;
-                if (tileable instanceof MsWindow) {
-                    item = new TileableItem(tileable);
-                    this.menuManager.addMenu(item.menu);
-                    item.connect('middle-clicked', (_) => {
-                        tileable.kill();
-                    });
-                    item.connect('close-clicked', (_) => {
-                        tileable.kill();
-                    });
-                } else {
-                    item = new IconTaskBarItem(
-                        tileable,
-                        Gio.icon_new_for_string(
-                            `${Me.path}/assets/icons/plus-symbolic.svg`
-                        )
-                    );
-                }
-                item.connect('left-clicked', (_) => {
-                    this.msWorkspace.focusTileable(tileable);
+        this.items = this.msWorkspace.tileableList.map((tileable, _index) => {
+            let item: TileableItem | IconTaskBarItem;
+            if (tileable instanceof MsWindow) {
+                item = new TileableItem(tileable);
+                this.menuManager.addMenu(item.menu);
+                item.connect('middle-clicked', (_) => {
+                    tileable.kill();
                 });
-                this.taskButtonContainer.add_child(item);
-                return item;
+                item.connect('close-clicked', (_) => {
+                    tileable.kill();
+                });
+            } else {
+                item = new IconTaskBarItem(
+                    tileable,
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/plus-symbolic.svg`
+                    )
+                );
             }
-        );
+            item.connect('left-clicked', (_) => {
+                this.msWorkspace.focusTileable(tileable);
+            });
+            this.taskButtonContainer.add_child(item);
+            return item;
+        });
         if (this.items[this.msWorkspace.focusedIndex]) {
             this.items[this.msWorkspace.focusedIndex].setActive(true);
         }
@@ -197,7 +188,7 @@ export class TaskBar extends St.Widget {
         const contentBox = themeNode.get_content_box(box);
         Allocate(this.taskButtonContainer, contentBox, flags);
 
-        let taskActiveIndicatorBox = new Clutter.ActorBox({
+        const taskActiveIndicatorBox = new Clutter.ActorBox({
             x1: this.getActiveItem().x,
             x2: this.getActiveItem().x + this.getActiveItem().width,
             y1: contentBox.get_height() - this.taskActiveIndicator.height,
@@ -217,7 +208,7 @@ export class TaskBar extends St.Widget {
 export class TaskActiveIndicator extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'TaskActiveIndicator',
-    }
+    };
 
     constructor(...args: any[]) {
         super(...args);
@@ -225,8 +216,7 @@ export class TaskActiveIndicator extends St.Widget {
 
     prepareAnimation(newAllocation: Clutter.ActorBox) {
         this.translation_x = this.translation_x + this.x - newAllocation.x1;
-        this.scale_x =
-            (this.width * this.scale_x) / newAllocation.get_width();
+        this.scale_x = (this.width * this.scale_x) / newAllocation.get_width();
     }
     animate() {
         this.ease({
@@ -251,7 +241,7 @@ export class TaskActiveIndicator extends St.Widget {
 @registerGObjectClass
 export class TaskBarItem extends MatButton {
     static metaInfo: GObject.MetaInfo = {
-        GTypeName: "TaskBarItem",
+        GTypeName: 'TaskBarItem',
         Signals: {
             'drag-dropped': {},
             'drag-over': {
@@ -260,7 +250,7 @@ export class TaskBarItem extends MatButton {
             'left-clicked': {},
             'middle-clicked': {},
         },
-    }
+    };
     private _delegate: this;
     draggable: any;
     contentActor: any;
@@ -303,7 +293,7 @@ export class TaskBarItem extends MatButton {
     }
 
     vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        let height = Me.msThemeManager.getPanelSize(this.monitor);
+        const height = Me.msThemeManager.getPanelSize(this.monitor);
         return [height, height];
     }
 
@@ -320,11 +310,11 @@ export class TaskBarItem extends MatButton {
 @registerGObjectClass
 class TileableItem extends TaskBarItem {
     static metaInfo: GObject.MetaInfo = {
-        GTypeName: "TileableItem",
+        GTypeName: 'TileableItem',
         Signals: {
             'close-clicked': {},
-        }
-    }
+        },
+    };
     container: St.BoxLayout;
     tileable: any;
     app: any;
@@ -380,9 +370,7 @@ class TileableItem extends TaskBarItem {
                 this.makePersistentAction.hide();
                 this.unmakePersistentAction.show();
             },
-            Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/pin-symbolic.svg`
-            )
+            Gio.icon_new_for_string(`${Me.path}/assets/icons/pin-symbolic.svg`)
         );
 
         this.unmakePersistentAction = this.menu.addAction(
@@ -495,7 +483,7 @@ class TileableItem extends TaskBarItem {
         this.icon.style_class = 'app-icon';
         this.icon.set_size(height / 2, height / 2);
         this.startIconContainer.set_child(this.icon);
-        let smallIconSize = Math.max(Math.round(height / 3), 18);
+        const smallIconSize = Math.max(Math.round(height / 3), 18);
         this.persistentIcon.set_icon_size(smallIconSize);
         this.closeIcon.set_icon_size(smallIconSize);
         this.queue_relayout();
@@ -512,17 +500,19 @@ class TileableItem extends TaskBarItem {
             if (this.tileable.title.includes(this.app.get_name())) {
                 this.title.text = this.tileable.title;
             } else {
-                const escapedAppName = GLib.markup_escape_text(this.app.get_name(), -1);
-                const escapedTitle = GLib.markup_escape_text(this.tileable.title, -1);
-                (this.title
-                    .get_clutter_text() as Clutter.Text)
-                    .set_markup(
-                        `${escapedTitle}<span alpha="${
-                            this.has_style_class_name('active')
-                                ? '40%'
-                                : '20%'
-                        }">   -   ${escapedAppName}</span>`
-                    );
+                const escapedAppName = GLib.markup_escape_text(
+                    this.app.get_name(),
+                    -1
+                );
+                const escapedTitle = GLib.markup_escape_text(
+                    this.tileable.title,
+                    -1
+                );
+                (this.title.get_clutter_text() as Clutter.Text).set_markup(
+                    `${escapedTitle}<span alpha="${
+                        this.has_style_class_name('active') ? '40%' : '20%'
+                    }">   -   ${escapedAppName}</span>`
+                );
             }
         } else if (this.style == 'name') {
             this.title.text = this.app.get_name();
@@ -533,11 +523,14 @@ class TileableItem extends TaskBarItem {
         const height = box.get_height();
 
         if (!this.icon || this.lastHeight != height) {
-            this.buildIconIdle = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                delete this.buildIconIdle;
-                this.buildIcon(height);
-                return GLib.SOURCE_REMOVE;
-            });
+            this.buildIconIdle = GLib.idle_add(
+                GLib.PRIORITY_DEFAULT_IDLE,
+                () => {
+                    delete this.buildIconIdle;
+                    this.buildIcon(height);
+                    return GLib.SOURCE_REMOVE;
+                }
+            );
         }
         super.vfunc_allocate(...args);
     }
@@ -557,7 +550,7 @@ export class IconTaskBarItem extends TaskBarItem {
     icon: St.Icon;
 
     constructor(tileable, gicon: Gio.IconPrototype) {
-        let container = new St.Bin({
+        const container = new St.Bin({
             style_class: 'task-bar-icon-container',
         });
         super(container, false);

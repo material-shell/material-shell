@@ -28,11 +28,11 @@ export class MsNotificationManager extends MsManager {
     }
     check() {
         if (getSettings('tweaks').get_boolean('disable-notifications')) return;
-        let previousCheck = Me.stateManager.getState('notification-check')
+        const previousCheck = Me.stateManager.getState('notification-check')
             ? new Date(Me.stateManager.getState('notification-check'))
             : new Date();
 
-        var message = new Soup.Message({
+        const message = new Soup.Message({
             method: 'GET',
             uri: new Soup.URI(
                 `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}`
@@ -73,21 +73,29 @@ export class MsNotificationManager extends MsManager {
             new Date().toISOString()
         );
     }
-};
+}
 
 interface NotificationResponseItem {
-    title: string,
-    content: string,
-    icon: string,
-    action: any,
+    title: string;
+    content: string;
+    icon: string;
+    action: any;
 }
 
 interface IMsNotification {
-    action: any
+    action: any;
 }
 
-let MsNotificationSource: { new(): messageTray.Source };
-let MsNotification: { new(source: messageTray.Source, title: string, text: string, icon: string, action: any): messageTray.Notification & IMsNotification };
+let MsNotificationSource: { new (): messageTray.Source };
+let MsNotification: {
+    new (
+        source: messageTray.Source,
+        title: string,
+        text: string,
+        icon: string,
+        action: any
+    ): messageTray.Notification & IMsNotification;
+};
 
 if (ShellVersionMatch('3.34')) {
     MsNotificationSource = class MsNotificationSource extends messageTray.Source {
@@ -104,8 +112,14 @@ if (ShellVersionMatch('3.34')) {
     MsNotification = class MsNotification extends messageTray.Notification {
         action: any;
 
-        constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
-            let params: messageTray.NotificationParams = {};
+        constructor(
+            source: messageTray.Source,
+            title: string,
+            text: string,
+            icon: string,
+            action: any
+        ) {
+            const params: messageTray.NotificationParams = {};
             if (icon) {
                 params.gicon = Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/${icon}.svg`
@@ -118,7 +132,7 @@ if (ShellVersionMatch('3.34')) {
 
         activate() {
             super.activate();
-            let dialog = new MsNotificationDialog(
+            const dialog = new MsNotificationDialog(
                 this.title,
                 this.bannerBodyText,
                 this.action
@@ -144,8 +158,14 @@ if (ShellVersionMatch('3.34')) {
     @registerGObjectClass
     class MsNotificationClass extends messageTray.Notification {
         action: any;
-        constructor(source: messageTray.Source, title: string, text: string, icon: string, action: any) {
-            let params: messageTray.NotificationParams = {};
+        constructor(
+            source: messageTray.Source,
+            title: string,
+            text: string,
+            icon: string,
+            action: any
+        ) {
+            const params: messageTray.NotificationParams = {};
             if (icon) {
                 params.gicon = Gio.icon_new_for_string(
                     `${Me.path}/assets/icons/${icon}.svg`
@@ -158,7 +178,7 @@ if (ShellVersionMatch('3.34')) {
 
         activate() {
             super.activate();
-            let dialog = new MsNotificationDialog(
+            const dialog = new MsNotificationDialog(
                 this.title,
                 this.bannerBodyText,
                 this.action
@@ -170,49 +190,53 @@ if (ShellVersionMatch('3.34')) {
 }
 
 interface Action {
-    default?: boolean,
-    label: string,
-    key?: number,
-    action: ()=>void,
+    default?: boolean;
+    label: string;
+    key?: number;
+    action: () => void;
 }
 
 @registerGObjectClass
 export class MsNotificationDialog extends ModalDialog.ModalDialog {
-    constructor(title: string, text: string, action?: { url: string, label: string }) {
-            super({ styleClass: '' });
-            const actions: Action[] = [
-                {
-                    label: _('Cancel'),
-                    action: this._onCancelButtonPressed.bind(this),
-                    key: Clutter.KEY_Escape,
+    constructor(
+        title: string,
+        text: string,
+        action?: { url: string; label: string }
+    ) {
+        super({ styleClass: '' });
+        const actions: Action[] = [
+            {
+                label: _('Cancel'),
+                action: this._onCancelButtonPressed.bind(this),
+                key: Clutter.KEY_Escape,
+            },
+        ];
+        if (action) {
+            actions.push({
+                default: true,
+                label: action.label,
+                action: () => {
+                    Gio.AppInfo.launch_default_for_uri(
+                        action.url,
+                        global.create_app_launch_context(0, -1)
+                    );
+                    this.close();
                 },
-            ];
-            if (action) {
-                actions.push({
-                    default: true,
-                    label: action.label,
-                    action: () => {
-                        Gio.AppInfo.launch_default_for_uri(
-                            action.url,
-                            global.create_app_launch_context(0, -1)
-                        );
-                        this.close();
-                    },
-                });
-            }
-            this.setButtons(actions);
-
-            let content = new Dialog.MessageDialogContent({
-                title: title,
-                description: text,
             });
-
-            content._description.get_clutter_text().use_markup = true;
-
-            this.contentLayout.add(content);
         }
+        this.setButtons(actions);
 
-        _onCancelButtonPressed() {
-            this.close();
-        }
+        const content = new Dialog.MessageDialogContent({
+            title: title,
+            description: text,
+        });
+
+        content._description.get_clutter_text().use_markup = true;
+
+        this.contentLayout.add(content);
+    }
+
+    _onCancelButtonPressed() {
+        this.close();
+    }
 }

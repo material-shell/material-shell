@@ -12,9 +12,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { SetAllocation, Allocate } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace } from '../msWorkspace';
-import { TaskBar,
-    TaskBarItem, } from "src/layout/msWorkspace/horizontalPanel/taskBar";
-import { LayoutSwitcher, } from "src/layout/msWorkspace/horizontalPanel/layoutSwitcher";
+import {
+    TaskBar,
+    TaskBarItem,
+} from 'src/layout/msWorkspace/horizontalPanel/taskBar';
+import { LayoutSwitcher } from 'src/layout/msWorkspace/horizontalPanel/layoutSwitcher';
 
 @registerGObjectClass
 export class HorizontalPanel extends St.BoxLayout {
@@ -27,7 +29,7 @@ export class HorizontalPanel extends St.BoxLayout {
     private _wallClock: any;
     signalClock: number | undefined;
     msWorkspace: MsWorkspace;
-    
+
     constructor(msWorkspace: MsWorkspace) {
         super({
             name: 'horizontalPanel',
@@ -37,10 +39,7 @@ export class HorizontalPanel extends St.BoxLayout {
         this.msWorkspace = msWorkspace;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.taskBar = new TaskBar(msWorkspace, this.menuManager);
-        this.layoutSwitcher = new LayoutSwitcher(
-            msWorkspace,
-            this.menuManager
-        );
+        this.layoutSwitcher = new LayoutSwitcher(msWorkspace, this.menuManager);
 
         this.add_child(this.taskBar);
         this.add_child(this.layoutSwitcher);
@@ -96,7 +95,7 @@ export class HorizontalPanel extends St.BoxLayout {
     }
 
     vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        let height = Me.msThemeManager.getPanelSize(
+        const height = Me.msThemeManager.getPanelSize(
             this.msWorkspace.monitor.index
         );
         return [height, height];
@@ -104,12 +103,12 @@ export class HorizontalPanel extends St.BoxLayout {
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
-        let clockWidth = this.clockBin
+        const clockWidth = this.clockBin
             ? this.clockBin.get_preferred_width(-1)[1]!
             : 0;
-        let taskBarBox = new Clutter.ActorBox();
+        const taskBarBox = new Clutter.ActorBox();
         taskBarBox.x1 = contentBox.x1;
         taskBarBox.x2 = Math.max(
             contentBox.x2 - this.layoutSwitcher.width - clockWidth,
@@ -120,7 +119,7 @@ export class HorizontalPanel extends St.BoxLayout {
         Allocate(this.taskBar, taskBarBox, flags);
 
         if (this.clockBin && this.get_children().includes(this.clockBin)) {
-            let clockBox = new Clutter.ActorBox();
+            const clockBox = new Clutter.ActorBox();
             clockBox.x1 = taskBarBox.x2;
             clockBox.x2 = contentBox.x2 - this.layoutSwitcher.width;
             clockBox.y1 = contentBox.y1;
@@ -128,7 +127,7 @@ export class HorizontalPanel extends St.BoxLayout {
             Allocate(this.clockBin, clockBox, flags);
         }
 
-        let layoutSwitcherBox = new Clutter.ActorBox();
+        const layoutSwitcherBox = new Clutter.ActorBox();
         layoutSwitcherBox.x1 = contentBox.x2 - this.layoutSwitcher.width;
         layoutSwitcherBox.x2 = contentBox.x2;
         layoutSwitcherBox.y1 = contentBox.y1;

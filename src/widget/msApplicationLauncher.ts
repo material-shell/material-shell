@@ -30,9 +30,9 @@ export class MsApplicationLauncher extends St.Widget {
     appListContainer: MsApplicationButtonContainer;
     msWorkspace: MsWorkspace;
     focusEffects?: {
-        dimmer: Clutter.BrightnessContrastEffect,
-        border?: PrimaryBorderEffect,
-    }
+        dimmer: Clutter.BrightnessContrastEffect;
+        border?: PrimaryBorderEffect;
+    };
     launcherChangedSignal: SignalHandle;
     installedChangedSignal: SignalHandle;
 
@@ -47,12 +47,20 @@ export class MsApplicationLauncher extends St.Widget {
             this.msWorkspace
         );
         this.initAppListContainer();
-        this.launcherChangedSignal = SignalHandle.connect(Me.msThemeManager, 'clock-app-launcher-changed', () => {
-            this.restartAppListContainer();
-        });
-        this.installedChangedSignal = SignalHandle.connect(Shell.AppSystem.get_default(), 'installed-changed', () => {
-            this.restartAppListContainer();
-        });
+        this.launcherChangedSignal = SignalHandle.connect(
+            Me.msThemeManager,
+            'clock-app-launcher-changed',
+            () => {
+                this.restartAppListContainer();
+            }
+        );
+        this.installedChangedSignal = SignalHandle.connect(
+            Shell.AppSystem.get_default(),
+            'installed-changed',
+            () => {
+                this.restartAppListContainer();
+            }
+        );
         this.connect('key-focus-in', () => {
             this.appListContainer.inputContainer.grab_key_focus();
         });
@@ -88,7 +96,7 @@ export class MsApplicationLauncher extends St.Widget {
         AppsManager.getApps().forEach((app) => {
             const button = new MsApplicationButton({
                 app,
-                buttonSize: this.appListContainer.buttonSize
+                buttonSize: this.appListContainer.buttonSize,
             });
             button.connect('notify::hover', () => {
                 this.appListContainer.highlightButton(button);
@@ -114,7 +122,7 @@ export class MsApplicationLauncher extends St.Widget {
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const containerBox = new Clutter.ActorBox();
         const minSize = Math.min(
@@ -191,8 +199,7 @@ export class MsApplicationButtonContainer extends St.Widget {
 
         if (Me.msThemeManager.clockAppLauncher) {
             this.clockLabel = new St.Label({
-                style_class:
-                    'headline-6 text-medium-emphasis margin-right-x2',
+                style_class: 'headline-6 text-medium-emphasis margin-right-x2',
                 y_align: Clutter.ActorAlign.CENTER,
             });
             this.dateLabel = new St.Label({
@@ -211,7 +218,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                 if (this.clockLabel!.mapped) {
                     this.clockLabel!.text = this._wallClock.clock;
                     const date = new Date();
-                    let dateFormat = Shell.util_translate_time_string(
+                    const dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
                     );
                     // TODO: toLocaleFormat is deprecated
@@ -260,7 +267,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             this.highlightInitialButton();
         });
         this._text.connect('key-press-event', (entry, event) => {
-            let symbol = event.get_key_symbol();
+            const symbol = event.get_key_symbol();
             if (ShellVersionMatch('3.34')) {
                 switch (symbol) {
                     case Clutter.KEY_Escape:
@@ -287,9 +294,10 @@ export class MsApplicationButtonContainer extends St.Widget {
                             return Clutter.EVENT_PROPAGATE;
                         }
                     case Clutter.KEY_Left:
-                        if (this.filteredAppButtonList.length > 0 &&
+                        if (
+                            this.filteredAppButtonList.length > 0 &&
                             this.currentButtonFocused !=
-                            this.filteredAppButtonList[0]
+                                this.filteredAppButtonList[0]
                         ) {
                             this.highlightPreviousButton();
                             return Clutter.EVENT_STOP;
@@ -298,7 +306,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                         }
                     case Clutter.KEY_Return:
                     case Clutter.KEY_KP_Enter:
-                        if (this.currentButtonFocused) this.currentButtonFocused.emit('clicked', 0);
+                        if (this.currentButtonFocused)
+                            this.currentButtonFocused.emit('clicked', 0);
                         return Clutter.EVENT_STOP;
                 }
             } else {
@@ -329,7 +338,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                     case Clutter.KEY_Left:
                         if (
                             this.currentButtonFocused !=
-                            this.filteredAppButtonListBuffer[0] &&
+                                this.filteredAppButtonListBuffer[0] &&
                             this.getCurrentIndex() > -1
                         ) {
                             this.highlightPreviousButton();
@@ -339,7 +348,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                         }
                     case Clutter.KEY_Return:
                     case Clutter.KEY_KP_Enter:
-                        if (this.currentButtonFocused) this.currentButtonFocused.emit('clicked', 0);
+                        if (this.currentButtonFocused)
+                            this.currentButtonFocused.emit('clicked', 0);
                         return Clutter.EVENT_STOP;
                 }
             }
@@ -354,9 +364,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     get monitorScale() {
-        return global.display.get_monitor_scale(
-            this.msWorkspace.monitor.index
-        );
+        return global.display.get_monitor_scale(this.msWorkspace.monitor.index);
     }
     get buttonSize() {
         return BUTTON_SIZE * this.monitorScale;
@@ -387,8 +395,8 @@ export class MsApplicationButtonContainer extends St.Widget {
     updateFilteredAppButtonList() {
         this.filteredAppButtonListBuffer = this.appButtonList.filter(
             (button) => {
-                let stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
-                let regex = new RegExp(this.inputContainer.get_text(), 'i');
+                const stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
+                const regex = new RegExp(this.inputContainer.get_text(), 'i');
                 if (regex.test(stringToSearch)) {
                     button.visible = true;
                     return true;
@@ -486,9 +494,9 @@ export class MsApplicationButtonContainer extends St.Widget {
 
     // Get current focused button index, highlights the initial button if current button is invalid (but returns -1 in that case)
     getCurrentIndex() {
-        const index = this.currentButtonFocused ? this.filteredAppButtonList.indexOf(
-            this.currentButtonFocused
-        ) : -1;
+        const index = this.currentButtonFocused
+            ? this.filteredAppButtonList.indexOf(this.currentButtonFocused)
+            : -1;
         if (index < 0 || index > this.maxIndex) {
             this.highlightInitialButton();
         }
@@ -507,24 +515,18 @@ export class MsApplicationButtonContainer extends St.Widget {
             }
         }
         if (currentIndex < this.filteredAppButtonList.length - 1) {
-            this.highlightButton(
-                this.filteredAppButtonList[currentIndex + 1]
-            );
+            this.highlightButton(this.filteredAppButtonList[currentIndex + 1]);
         }
     }
 
     highlightPreviousButton() {
         let currentIndex = this.getCurrentIndex();
         if (currentIndex > 0) {
-            this.highlightButton(
-                this.filteredAppButtonList[currentIndex - 1]
-            );
+            this.highlightButton(this.filteredAppButtonList[currentIndex - 1]);
         } else if (currentIndex === 0) {
             if (this.scrollFilteredAppButtonListDown()) {
                 currentIndex += this.numberOfColumn - 1;
-                this.highlightButton(
-                    this.filteredAppButtonList[currentIndex]
-                );
+                this.highlightButton(this.filteredAppButtonList[currentIndex]);
             }
         }
     }
@@ -589,9 +591,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     // Remove focus
     removeHighlightButton() {
         if (this.currentButtonFocused) {
-            this.currentButtonFocused.remove_style_class_name(
-                'highlighted'
-            );
+            this.currentButtonFocused.remove_style_class_name('highlighted');
         }
         if (this.filteredAppButtonList) {
             this.currentButtonFocused = null;
@@ -605,17 +605,15 @@ export class MsApplicationButtonContainer extends St.Widget {
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
-        let themeNode = this.get_theme_node();
+        const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const containerPadding = 16 * this.monitorScale;
         const clockHeight =
-            (Me.msThemeManager.clockAppLauncher ? 64 : 0) *
-            this.monitorScale;
+            (Me.msThemeManager.clockAppLauncher ? 64 : 0) * this.monitorScale;
         const searchHeight = 48 * this.monitorScale;
         const searchMargin = 24 * this.monitorScale;
 
-        const availableWidth =
-            contentBox.get_width() - containerPadding * 2;
+        const availableWidth = contentBox.get_width() - containerPadding * 2;
 
         const availableHeight =
             contentBox.get_height() -
@@ -632,7 +630,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         );
         this.maxIndex =
             this.numberOfColumn *
-            Math.min(this.numberOfRow, numberOfRowNeeded) -
+                Math.min(this.numberOfRow, numberOfRowNeeded) -
             1;
 
         const horizontalOffset =
@@ -651,10 +649,8 @@ export class MsApplicationButtonContainer extends St.Widget {
 
         if (this.clockBin) {
             const clockBox = new Clutter.ActorBox();
-            clockBox.x1 =
-                contentBox.x1 + horizontalOffset + containerPadding;
-            clockBox.x2 =
-                contentBox.x2 - horizontalOffset - containerPadding;
+            clockBox.x1 = contentBox.x1 + horizontalOffset + containerPadding;
+            clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
             clockBox.y1 = contentBox.y1 + verticalOffset;
             clockBox.y2 = clockBox.y1 + clockHeight;
             Allocate(this.clockBin, clockBox, flags);
@@ -678,12 +674,12 @@ export class MsApplicationButtonContainer extends St.Widget {
         containerBox.y2 = contentBox.y2 - verticalOffset;
         Allocate(this.container, containerBox, flags);
 
-        let index: number = 0;
+        let index = 0;
         for (let y = 0; y < this.numberOfRow; y++) {
             for (let x = 0; x < this.numberOfColumn; x++) {
                 index = x + this.numberOfColumn * y;
                 if (index < this.filteredAppButtonList.length) {
-                    let button = this.filteredAppButtonList[index];
+                    const button = this.filteredAppButtonList[index];
                     const buttonBox = new Clutter.ActorBox();
                     buttonBox.x1 =
                         containerBox.x1 +
@@ -719,7 +715,11 @@ export class MsApplicationButtonContainer extends St.Widget {
         }
     }
 
-    hideButton(button, contentBox: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    hideButton(
+        button,
+        contentBox: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         const hiddenBox = new Clutter.ActorBox();
         hiddenBox.x1 = contentBox.x1;
         hiddenBox.x2 = contentBox.x1;
@@ -734,14 +734,14 @@ export class MsApplicationButtonContainer extends St.Widget {
 export class MsApplicationButton extends MatButton {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsApplicationButton',
-    }
+    };
 
     app: any;
     buttonSize: number;
     layout: St.BoxLayout;
     icon: any;
     title: St.Label | undefined;
-    constructor({ app, buttonSize }: { app: any, buttonSize: number }) {
+    constructor({ app, buttonSize }: { app: any; buttonSize: number }) {
         super({});
         this.app = app;
         this.buttonSize = buttonSize;

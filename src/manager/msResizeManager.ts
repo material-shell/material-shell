@@ -11,7 +11,10 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { reparentActor, throttle } from 'src/utils/index';
 import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
-import { BaseResizeableTilingLayout, ResizableBorderActor, } from "src/layout/msWorkspace/tilingLayouts/baseResizeableTiling";
+import {
+    BaseResizeableTilingLayout,
+    ResizableBorderActor,
+} from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { MsWindowManager } from './msWindowManager';
 import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
 import { PortionBorder } from 'src/layout/msWorkspace/portion';
@@ -98,19 +101,23 @@ export class MsResizeManager extends MsManager {
             }
         );
 
-        this.observe(global.stage, 'captured-event', (_, event: Clutter.Event) => {
-            if (this.resizeInProgress !== null) {
-                switch (event.type()) {
-                    case Clutter.EventType.MOTION:
-                        this.checkPointerPosition();
-                        break;
+        this.observe(
+            global.stage,
+            'captured-event',
+            (_, event: Clutter.Event) => {
+                if (this.resizeInProgress !== null) {
+                    switch (event.type()) {
+                        case Clutter.EventType.MOTION:
+                            this.checkPointerPosition();
+                            break;
 
-                    case Clutter.EventType.BUTTON_RELEASE:
-                        this.endPointerChecker();
-                        break;
+                        case Clutter.EventType.BUTTON_RELEASE:
+                            this.endPointerChecker();
+                            break;
+                    }
                 }
             }
-        });
+        );
 
         this.throttledCheckPointerPosition = throttle(
             this.checkPointerPosition,
@@ -132,7 +139,7 @@ export class MsResizeManager extends MsManager {
     }
 
     getPointerPositionRelativeToWorkspace(): [number, number] {
-        assert(this.resizeInProgress !== null, "No resize in progress");
+        assert(this.resizeInProgress !== null, 'No resize in progress');
         const { msWorkspaceActor } = this.resizeInProgress.msWorkspace;
 
         const [
@@ -144,7 +151,7 @@ export class MsResizeManager extends MsManager {
     }
 
     getFirstPortionPositionAndSize(): Rectangular {
-        assert(this.resizeInProgress !== null, "No resize in progress");
+        assert(this.resizeInProgress !== null, 'No resize in progress');
         const { layout } = this.resizeInProgress.msWorkspace;
         const ratio = layout.mainPortion.getRatioForPortion(
             this.resizeInProgress.border.firstPortion
@@ -154,7 +161,7 @@ export class MsResizeManager extends MsManager {
     }
 
     startResize(border: PortionBorder) {
-        assert(this.resizeInProgress === null, "Resize already in progress");
+        assert(this.resizeInProgress === null, 'Resize already in progress');
         this.resizeInProgress = {
             border: border,
             msWorkspace: Me.msWorkspaceManager.getActiveMsWorkspace(),
@@ -167,7 +174,7 @@ export class MsResizeManager extends MsManager {
     }
 
     updateResize() {
-        assert(this.resizeInProgress !== null, "No resize in progress");
+        assert(this.resizeInProgress !== null, 'No resize in progress');
         const [
             pointerX,
             pointerY,
@@ -187,7 +194,7 @@ export class MsResizeManager extends MsManager {
     }
 
     endResize() {
-        assert(this.resizeInProgress !== null, "No resize in progress");
+        assert(this.resizeInProgress !== null, 'No resize in progress');
         this.resizeInProgress = null;
 
         Main.popModal(this.inputResizer);
@@ -197,7 +204,11 @@ export class MsResizeManager extends MsManager {
         global.display.set_cursor(Meta.Cursor.DEFAULT);
     }
 
-    resizeTileable(tileable: Tileable, directionOp: Meta.GrabOp, percent: number) {
+    resizeTileable(
+        tileable: Tileable,
+        directionOp: Meta.GrabOp,
+        percent: number
+    ) {
         const { layout } = tileable.msWorkspace;
 
         if (!(layout instanceof BaseResizeableTilingLayout)) {
@@ -211,7 +222,7 @@ export class MsResizeManager extends MsManager {
             layout.tileAll();
         }
     }
-};
+}
 
 @registerGObjectClass
 export class InputResizer extends Clutter.Actor {

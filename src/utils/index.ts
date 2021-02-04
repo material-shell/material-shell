@@ -1,6 +1,6 @@
 /** Gnome libs imports */
-import * as GLib from 'glib';
 import * as Clutter from 'clutter';
+import * as GLib from 'glib';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -34,8 +34,8 @@ export const range = (to: any) =>
 // };
 
 interface TrottleParams {
-    trailing: boolean,
-    leading: boolean,
+    trailing: boolean;
+    leading: boolean;
 }
 
 // Returns a function, that, when invoked, will only be triggered at most once
@@ -43,29 +43,35 @@ interface TrottleParams {
 // as much as it can, without ever going more than once per `wait` duration;
 // but if you'd like to disable the execution on the leading edge, pass
 // `{leading: false}`. To disable execution on the trailing edge, ditto.
-export function throttle<T extends any[], R> (func: (...args: T)=>R, wait: number, options?: Partial<TrottleParams>): (...args: T)=>R {
-    var context: any;
-    var args, result: R;
-    var timeout: number | null = null;
-    var previous = 0;
-    const definedOptions: TrottleParams = Object.assign({
-        trailing: true,
-        leading: true,
-    }, options);
+export function throttle<T extends any[], R>(
+    func: (...args: T) => R,
+    wait: number,
+    options?: Partial<TrottleParams>
+): (...args: T) => R {
+    let context: any;
+    let args, result: R;
+    let timeout: number | null = null;
+    let previous = 0;
+    const definedOptions: TrottleParams = Object.assign(
+        {
+            trailing: true,
+            leading: true,
+        },
+        options
+    );
 
-    var later = function () {
+    const later = function () {
         previous = definedOptions.leading === false ? 0 : Date.now();
         timeout = null;
         result = func.apply(context, args);
         if (!timeout) context = args = null;
         return false;
     };
-    return function (this: any) {
-        var now = Date.now();
+    return function (...args) {
+        const now = Date.now();
         if (!previous && definedOptions.leading === false) previous = now;
-        var remaining = wait - (now - previous);
+        const remaining = wait - (now - previous);
         context = this;
-        args = arguments;
         if (remaining <= 0 || remaining > wait) {
             if (timeout !== null) {
                 GLib.source_remove(timeout);
@@ -79,9 +85,12 @@ export function throttle<T extends any[], R> (func: (...args: T)=>R, wait: numbe
         }
         return result;
     };
-};
+}
 
-export const isParentOfActor = (parent: Clutter.Actor, actor: Clutter.Actor) => {
+export const isParentOfActor = (
+    parent: Clutter.Actor,
+    actor: Clutter.Actor
+) => {
     if (!parent || !actor) {
         return false;
     }
@@ -94,7 +103,10 @@ export const isParentOfActor = (parent: Clutter.Actor, actor: Clutter.Actor) => 
     return isParent;
 };
 
-export const reparentActor = (actor: Clutter.Actor | null, parent: Clutter.Actor | null) => {
+export const reparentActor = (
+    actor: Clutter.Actor | null,
+    parent: Clutter.Actor | null
+) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
 

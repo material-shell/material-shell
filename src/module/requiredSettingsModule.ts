@@ -14,16 +14,16 @@ interface Setting {
 }
 
 interface RestoreSetting {
-    setting: Gio.Settings,
+    setting: Gio.Settings;
     key: string;
     value: boolean | string;
     valueType: string;
 }
 
 interface RestoreKey {
-    setting: Gio.Settings,
-    key: string,
-    shortcut: string[]
+    setting: Gio.Settings;
+    key: string;
+    shortcut: string[];
 }
 
 export class RequiredSettingsModule {
@@ -56,7 +56,7 @@ export class RequiredSettingsModule {
         this.signals = [];
         this.settingsToRestore = [];
         this.settingsToForce.forEach((settingToForce) => {
-            let setting = new Gio.Settings({
+            const setting = new Gio.Settings({
                 schema_id: settingToForce.schema,
             });
 
@@ -67,17 +67,14 @@ export class RequiredSettingsModule {
                 settingToForce.valueType
             );
 
-            let id = setting.connect(
-                `changed::${settingToForce.key}`,
-                () => {
-                    this.setValueIfDifferent(
-                        setting,
-                        settingToForce.key,
-                        settingToForce.value,
-                        settingToForce.valueType
-                    );
-                }
-            );
+            const id = setting.connect(`changed::${settingToForce.key}`, () => {
+                this.setValueIfDifferent(
+                    setting,
+                    settingToForce.key,
+                    settingToForce.value,
+                    settingToForce.valueType
+                );
+            });
 
             this.signals.push({
                 from: setting,
@@ -91,18 +88,18 @@ export class RequiredSettingsModule {
         });
 
         this.keysToRestore = [];
-        for (let schema of [
+        for (const schema of [
             'org.gnome.desktop.wm.keybindings',
             'org.gnome.shell.keybindings',
             'org.gnome.mutter.keybindings',
             'org.gnome.mutter.wayland.keybindings',
         ]) {
-            let setting = new Gio.Settings({
+            const setting = new Gio.Settings({
                 schema_id: schema,
             });
 
             setting.list_keys().forEach((key) => {
-                let shortcut = setting.get_strv(key);
+                const shortcut = setting.get_strv(key);
                 if (
                     shortcut[0] &&
                     this.hotkeysToRemove.indexOf(shortcut[0]) > -1
@@ -137,7 +134,12 @@ export class RequiredSettingsModule {
         this.keysToRestore = [];
     }
 
-    setValueIfDifferent(setting: Gio.Settings, key: string, value: string | boolean, valueType: string) {
+    setValueIfDifferent(
+        setting: Gio.Settings,
+        key: string,
+        value: string | boolean,
+        valueType: string
+    ) {
         if (setting[`get_${valueType}`](key) !== value) {
             this.settingsToRestore.push({
                 setting,
@@ -148,4 +150,4 @@ export class RequiredSettingsModule {
             setting[`set_${valueType}`](key, value);
         }
     }
-};
+}

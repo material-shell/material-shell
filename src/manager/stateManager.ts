@@ -2,9 +2,9 @@
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { getSettings } from 'src/utils/settings';
 import * as Gio from 'gio';
 import * as GLib from 'glib';
+import { getSettings } from 'src/utils/settings';
 
 /** Gnome libs imports */
 const FileTest = GLib.FileTest;
@@ -19,13 +19,13 @@ type StateDict = { [Key: string]: any };
 export class StateManager {
     state: StateDict;
     stateFile: Gio.File;
-    stateChangedTriggered: boolean|undefined;
+    stateChangedTriggered: boolean | undefined;
 
     constructor() {
         this.state = {};
         this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
     }
-    loadRegistry(callback: (state: StateDict)=>void) {
+    loadRegistry(callback: (state: StateDict) => void) {
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
         const serializedState = global.get_persistent_state(
@@ -44,8 +44,8 @@ export class StateManager {
         }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             this.stateFile.load_contents_async(null, (obj, res) => {
-                let file = obj as unknown as Gio.File;
-                let [success, contents] = file.load_contents_finish(res);
+                const file = (obj as unknown) as Gio.File;
+                const [success, contents] = file.load_contents_finish(res);
                 if (success) {
                     try {
                         this.state = this.updateState(
@@ -87,7 +87,7 @@ export class StateManager {
     }
 
     saveRegistry() {
-        let json = JSON.stringify(this.state);
+        const json = JSON.stringify(this.state);
         global.set_persistent_state(
             'material-shell-state',
             GLib.Variant.new_string(json)
@@ -131,5 +131,6 @@ export class StateManager {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     destroy() {}
-};
+}

@@ -1,18 +1,18 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
+import * as GObject from 'gobject';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { reparentActor } from 'src/utils/index';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 interface TransitionConfig {
-    duration: number,
-    mode: Clutter.AnimationMode,
-    onComplete: () => void,
-    translation_y?: number,
-    translation_x?: number,
+    duration: number;
+    mode: Clutter.AnimationMode;
+    onComplete: () => void;
+    translation_y?: number;
+    translation_x?: number;
 }
 
 @registerGObjectClass
@@ -22,10 +22,13 @@ export class TranslationAnimator extends Clutter.Actor {
         Signals: {
             'transition-completed': {},
         },
-    }
+    };
 
     vertical: boolean;
-    transitionContainer: Clutter.Actor<Clutter.BoxLayout, Clutter.ContentPrototype>;
+    transitionContainer: Clutter.Actor<
+        Clutter.BoxLayout,
+        Clutter.ContentPrototype
+    >;
     animationInProgress: boolean | undefined;
 
     constructor(vertical = false) {
@@ -42,16 +45,21 @@ export class TranslationAnimator extends Clutter.Actor {
                     : Clutter.Orientation.HORIZONTAL,
             }),
         });
+
         this.add_actor(this.transitionContainer);
     }
 
-    setTranslation(initialActors: (Clutter.Actor | null)[], enteringActors: Clutter.Actor[], direction: number) {
+    setTranslation(
+        initialActors: (Clutter.Actor | null)[],
+        enteringActors: Clutter.Actor[],
+        direction: number
+    ): void {
         if (this.animationInProgress) {
             this.transitionContainer.remove_all_transitions();
             this.animationInProgress = false;
 
             // Remove all clones outside visible area
-            let visibleArea = {
+            const visibleArea = {
                 x1: Math.abs(this.transitionContainer.translation_x),
                 x2:
                     Math.abs(this.transitionContainer.translation_x) +
@@ -64,7 +72,7 @@ export class TranslationAnimator extends Clutter.Actor {
 
             // Foreach child check if it's in visible bound
             this.transitionContainer.get_children().forEach((actor) => {
-                let allocationBox = actor.allocation;
+                const allocationBox = actor.allocation;
                 if (this.vertical) {
                     if (allocationBox.y2 < visibleArea.y1) {
                         this.transitionContainer.remove_actor(actor);
@@ -95,7 +103,7 @@ export class TranslationAnimator extends Clutter.Actor {
 
         enteringActors.forEach((actor, index) => {
             // check if the next actor are already in transition
-            let nextActorFound = this.transitionContainer
+            const nextActorFound = this.transitionContainer
                 .get_children()
                 .find((existingActor) => {
                     return existingActor === actor;
@@ -104,16 +112,11 @@ export class TranslationAnimator extends Clutter.Actor {
             if (!nextActorFound) {
                 reparentActor(actor, this.transitionContainer);
                 if (direction < 0) {
-                    this.transitionContainer.set_child_at_index(
-                        actor,
-                        index
-                    );
+                    this.transitionContainer.set_child_at_index(actor, index);
                     if (this.vertical) {
-                        this.transitionContainer.translation_y -=
-                            actor.height;
+                        this.transitionContainer.translation_y -= actor.height;
                     } else {
-                        this.transitionContainer.translation_x -=
-                            actor.width;
+                        this.transitionContainer.translation_x -= actor.width;
                     }
                 }
             }
@@ -124,7 +127,7 @@ export class TranslationAnimator extends Clutter.Actor {
             0
         );
 
-        let transitionConfig: TransitionConfig = {
+        const transitionConfig: TransitionConfig = {
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
@@ -147,7 +150,7 @@ export class TranslationAnimator extends Clutter.Actor {
         this.transitionContainer.ease(transitionConfig);
     }
 
-    endTransition() {
+    endTransition(): void {
         this.transitionContainer.translation_x = 0;
         this.transitionContainer.translation_y = 0;
         this.animationInProgress = false;

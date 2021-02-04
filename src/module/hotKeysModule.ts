@@ -101,8 +101,8 @@ export class HotKeysModule {
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
-            let currentIndex = this.workspaceManager.get_active_workspace_index();
-            let lastIndex = this.workspaceManager.n_workspaces - 1;
+            const currentIndex = this.workspaceManager.get_active_workspace_index();
+            const lastIndex = this.workspaceManager.n_workspaces - 1;
             if (currentIndex < lastIndex) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
             }
@@ -144,7 +144,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(KeyBindingAction.MOVE_WINDOW_TOP, () => {
             const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             if (
-                activeMsWorkspace.tileableFocused instanceof MsApplicationLauncher ||
+                activeMsWorkspace.tileableFocused instanceof
+                    MsApplicationLauncher ||
                 activeMsWorkspace.tileableFocused == null
             ) {
                 return;
@@ -206,7 +207,8 @@ export class HotKeysModule {
             () => {
                 const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 if (
-                    activeMsWorkspace.tileableFocused instanceof MsApplicationLauncher ||
+                    activeMsWorkspace.tileableFocused instanceof
+                        MsApplicationLauncher ||
                     activeMsWorkspace.tileableFocused == null
                 ) {
                     return;
@@ -538,4 +540,4 @@ export class HotKeysModule {
             global.window_manager.disconnect(this.connectId);
         }
     }
-};
+}

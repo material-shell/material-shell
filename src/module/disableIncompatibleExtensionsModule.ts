@@ -12,13 +12,14 @@ const incompatibleExtensions = [
     'ding@rastersoft.com',
 ];
 
-let originalFunction: { apply: (uuid: any, args: IArguments) => void; } | null;
+let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction = ExtensionManager.prototype._callExtensionEnable;
-        ExtensionManager.prototype._callExtensionEnable = function () {
-            const uuid = arguments[0];
+        ExtensionManager.prototype._callExtensionEnable = function (...args) {
+            const uuid = args[0];
             if (incompatibleExtensions.includes(uuid)) return;
+            // eslint-disable-next-line prefer-rest-params
             originalFunction!.apply(this, arguments);
         };
 
@@ -26,7 +27,7 @@ export class DisableIncompatibleExtensionsModule {
     }
 
     disableExtensions() {
-        for (let incompatibleExtension of incompatibleExtensions) {
+        for (const incompatibleExtension of incompatibleExtensions) {
             const extension = Main.extensionManager.lookup(
                 incompatibleExtension
             );
@@ -44,4 +45,4 @@ export class DisableIncompatibleExtensionsModule {
         ExtensionManager.prototype._callExtensionEnable = originalFunction;
         originalFunction = null;
     }
-};
+}
