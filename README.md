@@ -160,6 +160,14 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 
 (We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
 
+3. Reload GNOME Shell:
+  + On X.org: Hit `Alt+F2` and type the command `r`
+  + On Wayland: Log out and back in
+  
+4. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
+```bash
+gnome-extensions enable material-shell@papyelgringo
+```
 ## Recommended Additional Configuration
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
