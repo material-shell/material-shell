@@ -5,8 +5,9 @@ extension_tool = gnome-shell-extension-tool
 
 all: schemas sass compile
 
-schemas: schemas/gschemas.compiled
-	glib-compile-schemas schemas/
+schemas:
+	cp -r schemas dist
+	glib-compile-schemas dist/schemas/
 
 sass: dist/style-dark-theme.css dist/style-light-theme.css dist/style-primary-theme.css
 
@@ -32,13 +33,12 @@ build_prod: all
 	rm -f dist.zip
 	cd dist && zip -r ../dist.zip *
 
-compile: dist
+compile: dist schemas sass
 	npx tsc
 	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
 	npm run rollup-extension && npm run rollup-prefs
 
 	cp metadata.json dist
-	cp -r schemas dist/schemas
 	cp -r assets dist/assets
 
 update_git:
