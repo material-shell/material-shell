@@ -562,7 +562,12 @@ var WorkspaceButtonIcon = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             super._init();
             this.appIconList = [];
-            //this.add_effect(new Clutter.DesaturateEffect());
+
+            this.desaturateEffect = new Clutter.DesaturateEffect();
+            if (! Me.msThemeManager.panelIconColor) {
+                this.add_effect(this.desaturateEffect);
+            }
+
             this.connect('notify::mapped', () => {
                 if (this.mapped) {
                     this.buildIcons();
@@ -573,6 +578,13 @@ var WorkspaceButtonIcon = GObject.registerClass(
             });
             Me.msThemeManager.connect('panel-icon-style-changed', () => {
                 this.buildIcons();
+            });
+            Me.msThemeManager.connect('panel-icon-color-changed', () => {
+                if (! Me.msThemeManager.panelIconColor) {
+                    this.add_effect(this.desaturateEffect);
+                } else {
+                    this.remove_effect(this.desaturateEffect);
+                }
             });
             Me.msThemeManager.connect('panel-size-changed', () => {
                 this.buildIcons();
