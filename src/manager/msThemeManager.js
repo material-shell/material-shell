@@ -32,7 +32,6 @@ var FocusEffectEnum = {
     BORDER: 2,
 };
 
-
 var MsThemeManager = class MsThemeManager extends MsManager {
     constructor() {
         super();
