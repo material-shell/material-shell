@@ -562,7 +562,7 @@ var WorkspaceButtonIcon = GObject.registerClass(
             this.msWorkspace = msWorkspace;
             super._init();
             this.appIconList = [];
-            this.add_effect(new Clutter.DesaturateEffect());
+            //this.add_effect(new Clutter.DesaturateEffect());
             this.connect('notify::mapped', () => {
                 if (this.mapped) {
                     this.buildIcons();

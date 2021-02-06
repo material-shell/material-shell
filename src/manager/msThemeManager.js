@@ -26,11 +26,17 @@ var PanelIconStyleEnum = {
     APPLICATION: 2,
 };
 
+var PanelIconColorEnum = {
+    GRAY: 0,
+    COLOR: 1
+};
+
 var FocusEffectEnum = {
     NONE: 0,
     DEFAULT: 1,
     BORDER: 2,
 };
+
 
 var MsThemeManager = class MsThemeManager extends MsManager {
     constructor() {
@@ -92,6 +98,9 @@ var MsThemeManager = class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
             this.emit('panel-icon-style-changed');
         });
+        this.observe(this.themeSettings, 'changed::panel-icon-color', () => {
+            this.emit('panel-icon-color-changed');
+        });
         this.observe(this.themeSettings, 'changed::clock-horizontal', () => {
             this.emit('clock-horizontal-changed');
         });
@@ -121,6 +130,10 @@ var MsThemeManager = class MsThemeManager extends MsManager {
 
     set panelIconStyle(value) {
         this.themeSettings.set_enum('panel-icon-style', value);
+    }
+
+    get panelIconColor() {
+        return this.themeSettings.get_boolean('panel-icon-color');
     }
 
     get surfaceOpacity() {
