@@ -26,11 +26,6 @@ var PanelIconStyleEnum = {
     APPLICATION: 2,
 };
 
-var PanelIconColorEnum = {
-    GRAY: 0,
-    COLOR: 1
-};
-
 var FocusEffectEnum = {
     NONE: 0,
     DEFAULT: 1,
