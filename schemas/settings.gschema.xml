@@ -63,6 +63,11 @@
             <summary>Vertical panel icons style</summary>
             <description>Type of icons for the workspaces on the vertical panel</description>
         </key>
+        <key name="panel-icon-color" type="b">
+            <default>false</default>
+            <summary>Vertical panel icons color</summary>
+            <description>Show icons for the workspaces in color</description>
+        </key>
         <key name="surface-opacity" type="i">
             <default>100</default>
             <summary>Surface opacity</summary>

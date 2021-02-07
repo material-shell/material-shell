@@ -581,12 +581,14 @@ export class WorkspaceButtonIcon extends St.Widget {
 
     msWorkspace: MsWorkspace;
     appIconList: St.Icon[];
+    desaturateEffect: Clutter.DesaturateEffect;
 
     constructor(msWorkspace: MsWorkspace) {
         super();
         this.msWorkspace = msWorkspace;
         this.appIconList = [];
-        this.add_effect(new Clutter.DesaturateEffect());
+        this.desaturateEffect = new Clutter.DesaturateEffect();
+        this.desaturateIcons();
         this.connect('notify::mapped', () => {
             if (this.mapped) {
                 this.buildIcons();
@@ -598,10 +600,22 @@ export class WorkspaceButtonIcon extends St.Widget {
         Me.msThemeManager.connect('panel-icon-style-changed', () => {
             this.buildIcons();
         });
+        Me.msThemeManager.connect('panel-icon-color-changed', () => {
+            this.desaturateIcons();
+        });
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.buildIcons();
         });
     }
+
+    desaturateIcons() {
+        if (! Me.msThemeManager.panelIconColor) {
+            this.add_effect(this.desaturateEffect);
+        } else {
+            this.remove_effect(this.desaturateEffect);
+        }
+    }
+
 
     buildIcons() {
         this.appIconList.forEach((icon) => {
