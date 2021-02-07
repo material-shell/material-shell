@@ -1,15 +1,15 @@
 /** Gnome libs imports */
-import * as St from 'st';
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
+import { RippleBackground } from 'src/widget/material/rippleBackground';
+import * as St from 'st';
 const Animation = imports.ui.animation;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { RippleBackground } from 'src/widget/material/rippleBackground';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {

@@ -1,11 +1,11 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
 import * as Gio from 'gio';
-import * as St from 'st';
 import * as Soup from 'soup';
-import * as Meta from 'meta';
-import * as GLib from 'glib';
+import { MsManager } from 'src/manager/msManager';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { getSettings } from 'src/utils/settings';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { messageTray } from 'ui';
 const Main = imports.ui.main;
 const Dialog = imports.ui.dialog;
@@ -13,10 +13,6 @@ const ModalDialog = imports.ui.modalDialog;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { getSettings } from 'src/utils/settings';
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { MsManager } from 'src/manager/msManager';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 const API_SERVER = 'http://api.material-shell.com';
 export class MsNotificationManager extends MsManager {

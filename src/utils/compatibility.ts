@@ -1,12 +1,8 @@
 /** Gnome libs imports */
-const { PACKAGE_VERSION } = imports.misc.config;
 import * as Clutter from 'clutter';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
-/* exported ShellVersionMatch, SetAllocation, Allocate, AllocatePreferredSize */
-export function ShellVersionMatch(version) {
-    return PACKAGE_VERSION.match(new RegExp(`^${version}`)) !== null;
-}
-
+/* exported polyfillClutter, SetAllocation, Allocate, AllocatePreferredSize */
 export function polyfillClutter() {
     const OldClutter = Clutter as any;
     if (!Object.hasOwnProperty.call(OldClutter, 'KEY_Down'))

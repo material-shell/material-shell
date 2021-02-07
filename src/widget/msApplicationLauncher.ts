@@ -1,22 +1,21 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
-import * as St from 'st';
 import * as GnomeDesktop from 'gnomedesktop';
+import * as GObject from 'gobject';
 import * as Shell from 'shell';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { AppsManager } from 'src/manager/appsManager';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
+import { SignalHandle } from 'src/utils/signal';
+import { MatButton } from 'src/widget/material/button';
+import * as St from 'st';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { AppsManager } from 'src/manager/appsManager';
-import { MatButton } from 'src/widget/material/button';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
-import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { SignalHandle } from 'src/utils/signal';
 
 /* exported MsApplicationLauncher */
 

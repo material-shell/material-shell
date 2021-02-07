@@ -1,27 +1,25 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as St from 'st';
-import * as Shell from 'shell';
 import * as Gio from 'gio';
-import * as Meta from 'meta';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import * as Shell from 'shell';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsManager } from 'src/manager/msManager';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { getSettings } from 'src/utils/settings';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
+import { MatButton } from 'src/widget/material/button';
+import { ReorderableList } from 'src/widget/reorderableList';
+import * as St from 'st';
+import { MsWorkspace, Tileable } from '../msWorkspace';
 const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MatButton } from 'src/widget/material/button';
-import { ReorderableList } from 'src/widget/reorderableList';
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { reparentActor } from 'src/utils/index';
-import { getSettings } from 'src/utils/settings';
-import { MsManager } from 'src/manager/msManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace, Tileable } from '../msWorkspace';
 
 const dragData = null;
 

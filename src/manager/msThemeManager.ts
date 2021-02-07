@@ -1,15 +1,15 @@
 /** Gnome libs imports */
-import * as St from 'st';
 import * as Gio from 'gio';
+import { byteArray } from 'gjs';
 import * as GLib from 'glib';
+import { MsManager } from 'src/manager/msManager';
+import { getSettings } from 'src/utils/settings';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
+import * as St from 'st';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { getSettings } from 'src/utils/settings';
-import { MsManager } from 'src/manager/msManager';
-import { byteArray } from 'gjs';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 

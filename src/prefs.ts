@@ -2,8 +2,8 @@ import * as Gdk from 'gdk';
 import * as Gio from 'gio';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
-import { ShellVersionMatch } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 

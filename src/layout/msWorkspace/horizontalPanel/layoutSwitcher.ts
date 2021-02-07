@@ -1,21 +1,19 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
 import * as Gio from 'gio';
-import * as St from 'st';
-import * as Meta from 'meta';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
+import { TilingLayoutByKey } from 'src/manager/layoutManager';
+import { registerGObjectClass } from 'src/utils/gjs';
+import * as St from 'st';
+import { MsWorkspace } from '../msWorkspace';
 const Animation = imports.ui.animation;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { ShellVersionMatch } from 'src/utils/compatibility';
-import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
-import { TilingLayoutByKey } from 'src/manager/layoutManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace } from '../msWorkspace';
 
 @registerGObjectClass
 export class LayoutSwitcher extends St.BoxLayout {
