@@ -581,7 +581,7 @@ export class WorkspaceButtonIcon extends St.Widget {
 
     msWorkspace: MsWorkspace;
     appIconList: St.Icon[];
-    desaturateEffect: Clutter.DesaturateEffect;
+    desaturateEffect: Clutter.DesaturateEffect | undefined;
 
     constructor(msWorkspace: MsWorkspace) {
         super();
@@ -610,11 +610,11 @@ export class WorkspaceButtonIcon extends St.Widget {
 
     desaturateIcons() {
         const shouldDesaturate = !Me.msThemeManager.panelIconColor;
-        const isDesaturate = this.desaturateEffect !== undefined && this.has_effect(this.desaturateEffect);
-        if( shouldDesaturate === isDesaturate) return;
+        const isDesaturate = this.desaturateEffect !== undefined && this.desaturateEffect === this.get_effect('desaturate_icons');
+        if (shouldDesaturate === isDesaturate) return;
         if (shouldDesaturate) {
             this.desaturateEffect = new Clutter.DesaturateEffect();
-            this.add_effect(this.desaturateEffect);
+            this.add_effect_with_name('desaturate_icons', this.desaturateEffect);
         } else {
             this.remove_effect(this.desaturateEffect);
             delete this.desaturateEffect;
