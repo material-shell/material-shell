@@ -616,7 +616,6 @@ export class WorkspaceButtonIcon extends St.Widget {
         }
     }
 
-
     buildIcons() {
         this.appIconList.forEach((icon) => {
             icon.destroy();
