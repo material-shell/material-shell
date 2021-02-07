@@ -1,18 +1,25 @@
 extension = material-shell@papyelgringo
 extension_tool = gnome-shell-extension-tool
 
-.PHONY: schemas sass
+.PHONY: schemas compile build_prod build_tasks update_git update install disable enable
 
-build_tasks: schemas sass
+schemas:
+	cp -r schemas dist
+	glib-compile-schemas dist/schemas/
 
-schemas: schemas/gschemas.compiled
-	glib-compile-schemas schemas/
+sass: dist/style-dark-theme.css dist/style-light-theme.css dist/style-primary-theme.css
 
-sass:
-	npx node-sass src/styles/dark-theme.scss style-dark-theme.css
-	npx node-sass src/styles/light-theme.scss style-light-theme.css
-	npx node-sass src/styles/primary-theme.scss style-primary-theme.css
+dist/style-dark-theme.css: dist src/styles/dark-theme.scss
+	npx node-sass src/styles/dark-theme.scss dist/style-dark-theme.css
 
+dist/style-light-theme.css: dist src/styles/light-theme.scss
+	npx node-sass src/styles/light-theme.scss dist/style-light-theme.css
+
+dist/style-primary-theme.css: dist src/styles/primary-theme.scss
+	npx node-sass src/styles/primary-theme.scss dist/style-primary-theme.css	
+
+dist:
+	mkdir dist
 
 disable:
 	$(extension_tool) -d $(extension)
@@ -20,17 +27,25 @@ disable:
 enable:
 	$(extension_tool) -e $(extension)
 
-reload:
-	$(extension_tool) -r $(extension) 
+npm_dependencies: 
+	npm install
 
-build_prod: schemas sass
+build_prod: npm_dependencies compile
 	rm -f dist.zip
-	zip -r dist.zip assets
-	zip -r dist.zip schemas
-	zip -r dist.zip src
-	zip dist.zip extension.js
-	zip dist.zip prefs.js
-	zip dist.zip metadata.json
-	zip dist.zip style-dark-theme.css
-	zip dist.zip style-light-theme.css
-	zip dist.zip style-primary-theme.css
+	cd dist && zip -r ../dist.zip *
+
+compile: dist schemas sass
+	npx tsc
+	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
+	npm run rollup-extension && npm run rollup-prefs
+
+	cp metadata.json dist
+	cp -r assets dist/assets
+
+update_git:
+	git pull --ff-only
+
+update: update_git install
+
+install:
+	./scripts/install.py
