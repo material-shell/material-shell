@@ -609,10 +609,15 @@ export class WorkspaceButtonIcon extends St.Widget {
     }
 
     desaturateIcons() {
-        if (! Me.msThemeManager.panelIconColor) {
+        const shouldDesaturate = !Me.msThemeManager.panelIconColor;
+        const isDesaturate = this.desaturateEffect !== undefined && this.has_effect(this.desaturateEffect);
+        if( shouldDesaturate === isDesaturate) return;
+        if (shouldDesaturate) {
+            this.desaturateEffect = new Clutter.DesaturateEffect();
             this.add_effect(this.desaturateEffect);
         } else {
             this.remove_effect(this.desaturateEffect);
+            delete this.desaturateEffect;
         }
     }
 
