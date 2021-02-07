@@ -3,8 +3,6 @@ extension_tool = gnome-shell-extension-tool
 
 .PHONY: schemas compile build_prod build_tasks update_git update install disable enable
 
-all: schemas sass compile
-
 schemas:
 	cp -r schemas dist
 	glib-compile-schemas dist/schemas/
@@ -29,7 +27,10 @@ disable:
 enable:
 	$(extension_tool) -e $(extension)
 
-build_prod: all
+npm_dependencies: 
+	npm install
+
+build_prod: npm_dependencies compile
 	rm -f dist.zip
 	cd dist && zip -r ../dist.zip *
 
