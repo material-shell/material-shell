@@ -48,6 +48,7 @@ function buildPrefsWidget() {
     theme.addSetting('panel-size', WidgetType.INT);
     theme.addSetting('panel-opacity', WidgetType.INT);
     theme.addSetting('panel-icon-style', WidgetType.COMBO);
+    theme.addSetting('panel-icon-color', WidgetType.BOOLEAN);
     theme.addSetting('taskbar-item-style', WidgetType.COMBO);
     theme.addSetting('surface-opacity', WidgetType.INT);
     if (!ShellVersionMatch('3.34')) {
