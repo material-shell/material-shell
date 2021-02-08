@@ -587,7 +587,6 @@ export class WorkspaceButtonIcon extends St.Widget {
         super();
         this.msWorkspace = msWorkspace;
         this.appIconList = [];
-        this.desaturateEffect = new Clutter.DesaturateEffect();
         this.desaturateIcons();
         this.connect('notify::mapped', () => {
             if (this.mapped) {
