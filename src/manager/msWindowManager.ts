@@ -1,22 +1,28 @@
 /** Gnome libs imports */
-import * as Shell from 'shell';
-import * as Meta from 'meta';
-import * as GLib from 'glib';
 import * as Clutter from 'clutter';
-const Signals = imports.signals;
-
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsManager } from 'src/manager/msManager';
+import * as GLib from 'glib';
+import * as Meta from 'meta';
+import * as Shell from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { MsDndManager } from 'src/manager/msDndManager';
-import { MsResizeManager } from 'src/manager/msResizeManager';
-import { MsFocusManager } from 'src/manager/msFocusManager';
-
-import { getSettings } from 'src/utils/settings';
-import { Rectangular } from 'src/types/mod';
-import { MsWorkspaceManager } from './msWorkspaceManager';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsDndManager } from 'src/manager/msDndManager';
+import { MsFocusManager } from 'src/manager/msFocusManager';
+import { MsManager } from 'src/manager/msManager';
+import { MsResizeManager } from 'src/manager/msResizeManager';
+import { Rectangular } from 'src/types/mod';
+import { getSettings } from 'src/utils/settings';
+const Signals = imports.signals;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+export type MetaWindowWithMsProperties = Meta.Window & {
+    createdAt?: number;
+    firstFrameDrawn?: boolean;
+    handledByMaterialShell?: boolean;
+};
+
+export type MetaWindowActorWithMsProperties = Meta.WindowActor & {
+    lastResize: number;
+};
 
 export type MsWindowManagerType = InstanceType<typeof MsWindowManager>;
 export class MsWindowManager extends MsManager {
@@ -51,9 +57,13 @@ export class MsWindowManager extends MsManager {
             this.onNewMetaWindow(metaWindow);
         });
 
-        this.observe(global.window_manager, 'size-changed', (wm, actor) => {
-            actor.lastResize = Date.now();
-        });
+        this.observe(
+            global.window_manager,
+            'size-changed',
+            (wm, actor: MetaWindowActorWithMsProperties) => {
+                actor.lastResize = Date.now();
+            }
+        );
     }
 
     handleExistingMetaWindow() {
@@ -88,20 +98,24 @@ export class MsWindowManager extends MsManager {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
         metaWindow
-            .get_compositor_private()
+            .get_compositor_private<Meta.WindowActor>()
             .connect('first-frame', (_params) => {
                 metaWindow.firstFrameDrawn = true;
             });
 
         if (!this._handleWindow(metaWindow)) {
-            /* return Me.layout.setActorAbove(metaWindow.get_compositor_private()); */
+            /* return Me.layout.setActorAbove(metaWindow.get_compositor_private<
+                    Meta.WindowActor
+                >()); */
             const actor = metaWindow.get_compositor_private<Clutter.Actor>();
             if (actor.get_parent() != global.top_window_group) {
                 actor
                     .get_parent()
-                    .remove_child(metaWindow.get_compositor_private());
+                    .remove_child(
+                        metaWindow.get_compositor_private<Meta.WindowActor>()
+                    );
                 global.top_window_group.add_child(
-                    metaWindow.get_compositor_private()
+                    metaWindow.get_compositor_private<Meta.WindowActor>()
                 );
             }
 

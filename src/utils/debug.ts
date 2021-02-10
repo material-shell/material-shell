@@ -44,7 +44,7 @@ export function initDebug() {
         }
     };
 
-    Me.log = function (message: string, ...args: any[]) {
+    Me.log = function (...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;
         const fields = { MESSAGE: `${'  '.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';
@@ -52,7 +52,7 @@ export function initDebug() {
         GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
     };
 
-    Me.logFocus = function (message: string, ...args: any[]) {
+    Me.logFocus = function (...args: any[]) {
         if (!DEBUG) return;
         const fields = { MESSAGE: `${'##'.repeat(indent)}${args.join(', ')}` };
         const domain = 'Material Shell';

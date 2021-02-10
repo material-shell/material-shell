@@ -640,7 +640,10 @@ export class MsWorkspaceManager extends MsManager {
         metaWindow: Meta.Window & { createdAt?: number },
         workspace: Meta.Workspace
     ) {
-        if (this.updatingMonitors || !metaWindow.get_compositor_private())
+        if (
+            this.updatingMonitors ||
+            !metaWindow.get_compositor_private<Meta.WindowActor>()
+        )
             return;
 
         const msWindow = metaWindow.msWindow;
