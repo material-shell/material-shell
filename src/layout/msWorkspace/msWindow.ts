@@ -271,16 +271,23 @@ export class MsWindow extends Clutter.Actor {
         const offsetY = monitorInFullScreen
             ? this.msWorkspace.monitor.y
             : workArea.y;
-        this.dialogs.forEach((dialog) => {
-            const dialogFrame = dialog.metaWindow.get_buffer_rect();
-            const x1 = dialogFrame.x - box.x1 - offsetX;
-            const x2 = x1 + dialogFrame.width;
-            const y1 = dialogFrame.y - box.y1 - offsetY;
-            const y2 = y1 + dialogFrame.height;
+        [...this.dialogs]
+            .sort(
+                (firstDialog, secondDialog) =>
+                    firstDialog.metaWindow.user_time -
+                    secondDialog.metaWindow.user_time
+            )
+            .forEach((dialog) => {
+                Me.logFocus('Allocate', dialog.metaWindow.title);
+                const dialogFrame = dialog.metaWindow.get_buffer_rect();
+                const x1 = dialogFrame.x - box.x1 - offsetX;
+                const x2 = x1 + dialogFrame.width;
+                const y1 = dialogFrame.y - box.y1 - offsetY;
+                const y2 = y1 + dialogFrame.height;
 
-            const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-            Allocate(dialog.clone, dialogBox, flags);
-        });
+                const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
+                Allocate(dialog.clone, dialogBox, flags);
+            });
     }
 
     // eslint-disable-next-line camelcase
@@ -802,15 +809,32 @@ export class MsWindow extends Clutter.Actor {
     }
 
     grab_key_focus(): void {
-        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
         if (this.dialogs.length) {
-            this.dialogs[this.dialogs.length - 1].metaWindow.activate(
-                global.get_current_time()
-            );
-        } else if (this.metaWindow) {
+            this.onFocus();
+        }
+        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
+        if (this.metaWindow) {
             this.metaWindow.activate(global.get_current_time());
         } else {
             this.placeholder.grab_key_focus();
+        }
+    }
+
+    onFocus(): void {
+        if (this.dialogs.length) {
+            [...this.dialogs]
+                .sort((firstDialog, secondDialog) => {
+                    return (
+                        firstDialog.metaWindow.user_time -
+                        secondDialog.metaWindow.user_time
+                    );
+                })
+                .forEach((dialog, index, array) => {
+                    this.set_child_above_sibling(dialog.clone, null);
+                    if (index === array.length - 1) {
+                        dialog.metaWindow.activate(global.get_current_time());
+                    }
+                });
         }
     }
 
@@ -873,6 +897,7 @@ export class MsWindow extends Clutter.Actor {
         });
         Promise.all([...dialogPromises, promise]).then(() => {
             if (this._persistent) {
+                this.dialogs = [];
                 this.unsetWindow();
             } else {
                 this._metaWindow = null;

@@ -3,7 +3,6 @@ import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { MsWindowManagerType } from './msWindowManager';
-const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -60,7 +59,7 @@ export class MsFocusManager extends MsManager {
         );
     }
 
-    onKeyFocus() {
+    onKeyFocus(): void {
         const keyFocus = global.stage.key_focus;
         if (!keyFocus) {
             if (
@@ -100,30 +99,19 @@ export class MsFocusManager extends MsManager {
         }
     }
 
-    onWindowFocus() {
+    onWindowFocus(): void {
         const windowFocus = global.display.get_focus_window();
-        Me.logFocus('onWindowFocus', windowFocus);
 
-        if (!windowFocus) return;
-        /* if (
-            this.focusProtected &&
-            this.lastMsWindowFocused &&
-            this.lastMsWindowFocused.monitor
-        ) {
-            Me.logFocus(
-                'Focus Protected, restore focus to ',
-                this.lastMsWindowFocused
-            );
-            return this.lastMsWindowFocused.grab_key_focus();
-        } */
+        if (!windowFocus || !windowFocus.msWindow) return;
 
         const msWindow = windowFocus.msWindow;
+        msWindow.onFocus();
         this.setFocusToMsWindow(msWindow);
     }
 
-    setFocusToMsWindow(msWindow) {
+    setFocusToMsWindow(msWindow: MsWindow): void {
         if (msWindow === this.lastMsWindowFocused) return;
-        Me.logFocus('Focus MsWindow', msWindow);
+        Me.logFocus('Focus MsWindow', msWindow.title);
         this.lastMsWindowFocused = msWindow;
         this.emit('focus-changed', msWindow);
     }
@@ -132,7 +120,7 @@ export class MsFocusManager extends MsManager {
      * Return true if granted
      * @param {MsWindow} msWindow
      */
-    requestFocus(msWindow) {
+    requestFocus(msWindow: MsWindow): boolean {
         return (
             msWindow !== this.lastMsWindowFocused &&
             !this.msWindowManager.msDndManager.dragInProgress
