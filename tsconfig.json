@@ -7,9 +7,7 @@
         "outDir": "./build",
         "forceConsistentCasingInFileNames": true,
         "downlevelIteration": true,
-        "lib": [
-            "es2018"
-        ],
+        "lib": ["es2018"],
         "pretty": true,
         "sourceMap": false,
         "declaration": false,
@@ -40,7 +38,5 @@
         },
         "experimentalDecorators": true
     },
-    "include": [
-        "src/**/*.ts",
-    ]
+    "include": ["src/**/*.ts"]
 }
