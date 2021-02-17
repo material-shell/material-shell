@@ -594,24 +594,32 @@ export class MsWorkspaceManager extends MsManager {
         return msWorkspace;
     }
 
-    getActivePrimaryMsWorkspace() {
+    getActivePrimaryMsWorkspace(): MsWorkspace {
         const activeWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
         return this.primaryMsWorkspaces[activeWorkspaceIndex];
     }
 
-    getWorkspaceOfMsWorkspace(msWorkspace: MsWorkspace) {
+    getWorkspaceOfMsWorkspace(msWorkspace: MsWorkspace): Meta.Workspace {
         return this.workspaceManager.get_workspace_by_index(
             this.primaryMsWorkspaces.indexOf(msWorkspace)
         );
     }
 
-    getMsWorkspacesOfMonitorIndex(monitorIndex: number) {
+    getActiveMsWorkspaceOfMonitor(monitorIndex: number): MsWorkspace {
+        if (monitorIndex === Main.layoutManager.primaryIndex) {
+            return this.getActivePrimaryMsWorkspace();
+        } else {
+            return this.getMsWorkspacesOfMonitorIndex(monitorIndex)[0];
+        }
+    }
+
+    getMsWorkspacesOfMonitorIndex(monitorIndex: number): MsWorkspace[] {
         return this.msWorkspaceList.filter((msWorkspace) => {
             return msWorkspace.monitor.index === monitorIndex;
         });
     }
 
-    getMsWorkspaceOfMetaWindow(metaWindow: Meta.Window) {
+    getMsWorkspaceOfMetaWindow(metaWindow: Meta.Window): MsWorkspace {
         const windowMonitorIndex = metaWindow.get_monitor();
         if (windowMonitorIndex !== Main.layoutManager.primaryIndex) {
             return this.getMsWorkspacesOfMonitorIndex(windowMonitorIndex)[0];
@@ -620,7 +628,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    getMsWorkspaceOfMsWindow(msWindow: MsWindow) {
+    getMsWorkspaceOfMsWindow(msWindow: MsWindow): MsWorkspace {
         return this.msWorkspaceList.find((msWorkspace) => {
             return msWorkspace.msWindowList.includes(msWindow);
         });
@@ -772,11 +780,11 @@ export class MsWorkspaceManager extends MsManager {
             containerY,
         ] = msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position();
         seat.warp_pointer(
-            containerX! +
+            containerX +
                 Math.floor(
                     msWorkspace.msWorkspaceActor.tileableContainer.width / 2
                 ),
-            containerY! +
+            containerY +
                 Math.floor(
                     msWorkspace.msWorkspaceActor.tileableContainer.height / 2
                 )

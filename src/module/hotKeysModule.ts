@@ -1,16 +1,16 @@
 /** Gnome libs imports */
+import * as Gio from 'gio';
+import * as GLib from 'glib';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
-import * as GLib from 'glib';
-import * as Gio from 'gio';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { TilingLayoutByKey } from 'src/manager/layoutManager';
+import { getSettings } from 'src/utils/settings';
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { getSettings } from 'src/utils/settings';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { TilingLayoutByKey } from 'src/manager/layoutManager';
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -348,9 +348,9 @@ export class HotKeysModule {
                         Meta.DisplayDirection[DIRECTION]
                     );
                     if (monitorIndex !== -1) {
-                        const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspaceOfMonitor(
                             monitorIndex
-                        )[0];
+                        );
                         Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
                     }
                 }

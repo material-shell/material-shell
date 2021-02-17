@@ -87,9 +87,9 @@ declare global {
         layout: any;
         uuid: string;
         path: string;
-        logFocus: (message: string, ...args: any[]) => void;
+        logFocus: (...args: any[]) => void;
         logBlank: () => void;
-        log: (message: string, ...args: any[]) => void;
+        log: (...args: any[]) => void;
     }
 
     const imports: {
