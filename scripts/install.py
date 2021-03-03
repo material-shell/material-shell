@@ -141,7 +141,6 @@ def install():
         # Probably wayland
         # It's not possible to restart gnome-shell gracefully when using wayland
         printc(YELLOW, "Installation succeeded. To activate material-shell, please log out and log in again.")
-        exit(1)
 
 
 install()
