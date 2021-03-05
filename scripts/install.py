@@ -50,11 +50,12 @@ def install():
         printc(RED, "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/")
         exit(1)
 
-    # Check if the extensions directory exists
-    if not os.path.isdir(install_directory):
-        printc(
-            RED, f"Cannot find the gnome extensions directory '{install_directory}'. Are you sure you are running gnome-shell?")
+    if which("gnome-shell") is None:
+        printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
         exit(1)
+
+    # Create install directory
+    os.makedirs(install_directory, exist_ok=True)
 
     # Install dependencies
     printc(GREEN, f"Installing dependencies...")
@@ -96,7 +97,7 @@ def install():
                 printc(GREEN, f"Moving installation to '{new_path}`...")
 
                 if os.path.exists(new_path):
-                    printc(RED, f"Cannot move installation, the target direcory ({new_path}) already exists")
+                    printc(RED, f"Cannot move installation, the target directory ({new_path}) already exists")
                     exit(1)
 
                 os.rename(install_path, new_path)
