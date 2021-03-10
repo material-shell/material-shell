@@ -63,17 +63,19 @@ export class MsWorkspaceManager extends MsManager {
             const workspaceManager = global.workspace_manager;
             let i;
             const emptyWorkspaces: boolean[] = [];
-
             if (!Meta.prefs_get_dynamic_workspaces()) {
                 this._checkWorkspacesId = 0;
                 const msWorkspaceManager = global.ms.msWorkspaceManager;
 
                 while (
                     workspaceManager.get_n_workspaces() <
-                    msWorkspaceManager.msWorkspaceList.length
+                    msWorkspaceManager.primaryMsWorkspaces.length
                 ) {
-                    const workspaceIndex =
-                        msWorkspaceManager.msWorkspaceList.length - 1;
+                    const workspaceIndex = msWorkspaceManager.msWorkspaceList.indexOf(
+                        msWorkspaceManager.primaryMsWorkspaces[
+                            msWorkspaceManager.primaryMsWorkspaces.length - 1
+                        ]
+                    );
 
                     msWorkspaceManager.removeMsWorkspaceAtIndex(workspaceIndex);
                 }
@@ -260,7 +262,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    restorePreviousState() {
+    restorePreviousState(): void {
         this.restoringState = true;
         this.removeEmptyWorkspaces();
 
@@ -313,7 +315,6 @@ export class MsWorkspaceManager extends MsManager {
                 false,
                 global.get_current_time()
             );
-
             this.setupNewWorkspace(workspace);
         }
 
@@ -336,7 +337,7 @@ export class MsWorkspaceManager extends MsManager {
         delete this.restoringState;
     }
 
-    removeEmptyWorkspaces() {
+    removeEmptyWorkspaces(): void {
         const emptyWorkspacesSlots: boolean[] = [];
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             emptyWorkspacesSlots[i] = true;
@@ -369,7 +370,7 @@ export class MsWorkspaceManager extends MsManager {
         });
     }
 
-    onMonitorsChanged() {
+    onMonitorsChanged(): void {
         this._updatingMonitors = true;
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
@@ -389,7 +390,14 @@ export class MsWorkspaceManager extends MsManager {
 
             // if there is not external msWorkspace available create one
             if (msWorkspace) {
+                const workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
                 msWorkspace.setMonitor(externalMonitor);
+                if (!Meta.prefs_get_dynamic_workspaces()) {
+                    this.workspaceManager.remove_workspace(
+                        workspace,
+                        global.get_current_time()
+                    );
+                }
             } else {
                 this.createNewMsWorkspace(externalMonitor);
             }
@@ -437,15 +445,25 @@ export class MsWorkspaceManager extends MsManager {
                             this.msWorkspaceList.indexOf(msWorkspace),
                             1
                         );
-                        this.msWorkspaceList.splice(
-                            this.msWorkspaceList.indexOf(
-                                this.primaryMsWorkspaces[
-                                    this.primaryMsWorkspaces.length - 1
-                                ]
-                            ),
-                            1,
-                            msWorkspace
-                        );
+                        if (Meta.prefs_get_dynamic_workspaces()) {
+                            this.msWorkspaceList.splice(
+                                this.msWorkspaceList.indexOf(
+                                    this.primaryMsWorkspaces[
+                                        this.primaryMsWorkspaces.length - 1
+                                    ]
+                                ),
+                                1,
+                                msWorkspace
+                            );
+                        } else {
+                            this.restoringState = true;
+                            this.workspaceManager.append_new_workspace(
+                                false,
+                                global.get_current_time()
+                            );
+                            this.msWorkspaceList.push(msWorkspace);
+                            this.restoringState = false;
+                        }
                         msWorkspace.setMonitor(
                             Main.layoutManager.primaryMonitor
                         );
