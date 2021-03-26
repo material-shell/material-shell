@@ -4,6 +4,7 @@
   "description": "A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.",
   "main": "extension.js",
   "devDependencies": {
+    "@gi-types/gtk": "^4.0.8",
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-node-resolve": "^11.1.0",
     "@types/estree": "0.0.46",
@@ -27,8 +28,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "rollup-extension": "npx rollup -c rollup.config.js -i build/extension.js  -o dist/extension.js",
     "rollup-extension-watch": "npx rollup -w -c rollup.config.js -i build/extension.js  -o dist/extension.js",
-    "rollup-prefs": "npx rollup -c rollup.config.js -i build/prefs.js  -o dist/prefs.js",
-    "rollup-prefs-watch": "npx rollup -w -c rollup.config.js -i build/prefs.js  -o dist/prefs.js",
+    "rollup-prefs": "npx rollup -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
+    "rollup-prefs-watch": "npx rollup -w -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
     "transpile-and-rollup": "node build/transpile.js && npm run rollup-extension && npm run rollup-prefs",
     "dev": "npx tsc scripts/transpile.ts --outDir build && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "
   },

@@ -400,7 +400,7 @@ export class MsWindowManager extends MsManager {
 
     _handleWindow(metaWindow) {
         if (
-            metaWindow.wm_class !== "" &&
+            metaWindow.wm_class !== '' &&
             getSettings('layouts')
                 .get_string('windows-excluded')
                 .split(',')

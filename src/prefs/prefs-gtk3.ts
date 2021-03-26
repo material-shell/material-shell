@@ -23,11 +23,8 @@ enum WidgetType {
     CUSTOM = 6,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function buildPrefsWidget() {
+export function buildGtk3() {
     const tabsContainer = new TabsContainer();
     const settingsTab = new SettingsTab();
     tabsContainer.addTab('Settings', settingsTab);

@@ -34,7 +34,8 @@
             "ui": ["src/types/ui"],
             "st": ["types/st"],
             "meta": ["types/meta", "src/types/meta"],
-            "gjs": ["src/types/gjs"]
+            "gjs": ["src/types/gjs"],
+            "gtk4": ["node_modules/@gi-types/gtk"]
         },
         "experimentalDecorators": true
     },
