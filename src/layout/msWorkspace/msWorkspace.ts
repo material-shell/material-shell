@@ -1,24 +1,24 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
+import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
+import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { Monitor } from 'src/types/mod';
+import { logAssert } from 'src/utils/assert';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { getSettings } from 'src/utils/settings';
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 const Signals = imports.signals;
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
-import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { reparentActor } from 'src/utils/index';
-import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
-import { getSettings } from 'src/utils/settings';
-import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
-import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
-import { logAssert } from 'src/utils/assert';
-import { Monitor } from 'src/types/mod';
 
 export type Tileable = MsWindow | MsApplicationLauncher;
 

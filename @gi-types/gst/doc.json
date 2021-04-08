@@ -1,0 +1,10 @@
+{
+    "name": "Gst",
+    "api_version": "1.0",
+    "package_version": "1.0",
+    "imports": {
+        "GLib": "2.0",
+        "GModule": "2.0",
+        "GObject": "2.0"
+    }
+}

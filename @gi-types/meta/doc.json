@@ -1,0 +1,22 @@
+{
+    "name": "Meta",
+    "api_version": "7",
+    "package_version": "3.38.3",
+    "imports": {
+        "Clutter": "7",
+        "Cogl": "7",
+        "CoglPango": "7",
+        "GDesktopEnums": "3.0",
+        "GObject": "2.0",
+        "Gdk": "3.0",
+        "Gtk": "3.0",
+        "xfixes": "4.0",
+        "xlib": "2.0",
+        "Gio": "2.0",
+        "Atk": "1.0",
+        "GLib": "2.0",
+        "Pango": "1.0",
+        "Json": "1.0",
+        "cairo": "1.0"
+    }
+}

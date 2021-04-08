@@ -21,21 +21,9 @@
         "importHelpers": true,
         "baseUrl": ".",
         "paths": {
-            "glib": ["types/glib"],
-            "gio": ["types/gio"],
-            "clutter": ["types/clutter"],
-            "gobject": ["types/gobject"],
-            "cogl": ["types/cogl"],
-            "gdk": ["types/gdk"],
-            "gnomedesktop": ["src/types/gnome_desktop"],
-            "gtk": ["types/gtk"],
-            "shell": ["src/types/shell"],
-            "soup": ["types/soup"],
+            "*": ["@gi-types/*", "*"],
             "ui": ["src/types/ui"],
-            "st": ["types/st"],
-            "meta": ["types/meta", "src/types/meta"],
-            "gjs": ["src/types/gjs"],
-            "gtk4": ["node_modules/@gi-types/gtk"]
+            "gjs": ["src/types/gjs"]
         },
         "experimentalDecorators": true
     },

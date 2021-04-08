@@ -135,20 +135,6 @@ declare type ProcessResult = [boolean, any, any, number];
 declare type SignalID = number;
 
 declare module 'gobject' {
-    // Why these are not in the documentation or auto-generated typedefs, I do not know.
-    export const TYPE_INT: GObject.GType<number>;
-    export const TYPE_STRING: GObject.GType<string>;
-    export const TYPE_BOOLEAN: GObject.GType<boolean>;
-
-    // Extra interfaces used to help define GObject classes in js; these
-    // aren't part of gi.
-    export interface SignalDefinition {
-        flags?: SignalFlags;
-        accumulator?: number;
-        return_type?: GType;
-        param_types?: GType[];
-    }
-
     export interface MetaInfo {
         GTypeName: string;
         GTypeFlags?: TypeFlags;

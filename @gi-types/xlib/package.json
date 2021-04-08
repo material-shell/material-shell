@@ -1,0 +1,63 @@
+{
+  "_from": "@gi-types/xlib@^2.0.0",
+  "_id": "@gi-types/xlib@2.0.0",
+  "_inBundle": false,
+  "_integrity": "sha512-YHNrcCw/i8QX3sh5bZ+SN7xEDrmhKIqAoUh/JgiDyPqqH2du+BpQUZy/e0oM0AIZWPNFKgD5M5Bq0+1MvVS3IA==",
+  "_location": "/@gi-types/xlib",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@gi-types/xlib@^2.0.0",
+    "name": "@gi-types/xlib",
+    "escapedName": "@gi-types%2fxlib",
+    "scope": "@gi-types",
+    "rawSpec": "^2.0.0",
+    "saveSpec": null,
+    "fetchSpec": "^2.0.0"
+  },
+  "_requiredBy": [
+    "/@gi-types/meta/@gi-types/gtk"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/xlib/-/xlib-2.0.0.tgz",
+  "_shasum": "39aae9112fa4674e96930f4173764806b9773422",
+  "_spec": "@gi-types/xlib@^2.0.0",
+  "_where": "/var/home/papyelgringo/workspace/material-shell/node_modules/@gi-types/meta/node_modules/@gi-types/gtk",
+  "bundleDependencies": false,
+  "contentHash": "c63aa738248de929709deb1d91a352c5",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/gobject": "^2.66.9"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for xlib",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "235649de399c51e203b20a3c74b262db8e5e8289",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/xlib",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/xlib2"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "2.0.0"
+}

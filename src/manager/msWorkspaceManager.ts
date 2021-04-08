@@ -14,6 +14,7 @@ import { Monitor } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
+import { MetaWindowWithMsProperties } from './msWindowManager';
 
 const Main = imports.ui.main;
 
@@ -663,7 +664,7 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     metaWindowEnteredWorkspace(
-        metaWindow: Meta.Window & { createdAt?: number },
+        metaWindow: MetaWindowWithMsProperties,
         workspace: Meta.Workspace
     ) {
         if (
@@ -704,7 +705,7 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     windowEnteredMonitor(
-        metaWindow: Meta.Window & { handledByMaterialShell?: boolean },
+        metaWindow: MetaWindowWithMsProperties,
         monitorIndex: number
     ) {
         if (this.updatingMonitors) return;

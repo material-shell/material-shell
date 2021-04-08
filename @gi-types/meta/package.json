@@ -1,0 +1,85 @@
+{
+  "_from": "@gi-types/meta",
+  "_id": "@gi-types/meta@3.38.5",
+  "_inBundle": false,
+  "_integrity": "sha512-EzYGvZu58j/hDZv/zQX4ooL0Pq4TEP2Okhn0JlVmGpFIB65ZWOkCHQqj3LODdpp327+cWMNYkG5WHZXJAmtuZQ==",
+  "_location": "/@gi-types/meta",
+  "_phantomChildren": {
+    "@gi-types/atk": "2.36.7",
+    "@gi-types/cairo": "1.0.3",
+    "@gi-types/gdkpixbuf": "2.0.5",
+    "@gi-types/gio": "2.66.9",
+    "@gi-types/glib": "2.66.10",
+    "@gi-types/gobject": "2.66.9",
+    "@gi-types/pango": "1.0.5",
+    "@gi-types/xlib": "2.0.0"
+  },
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@gi-types/meta",
+    "name": "@gi-types/meta",
+    "escapedName": "@gi-types%2fmeta",
+    "scope": "@gi-types",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/meta/-/meta-3.38.5.tgz",
+  "_shasum": "7f41257e95cd58047d0a33c615418f6ece449145",
+  "_spec": "@gi-types/meta",
+  "_where": "/var/home/papyelgringo/workspace/material-shell",
+  "bundleDependencies": false,
+  "contentHash": "8fe25828bac32805f72f433310be6d77",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/atk": "^2.36.7",
+    "@gi-types/cairo": "^1.0.3",
+    "@gi-types/clutter": "^7.0.6",
+    "@gi-types/cogl": "^7.0.3",
+    "@gi-types/coglpango": "^7.0.2",
+    "@gi-types/gdesktopenums": "^3.0.3",
+    "@gi-types/gdk": "^3.24.7",
+    "@gi-types/gio": "^2.66.9",
+    "@gi-types/glib": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8",
+    "@gi-types/gtk": "^3.24.8",
+    "@gi-types/json": "^1.6.5",
+    "@gi-types/pango": "^1.0.5"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for Meta",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/meta",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/meta7"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "3.38.5"
+}

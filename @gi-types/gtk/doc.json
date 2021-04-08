@@ -1,0 +1,16 @@
+{
+    "name": "Gtk",
+    "api_version": "4.0",
+    "package_version": "4.0.2",
+    "imports": {
+        "Gdk": "4.0",
+        "Gsk": "4.0",
+        "Gio": "2.0",
+        "GObject": "2.0",
+        "GLib": "2.0",
+        "Pango": "1.0",
+        "cairo": "1.0",
+        "GdkPixbuf": "2.0",
+        "Graphene": "1.0"
+    }
+}

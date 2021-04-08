@@ -1,0 +1,19 @@
+{
+    "name": "St",
+    "api_version": "1.0",
+    "package_version": "1.0",
+    "imports": {
+        "Cally": "7",
+        "Clutter": "7",
+        "Gtk": "3.0",
+        "Meta": "7",
+        "Atk": "1.0",
+        "Gio": "2.0",
+        "GObject": "2.0",
+        "GLib": "2.0",
+        "Json": "1.0",
+        "cairo": "1.0",
+        "Pango": "1.0",
+        "Cogl": "7"
+    }
+}

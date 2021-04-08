@@ -1,32 +1,31 @@
 /** Gnome libs imports */
-import * as Shell from 'shell';
-import * as Meta from 'meta';
-import * as St from 'st';
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
-import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import * as Meta from 'meta';
+import * as Shell from 'shell';
+import { MsPanel } from 'src/layout/verticalPanel/verticalPanel';
+import { Signal } from 'src/manager/msManager';
+import {
+    HorizontalPanelPositionEnum,
+    VerticalPanelPositionEnum,
+} from 'src/manager/msThemeManager';
+import { Monitor } from 'src/types/mod';
+import { assert } from 'src/utils/assert';
+import {
+    Allocate,
+    AllocatePreferredSize,
+    SetAllocation,
+} from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { SignalHandle } from 'src/utils/signal';
+import { TranslationAnimator } from 'src/widget/translationAnimator';
+import * as St from 'st';
 const Main = imports.ui.main;
 const Background = imports.ui.background;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import {
-    SetAllocation,
-    Allocate,
-    AllocatePreferredSize,
-} from 'src/utils/compatibility';
-import { MsPanel } from 'src/layout/verticalPanel/verticalPanel';
-import { reparentActor } from 'src/utils/index';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
-import {
-    VerticalPanelPositionEnum,
-    HorizontalPanelPositionEnum,
-} from 'src/manager/msThemeManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { Signal } from 'src/manager/msManager';
-import { Monitor } from 'src/types/mod';
-import { assert } from 'src/utils/assert';
-import { SignalHandle } from 'src/utils/signal';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {

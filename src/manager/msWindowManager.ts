@@ -18,6 +18,8 @@ export type MetaWindowWithMsProperties = Meta.Window & {
     createdAt?: number;
     firstFrameDrawn?: boolean;
     handledByMaterialShell?: boolean;
+    msWindow?: MsWindow;
+    titleBarVisible?: boolean;
 };
 
 export type MetaWindowActorWithMsProperties = Meta.WindowActor & {
@@ -68,7 +70,7 @@ export class MsWindowManager extends MsManager {
 
     handleExistingMetaWindow() {
         global.get_window_actors().forEach((windowActor) => {
-            const metaWindow = windowActor.metaWindow;
+            const metaWindow = windowActor.metaWindow as MetaWindowWithMsProperties;
             metaWindow.firstFrameDrawn = true;
             metaWindow.createdAt = metaWindow.user_time;
             if (metaWindow.msWindow) delete metaWindow.msWindow;
@@ -453,7 +455,7 @@ export class MsWindowManager extends MsManager {
         this.msDndManager.destroy();
         this.msResizeManager.destroy();
         global.get_window_actors().forEach((windowActor) => {
-            const metaWindow = windowActor.metaWindow;
+            const metaWindow = windowActor.metaWindow as MetaWindowWithMsProperties;
             if (metaWindow.handledByMaterialShell)
                 delete metaWindow.handledByMaterialShell;
         });

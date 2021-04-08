@@ -1,0 +1,10 @@
+{
+    "name": "Json",
+    "api_version": "1.0",
+    "package_version": "1.6.0",
+    "imports": {
+        "GObject": "2.0",
+        "Gio": "2.0",
+        "GLib": "2.0"
+    }
+}

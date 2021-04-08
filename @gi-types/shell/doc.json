@@ -1,0 +1,23 @@
+{
+    "name": "Shell",
+    "api_version": "0.1",
+    "package_version": "0.1",
+    "imports": {
+        "Clutter": "7",
+        "ClutterX11": "7",
+        "Gcr": "3",
+        "Gvc": "1.0",
+        "Meta": "7",
+        "NM": "1.0",
+        "PolkitAgent": "1.0",
+        "St": "1.0",
+        "Atk": "1.0",
+        "Gtk": "3.0",
+        "Gio": "2.0",
+        "GObject": "2.0",
+        "cairo": "1.0",
+        "GdkPixbuf": "2.0",
+        "GLib": "2.0",
+        "Json": "1.0"
+    }
+}
