@@ -168,9 +168,26 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 ```bash
 gnome-extensions enable material-shell@papyelgringo
 ```
+
+
 ## Recommended Additional Configuration
 * GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 * Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
+
+# Reset Material Shell
+
+### Reset the Material Shell persistent state
+If you have some wierd behavior or a degradation in time it's can be a good idea to try to reset the Material Shell state.
+
+1. Open Looking Glass tool by pressing `Alt + F2` and type `lg`
+2. Copy past the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
+3. Reload the shell
+
+### Reset the Material Shell settings
+If you want to discard all the changes of Material Shell settings and reset to default (Including keybindings)
+1. Open a terminal an copy past `dconf reset -f /org/gnome/shell/extensions/materialshell/`
+
+
 
 # Uninstallation 😢
 We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
