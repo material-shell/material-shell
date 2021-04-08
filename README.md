@@ -5,7 +5,7 @@
         A <b>modern desktop interface</b> for <b>Linux</b> extending <b><a href="https://wiki.gnome.org/Projects/GnomeShell">GNOME Shell</a></b>.
 </p>
 <p align="center">
-Providing an <b>unique</b>, <b>simple</b>, <b>productivity oriented</b>, <b>innovative</b> and <b>automated</b> <b>mouse and keyboard <a href="#workflow">workflow</a></b> which aims to be <b>faster</b> and <b>easier</b> to use and creates a <b>great user experience</b>.
+Providing a <b>unique</b>, <b>simple</b>, <b>productivity-oriented</b>, <b>innovative</b> and <b>automated</b> <b>mouse and keyboard <a href="#workflow">workflow</a></b> which aims to be <b>faster</b> and <b>easier</b> to use and creates a <b>great user experience</b>.
 </p>
 <p align="center">
         Powered by its unique <b><a href="#spatial-model">spatial model</a></b>, its modern <b><a href="#interface">material design interface</a></b>, its <b><a href="#tiling-engine">tiling engine</a></b> and its <b><a href="#persistence">persistability</a></b>.
@@ -48,7 +48,7 @@ A **Workspace** is an applications container that can be **visualized as a row**
 
 Every **new application** is **automatically positioned** inside this grid at the end of its workspace row and every **new workspaces** are **appended at the bottom** which is very **predictable** and **always sorted automatically**.
 
-This allow us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** change the current window(s) on screen.
+This allows us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** changes the current window(s) on screen.
 
 You can organize your applications by use cases as **activities** or by applications type as **categories**.
 
@@ -110,11 +110,11 @@ It's the **tool** that **automatically organize** the application's **window** f
 ## Persistence
 The **best way** to **configure** the desktop layout is to **not** have to **do it**.
 
-Material Shell **keep track** of every **decisions** relative to the desktop layout: where are windows, in which workspaces in which order.
+Material Shell **keeps track** of every **decision** relative to the desktop layout: where are windows, in which workspaces, and in which order.
 
-This allow to **configure** the layouts **on the go** while using it.
+This allows **configuration** of the layouts **on the go** while using it.
 
-When opening a **new session** Material Shell will **restore every windows** previously present with a "**window placeholder** which allow you to reopen any of the previous window easily at the same spot you like to have them.
+When opening a **new session** Material Shell will **restore every window** previously present with a "**window placeholder** which allows you to reopen any of the previous windows easily at the same spot you like to have them.
 
 ## Hotkeys
 Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
@@ -177,15 +177,15 @@ gnome-extensions enable material-shell@papyelgringo
 # Reset Material Shell
 
 ### Reset the Material Shell persistent state
-If you have some wierd behavior or a degradation in time it's can be a good idea to try to reset the Material Shell state.
+If you have some weird behavior or a degradation over time, it can be a good idea to try to reset the Material Shell state.
 
 1. Open Looking Glass tool by pressing `Alt + F2` and type `lg`
-2. Copy past the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
+2. Copy and paste the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
 3. Reload the shell
 
 ### Reset the Material Shell settings
 If you want to discard all the changes of Material Shell settings and reset to default (Including keybindings)
-1. Open a terminal an copy past `dconf reset -f /org/gnome/shell/extensions/materialshell/`
+1. Open a terminal and copy/paste `dconf reset -f /org/gnome/shell/extensions/materialshell/`
 
 
 
