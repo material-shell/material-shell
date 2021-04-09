@@ -116,34 +116,113 @@ This allow to **configure** the layouts **on the go** while using it.
 
 When opening a **new session** Material Shell will **restore every windows** previously present with a "**window placeholder** which allow you to reopen any of the previous window easily at the same spot you like to have them.
 
-## Hotkeys
-Some hotkeys might already be used by GNOME Shell - please check your keybindings first.
-#### Desktop navigation
-* `Super+W` Navigate to the upper workspace/category.
-* `Super+S` Navigate to the lower workspace/category.
-* `Super+A` Focus the window at the left of the current window.
-* `Super+D` Focus the window at the right of the current window.
-* `Super+1`, `Super+2` ... `Super+0` Navigate to specific workspace
 
-#### Window manipulation
-* `Super+Q` Kill the current window focused.
+## Brief Tutorial
+Getting around using the mouse and keyboard shortcuts
+
+Setup
+
+1. The first workspace will be used to view and refer to this README.md file. The 2nd, 3rd,.. 10th will be used for Material-Shell practice.
+2. In the first workspace, click on the tiling icon in the upper right corner. Click on `Tweak available layout`.
+3. Turn off all layout styles except `Float`. 
+4. Remember that you can return to workspace one, this README file, by using `Super+1`. 
+5. To open a second workspace, click on the `+` on the left side of the screen, or use or `Super+0`.
+6. Turn on the first 6 tiling choices on, e.g., `Maximize, Split ... Half vertical`. Turn off the remaining layouts, especially `Float`. Click on `Confirm layouts` to save.
+7. Click on the tiling icon again and select `Split` from the list of layouts. Increase the number of layouts to `4`.
+8. Use `Super+x` to open App Launcher, and then open a terminal window. Do this 4 times. There should 4 (Split) windows on the desktop.
+9. Execute a command in each terminal instance so that the terminal windows are distinguishable from each other. For example, execute `ls, nano, man ls, htop` respectively.
+10. Use `Super+0` to open another workspace, and open two applications, for example, an email client and Libre Writer.
+11. Use `Super+End` to open another workspace, and  open an image editor.
+
+Practice
+
+1. Cycle through the tiling layouts using `Super+Spacebar`. Notice that the tiling-layout icon updates to represent the current layout.
+2. Experiment with keyboard shortcuts. Try the following:
+	-Move the focus within a workspace, to another workspace, and if applicable, to another monitor.
+	-Move a window within a workspace, to another workspace, and if applicable, to another monitor.
+	-Resize a window.
+	-Close an application.
+
+Take note of the following:
+
+1. The workspace icons are located on the left side of the screen and the window panes (tabs) are located at the top of the screen.
+2. When using a browser, the browser tabs are located below the window panes. Browser tabs and window panes can be similar in appearance.
+3. There isn't a keyboard/mouse equivalent of `Maximize` window. Use the tiling layout icon or `Super+spacebar` to return to a maximized window.
+4. Tiling layout preferences are unique to the each workspace (the preferences do not behave as workspace global settings).
+5. Note that a few Material-Shell keybindings duplicate some Gnome keybindings e.g. `Super+s, Super+PgDown`, `Super+Home`, `Super+End` etc..
+
+## Hotkeys
+Material-Shell is often used in conjunction with Gnome keyboard-shortcuts, Firefox shortcuts, etc. 
+Note that some hotkeys might already be used by other applications - please check your keybindings first.
+
+#### Choosing tiling layout
+* `Super+Space` Cycle through the tiling options in the current workspace.
+
+#### Open and close a window
+* `Super+x` Open the App Launcher within a new window.
+* `Super+q` Kill the current focused window.
+
+#### Moving the focus aka Navigation
+... window panes 
+* `Super+d` Focus on the next window pane, left to right.
+* `Super+a` Focus on the previous window pane, right to left.
+
+...workspaces 1 through 10
+* `Super+1`, `Super+2` ... `Super+0` Navigate to specific workspace 1 - 10
+* `Super+s` Focus on the next workspace 1 - 10 (down).
+* `Super+w` Focus on the previous workspace 10 - 1 (up).
+
+...multiple monitors -- Alt+Super+__
+* `Alt+Super+left` Set focus to the left monitor.
+* `Alt+Super+right` Set focus to the right monitor.
+* `Alt+Super+down` Set focus to the downward monitor.
+* `Alt+Super+up` Set focus to the upward monitor.
+
+...to different workspaces and windows via switching applications (gnome key-binding)
+* `Super+tab` Switch between applications
+
+#### Moving a window
+... in the current workspace
+* `Super+left` Move the current window to the left.
+* `Super+right` Move the current window to the right.
+* `Super+up` Move the current window to upper workspace (top).
+* `Super+down` Move the current window to lower workspace (bottom).
+* `Shift+Super+1`, `Shift+Super+2`, ... `Shift+Super+0` Move window to specific workspace  
+
+...to multiple monitors
+* `Shift+Super+a` Move the current window to the monitor on the left.
+* `Shift+Super+d` Move the current window to the monitor on the right.
+* `Shift+Super+w` Move the current window to the upper workspace.
+* `Shift+Super+s` Move the current window to the lower workspace.
+
+... alternate combinations for multiple monitors (gnome keybindings)
+* `Shift+Super+left` Move the current window to the left monitor.
+* `Shift+Super+right` Move the current window to the right monitor.
+* `Shift+Super+down` Move the current window to the downward monitor.
+* `Shift+Super+up` Move the current window to the upward monitor. 
+
+... in combination with the mouse
 * `Super+[MouseDrag]` Move window around.
-* `Super+Shift+A` Move the current window to the left.
-* `Super+Shift+D` Move the current window to the right.
-* `Super+Shift+W` Move the current window to the upper workspace.
-* `Super+Shift+S` Move the current window to the lower workspace.
+
+#### Resize a window
+* `Ctrl+Super+left` Increase width moving border to the left.
+* `Ctrl+Super+up` Increase height moving border upward.
+* `Ctrl+Super+right` Increase width moving border to the right.
+* `Ctrl+Super+down` Increase height moving border downward.
+
 
 #### Extra Hotkeys
-* `Super+Space` Cycle the tiling layout of the current workspace.
+
+* `Shift+Super+Space` Reverse cycle the tiling layout of the current workspace.
 * `Super+Escape` Toggle the UI of Material-shell, like a Zen mode.
 
 # Installation
 
-#### Get it in two clicks
+#### Get it in two clicks (single-user installation, stable release)
 * Navigate to [extensions.gnome.org](https://extensions.gnome.org/extension/3357/material-shell/)
 * Switch the toggle ON
 
-#### Get the most up to date version with Git
+#### Get the most up to date version with Git (multi-user installation, in development)
 
 1. Check your GNOME Shell version as we only support **gnome-shell >= 3.34.0**
 
@@ -192,6 +271,7 @@ If you want to discard all the changes of Material Shell settings and reset to d
 # Uninstallation 😢
 We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
 
+## Gnome extension or single-user
 1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using 
 ```bash
 gnome-extensions disable material-shell@papyelgringo
@@ -200,6 +280,9 @@ gnome-extensions disable material-shell@papyelgringo
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
+## Package manager, multi-user, or development.
+Remove via the appropriate package manager.
+
 # History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
