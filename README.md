@@ -177,15 +177,15 @@ gnome-extensions enable material-shell@papyelgringo
 # Reset Material Shell
 
 ### Reset the Material Shell persistent state
-If you have some wierd behavior or a degradation in time it's can be a good idea to try to reset the Material Shell state.
+If you have some wierd behavior or a degradation in time, it can be a good idea to try to reset the Material Shell state.
 
 1. Open Looking Glass tool by pressing `Alt + F2` and type `lg`
-2. Copy past the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
-3. Reload the shell
+2. Copy paste the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
+3. Reload the shell!
 
 ### Reset the Material Shell settings
 If you want to discard all the changes of Material Shell settings and reset to default (Including keybindings)
-1. Open a terminal an copy past `dconf reset -f /org/gnome/shell/extensions/materialshell/`
+1. Open a terminal an copy paste `dconf reset -f /org/gnome/shell/extensions/materialshell/`
 
 
 
