@@ -33,7 +33,7 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
 
 # Workflow
 
-Created to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictable** and bring the benefits of tools coveted by professionals to everyone. 
+Created to **simplify** navigation and **reduce** the need to **manipulate** windows in order to **improve productivity**. It's meant to be 100% **predictable** and bring the benefits of tools coveted by professionals to everyone.
 
 ## Spatial Model
 
@@ -82,7 +82,7 @@ The workspace panel is the main component of the right side of the interface. It
 * **Layout switcher**: This component displays the current layout of the workspace and can be clicked to switch to the next available layout.
 
 ### Design
-Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface. 
+Made by following the **[Material Design guidelines](https://material.io)** - a solid baseline that allows us to provide an **aesthetically pleasing** and **highly accessible** interface.
 
 ### Themes
 You can choose between 3 different themes:
@@ -102,8 +102,8 @@ It's the **tool** that **automatically organize** the application's **window** f
 
 **Choose** at **any time** which tiling layout suit the most for your need:
 * **Maximize**: Single window at a time
-* **Split**: 2 windows side by side 
-* **Column**: All windows displayed as columns (useful for ultra wide monitor)
+* **Split**: 2 windows side by side
+* **Simple**: All windows evenly split and stacked along horizontal or vertical axis (useful for ultra wide monitor)
 * **Half**: One master window on the left then others windows stacked to the right
 * **Grid**: All windows displayed as a grid
 
@@ -163,8 +163,8 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 3. Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
   + On Wayland: Log out and back in
-  
-4. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using 
+
+4. Open `gnome-tweaks` and activate the `Material Shell` extension **OR** enable it using
 ```bash
 gnome-extensions enable material-shell@papyelgringo
 ```
@@ -192,7 +192,7 @@ If you want to discard all the changes of Material Shell settings and reset to d
 # Uninstallation 😢
 We're sad to see you go. Before you uninstall, leave us some feedback by [opening an issue](https://github.com/material-shell/material-shell/issues/new/choose) - it will be very helpful in improving Material Shell.
 
-1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using 
+1. Open `gnome-tweaks` and disable the `Material Shell` extension **OR** disable it using
 ```bash
 gnome-extensions disable material-shell@papyelgringo
 ```
