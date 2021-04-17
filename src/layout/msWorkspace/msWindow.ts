@@ -113,7 +113,7 @@ export class MsWindow extends Clutter.Actor {
         this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(this.app);
         this.metaWindowSignals = [];
-        this.placeholder.connect('clicked', (_) => {
+        this.placeholder.connect('activated', (_) => {
             this.emit('request-new-meta-window');
         });
         this.destroyId = this.connect('destroy', this._onDestroy.bind(this));
