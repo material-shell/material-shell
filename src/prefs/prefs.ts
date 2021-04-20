@@ -1,6 +1,5 @@
 import * as Gdk from 'gdk';
 import * as Gio from 'gio';
-import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
@@ -55,11 +54,20 @@ const SettingListBoxRow = GObject.registerClass(
 );
 
 @registerGObjectClass
-class HotkeysTab extends GObject.Object {
+class HotkeyRowData extends GObject.Object {
     key: string;
     summary: string;
     mods: number;
-    accelKey: number;
+    accelKey: boolean;
+
+    constructor(key: string, summary: string, mods: number, accelKey: boolean) {
+        super();
+
+        this.key = key;
+        this.summary = summary;
+        this.mods = mods;
+        this.accelKey = accelKey;
+    }
 }
 
 const HotkeyListBox = GObject.registerClass(
@@ -74,6 +82,41 @@ const HotkeyListBox = GObject.registerClass(
 
         constructor(schema: string) {
             super();
+
+            const model = new Gio.ListStore(HotkeyRowData.$gtype);
+            const settings = new Gio.Settings({
+                settings_schema: schemaSource.lookup(schema, false),
+            });
+
+            settings
+                .list_keys()
+                .map((key) => {
+                    const [accelKey, mods] = Gtk.accelerator_parse(
+                        settings.get_strv(key)[0]
+                    );
+                    const settingKey = settings.settings_schema.get_key(key);
+                    const summary = settingKey.get_summary();
+
+                    return {
+                        key,
+                        summary,
+                        mods,
+                        accelKey,
+                    };
+                })
+                .sort((modelEntryA, modelEntryB) => {
+                    return modelEntryA.summary > modelEntryB.summary ? 1 : 0;
+                })
+                .forEach((modelEntry) => {
+                    model.append(new HotkeyRowData(modelEntry.key, modelEntry.summary, modelEntry.mods, modelEntry.accelKey));
+                });
+
+            this.bind_model(model, this.createHotkeyRow)
+        }
+
+        createHotkeyRow(obj: GObject.Object): Gtk.Widget {
+            const data = obj as HotkeyRowData;
+            return new HotkeyListBoxRow(data.summary, data.key);
         }
     }
 );
