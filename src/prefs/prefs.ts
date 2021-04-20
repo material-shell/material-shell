@@ -4,6 +4,14 @@ import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+function init() { }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function buildPrefsWidget() {
+    return new PrefsWidget();
+}
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
@@ -24,7 +32,7 @@ enum WidgetType {
 
 const SettingListBoxRow = GObject.registerClass(
     {
-        GTypeName: 'SettingListBox',
+        GTypeName: 'SettingListBoxRow',
         Template: Me.dir.get_child('setting_list_box_row.ui').get_uri(),
         Properties: {
             'settings-widget': GObject.ParamSpec.object(
@@ -32,7 +40,7 @@ const SettingListBoxRow = GObject.registerClass(
                 'Settings Widget',
                 'The widget in which the user sets the settings value',
                 GObject.ParamFlags.READWRITE,
-                null,
+                Gtk.Widget.$gtype,
             ),
         },
     },
@@ -412,9 +420,4 @@ function getDefaultLayoutComboBox(
         Gio.SettingsBindFlags.DEFAULT
     );
     return widget;
-}
-
-
-export function buildGtk4() {
-    return new PrefsWidget();
 }
