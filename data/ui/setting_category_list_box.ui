@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="SettingCategoryListBox" parent="GtkListBox">
+    <property name="valign">start</property>
+    <property name="selection-mode">none</property>
+    <style>
+      <class name="content"/>
+    </style>
+    <child>
+      <object class="GtkLabel" id="title_label"/>
+        <property name="xalign">0</property>
+        <property name="use-markup">1</property>
+        <property name="margin-start">0</property>
+        <property name="margin-top">16</property>
+        <property name="margin-bottom">8</property>
+      </object>
+    </child>
+  </template>
+</interface>

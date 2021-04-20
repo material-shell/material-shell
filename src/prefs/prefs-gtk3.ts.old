@@ -472,7 +472,7 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            for (;;) {
+            for (; ;) {
                 const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;

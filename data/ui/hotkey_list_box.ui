@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="HotkeyListBox" parent="GtkListBox">
+    <property name="valign">start</property>
+    <property name="selection-mode">none</property>
+    <style>
+      <class name="content"/>
+    </style>
+  </template>
+</interface>
