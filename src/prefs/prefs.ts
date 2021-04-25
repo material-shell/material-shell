@@ -40,7 +40,7 @@ enum WidgetType {
 @registerGObjectClass
 class SettingListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo = {
-        GTypeName: 'SettingListBoxRowType',
+        GTypeName: 'SettingListBoxRow',
         Template: Me.dir.get_child('setting_list_box_row.ui').get_uri(),
         Properties: {
             'settings-widget': GObject.ParamSpec.object(
