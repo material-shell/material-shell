@@ -13,6 +13,9 @@ const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     false
 );
 
+const hotkeysSchemaName =
+    'org.gnome.shell.extensions.materialshell.bindings';
+
 function log(...args: any[]) {
     const fields = { MESSAGE: `${args.join(', ')}` };
     const domain = 'Material Shell';
@@ -20,7 +23,7 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {}
+function init() { }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
@@ -87,12 +90,12 @@ class HotkeyListBox extends Gtk.ListBox {
         Template: Me.dir.get_child('hotkey_list_box.ui').get_uri(),
     };
 
-    constructor(schema: string) {
+    constructor() {
         super();
 
         const model = new Gio.ListStore(HotkeyRowData.$gtype);
         const settings = new Gio.Settings({
-            settings_schema: schemaSource.lookup(schema, false),
+            settings_schema: schemaSource.lookup(hotkeysSchemaName, false),
         });
 
         settings
@@ -139,6 +142,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'HotkeyListBoxRow',
         Template: Me.dir.get_child('hotkey_list_box_row.ui').get_uri(),
+        InternalChildren: ['accel_label', 'hotkey_label'],
     };
     private _accel_label: Gtk.Label;
     private _hotkey_label: Gtk.Label;
@@ -366,7 +370,7 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            for (;;) {
+            for (; ;) {
                 const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;

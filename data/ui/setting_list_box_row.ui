@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <template class="SettingListBox" parent="GtkListBoxRow">
+    <template class="SettingListBoxRow" parent="GtkListBoxRow">
         <child>
             <object class="GtkBox">
                 <property name="spacing">8</property>

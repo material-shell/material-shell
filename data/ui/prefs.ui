@@ -38,11 +38,5 @@
                 </object>
             </child>
         </object>
-        <object class="GtkStackPage">
-            <property name="title">Hotkeys</property>
-            <property name="child">
-                <object class="GtkBox"/>
-            </property>
-        </object>
     </template>
 </interface>
