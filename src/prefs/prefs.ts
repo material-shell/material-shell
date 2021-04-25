@@ -164,8 +164,9 @@ class SettingCategoryListBox extends Gtk.ListBox {
                 ''
             ),
         },
+        InternalChildren: ['title_label'],
     };
-    private title_label: Gtk.Label;
+    private _title_label: Gtk.Label;
     private schema: string;
     public settings: Gio.Settings;
 
@@ -180,11 +181,11 @@ class SettingCategoryListBox extends Gtk.ListBox {
     }
 
     get title(): string {
-        return this.title_label.get_text();
+        return this._title_label.get_text();
     }
 
     set title(value: string) {
-        this.title_label.set_text(`<span size="medium">${value}</span>`);
+        this._title_label.set_text(`<span size="medium">${value}</span>`);
     }
 
     addSetting(key: string, type: WidgetType, customWidget?: Gtk.Widget) {
@@ -278,8 +279,9 @@ class PrefsWidget extends Gtk.Box {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'PrefsWidget',
         Template: Me.dir.get_child('prefs.ui').get_uri(),
+        InternalChildren: ['settings_box'],
     };
-    private _inner_box: Gtk.Box;
+    private _settings_box: Gtk.Box;
 
     constructor() {
         super();
@@ -303,7 +305,7 @@ class PrefsWidget extends Gtk.Box {
         theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
         theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
         theme.addSetting('focus-effect', WidgetType.COMBO);
-        this._inner_box.append(theme);
+        this._settings_box.append(theme);
 
         const tweaks = new SettingCategoryListBox(
             'Tweaks',
@@ -314,7 +316,7 @@ class PrefsWidget extends Gtk.Box {
         tweaks.addSetting('cycle-through-workspaces', WidgetType.BOOLEAN);
         tweaks.addSetting('disable-notifications', WidgetType.BOOLEAN);
         tweaks.addSetting('enable-persistence', WidgetType.BOOLEAN);
-        this._inner_box.append(tweaks);
+        this._settings_box.append(tweaks);
 
         const layouts = new SettingCategoryListBox(
             'Tiling layouts',
@@ -353,7 +355,7 @@ class PrefsWidget extends Gtk.Box {
         layouts.addSetting('screen-gap', WidgetType.INT);
         layouts.addSetting('tween-time', WidgetType.DECIMAL);
         layouts.addSetting('windows-excluded', WidgetType.INPUT);
-        this._inner_box.append(layouts);
+        this._settings_box.append(layouts);
     }
 }
 
