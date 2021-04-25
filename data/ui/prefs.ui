@@ -30,11 +30,11 @@
                 </child>
               </object>
             </property>
-          </object/>
+          </object>
           <object class="GtkStackPage">
             <property name="title">Hotkeys</property>
             <property name="child">
-              <object class="HotkeyListBox" id="hotkey_list_box"/>
+              <object class="GtkBox"/>
             </property>
           </object>
         </child>

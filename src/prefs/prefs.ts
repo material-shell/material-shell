@@ -32,7 +32,7 @@ enum WidgetType {
 
 const SettingListBoxRow = GObject.registerClass(
     {
-        GTypeName: 'SettingListBoxRow',
+        GTypeName: 'SettingListBoxRowType',
         Template: Me.dir.get_child('setting_list_box_row.ui').get_uri(),
         Properties: {
             'settings-widget': GObject.ParamSpec.object(

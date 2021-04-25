@@ -14,6 +14,8 @@
                 <property name="margin-top">8</property>
                 <property name="margin-start">8</property>
               </object>
+            </child>
+            <child>
               <object class="GtkLabel" id="description_label"/>
                 <property name="xalign">0</property>
                 <property name="use-markup">1</property>
