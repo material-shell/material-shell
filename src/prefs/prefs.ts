@@ -54,10 +54,6 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
     };
     private _settings_widget: GObject.Object;
 
-    _init(params = {}) {
-        super._init(params);
-    }
-
     get settings_widget(): GObject.Object {
         return this._settings_widget;
     }
@@ -90,10 +86,6 @@ class HotkeyListBox extends Gtk.ListBox {
         GTypeName: 'HotkeyListBox',
         Template: Me.dir.get_child('hotkey_list_box.ui').get_uri(),
     };
-
-    _init(params = {}) {
-        super._init(params);
-    }
 
     constructor(schema: string) {
         super();
@@ -151,10 +143,6 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     private _accel_label: Gtk.Label;
     private _hotkey_label: Gtk.Label;
 
-    _init(params = {}) {
-        super._init(params);
-    }
-
     constructor(hotkeyName: string, accel: string) {
         super();
 
@@ -177,13 +165,9 @@ class SettingCategoryListBox extends Gtk.ListBox {
             ),
         },
     };
-    private _title_label: Gtk.Label;
+    private title_label: Gtk.Label;
     private schema: string;
     public settings: Gio.Settings;
-
-    _init(params = {}) {
-        super._init(params);
-    }
 
     constructor(title: string, schema: string) {
         super();
@@ -196,11 +180,11 @@ class SettingCategoryListBox extends Gtk.ListBox {
     }
 
     get title(): string {
-        return this._title_label.get_text();
+        return this.title_label.get_text();
     }
 
     set title(value: string) {
-        this._title_label.set_text(`<span size="medium">${value}</span>`);
+        this.title_label.set_text(`<span size="medium">${value}</span>`);
     }
 
     addSetting(key: string, type: WidgetType, customWidget?: Gtk.Widget) {
@@ -296,10 +280,6 @@ class PrefsWidget extends Gtk.Box {
         Template: Me.dir.get_child('prefs.ui').get_uri(),
     };
     private _inner_box: Gtk.Box;
-
-    _init(params = {}) {
-        super._init(params);
-    }
 
     constructor() {
         super();
