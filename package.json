@@ -33,6 +33,7 @@
     "prettier": "2.1.2",
     "recast": "^0.20.4",
     "rollup": "^2.38.1",
+    "rollup-plugin-copy": "^3.4.0",
     "tsc-watch": "^4.2.9",
     "tslib": "^2.1.0",
     "typescript": "^4.1.3"
@@ -41,7 +42,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "rollup-extension": "npx rollup -c rollup.config.js -i build/extension.js  -o dist/extension.js",
     "rollup-extension-watch": "npx rollup -w -c rollup.config.js -i build/extension.js  -o dist/extension.js",
-    "rollup-prefs": "npx rollup -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
+    "rollup-prefs": "npx rollup -c rollup.config.prefs.js -i build/prefs/prefs.js  -o dist/prefs.js",
     "rollup-prefs-watch": "npx rollup -w -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
     "transpile-and-rollup": "node build/transpile.js && npm run rollup-extension && npm run rollup-prefs",
     "dev": "npx tsc scripts/transpile.ts --outDir build && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "

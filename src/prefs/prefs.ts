@@ -13,8 +13,7 @@ const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     false
 );
 
-const hotkeysSchemaName =
-    'org.gnome.shell.extensions.materialshell.bindings';
+const hotkeysSchemaName = 'org.gnome.shell.extensions.materialshell.bindings';
 
 function log(...args: any[]) {
     const fields = { MESSAGE: `${args.join(', ')}` };
@@ -23,7 +22,7 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() { }
+function init() {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
@@ -54,15 +53,24 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
                 Gtk.Widget.$gtype
             ),
         },
+        InternalChildren: [
+            'name_label',
+            'description_label',
+            'widget_container',
+        ],
     };
-    private _settings_widget: GObject.Object;
 
-    get settings_widget(): GObject.Object {
-        return this._settings_widget;
-    }
+    private _name_label: Gtk.Label;
+    private _description_label: Gtk.Label;
+    private _widget_container: Gtk.Box;
+    private _settings_widget: Gtk.Widget;
 
-    set settings_widget(value: GObject.Object) {
-        this._settings_widget = value;
+    constructor(summary, description, widget) {
+        super();
+        this._name_label.set_text(summary);
+        this._description_label.set_text(description);
+        this._settings_widget = widget;
+        this._widget_container.append(this._settings_widget);
     }
 }
 
@@ -155,7 +163,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     }
 }
 @registerGObjectClass
-class SettingCategoryListBox extends Gtk.ListBox {
+class SettingCategoryListBox extends Gtk.Box {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'SettingCategoryListBox',
         Template: Me.dir.get_child('setting_category_list_box.ui').get_uri(),
@@ -168,9 +176,11 @@ class SettingCategoryListBox extends Gtk.ListBox {
                 ''
             ),
         },
-        InternalChildren: ['title_label'],
+        InternalChildren: ['title_label', 'list_box'],
     };
     private _title_label: Gtk.Label;
+    private _list_box: Gtk.ListBox;
+
     private schema: string;
     public settings: Gio.Settings;
 
@@ -189,13 +199,13 @@ class SettingCategoryListBox extends Gtk.ListBox {
     }
 
     set title(value: string) {
-        this._title_label.set_text(`<span size="medium">${value}</span>`);
+        this._title_label.set_markup(`<span size="medium">${value}</span>`);
     }
 
     addSetting(key: string, type: WidgetType, customWidget?: Gtk.Widget) {
-        const row = new SettingListBoxRow();
         const settingKey = this.settings.settings_schema.get_key(key);
-
+        const summary = settingKey.get_summary();
+        const description = settingKey.get_description();
         let widget;
         switch (type) {
             case WidgetType.BOOLEAN:
@@ -273,9 +283,9 @@ class SettingCategoryListBox extends Gtk.ListBox {
                 break;
         }
 
-        row.settings_widget = widget;
+        const row = new SettingListBoxRow(summary, description, widget);
 
-        this.append(row);
+        this._list_box.append(row);
     }
 }
 @registerGObjectClass
@@ -370,7 +380,7 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            for (; ;) {
+            for (;;) {
                 const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;
