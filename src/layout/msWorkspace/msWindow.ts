@@ -375,10 +375,12 @@ export class MsWindow extends Clutter.Actor {
         const needToChangeMaximizeVertically =
             shouldBeMaximizedVertically !==
             this._metaWindow.maximized_vertically;
+
         let needToMove = false;
         let needToResize = false;
         let needToMoveOrResize = false;
         let moveTo, resizeTo;
+
         // check if the window need a changes only if we don't need to already maximize
         if (!shouldBeMaximizedHorizontally || !shouldBeMaximizedVertically) {
             const currentFrameRect = this._metaWindow.get_frame_rect();
@@ -416,6 +418,7 @@ export class MsWindow extends Clutter.Actor {
                 currentFrameRect.height !== resizeTo.height;
             needToMoveOrResize = needToMove || needToResize;
         }
+
         // If there is no need to maximize, unmaximize, resize or move discard
         if (
             !needToChangeMaximizeHorizontally &&
