@@ -28,7 +28,7 @@ export default {
             customResolver,
         }),
         copy({
-            targets: [{ src: 'data/ui/*', dest: 'dist/' }],
+            targets: [{ src: 'src/prefs/ui/*', dest: 'dist/' }],
         }),
         resolve(),
     ],

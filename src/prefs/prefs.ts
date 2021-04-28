@@ -209,7 +209,7 @@ class SettingCategoryListBox extends Gtk.Box {
         let widget;
         switch (type) {
             case WidgetType.BOOLEAN:
-                widget = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+                widget = new Gtk.Switch();
                 this.settings.bind(
                     key,
                     widget,
@@ -282,7 +282,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 widget = customWidget;
                 break;
         }
-
+        widget.set_valign(Gtk.Align.CENTER);
         const row = new SettingListBoxRow(summary, description, widget);
 
         this._list_box.append(row);
