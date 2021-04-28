@@ -329,37 +329,14 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
                         {
                             duration: 150,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                            onComplete: () => {
+                                // If we don't remove the effect it's can cause some issue with caching texture which lead to window flickering showing old texture
+                                this.removeUnFocusEffect(tileable, effect);
+                            },
                         }
                     );
                 }
             }
-
-            /* if (tileable.get_effect('dimmer')) {
-                tileable.ease_property(
-                    '@effects.dimmer.brightness',
-                    focused
-                        ? Clutter.Color.new(127, 127, 127, 255)
-                        : Clutter.Color.new(10, 10, 10, 255),
-                    {
-                        duration: 2500,
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                        onComplete: () => {
-                            GLib.idle_add(
-                                GLib.PRIORITY_DEFAULT_IDLE,
-                                () => {
-                                    if (focused) {
-                                        this.removeUnFocusEffect(
-                                            tileable,
-                                            effect
-                                        );
-                                    }
-                                    return GLib.SOURCE_REMOVE;
-                                }
-                            );
-                        },
-                    }
-                );
-            } */
         } else if (effect === FocusEffectEnum.BORDER) {
             if (focused) {
                 this.addUnFocusEffect(tileable, effect, focused);
