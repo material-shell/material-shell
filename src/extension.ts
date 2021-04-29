@@ -5,6 +5,7 @@ import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GLib from 'glib';
 import { MsMain } from 'src/layout/main';
+import { MsOverview } from 'src/layout/overview';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { MsThemeManager } from 'src/manager/msThemeManager';
@@ -21,6 +22,7 @@ import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
 import { polyfillClutter } from './utils/compatibility';
+
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
@@ -68,6 +70,7 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
+    Me.msOverview = new MsOverview();
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
