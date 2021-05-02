@@ -22,7 +22,7 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {}
+function init() { }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
@@ -76,18 +76,14 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
 
 @registerGObjectClass
 class HotkeyRowData extends GObject.Object {
-    key: string;
     summary: string;
-    mods: number;
-    accelKey: boolean;
+    accelName: string;
 
-    constructor(key: string, summary: string, mods: number, accelKey: boolean) {
+    constructor(summary: string, accelName: string) {
         super();
 
-        this.key = key;
         this.summary = summary;
-        this.mods = mods;
-        this.accelKey = accelKey;
+        this.accelName = accelName;
     }
 }
 
@@ -109,17 +105,20 @@ class HotkeyListBox extends Gtk.ListBox {
         settings
             .list_keys()
             .map((key) => {
-                const [accelKey, mods] = Gtk.accelerator_parse(
+                const [_, accelKey, mods] = Gtk.accelerator_parse(
                     settings.get_strv(key)[0]
                 );
-                const settingKey = settings.settings_schema.get_key(key);
-                const summary = settingKey.get_summary();
+                let accelName;
+                if (accelKey == 0) {
+                    accelName = "Disabled";
+                } else {
+                    accelName = Gtk.accelerator_get_label(accelKey, mods);
+                }
+                const summary = settings.settings_schema.get_key(key).get_summary();
 
                 return {
-                    key,
                     summary,
-                    mods,
-                    accelKey,
+                    accelName,
                 };
             })
             .sort((modelEntryA, modelEntryB) => {
@@ -128,10 +127,8 @@ class HotkeyListBox extends Gtk.ListBox {
             .forEach((modelEntry) => {
                 model.append(
                     new HotkeyRowData(
-                        modelEntry.key,
                         modelEntry.summary,
-                        modelEntry.mods,
-                        modelEntry.accelKey
+                        modelEntry.accelName,
                     )
                 );
             });
@@ -141,7 +138,7 @@ class HotkeyListBox extends Gtk.ListBox {
 
     createHotkeyRow(obj: GObject.Object): Gtk.Widget {
         const data = obj as HotkeyRowData;
-        return new HotkeyListBoxRow(data.summary, data.key);
+        return new HotkeyListBoxRow(data.summary, data.accelName);
     }
 }
 
@@ -158,8 +155,8 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     constructor(hotkeyName: string, accel: string) {
         super();
 
-        this._accel_label.set_text(hotkeyName);
-        this._hotkey_label.set_text(accel);
+        this._accel_label.set_text(accel);
+        this._hotkey_label.set_text(hotkeyName);
     }
 }
 @registerGObjectClass
@@ -181,13 +178,11 @@ class SettingCategoryListBox extends Gtk.Box {
     private _title_label: Gtk.Label;
     private _list_box: Gtk.ListBox;
 
-    private schema: string;
     public settings: Gio.Settings;
 
     constructor(title: string, schema: string) {
         super();
 
-        this.schema = schema;
         this.settings = new Gio.Settings({
             settings_schema: schemaSource.lookup(schema, false),
         });
@@ -380,7 +375,7 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            for (;;) {
+            for (; ;) {
                 const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;
