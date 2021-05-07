@@ -1,15 +1,15 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GObject from 'gobject';
-import * as St from 'st';
 import * as Meta from 'meta';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { RippleBackground } from 'src/widget/material/rippleBackground';
+import * as St from 'st';
+import { Widget } from 'st';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { RippleBackground } from 'src/widget/material/rippleBackground';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { Widget } from 'st';
 
 interface MatButtonParams extends Partial<Widget.ConstructorProperties> {
     primary?: boolean;

@@ -37,11 +37,12 @@ export class MsMain extends St.Widget {
     aboveContainer: Clutter.Actor;
     backgroundGroup: Meta.BackgroundGroup<Clutter.Actor>;
     primaryMonitorContainer: PrimaryMonitorContainer;
-    panel: any;
+    panel: MsPanel;
     blurEffect: any;
     private _scaleChangedId: SignalHandle | undefined;
     // Definitely assigned because we call registerToSignals
     signals!: Signal[];
+    overviewShown = false;
 
     constructor() {
         super({});
@@ -85,6 +86,29 @@ export class MsMain extends St.Widget {
             this.monitorsContainer.push(container);
             this.add_child(container);
         }
+
+        global.display.connect('overlay-key', () => {
+            this.toggleOverview();
+        });
+
+        global.stage.connect('captured-event', (_, event: Clutter.Event) => {
+            if (!this.overviewShown) return;
+            if (event.type() === Clutter.EventType.BUTTON_PRESS) {
+                const source = event.get_source();
+                const [x, y] = event.get_coords();
+
+                const [x1, y1] = this.panel.get_transformed_position();
+                const [width, height] = this.panel.get_transformed_size();
+
+                if (
+                    !(x >= x1 && x <= x1 + width && y >= y1 && y <= y1 + height)
+                ) {
+                    this.toggleOverview();
+                }
+            }
+
+            return Clutter.EVENT_PROPAGATE;
+        });
 
         this.registerToSignals();
         this.onMsWorkspacesChanged();
@@ -220,7 +244,7 @@ export class MsMain extends St.Widget {
         });
     }
 
-    onMsWorkspacesChanged() {
+    onMsWorkspacesChanged(): void {
         this.primaryMonitorContainer.setMsWorkspaceActor(
             Me.msWorkspaceManager.getActivePrimaryMsWorkspace().msWorkspaceActor
         );
@@ -234,19 +258,19 @@ export class MsMain extends St.Widget {
         });
     }
 
-    onSwitchWorkspace(_from, _to) {
+    onSwitchWorkspace(_from, _to): void {
         this.onMsWorkspacesChanged();
     }
 
-    togglePanelsVisibilities() {
+    togglePanelsVisibilities(): void {
         this.panelsVisible = !this.panelsVisible;
         Me.stateManager.setState('panels-visible', this.panelsVisible);
         this.updatePanelVisibilities();
     }
 
-    updatePanelVisibilities() {
+    updatePanelVisibilities(): void {
         [
-            this.primaryMonitorContainer.panel,
+            this.primaryMonitorContainer.verticalPanelSpacer,
             this.primaryMonitorContainer.horizontalPanelSpacer,
             ...this.monitorsContainer.map(
                 (container) => container.horizontalPanelSpacer
@@ -263,15 +287,55 @@ export class MsMain extends St.Widget {
                 Main.layoutManager._untrackActor(actor);
             }
         });
+        this.primaryMonitorContainer.panel.visible = this.panelsVisible;
         Me.msWorkspaceManager.refreshMsWorkspaceUI();
     }
 
-    updateFullscreenMonitors() {
+    updateFullscreenMonitors(): void {
         this.primaryMonitorContainer.refreshFullscreen();
         for (const container of this.monitorsContainer) {
             container.refreshFullscreen();
         }
         Me.msWorkspaceManager.refreshMsWorkspaceUI();
+    }
+
+    toggleOverview(): void {
+        if (this.overviewShown) {
+            this.overviewShown = false;
+            this.primaryMonitorContainer.workspaceContainer.ease_property(
+                '@effects.dimmer.brightness',
+                Clutter.Color.new(127, 127, 127, 255),
+                {
+                    duration: 300,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this.primaryMonitorContainer.workspaceContainer.clear_effects();
+                        Main.popModal(this);
+                    },
+                }
+            );
+        } else {
+            this.overviewShown = true;
+            Main.pushModal(this, {
+                actionMode: Shell.ActionMode.OVERVIEW,
+            });
+            const dimmerEffect = new Clutter.BrightnessContrastEffect({
+                name: 'dimmer',
+                brightness: Clutter.Color.new(127, 127, 127, 255),
+            });
+            this.primaryMonitorContainer.workspaceContainer.add_effect(
+                dimmerEffect
+            );
+            this.primaryMonitorContainer.workspaceContainer.ease_property(
+                '@effects.dimmer.brightness',
+                Clutter.Color.new(90, 90, 90, 255),
+                {
+                    duration: 300,
+                    mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                }
+            );
+        }
+        this.panel.toggle();
     }
 
     // eslint-disable-next-line camelcase
@@ -326,13 +390,13 @@ export class MonitorContainer extends St.Widget {
         const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => {
-                this.updateHorizontalSpacer();
+                this.updateSpacer();
             }
         );
         const horizontalPanelPositionSignal = Me.msThemeManager.connect(
             'horizontal-panel-position-changed',
             () => {
-                this.updateHorizontalSpacer();
+                this.updateSpacer();
             }
         );
         this.connect('destroy', () => {
@@ -365,7 +429,8 @@ export class MonitorContainer extends St.Widget {
         reparentActor(this.msWorkspaceActor, this);
         this.msWorkspaceActor.updateUI();
     }
-    updateHorizontalSpacer() {
+
+    updateSpacer() {
         const panelHeight = Me.msThemeManager.getPanelSize(this.monitor.index);
         const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         this.horizontalPanelSpacer.set_size(this.monitor.width, panelHeight);
@@ -376,6 +441,7 @@ export class MonitorContainer extends St.Widget {
                 : this.monitor.height - panelHeight
         );
     }
+
     setMonitor(monitor: Monitor) {
         if (this.bgManager) {
             this.bgManager.destroy();
@@ -383,7 +449,7 @@ export class MonitorContainer extends St.Widget {
         this.monitor = monitor;
         this.set_size(monitor.width, monitor.height);
         this.set_position(monitor.x, monitor.y);
-        this.updateHorizontalSpacer();
+        this.updateSpacer();
         this.bgManager = new Background.BackgroundManager({
             container: this.bgGroup,
             monitorIndex: monitor.index,
@@ -429,22 +495,35 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     };
     panel: MsPanel;
     translationAnimator: TranslationAnimator;
-
+    verticalPanelSpacer: St.Widget<
+        Clutter.LayoutManager,
+        Clutter.ContentPrototype,
+        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
+    >;
+    workspaceContainer = new St.Widget({
+        layout_manager: new Clutter.BinLayout(),
+        x_align: Clutter.ActorAlign.FILL,
+        y_align: Clutter.ActorAlign.FILL,
+    });
     constructor(
         monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProperties>
     ) {
         super(monitor, bgGroup, params);
+
+        this.verticalPanelSpacer = new St.Widget({
+            style_class: 'VerticalSpacer',
+        });
+        this.add_child(this.verticalPanelSpacer);
         this.panel = new MsPanel();
+        this.add_child(this.workspaceContainer);
         this.add_child(this.panel);
+
         this.translationAnimator = new TranslationAnimator(true);
         this.translationAnimator.connect('transition-completed', () => {
-            reparentActor(this.msWorkspaceActor, this);
+            reparentActor(this.msWorkspaceActor, this.workspaceContainer);
             this.remove_child(this.translationAnimator);
-            if (this.panel) {
-                this.set_child_below_sibling(this.msWorkspaceActor, this.panel);
-            }
             this.msWorkspaceActor.updateUI();
         });
         const verticalPanelPositionSignal = Me.msThemeManager.connect(
@@ -456,6 +535,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(verticalPanelPositionSignal);
         });
+
+        this.updateSpacer();
     }
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
@@ -468,13 +549,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             this.translationAnimator.width = this.width;
             this.translationAnimator.height =
                 Main.layoutManager.primaryMonitor.height;
-            this.add_child(this.translationAnimator);
-            if (this.panel) {
-                this.set_child_below_sibling(
-                    this.translationAnimator,
-                    this.panel
-                );
-            }
+            this.workspaceContainer.add_child(this.translationAnimator);
         }
         const indexOfPrevActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
             (msWorkspace) => {
@@ -499,19 +574,33 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         let prevActor;
         if (this.msWorkspaceActor) {
             prevActor = this.msWorkspaceActor;
-            if (this.msWorkspaceActor.get_parent() === this)
-                this.remove_child(this.msWorkspaceActor);
+            if (this.msWorkspaceActor.get_parent() === this.workspaceContainer)
+                this.workspaceContainer.remove_child(this.msWorkspaceActor);
         }
         this.msWorkspaceActor = actor;
         if (!this.msWorkspaceActor.get_parent()) {
-            reparentActor(this.msWorkspaceActor, this);
-            if (this.panel) {
-                this.set_child_below_sibling(this.msWorkspaceActor, this.panel);
-            }
+            reparentActor(this.msWorkspaceActor, this.workspaceContainer);
         }
         this.msWorkspaceActor.msWorkspace.refreshFocus(true);
         if (prevActor) {
             this.setTranslation(prevActor, this.msWorkspaceActor);
+        }
+    }
+
+    updateSpacer() {
+        super.updateSpacer();
+        if (this.verticalPanelSpacer) {
+            const panelWidth = Me.msThemeManager.getPanelSize(
+                this.monitor.index
+            );
+            const panelPosition = Me.msThemeManager.verticalPanelPosition;
+            this.verticalPanelSpacer.set_size(panelWidth, this.monitor.height);
+            this.verticalPanelSpacer.set_position(
+                panelPosition === VerticalPanelPositionEnum.LEFT
+                    ? 0
+                    : this.monitor.width - panelWidth,
+                0
+            );
         }
     }
 
@@ -540,10 +629,16 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         if (this.panel && this.panel.visible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
-                    msWorkspaceActorBox.x1 + panelBox.get_width();
+                    msWorkspaceActorBox.x1 +
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    );
             } else {
                 msWorkspaceActorBox.x2 =
-                    msWorkspaceActorBox.x2 - panelBox.get_width();
+                    msWorkspaceActorBox.x2 -
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    );
             }
         }
         this.get_children().forEach((child) => {
@@ -552,6 +647,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             }
             if (child === this.horizontalPanelSpacer) {
                 return this.allocateHorizontalPanelSpacer(box, flags);
+            }
+            if (child === this.verticalPanelSpacer) {
+                return AllocatePreferredSize(this.verticalPanelSpacer, flags);
             }
             Allocate(child, msWorkspaceActorBox, flags);
         });

@@ -32,6 +32,7 @@ declare global {
      */
     function _(format: string): string;
 
+    function ngettext(singular: string, plurial: string, format: any): any;
     interface Date {
         /**
          * @deprecated toLocaleFormat is deprecated
@@ -247,16 +248,7 @@ declare module 'clutter' {
     interface Actor extends Rectangular, GObject.Object {
         // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
         ease(params: EasingParamsWithProperties): void;
-        ease_property(
-            propName: AnimatableActorFields,
-            target: number,
-            params: EasingParams
-        ): void;
-        ease_property(
-            propName: '@effects.dimmer.brightness',
-            target: Clutter.Color,
-            params: EasingParams
-        ): void;
+        ease_property: any;
     }
 
     // The Clutter.d.ts file doesn't have proper 'extends' information
