@@ -21,6 +21,7 @@ import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
 import { polyfillClutter } from './utils/compatibility';
+
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
@@ -30,7 +31,7 @@ let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
-
+const oldOverview = Main.overview;
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
@@ -55,9 +56,12 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+
     if (Me.locked) {
         Me.locked = false;
         Me.layout.panel.enable();
+        oldOverview.isDummy = true;
+
         return;
     }
     debug.initDebug();
@@ -68,6 +72,16 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
+    /*  Main.layoutManager.overviewGroup.remove_child(oldOverview._desktopFade);
+    Main.layoutManager.overviewGroup.remove_child(oldOverview._coverPane);
+    Main.layoutManager.overviewGroup.remove_child(oldOverview._overview);
+    Me.msOverview = new MsOverview();
+    oldOverview.isDummy = true;
+    Main.overview = Me.msOverview;
+    Me.msOverview.init(); */
+    /* Main.overview._overview._controls.layout_manager._computeWorkspacesBoxForState = _computeWorkspacesBoxForState;
+    Main.overview.show = OverviewShow; */
+
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         //Then disable incompatibles extensions;
         disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
@@ -114,6 +128,8 @@ function loaded(disconnect: boolean) {
     }
     Me.loaded = true;
     Me.locked = false;
+    if (oldOverview._visible) oldOverview.toggle();
+    oldOverview.isDummy = true;
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
     if (splashscreenCalled) {

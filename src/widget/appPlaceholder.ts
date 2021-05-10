@@ -16,7 +16,7 @@ export class AppPlaceholder extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'AppPlaceholder',
         Signals: {
-            clicked: {
+            activated: {
                 param_types: [GObject.TYPE_INT],
                 accumulator: 0.0,
             },
@@ -25,8 +25,8 @@ export class AppPlaceholder extends St.Widget {
     app: any;
     icon: any;
     pressed = false;
-    waitForReset: boolean | undefined;
-    clickableContainer: any;
+    waitForReset: boolean;
+    clickableContainer: RippleBackground;
     box: any;
     identityContainer: any;
     appTitle: any;
@@ -88,47 +88,32 @@ export class AppPlaceholder extends St.Widget {
         this.clickableContainer.y_expand = true;
         this.add_child(this.clickableContainer);
         this.connect('event', (actor, event) => {
-            const eventType = event.type();
-            if (
-                [
-                    Clutter.EventType.BUTTON_PRESS,
-                    Clutter.EventType.TOUCH_BEGIN,
-                ].indexOf(eventType) > -1
-            ) {
-                this.pressed = true;
-            } else if (
-                [
-                    Clutter.EventType.BUTTON_RELEASE,
-                    Clutter.EventType.TOUCH_END,
-                ].indexOf(eventType) > -1
-            ) {
-                if (this.pressed && !this.waitForReset) {
-                    this.waitForReset = true;
+            switch (event.type()) {
+                case Clutter.EventType.BUTTON_PRESS:
+                case Clutter.EventType.TOUCH_BEGIN:
+                    this.pressed = true;
+                    break;
+                case Clutter.EventType.BUTTON_RELEASE:
+                case Clutter.EventType.TOUCH_END:
                     this.activate(event.get_button());
                     this.pressed = false;
-                }
-            } else if (eventType === Clutter.EventType.LEAVE) {
-                this.pressed = false;
+                    break;
+                case Clutter.EventType.LEAVE:
+                    this.pressed = false;
+                    break;
+                default:
+                    break;
             }
         });
 
         this.connect('key-press-event', (entry, event) => {
             const symbol = event.hardware_keycode;
 
-            if (ShellVersionMatch('3.34')) {
-                switch (symbol) {
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        this.activate(0);
-                        return Clutter.EVENT_STOP;
-                }
-            } else {
-                switch (symbol) {
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        this.activate(0);
-                        return Clutter.EVENT_STOP;
-                }
+            switch (symbol) {
+                case Clutter.KEY_Return:
+                case Clutter.KEY_KP_Enter:
+                    this.activate(0);
+                    return Clutter.EVENT_STOP;
             }
 
             return Clutter.EVENT_PROPAGATE;
@@ -169,7 +154,8 @@ export class AppPlaceholder extends St.Widget {
     }
 
     activate(button) {
-        this.emit('clicked', button);
+        if (this.waitForReset) return;
+        this.waitForReset = true;
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16);
         let spinnerActor;
@@ -181,6 +167,7 @@ export class AppPlaceholder extends St.Widget {
         this.spinnerContainer.add_child(spinnerActor);
         this._spinner.play();
         this.spinnerContainer.set_opacity(255);
+        this.emit('activated', button);
     }
 
     reset() {
@@ -193,6 +180,6 @@ export class AppPlaceholder extends St.Widget {
             }
         }
         this.spinnerContainer.set_opacity(0);
-        delete this.waitForReset;
+        this.waitForReset = false;
     }
 }

@@ -90,27 +90,20 @@ export function initDebug() {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             const objects: any[] = [
-                /* Me.imports.src.manager.msWindowManager.MsWindowManager,
-                Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
-                Me.imports.src.manager.msThemeManager.MsThemeManager,
-                Me.imports.src.layout.main.MsMain,
-                Me.imports.src.layout.msWorkspace.msWorkspace.MsWorkspace,
-                Me.imports.src.layout.msWorkspace.msWindow.MsWindow,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskBar,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskBarItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .IconTaskBarItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskActiveIndicator,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TileableItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .LayoutSwitcher,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .TilingLayoutMenuItem,
-                Me.imports.src.widget.reorderableList.ReorderableList, */
+                /* MsWindowManager,
+                MsWorkspaceManager,
+                MsThemeManager,
+                MsMain,
+                MsWorkspace,
+                MsWindow,
+                TaskBar,
+                TaskBarItem,
+                IconTaskBarItem,
+                TaskActiveIndicator,
+                TileableItem,
+                LayoutSwitcher,
+                TilingLayoutMenuItem,
+                ReorderableList, */
             ];
             objects
                 .filter((object) => object)

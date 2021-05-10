@@ -306,7 +306,7 @@ export class TaskBarItem extends MatButton {
 }
 
 @registerGObjectClass
-class TileableItem extends TaskBarItem {
+export class TileableItem extends TaskBarItem {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'TileableItem',
         Signals: {

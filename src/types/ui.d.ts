@@ -27,4 +27,6 @@ declare module 'ui' {
             showNotification(notification: Notification): void;
         }
     }
+
+    export namespace Overview {}
 }

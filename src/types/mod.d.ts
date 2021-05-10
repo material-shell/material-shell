@@ -5,6 +5,7 @@ import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsOverview } from 'src/layout/overview';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { MsThemeManager } from 'src/manager/msThemeManager';
@@ -31,6 +32,7 @@ declare global {
      */
     function _(format: string): string;
 
+    function ngettext(singular: string, plurial: string, format: any): any;
     interface Date {
         /**
          * @deprecated toLocaleFormat is deprecated
@@ -77,6 +79,7 @@ declare global {
         locked: boolean | undefined;
         reparentInProgress: boolean | undefined;
         stateManager: StateManager;
+        msOverview: MsOverview;
         showSplashScreens: () => void;
         hideSplashScreens: () => void;
         closing: boolean;
@@ -245,16 +248,7 @@ declare module 'clutter' {
     interface Actor extends Rectangular, GObject.Object {
         // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
         ease(params: EasingParamsWithProperties): void;
-        ease_property(
-            propName: AnimatableActorFields,
-            target: number,
-            params: EasingParams
-        ): void;
-        ease_property(
-            propName: '@effects.dimmer.brightness',
-            target: Clutter.Color,
-            params: EasingParams
-        ): void;
+        ease_property: any;
     }
 
     // The Clutter.d.ts file doesn't have proper 'extends' information
