@@ -316,9 +316,12 @@ export class MsMain extends St.Widget {
             );
         } else {
             this.overviewShown = true;
-            Main.pushModal(this, {
-                actionMode: Shell.ActionMode.OVERVIEW,
-            });
+            if (Main._findModal(this) === -1) {
+                Main.pushModal(this, {
+                    actionMode: Shell.ActionMode.OVERVIEW,
+                });
+            }
+
             const dimmerEffect = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
                 brightness: Clutter.Color.new(127, 127, 127, 255),

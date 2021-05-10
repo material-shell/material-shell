@@ -260,8 +260,13 @@ export class MsPanel extends St.BoxLayout {
 
     toggle() {
         if (!this.isExpanded) {
-            this.insert_child_below(this.searchContent, this.panelContent);
-            this.insert_child_below(this.divider, this.panelContent);
+            if (this.searchContent.get_parent() === null) {
+                this.insert_child_below(this.searchContent, this.panelContent);
+            }
+            if (this.divider.get_parent() === null) {
+                this.insert_child_below(this.divider, this.panelContent);
+            }
+
             this.width = 448;
             this.translation_x =
                 -448 +
@@ -275,6 +280,9 @@ export class MsPanel extends St.BoxLayout {
             this.panelContent.setIcon('close');
             this.isExpanded = true;
         } else {
+            this.isExpanded = false;
+            this.panelContent.setIcon('search');
+
             this.ease({
                 translation_x:
                     -448 +
@@ -290,10 +298,7 @@ export class MsPanel extends St.BoxLayout {
                         Main.layoutManager.primaryIndex
                     );
                     this.translation_x = 0;
-                    this.panelContent.setIcon('search');
                     this.searchContent.searchResultList.reset();
-
-                    this.isExpanded = false;
                 },
             });
         }
