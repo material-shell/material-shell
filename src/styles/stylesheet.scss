@@ -215,6 +215,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 
+.background-primary {
+    @include background('primary');
+}
+
 #msPanel {
     background: rgba(getBackgroundColor($theme), $panel-opacity);
 
@@ -457,6 +461,10 @@ MatTooltip {
     text-align: center;
 }
 
+MatDivider {
+    @include hover($theme);
+}
+
 .surface {
     background: rgba(getBackgroundColor($theme), $surface-opacity);
 }
@@ -478,7 +486,7 @@ MatTooltip {
     -arrow-rise: 0px;
 }
 // If there is no custom theme loaded we can override adwaita to provide better material theme
-/* .no-theme { 
+/* .no-theme {
     .popup-menu {
         margin: 0;
         -boxpointer-gap: 0px;

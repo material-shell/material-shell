@@ -604,6 +604,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         super({
             clip_to_allocation: true,
             x_expand: true,
+            y_expand: true,
             //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
         });
         this.msWorkspace = msWorkspace;
