@@ -51,25 +51,43 @@ export class HotKeysModule {
     settings: Gio.Settings;
     actionIdToNameMap: Map<any, any>;
     actionNameToActionMap: Map<any, any>;
-    connectId: number;
-    lastStash: number | null;
-    nextStash: number | null;
+    lastWorkspaceIndex: number | null;
+    nextWorkspaceIndex: number | null;
+    lastTileableIndex: number | null;
+    nextTileableIndex: number | null;
+    lastFocusedWindowIndex: number | null;
+    switchWorkspaceConnectionId: number;
+    tilableFocusChangeConnectionId: number;
 
     constructor() {
         this.workspaceManager = global.workspace_manager;
         this.settings = getSettings('bindings');
         this.actionIdToNameMap = new Map();
         this.actionNameToActionMap = new Map();
-        this.lastStash = null;
-        this.nextStash = null;
-
-        this.resetStash();
-        this.connectId = global.window_manager.connect(
+        this.resetWorkspaceIndexes();
+        this.resetTileableIndexes();
+        this.switchWorkspaceConnectionId = global.window_manager.connect(
             'switch-workspace',
             (_, from: number, _to: number) => {
-                if (this.lastStash !== null && from != this.lastStash) {
-                    this.resetStash();
+                if (
+                    this.lastWorkspaceIndex !== null &&
+                    from != this.lastWorkspaceIndex
+                ) {
+                    this.resetWorkspaceIndexes();
                 }
+
+                this.resetTileableIndexes();
+                Me.msWorkspaceManager.msWorkspaceList[from].disconnect(
+                    this.tilableFocusChangeConnectionId
+                );
+                this.connectTileableFocusChange();
+            }
+        );
+        const workspaceAdditionConnectionId = this.workspaceManager.connect(
+            'workspace-added',
+            () => {
+                this.workspaceManager.disconnect(workspaceAdditionConnectionId);
+                this.connectTileableFocusChange();
             }
         );
 
@@ -85,8 +103,44 @@ export class HotKeysModule {
 
         this.actionNameToActionMap.set(KeyBindingAction.APP_LAUNCHER, () => {
             const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-
             msWorkspace.focusAppLauncher();
+        });
+
+        [...Array(10).keys()].forEach((tileableIndex) => {
+            const actionKey = `NAVIGATE_TO_WINDOW_${tileableIndex + 1}`;
+            KeyBindingAction[actionKey] = `navigate-to-window-${
+                tileableIndex + 1
+            }`;
+
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const currentNumOfTileables =
+                    msWorkspace.tileableList.length - 1;
+                let nextTileableIndex = tileableIndex;
+
+                if (
+                    this.lastTileableIndex === null ||
+                    nextTileableIndex !== this.nextTileableIndex
+                ) {
+                    this.lastTileableIndex = msWorkspace.focusedIndex;
+                    this.nextTileableIndex = nextTileableIndex;
+                } else {
+                    if (nextTileableIndex === this.nextTileableIndex) {
+                        nextTileableIndex = this.lastTileableIndex;
+                    }
+                    this.resetTileableIndexes();
+                }
+
+                // go to new window if attempting to go to index bigger than currently available
+                nextTileableIndex =
+                    nextTileableIndex > currentNumOfTileables
+                        ? currentNumOfTileables
+                        : nextTileableIndex;
+
+                msWorkspace.focusTileable(
+                    msWorkspace.tileableList[nextTileableIndex]
+                );
+            });
         });
 
         this.actionNameToActionMap.set(
@@ -112,7 +166,6 @@ export class HotKeysModule {
             KeyBindingAction.KILL_FOCUSED_WINDOW,
             () => {
                 const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-
                 if (msWorkspace.tileableFocused instanceof MsWindow) {
                     msWorkspace.tileableFocused.kill();
                 }
@@ -486,16 +539,16 @@ export class HotKeysModule {
                 let nextWorkspaceIndex = workspaceIndex;
 
                 if (
-                    this.lastStash === null ||
-                    nextWorkspaceIndex !== this.nextStash
+                    this.lastWorkspaceIndex === null ||
+                    nextWorkspaceIndex !== this.nextWorkspaceIndex
                 ) {
-                    this.lastStash = currentWorkspaceIndex;
-                    this.nextStash = nextWorkspaceIndex;
+                    this.lastWorkspaceIndex = currentWorkspaceIndex;
+                    this.nextWorkspaceIndex = nextWorkspaceIndex;
                 } else {
-                    if (nextWorkspaceIndex === this.nextStash) {
-                        nextWorkspaceIndex = this.lastStash;
+                    if (nextWorkspaceIndex === this.nextWorkspaceIndex) {
+                        nextWorkspaceIndex = this.lastWorkspaceIndex;
                     }
-                    this.resetStash();
+                    this.resetWorkspaceIndexes();
                 }
 
                 // go to new workspace if attempting to go to index bigger than currently available
@@ -515,9 +568,30 @@ export class HotKeysModule {
         });
     }
 
-    resetStash() {
-        this.lastStash = null;
-        this.nextStash = null;
+    connectTileableFocusChange() {
+        this.tilableFocusChangeConnectionId = Me.msWorkspaceManager
+            .getActiveMsWorkspace()
+            .connect('tileable-focus-changed', (_, _tileable, oldTileable) => {
+                if (
+                    this.lastTileableIndex !== null &&
+                    Me.msWorkspaceManager
+                        .getActiveMsWorkspace()
+                        .tileableList.indexOf(oldTileable) !=
+                        this.lastTileableIndex
+                ) {
+                    this.resetTileableIndexes();
+                }
+            });
+    }
+
+    resetWorkspaceIndexes() {
+        this.lastWorkspaceIndex = null;
+        this.nextWorkspaceIndex = null;
+    }
+
+    resetTileableIndexes() {
+        this.lastTileableIndex = null;
+        this.nextTileableIndex = null;
     }
 
     addKeybinding(name) {
@@ -536,8 +610,13 @@ export class HotKeysModule {
             Main.wm.removeKeybinding(key);
             this.actionIdToNameMap.delete(key);
         });
-        if (this.connectId) {
-            global.window_manager.disconnect(this.connectId);
+        if (this.switchWorkspaceConnectionId) {
+            global.window_manager.disconnect(this.switchWorkspaceConnectionId);
+        }
+        if (this.tilableFocusChangeConnectionId) {
+            Me.msWorkspaceManager
+                .getActiveMsWorkspace()
+                .disconnect(this.tilableFocusChangeConnectionId);
         }
     }
 }
