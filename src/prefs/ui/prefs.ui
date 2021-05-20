@@ -5,8 +5,13 @@
         <property name="orientation">vertical</property>
         <property name="vexpand">1</property>
         <child>
-            <object class="GtkStackSwitcher">
-                <property name="stack">stack</property>
+            <object class="GtkHeaderBar">
+                <property name="show-title-buttons">false</property>
+                <property name="title-widget">
+                    <object class="GtkStackSwitcher">
+                        <property name="stack">stack</property>
+                    </object>
+                </property>
             </object>
         </child>
         <child>
@@ -44,6 +49,7 @@
                                         <property name="margin-start">36</property>
                                         <property name="margin-end">36</property>
                                         <property name="margin-top">36</property>
+                                        <property name="halign">center</property>
                                     </object>
                                 </child>
                             </object>

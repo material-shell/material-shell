@@ -22,7 +22,7 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() { }
+function init() {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
@@ -39,6 +39,32 @@ enum WidgetType {
     COLOR = 5,
     CUSTOM = 6,
 }
+
+/* TODO make the hotkey edition through Dialog
+ @registerGObjectClass
+class HotkeyDialog extends Gtk.Dialog {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: 'HotkeyDialog',
+        Template: Me.dir.get_child('hotkey_dialog.ui').get_uri(),
+        Signals: {
+            key_press_cb: {
+                param_types: [GObject.TYPE_STRING],
+                accumulator: 0,
+            },
+        },
+    };
+    constructor(parent: Gtk.Window) {
+        super({
+            destroyWithParent: true,
+            transientFor: parent,
+        });
+
+        this.connect('key_press_cb', (_, response) => {
+            log('key', response);
+        });
+    }
+} */
+
 @registerGObjectClass
 class SettingListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo = {
@@ -76,73 +102,118 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
 
 @registerGObjectClass
 class HotkeyRowData extends GObject.Object {
+    key: string;
     summary: string;
     accelName: string;
 
-    constructor(summary: string, accelName: string) {
+    constructor(key: string, summary: string, accelName: string) {
         super();
-
+        this.key = key;
         this.summary = summary;
         this.accelName = accelName;
     }
 }
 
 @registerGObjectClass
-class HotkeyListBox extends Gtk.ListBox {
+class HotkeyListBox extends Gtk.TreeView {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'HotkeyListBox',
         Template: Me.dir.get_child('hotkey_list_box.ui').get_uri(),
     };
-
+    settings: Gio.Settings;
+    model: Gtk.ListStore;
     constructor() {
-        super();
+        const model = new Gtk.ListStore();
+        model.set_column_types([
+            GObject.TYPE_STRING,
+            GObject.TYPE_STRING,
+            GObject.TYPE_INT,
+            GObject.TYPE_INT,
+        ]);
 
-        const model = new Gio.ListStore(HotkeyRowData.$gtype);
-        const settings = new Gio.Settings({
+        super({ model: model });
+
+        this.settings = new Gio.Settings({
             settings_schema: schemaSource.lookup(hotkeysSchemaName, false),
         });
 
-        settings
+        this.settings
             .list_keys()
             .map((key) => {
                 const [_, accelKey, mods] = Gtk.accelerator_parse(
-                    settings.get_strv(key)[0]
+                    this.settings.get_strv(key)[0]
                 );
                 let accelName;
                 if (accelKey == 0) {
-                    accelName = "Disabled";
+                    accelName = 'Disabled';
                 } else {
                     accelName = Gtk.accelerator_get_label(accelKey, mods);
                 }
-                const summary = settings.settings_schema.get_key(key).get_summary();
+                const summary = this.settings.settings_schema
+                    .get_key(key)
+                    .get_summary();
 
                 return {
+                    key,
                     summary,
-                    accelName,
+                    accelKey,
+                    mods,
                 };
             })
             .sort((modelEntryA, modelEntryB) => {
                 return modelEntryA.summary > modelEntryB.summary ? 1 : 0;
             })
             .forEach((modelEntry) => {
-                model.append(
-                    new HotkeyRowData(
+                const row = model.insert(-1);
+                log(
+                    modelEntry.key,
+                    modelEntry.summary,
+                    modelEntry.mods,
+                    modelEntry.accelKey
+                );
+                model.set(
+                    row,
+                    [0, 1, 2, 3],
+                    [
+                        modelEntry.key,
                         modelEntry.summary,
-                        modelEntry.accelName,
-                    )
+                        modelEntry.mods,
+                        modelEntry.accelKey,
+                    ]
                 );
             });
-
-        this.bind_model(model, this.createHotkeyRow);
     }
 
-    createHotkeyRow(obj: GObject.Object): Gtk.Widget {
+    onAccelEdited(rend, strIter, key, mods) {
+        const value = Gtk.accelerator_name(key, mods);
+        const [success, iter] = this.model.get_iter_from_string(strIter);
+        if (!success) {
+            throw new Error('Something be broken, yo.');
+        }
+        const name = this.model.get_value(iter, 0) as string;
+        this.model.set(iter, [2, 3], [mods, key]);
+        this.settings.set_strv(name, [value]);
+    }
+
+    onAccelCleared(rend, strIter) {
+        const [success, iter] = this.model.get_iter_from_string(strIter);
+        if (!success) {
+            throw new Error('Something be broken, yo.');
+        }
+
+        const name = this.model.get_value(iter, 0) as string;
+        this.model.set(iter, [3], [0]);
+        this.settings.set_strv(name, ['']);
+    }
+
+    /* createHotkeyRow(obj: GObject.Object): Gtk.Widget {
         const data = obj as HotkeyRowData;
-        return new HotkeyListBoxRow(data.summary, data.accelName);
-    }
+        return new HotkeyListBoxRow(data.key, data.summary, data.accelName);
+    } */
 }
 
-@registerGObjectClass
+/* Todo: Replace Gtk TreeView with Gtk ListBox
+ @registerGObjectClass
 class HotkeyListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'HotkeyListBoxRow',
@@ -151,14 +222,14 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     };
     private _accel_label: Gtk.Label;
     private _hotkey_label: Gtk.Label;
-
-    constructor(hotkeyName: string, accel: string) {
+    key: string;
+    constructor(key: string, hotkeyName: string, accel: string) {
         super();
-
+        this.key = key;
         this._accel_label.set_text(accel);
         this._hotkey_label.set_text(hotkeyName);
     }
-}
+} */
 @registerGObjectClass
 class SettingCategoryListBox extends Gtk.Box {
     static metaInfo: GObject.MetaInfo = {
@@ -375,7 +446,7 @@ function cssHexString(css: string) {
         let end = 0;
         let xx = '';
         for (let loop = 0; loop < 2; loop++) {
-            for (; ;) {
+            for (;;) {
                 const x = css.slice(end, end + 1);
                 if (x == '(' || x == ',' || x == ')') break;
                 end++;
@@ -414,7 +485,7 @@ function getDefaultLayoutComboBox(
     });
     setting.bind(
         'default-layout',
-        (widget as any) as GObject.Object,
+        widget as any as GObject.Object,
         'active-id',
         Gio.SettingsBindFlags.DEFAULT
     );
