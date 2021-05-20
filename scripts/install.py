@@ -50,9 +50,9 @@ def install():
         printc(RED, "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/")
         exit(1)
 
-    if which("gnome-shell") is None:
-        printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
-        exit(1)
+    #if which("gnome-shell") is None:
+    #    printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
+    #    exit(1)
 
     # Create install directory
     os.makedirs(install_directory, exist_ok=True)

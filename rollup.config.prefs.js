@@ -1,6 +1,7 @@
 import alias from '@rollup/plugin-alias';
 import resolve from '@rollup/plugin-node-resolve';
 import * as path from 'path';
+import copy from 'rollup-plugin-copy';
 
 const projectRootDir = path.resolve(__dirname) + '/build';
 console.log(projectRootDir);
@@ -25,6 +26,9 @@ export default {
                 },
             ],
             customResolver,
+        }),
+        copy({
+            targets: [{ src: 'src/prefs/ui/*', dest: 'dist/' }],
         }),
         resolve(),
     ],
