@@ -1,0 +1,10 @@
+{
+    "name": "NM",
+    "api_version": "1.0",
+    "package_version": "1.28.1",
+    "imports": {
+        "Gio": "2.0",
+        "GObject": "2.0",
+        "GLib": "2.0"
+    }
+}

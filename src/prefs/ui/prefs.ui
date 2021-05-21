@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="PrefsWidget" parent="GtkBox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <property name="vexpand">1</property>
+        <child>
+            <object class="GtkHeaderBar">
+                <property name="show-title-buttons">false</property>
+                <property name="title-widget">
+                    <object class="GtkStackSwitcher">
+                        <property name="stack">stack</property>
+                    </object>
+                </property>
+            </object>
+        </child>
+        <child>
+            <object class="GtkStack" id="stack">
+                <property name="transition-type">crossfade</property>
+                <child>
+                    <object class="GtkStackPage">
+                        <property name="title">Settings</property>
+                        <property name="child">
+                            <object class="GtkScrolledWindow">
+                                <property name="propagate-natural-height">1</property>
+                                <property name="hscrollbar-policy">never</property>
+                                <child>
+                                    <object class="GtkBox" id="settings_box">
+                                        <property name="orientation">vertical</property>
+                                        <property name="margin-start">36</property>
+                                        <property name="margin-end">36</property>
+                                        <property name="margin-top">36</property>
+                                        <property name="halign">center</property>
+                                    </object>
+                                </child>
+                            </object>
+                        </property>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkStackPage">
+                        <property name="title">Hotkeys</property>
+                        <property name="child">
+                            <object class="GtkScrolledWindow">
+                                <property name="propagate-natural-height">1</property>
+                                <property name="hscrollbar-policy">never</property>
+                                <child>
+                                    <object class="HotkeyListBox" id="hotkey_list_box">
+                                        <property name="margin-start">36</property>
+                                        <property name="margin-end">36</property>
+                                        <property name="margin-top">36</property>
+                                        <property name="halign">center</property>
+                                    </object>
+                                </child>
+                            </object>
+                        </property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

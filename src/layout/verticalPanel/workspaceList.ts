@@ -1,27 +1,25 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as St from 'st';
 import * as Gio from 'gio';
+import * as GObject from 'gobject';
+import { TaskBarItem } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
+import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { assert } from 'src/utils/assert';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { MatButton } from 'src/widget/material/button';
+import { ReorderableList } from 'src/widget/reorderableList';
+import * as St from 'st';
+import { MsWorkspace } from '../msWorkspace/msWorkspace';
 const PopupMenu = imports.ui.popupMenu;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MatButton } from 'src/widget/material/button';
-import { ReorderableList } from 'src/widget/reorderableList';
-
-import { TaskBarItem } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
-
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
-import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { MsWorkspace } from '../msWorkspace/msWorkspace';
-import { assert } from 'src/utils/assert';
 
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
@@ -609,11 +607,16 @@ export class WorkspaceButtonIcon extends St.Widget {
 
     desaturateIcons() {
         const shouldDesaturate = !Me.msThemeManager.panelIconColor;
-        const isDesaturate = this.desaturateEffect !== undefined && this.desaturateEffect === this.get_effect('desaturate_icons');
+        const isDesaturate =
+            this.desaturateEffect !== undefined &&
+            this.desaturateEffect === this.get_effect('desaturate_icons');
         if (shouldDesaturate === isDesaturate) return;
         if (shouldDesaturate) {
             this.desaturateEffect = new Clutter.DesaturateEffect();
-            this.add_effect_with_name('desaturate_icons', this.desaturateEffect);
+            this.add_effect_with_name(
+                'desaturate_icons',
+                this.desaturateEffect
+            );
         } else {
             this.remove_effect(this.desaturateEffect);
             delete this.desaturateEffect;

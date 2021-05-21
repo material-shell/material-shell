@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="SettingCategoryListBox" parent="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="margin-bottom">36</property>
+        <property name="spacing">12</property>
+        <child>
+            <object class="GtkLabel" id="title_label">
+                <property name="halign">start</property>
+                <property name="hexpand">True</property>
+                <property name="use-markup">1</property>
+                <attributes>
+                    <attribute name="weight" value="bold"/>
+                </attributes>
+            </object>
+        </child>
+        <child>
+            <object class="GtkListBox" id="list_box">
+                <property name="selection-mode">none</property>
+                <property name="show-separators">true</property>
+                <style>
+                    <class name="frame"/>
+                </style>
+            </object>
+        </child>
+    </template>
+</interface>

@@ -1,0 +1,70 @@
+{
+  "_args": [
+    [
+      "@gi-types/gdkpixbuf@2.0.5",
+      "/var/home/papyelgringo/workspace/material-shell"
+    ]
+  ],
+  "_development": true,
+  "_from": "@gi-types/gdkpixbuf@2.0.5",
+  "_id": "@gi-types/gdkpixbuf@2.0.5",
+  "_inBundle": false,
+  "_integrity": "sha512-bLw6CFCbM0SNi30vkbupoVxE7T5hz+V6DQHLa1Sh0yYwm8OTQ8jYofZNTabfjBiTR3Z4dxtN65DkIpJoD+9fuQ==",
+  "_location": "/@gi-types/gdkpixbuf",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@gi-types/gdkpixbuf@2.0.5",
+    "name": "@gi-types/gdkpixbuf",
+    "escapedName": "@gi-types%2fgdkpixbuf",
+    "scope": "@gi-types",
+    "rawSpec": "2.0.5",
+    "saveSpec": null,
+    "fetchSpec": "2.0.5"
+  },
+  "_requiredBy": [
+    "/@gi-types/gdk",
+    "/@gi-types/gtk"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/gdkpixbuf/-/gdkpixbuf-2.0.5.tgz",
+  "_spec": "2.0.5",
+  "_where": "/var/home/papyelgringo/workspace/material-shell",
+  "contentHash": "090f0a57634d13c6d319b693c79b8606",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/gio": "^2.66.9",
+    "@gi-types/glib": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8"
+  },
+  "description": "TypeScript definitions for GdkPixbuf",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/gdkpixbuf",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/gdkpixbuf2"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "2.0.5"
+}

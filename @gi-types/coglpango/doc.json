@@ -1,0 +1,11 @@
+{
+    "name": "CoglPango",
+    "api_version": "7",
+    "package_version": "7.0",
+    "imports": {
+        "Cogl": "7",
+        "Pango": "1.0",
+        "PangoCairo": "1.0",
+        "GObject": "2.0"
+    }
+}

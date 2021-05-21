@@ -1,0 +1,12 @@
+{
+    "name": "ClutterX11",
+    "api_version": "7",
+    "package_version": "7.0",
+    "imports": {
+        "Clutter": "7",
+        "Cogl": "7",
+        "CoglPango": "7",
+        "xlib": "2.0",
+        "GObject": "2.0"
+    }
+}

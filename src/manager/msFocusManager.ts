@@ -2,7 +2,10 @@
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
-import { MsWindowManagerType } from './msWindowManager';
+import {
+    MetaWindowWithMsProperties,
+    MsWindowManagerType,
+} from './msWindowManager';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -100,7 +103,7 @@ export class MsFocusManager extends MsManager {
     }
 
     onWindowFocus(): void {
-        const windowFocus = global.display.get_focus_window();
+        const windowFocus = global.display.get_focus_window() as MetaWindowWithMsProperties;
 
         if (!windowFocus || !windowFocus.msWindow) return;
 
