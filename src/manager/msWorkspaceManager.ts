@@ -803,12 +803,9 @@ export class MsWorkspaceManager extends MsManager {
                 Math.floor(
                     msWorkspace.msWorkspaceActor.tileableContainer.width / 2
                 ),
-            containerY +
-                Math.floor(
-                    msWorkspace.msWorkspaceActor.tileableContainer.height / 2
-                )
+            0
         );
 
-        msWorkspace.refreshFocus();
+        msWorkspace.refreshFocus(true);
     }
 }
