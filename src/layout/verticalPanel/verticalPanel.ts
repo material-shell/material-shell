@@ -5,11 +5,11 @@ import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import { MsStatusArea } from 'src/layout/verticalPanel/statusArea';
 import { WorkspaceList } from 'src/layout/verticalPanel/workspaceList';
+import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatDivider } from 'src/widget/material/divider';
 import * as St from 'st';
 import { SearchResultList } from './searchResultList';
-
 const Util = imports.misc.util;
 
 const SearchController = imports.ui.searchController;
@@ -260,17 +260,49 @@ export class MsPanel extends St.BoxLayout {
 
     toggle() {
         if (!this.isExpanded) {
+            if (!Me.layout.panelsVisible) {
+                this.show();
+            }
             if (this.searchContent.get_parent() === null) {
-                this.insert_child_below(this.searchContent, this.panelContent);
+                if (
+                    Me.msThemeManager.verticalPanelPosition ===
+                    VerticalPanelPositionEnum.LEFT
+                ) {
+                    this.insert_child_below(
+                        this.searchContent,
+                        this.panelContent
+                    );
+                } else {
+                    this.insert_child_above(
+                        this.searchContent,
+                        this.panelContent
+                    );
+                }
             }
             if (this.divider.get_parent() === null) {
-                this.insert_child_below(this.divider, this.panelContent);
+                if (
+                    Me.msThemeManager.verticalPanelPosition ===
+                    VerticalPanelPositionEnum.LEFT
+                ) {
+                    this.insert_child_below(this.divider, this.panelContent);
+                } else {
+                    this.insert_child_above(this.divider, this.panelContent);
+                }
             }
 
             this.width = 448;
             this.translation_x =
-                -448 +
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex);
+                (448 -
+                    (Me.layout.panelsVisible
+                        ? Me.msThemeManager.getPanelSize(
+                              Main.layoutManager.primaryIndex
+                          )
+                        : 0)) *
+                (Me.msThemeManager.verticalPanelPosition ===
+                VerticalPanelPositionEnum.LEFT
+                    ? -1
+                    : 1);
+
             this.ease({
                 translation_x: 0,
                 duration: 200,
@@ -285,10 +317,16 @@ export class MsPanel extends St.BoxLayout {
 
             this.ease({
                 translation_x:
-                    -448 +
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    ),
+                    (448 -
+                        (Me.layout.panelsVisible
+                            ? Me.msThemeManager.getPanelSize(
+                                  Main.layoutManager.primaryIndex
+                              )
+                            : 0)) *
+                    (Me.msThemeManager.verticalPanelPosition ===
+                    VerticalPanelPositionEnum.LEFT
+                        ? -1
+                        : 1),
                 duration: 200,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => {
@@ -298,6 +336,9 @@ export class MsPanel extends St.BoxLayout {
                         Main.layoutManager.primaryIndex
                     );
                     this.translation_x = 0;
+                    if (!Me.layout.panelsVisible) {
+                        this.hide();
+                    }
                     this.searchContent.searchResultList.reset();
                 },
             });

@@ -249,9 +249,10 @@ export class MsMain extends St.Widget {
             Me.msWorkspaceManager.getActivePrimaryMsWorkspace().msWorkspaceActor
         );
         this.monitorsContainer.forEach((container) => {
-            const msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                container.monitor.index
-            )[0];
+            const msWorkspace =
+                Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                    container.monitor.index
+                )[0];
             if (msWorkspace) {
                 container.setMsWorkspaceActor(msWorkspace.msWorkspaceActor);
             }
@@ -533,6 +534,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             'vertical-panel-position-changed',
             () => {
                 this.queue_relayout();
+                this.updateSpacer();
             }
         );
         this.connect('destroy', () => {
@@ -554,16 +556,18 @@ export class PrimaryMonitorContainer extends MonitorContainer {
                 Main.layoutManager.primaryMonitor.height;
             this.workspaceContainer.add_child(this.translationAnimator);
         }
-        const indexOfPrevActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
-            (msWorkspace) => {
-                return msWorkspace.msWorkspaceActor === prevActor;
-            }
-        );
-        const indexOfNextActor = Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
-            (msWorkspace) => {
-                return msWorkspace.msWorkspaceActor === nextActor;
-            }
-        );
+        const indexOfPrevActor =
+            Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
+                (msWorkspace) => {
+                    return msWorkspace.msWorkspaceActor === prevActor;
+                }
+            );
+        const indexOfNextActor =
+            Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
+                (msWorkspace) => {
+                    return msWorkspace.msWorkspaceActor === nextActor;
+                }
+            );
         prevActor.height = nextActor.height = this.height;
         this.translationAnimator.setTranslation(
             [prevActor],
@@ -629,7 +633,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         msWorkspaceActorBox.x2 = box.x2;
         msWorkspaceActorBox.y1 = box.y1;
         msWorkspaceActorBox.y2 = box.y2;
-        if (this.panel && this.panel.visible) {
+        if (this.panel && this.panel.visible && Me.layout.panelsVisible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
                     msWorkspaceActorBox.x1 +
