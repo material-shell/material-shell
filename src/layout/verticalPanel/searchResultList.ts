@@ -17,6 +17,7 @@ const ShellEntry = imports.ui.shellEntry;
 const ParentalControlsManager = imports.misc.parentalControlsManager;
 const RemoteSearch = imports.ui.remoteSearch;
 const PopupMenu = imports.ui.popupMenu;
+const SystemActions = imports.misc.systemActions;
 
 function getTermsForSearchString(searchString) {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
@@ -461,25 +462,37 @@ export class SearchResultList extends St.BoxLayout {
                         if (provider.isRemoteProvider) {
                             provider.activateResult(res.id, this.terms);
                         } else {
-                            const app = Shell.AppSystem.get_default().lookup_app(
-                                res.id
-                            );
-                            if (app.can_open_new_window()) {
-                                const msWindow = Me.msWindowManager.createNewMsWindow(
-                                    app.id,
-                                    null,
-                                    null,
-                                    {
-                                        msWorkspace: Me.msWorkspaceManager.getActiveMsWorkspace(),
-                                        focus: true,
-                                        insert: true,
-                                    }
+                            const app =
+                                Shell.AppSystem.get_default().lookup_app(
+                                    res.id
                                 );
-                                Me.msWindowManager.openAppForMsWindow(msWindow);
+                            if (app) {
+                                if (app.can_open_new_window()) {
+                                    const msWindow =
+                                        Me.msWindowManager.createNewMsWindow(
+                                            app.id,
+                                            null,
+                                            null,
+                                            {
+                                                msWorkspace:
+                                                    Me.msWorkspaceManager.getActiveMsWorkspace(),
+                                                focus: true,
+                                                insert: true,
+                                            }
+                                        );
+                                    Me.msWindowManager.openAppForMsWindow(
+                                        msWindow
+                                    );
+                                } else {
+                                    app.activate();
+                                }
                             } else {
-                                app.activate();
+                                SystemActions.getDefault().activateAction(
+                                    res.id
+                                );
                             }
                         }
+
                         this.resetAndClose();
                     });
                     if (numberOfRes <= 5) {
