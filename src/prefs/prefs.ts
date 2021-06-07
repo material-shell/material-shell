@@ -306,7 +306,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 const rgba = new Gdk.RGBA();
                 rgba.parse(this.settings.get_string(key));
                 widget.set_rgba(rgba);
-                widget.connect('notify::color', (button) => {
+                widget.connect('color-set', (button) => {
                     const rgba = button.get_rgba();
                     const css = rgba.to_string();
                     const hexString = cssHexString(css);
