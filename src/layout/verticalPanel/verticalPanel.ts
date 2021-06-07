@@ -57,6 +57,10 @@ export class PanelContent extends St.BoxLayout {
         this.searchButton = new MatPanelButton({
             child: this.buttonIcon,
             primary: true,
+            height: Math.max(
+                48,
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
+            ),
         });
 
         this.searchButton.connect('clicked', () => {
@@ -75,6 +79,10 @@ export class PanelContent extends St.BoxLayout {
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.buttonIcon.set_icon_size(
                 Me.msThemeManager.getPanelSizeNotScaled() / 2
+            );
+            this.searchButton.height = Math.max(
+                48,
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
             );
 
             this.queue_relayout();
@@ -154,8 +162,9 @@ export class SearchContent extends St.BoxLayout {
             child: this.searchEntry,
             x_align: Clutter.ActorAlign.FILL,
             styleClass: 'background-primary',
-            height: Me.msThemeManager.getPanelSize(
-                Main.layoutManager.primaryIndex
+            height: Math.max(
+                48,
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
             ),
         });
 
@@ -179,8 +188,9 @@ export class SearchContent extends St.BoxLayout {
         this.scrollView.add_actor(this.searchResultList);
 
         Me.msThemeManager.connect('panel-size-changed', () => {
-            this.searchEntryBin.height = Me.msThemeManager.getPanelSize(
-                Main.layoutManager.primaryIndex
+            this.searchEntryBin.height = Math.max(
+                48,
+                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
             );
             this.queue_relayout();
         });
