@@ -1,17 +1,17 @@
 /** Gnome libs imports */
-import * as St from 'st';
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GnomeDesktop from 'gnomedesktop';
+import * as GObject from 'gobject';
+import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { assert } from 'src/utils/assert';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import * as St from 'st';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { reparentActor } from 'src/utils/index';
-import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { assert } from 'src/utils/assert';
 
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
@@ -93,12 +93,13 @@ export class MsStatusArea extends Clutter.Actor {
         this.gnomeShellPanel._centerBox.get_children().forEach((actor) => {
             this.stealActor(actor, this.centerBoxActors);
         });
-        this.centerBoxActorAddedSignal = this.gnomeShellPanel._centerBox.connect(
-            'actor-added',
-            (_, actor) => {
-                this.stealActor(actor, this.centerBoxActors);
-            }
-        );
+        this.centerBoxActorAddedSignal =
+            this.gnomeShellPanel._centerBox.connect(
+                'actor-added',
+                (_, actor) => {
+                    this.stealActor(actor, this.centerBoxActors);
+                }
+            );
         this.gnomeShellPanel._rightBox
             .get_children()
             .reverse()
@@ -205,6 +206,7 @@ export class MsStatusArea extends Clutter.Actor {
         });
     }
     disable() {
+        Me.logFocus('disable statusArea');
         this.unVerticaliseDateMenuButton();
         this.restorePanelMenuSide();
         this.restorePanelActors();

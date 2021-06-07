@@ -29,6 +29,7 @@ let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
 let modules: any[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
+let _closingId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
 const oldOverview = Main.overview;
@@ -37,18 +38,13 @@ function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
-    polyfillClutter();
-    Signals.addSignalMethods(Me);
+
     global.ms = Me;
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
     Me.locked = false;
     splashscreenCalled = false;
-    //St.set_slow_down_factor(10);
-    global.display.connect('closing', () => {
-        Me.closing = true;
-    });
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -64,7 +60,12 @@ function enable() {
 
         return;
     }
+    Signals.addSignalMethods(Me);
+    polyfillClutter();
     debug.initDebug();
+    _closingId = global.display.connect('closing', () => {
+        Me.closing = true;
+    });
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {
@@ -72,19 +73,11 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
-    /*  Main.layoutManager.overviewGroup.remove_child(oldOverview._desktopFade);
-    Main.layoutManager.overviewGroup.remove_child(oldOverview._coverPane);
-    Main.layoutManager.overviewGroup.remove_child(oldOverview._overview);
-    Me.msOverview = new MsOverview();
-    oldOverview.isDummy = true;
-    Main.overview = Me.msOverview;
-    Me.msOverview.init(); */
-    /* Main.overview._overview._controls.layout_manager._computeWorkspacesBoxForState = _computeWorkspacesBoxForState;
-    Main.overview.show = OverviewShow; */
 
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         //Then disable incompatibles extensions;
-        disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
+        disableIncompatibleExtensionsModule =
+            new DisableIncompatibleExtensionsModule();
 
         //Load persistent data
         Me.stateManager.loadRegistry((state) => {
@@ -158,6 +151,7 @@ function disable() {
     } else {
         Me.disableInProgress = true;
         if (!modules) return;
+        global.display.disconnect(_closingId);
         Me.emit('extension-disable');
         modules.reverse().forEach((module) => {
             module.destroy();

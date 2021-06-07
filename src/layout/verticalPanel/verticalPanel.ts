@@ -71,10 +71,6 @@ export class PanelContent extends St.BoxLayout {
         //Bottom part
         this.statusArea = new MsStatusArea();
         this.add_child(this.statusArea);
-        this.disableConnect = Me.connect('extension-disable', () => {
-            Me.disconnect(this.disableConnect);
-            this.disable();
-        });
 
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.buttonIcon.set_icon_size(
@@ -181,10 +177,6 @@ export class SearchContent extends St.BoxLayout {
             Util.ensureActorVisibleInScrollView(this.scrollView, res);
         });
         this.scrollView.add_actor(this.searchResultList);
-        this.disableConnect = Me.connect('extension-disable', () => {
-            Me.disconnect(this.disableConnect);
-            this.disable();
-        });
 
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.searchEntryBin.height = Me.msThemeManager.getPanelSize(
@@ -195,10 +187,6 @@ export class SearchContent extends St.BoxLayout {
 
         this.add_child(this.scrollView);
     }
-
-    enable() {}
-
-    disable() {}
 
     vfunc_get_preferred_width(_forHeight): [number, number] {
         return [
@@ -235,6 +223,7 @@ export class MsPanel extends St.BoxLayout {
         this.searchContent = new SearchContent();
         this.divider = new MatDivider();
         this.disableConnect = Me.connect('extension-disable', () => {
+            Me.logFocus('extension-disable');
             Me.disconnect(this.disableConnect);
             this.disable();
         });
@@ -344,24 +333,6 @@ export class MsPanel extends St.BoxLayout {
             });
         }
     }
-
-    /* setMode(mode) {
-        this.mode = mode;
-        if (mode === 'panel') {
-            this.width = Me.msThemeManager.getPanelSize(
-                Main.layoutManager.primaryIndex
-            );
-            this.remove_child(this.searchContent);
-            this.add_child(this.panelContent);
-            Main.popModal(this);
-        } else {
-            Main.pushModal(this, { actionMode: Shell.ActionMode.OVERVIEW });
-            this.width = 448;
-            this.remove_child(this.panelContent);
-            this.add_child(this.searchContent);
-            this.searchContent.searchEntry.grab_key_focus();
-        }
-    } */
 
     vfunc_get_preferred_height(_forWidth): [number, number] {
         return [

@@ -23,6 +23,7 @@
                 <child>
                     <object class="GtkCellRendererAccel" id="accel-renderer">
                         <property name="editable">true</property>
+                        <property name="accel-mode">other</property>
                         <signal name="accel-edited" handler="onAccelEdited"/>
                         <signal name="accel-cleared" handler="onAccelCleared"/>
                     </object>
