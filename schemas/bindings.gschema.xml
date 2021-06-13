@@ -19,6 +19,96 @@
         Focus the next window of the current workspace
       </description>
         </key>
+        <key name="navigate-to-window-1" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>1']]]>
+            </default>
+            <summary>Navigate to window 1</summary>
+            <description>
+        Navigate to window 1
+      </description>
+        </key>
+        <key name="navigate-to-window-2" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>2']]]>
+            </default>
+            <summary>Navigate to window 2</summary>
+            <description>
+        Navigate to window 2
+      </description>
+        </key>
+        <key name="navigate-to-window-3" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>3']]]>
+            </default>
+            <summary>Navigate to window 3</summary>
+            <description>
+        Navigate to window 3
+      </description>
+        </key>
+        <key name="navigate-to-window-4" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>4']]]>
+            </default>
+            <summary>Navigate to window 4</summary>
+            <description>
+        Navigate to window 4
+      </description>
+        </key>
+        <key name="navigate-to-window-5" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>5']]]>
+            </default>
+            <summary>Navigate to window 5</summary>
+            <description>
+        Navigate to window 5
+      </description>
+        </key>
+        <key name="navigate-to-window-6" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>6']]]>
+            </default>
+            <summary>Navigate to window 6</summary>
+            <description>
+        Navigate to window 6
+      </description>
+        </key>
+        <key name="navigate-to-window-7" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>7']]]>
+            </default>
+            <summary>Navigate to window 7</summary>
+            <description>
+        Navigate to window 7`
+      </description>
+        </key>
+        <key name="navigate-to-window-8" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>8']]]>
+            </default>
+            <summary>Navigate to window 8</summary>
+            <description>
+        Navigate to window 8
+      </description>
+        </key>
+        <key name="navigate-to-window-9" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>9']]]>
+            </default>
+            <summary>Navigate to window 9</summary>
+            <description>
+        Navigate to window 9
+      </description>
+        </key>
+        <key name="navigate-to-window-10" type="as">
+            <default>
+                <![CDATA[['<Ctrl><Super>0']]]>
+            </default>
+            <summary>Navigate to window 10</summary>
+            <description>
+        Navigate to window 10
+      </description>
+        </key>
         <key name="app-launcher" type="as">
             <default>
                 <![CDATA[['<Super>x']]]>
