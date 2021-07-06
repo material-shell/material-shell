@@ -57,10 +57,6 @@ export class PanelContent extends St.BoxLayout {
         this.searchButton = new MatPanelButton({
             child: this.buttonIcon,
             primary: true,
-            height: Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            ),
         });
 
         this.searchButton.connect('clicked', () => {
@@ -79,10 +75,6 @@ export class PanelContent extends St.BoxLayout {
         Me.msThemeManager.connect('panel-size-changed', () => {
             this.buttonIcon.set_icon_size(
                 Me.msThemeManager.getPanelSizeNotScaled() / 2
-            );
-            this.searchButton.height = Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
             );
 
             this.queue_relayout();
@@ -267,12 +259,12 @@ export class MsPanel extends St.BoxLayout {
                     Me.msThemeManager.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
                 ) {
-                    this.insert_child_below(
+                    this.insert_child_above(
                         this.searchContent,
                         this.panelContent
                     );
                 } else {
-                    this.insert_child_above(
+                    this.insert_child_below(
                         this.searchContent,
                         this.panelContent
                     );
@@ -283,9 +275,9 @@ export class MsPanel extends St.BoxLayout {
                     Me.msThemeManager.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
                 ) {
-                    this.insert_child_below(this.divider, this.panelContent);
-                } else {
                     this.insert_child_above(this.divider, this.panelContent);
+                } else {
+                    this.insert_child_below(this.divider, this.panelContent);
                 }
             }
 
