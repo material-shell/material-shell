@@ -45,10 +45,10 @@ export class LayoutSwitcher extends St.BoxLayout {
         this.switcherButton.connect('scroll-event', (_, event) => {
             switch (event.get_scroll_direction()) {
                 case Clutter.ScrollDirection.UP:
-                    this.msWorkspace.nextLayout(1);
+                    this.msWorkspace.nextLayout(-1);
                     break;
                 case Clutter.ScrollDirection.DOWN:
-                    this.msWorkspace.nextLayout(-1);
+                    this.msWorkspace.nextLayout(1);
                     break;
             }
         });
