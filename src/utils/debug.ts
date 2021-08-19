@@ -1,5 +1,17 @@
 /** Gnome libs imports */
 import * as GLib from 'glib';
+// DEBUG: Uncomment the following block to add debugging
+/*
+import { MsMain } from 'src/layout/main';
+import { LayoutSwitcher, TilingLayoutMenuItem } from 'src/layout/msWorkspace/horizontalPanel/layoutSwitcher';
+import { TaskBar, TaskBarItem, IconTaskBarItem, TaskActiveIndicator, TileableItem } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsThemeManager } from 'src/manager/msThemeManager';
+import { MsWindowManager } from 'src/manager/msWindowManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { ReorderableList } from 'src/widget/reorderableList';
+*/
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -90,7 +102,9 @@ export function initDebug() {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             const objects: any[] = [
-                /* MsWindowManager,
+                // DEBUG: Uncomment the following block to add debugging
+                /*
+                MsWindowManager,
                 MsWorkspaceManager,
                 MsThemeManager,
                 MsMain,
@@ -103,7 +117,8 @@ export function initDebug() {
                 TileableItem,
                 LayoutSwitcher,
                 TilingLayoutMenuItem,
-                ReorderableList, */
+                ReorderableList,
+                */
             ];
             objects
                 .filter((object) => object)
