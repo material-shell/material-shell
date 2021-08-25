@@ -4,6 +4,7 @@ import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { getInstalledGtkThemes, getInstalledShellThemes } from './utils';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
@@ -372,20 +373,53 @@ class PrefsWidget extends Gtk.Box {
         );
 
         theme.addSetting('theme', WidgetType.COMBO);
-        theme.addSetting('primary-color', WidgetType.COLOR);
-        theme.addSetting('vertical-panel-position', WidgetType.COMBO);
-        theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
-        theme.addSetting('panel-size', WidgetType.INT);
-        theme.addSetting('panel-opacity', WidgetType.INT);
-        theme.addSetting('panel-icon-style', WidgetType.COMBO);
-        theme.addSetting('panel-icon-color', WidgetType.BOOLEAN);
-        theme.addSetting('taskbar-item-style', WidgetType.COMBO);
-        theme.addSetting('surface-opacity', WidgetType.INT);
-        theme.addSetting('blur-background', WidgetType.BOOLEAN);
-        theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
-        theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
-        theme.addSetting('focus-effect', WidgetType.COMBO);
+        theme.addSetting(
+            'light-shell-theme',
+            WidgetType.CUSTOM,
+            getThemePickerComboBox('SHELL', theme.settings, 'light-shell-theme')
+        );
+        theme.addSetting(
+            'dark-shell-theme',
+            WidgetType.CUSTOM,
+            getThemePickerComboBox('SHELL', theme.settings, 'dark-shell-theme')
+        );
+        theme.addSetting(
+            'light-gtk-theme',
+            WidgetType.CUSTOM,
+            getThemePickerComboBox('GTK', theme.settings, 'light-gtk-theme')
+        );
+        theme.addSetting(
+            'dark-gtk-theme',
+            WidgetType.CUSTOM,
+            getThemePickerComboBox('GTK', theme.settings, 'dark-gtk-theme')
+        );
+
         this._settings_box.append(theme);
+
+        const visualAdjustments = new SettingCategoryListBox(
+            'Visual adjustments',
+            'org.gnome.shell.extensions.materialshell.theme'
+        );
+        visualAdjustments.addSetting('primary-color', WidgetType.COLOR);
+        visualAdjustments.addSetting(
+            'vertical-panel-position',
+            WidgetType.COMBO
+        );
+        visualAdjustments.addSetting(
+            'horizontal-panel-position',
+            WidgetType.COMBO
+        );
+        visualAdjustments.addSetting('panel-size', WidgetType.INT);
+        visualAdjustments.addSetting('panel-opacity', WidgetType.INT);
+        visualAdjustments.addSetting('panel-icon-style', WidgetType.COMBO);
+        visualAdjustments.addSetting('panel-icon-color', WidgetType.BOOLEAN);
+        visualAdjustments.addSetting('taskbar-item-style', WidgetType.COMBO);
+        visualAdjustments.addSetting('surface-opacity', WidgetType.INT);
+        visualAdjustments.addSetting('blur-background', WidgetType.BOOLEAN);
+        visualAdjustments.addSetting('clock-horizontal', WidgetType.BOOLEAN);
+        visualAdjustments.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
+        visualAdjustments.addSetting('focus-effect', WidgetType.COMBO);
+        this._settings_box.append(visualAdjustments);
 
         const tweaks = new SettingCategoryListBox(
             'Tweaks',
@@ -491,3 +525,79 @@ function getDefaultLayoutComboBox(
     );
     return widget;
 }
+
+function getThemePickerComboBox(
+    type: 'SHELL' | 'GTK',
+    setting: Gio.Settings,
+    settingProp: string
+) {
+    const widget = new Gtk.ComboBoxText();
+    const themes =
+        type === 'GTK' ? getInstalledGtkThemes() : getInstalledShellThemes();
+    /* const systemDirs = GLib.get_system_data_dirs()
+        .concat(GLib.get_user_data_dir())
+        .map((dir) => dir + '/themes');
+    systemDirs.push(`${GLib.get_home_dir()}/.themes`);
+    for (let path of systemDirs) {
+        const file = Gio.File.new_for_path(path);
+        if (file.query_exists(null)) {
+            const enumerator = file.enumerate_children(
+                'standard::name,standard::type',
+                Gio.FileQueryInfoFlags.NONE,
+                null
+            );
+            let info: Gio.FileInfo;
+            while ((info = enumerator.next_file(null))) {
+                log('name ' + info.get_name());
+                const themeFile = Gio.File.new_for_path(
+                    `${path}/${info.get_name()}`
+                );
+                const themeEnumerator = themeFile.enumerate_children(
+                    'standard::name,standard::type',
+                    Gio.FileQueryInfoFlags.NONE,
+                    null
+                );
+                let themeInfo: Gio.FileInfo;
+                while ((themeInfo = themeEnumerator.next_file(null))) {
+                    if (
+                        (type === 'SHELL' &&
+                            themeInfo.get_name() === 'gnome-shell') ||
+                        (type === 'GTK' &&
+                            themeInfo
+                                .get_name()
+                                .indexOf(`gtk-${Gtk.get_major_version()}`) ===
+                                0)
+                    ) {
+                        log(Gtk.get_major_version());
+                        themes.push(info.get_name());
+                    }
+                }
+            }
+        }
+    }
+    widget.append('', 'Default'); */
+    themes.forEach((theme) => {
+        widget.append(theme, theme);
+    });
+    setting.bind(
+        settingProp,
+        widget as any as GObject.Object,
+        'active-id',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    setting.connect(`changed::${settingProp}`, syncThemeChanges);
+    /* Gio.path
+    const refreshComboBox = () => {
+        widget.remove_all();
+        tilingLayouts.forEach((layoutKey) => {
+            if (setting.get_boolean(layoutKey)) {
+                widget.append(layoutKey, layoutKey);
+            }
+        });
+    };
+
+     */
+    return widget;
+}
+
+function syncThemeChanges() {}

@@ -38,6 +38,26 @@
             <summary>Primary UI color</summary>
             <description>Primary color for UI elements. Is used for most elements.</description>
         </key>
+        <key name="light-shell-theme" type="s">
+            <default>''</default>
+            <summary>Light Shell theme</summary>
+            <description>The light Shell theme to be used with the light theme of Material Shell</description>
+        </key>
+        <key name="dark-shell-theme" type="s">
+            <default>''</default>
+            <summary>Dark Shell theme</summary>
+            <description>The dark Shell theme to be used with the dark theme of Material Shell</description>
+        </key>
+        <key name="light-gtk-theme" type="s">
+            <default>'Adwaita'</default>
+            <summary>Light GTK theme</summary>
+            <description>The Light GTK theme to be used with the dark theme of Material Shell</description>
+        </key>
+        <key name="dark-gtk-theme" type="s">
+            <default>'Adwaita-dark'</default>
+            <summary>Dark GTK theme</summary>
+            <description>The Dark GTK theme to be used with the dark theme of Material Shell</description>
+        </key>
         <key name="vertical-panel-position" enum="org.gnome.shell.extensions.materialshell.theme.verticalPanelPosition">
             <default>'left'</default>
             <summary>Vertical panel position</summary>
