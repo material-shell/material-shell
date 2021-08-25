@@ -527,7 +527,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         this.translationAnimator = new TranslationAnimator(true);
         this.translationAnimator.connect('transition-completed', () => {
             reparentActor(this.msWorkspaceActor, this.workspaceContainer);
-            this.remove_child(this.translationAnimator);
+            this.workspaceContainer.remove_child(this.translationAnimator);
             this.msWorkspaceActor.updateUI();
         });
         const verticalPanelPositionSignal = Me.msThemeManager.connect(
