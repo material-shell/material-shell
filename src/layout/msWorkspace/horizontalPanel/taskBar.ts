@@ -6,6 +6,7 @@ import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
+import { assert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
@@ -23,6 +24,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const dragData = null;
 
+let isTileableItemOrIconTaskBarItem = (
+    obj: any
+): obj is TileableItem | IconTaskBarItem => {
+    return obj instanceof TileableItem || obj instanceof IconTaskBarItem;
+};
 @registerGObjectClass
 export class TaskBar extends St.Widget {
     private _delegate: this;
@@ -32,7 +38,6 @@ export class TaskBar extends St.Widget {
     msWorkspaceSignals: any[];
     tracker: any;
     windowFocused: null;
-    items: (TileableItem | IconTaskBarItem)[];
     menuManager: any;
 
     constructor(msWorkspace: MsWorkspace, panelMenuManager) {
@@ -81,9 +86,12 @@ export class TaskBar extends St.Widget {
         this.msWorkspace = msWorkspace;
         this.connect('destroy', this._onDestroy.bind(this));
         this.msWorkspaceSignals = [
-            msWorkspace.connect('tileableList-changed', () => {
-                this.onTileableListChange();
-            }),
+            msWorkspace.connect(
+                'tileableList-changed',
+                (_, newTileableList, oldTileableList) => {
+                    this.onTileableListChange(newTileableList, oldTileableList);
+                }
+            ),
             msWorkspace.connect(
                 'tileable-focus-changed',
                 (_, tileable, oldTileable) => {
@@ -106,13 +114,42 @@ export class TaskBar extends St.Widget {
 
         this.tracker = Shell.WindowTracker.get_default();
         this.windowFocused = null;
-        this.items = [];
         this.menuManager = panelMenuManager;
-        this.updateItems();
+        for (let tileable of this.msWorkspace.tileableList) {
+            let item = this.createNewItemForTileable(tileable);
+            this.taskButtonContainer.add_child(item);
+        }
     }
 
-    onTileableListChange() {
-        this.updateItems();
+    get items(): (TileableItem | IconTaskBarItem)[] {
+        return this.taskButtonContainer
+            .get_children()
+            .filter(isTileableItemOrIconTaskBarItem);
+    }
+
+    onTileableListChange(
+        newTileableList: Tileable[],
+        oldTileableList: Tileable[]
+    ) {
+        const tileableToRemove = oldTileableList.filter(
+            (tileable) => !newTileableList.includes(tileable)
+        );
+        const tileableToAdd = newTileableList.filter(
+            (tileable) => !oldTileableList.includes(tileable)
+        );
+
+        for (let tileable of tileableToRemove) {
+            let item = this.getTaskBarItemOfTileable(tileable);
+            item.destroy();
+        }
+        for (let tileable of tileableToAdd) {
+            let item = this.createNewItemForTileable(tileable);
+            this.taskButtonContainer.insert_child_at_index(
+                item,
+                newTileableList.indexOf(tileable)
+            );
+        }
+        //this.updateItems();
     }
 
     onFocusChanged(
@@ -143,36 +180,29 @@ export class TaskBar extends St.Widget {
         return this.items[this.msWorkspace.focusedIndex];
     }
 
-    updateItems() {
-        this.items.forEach((item) => item.destroy());
-        this.items = this.msWorkspace.tileableList.map((tileable, _index) => {
-            let item: TileableItem | IconTaskBarItem;
-            if (tileable instanceof MsWindow) {
-                item = new TileableItem(tileable);
-                this.menuManager.addMenu(item.menu);
-                item.connect('middle-clicked', (_) => {
-                    tileable.kill();
-                });
-                item.connect('close-clicked', (_) => {
-                    tileable.kill();
-                });
-            } else {
-                item = new IconTaskBarItem(
-                    tileable,
-                    Gio.icon_new_for_string(
-                        `${Me.path}/assets/icons/plus-symbolic.svg`
-                    )
-                );
-            }
-            item.connect('left-clicked', (_) => {
-                this.msWorkspace.focusTileable(tileable);
+    createNewItemForTileable(tileable) {
+        let item: TileableItem | IconTaskBarItem;
+        if (tileable instanceof MsWindow) {
+            item = new TileableItem(tileable);
+            this.menuManager.addMenu(item.menu);
+            item.connect('middle-clicked', (_) => {
+                tileable.kill();
             });
-            this.taskButtonContainer.add_child(item);
-            return item;
-        });
-        if (this.items[this.msWorkspace.focusedIndex]) {
-            this.items[this.msWorkspace.focusedIndex].setActive(true);
+            item.connect('close-clicked', (_) => {
+                tileable.kill();
+            });
+        } else {
+            item = new IconTaskBarItem(
+                tileable,
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/plus-symbolic.svg`
+                )
+            );
         }
+        item.connect('left-clicked', (_) => {
+            this.msWorkspace.focusTileable(tileable);
+        });
+        return item;
     }
 
     getTaskBarItemOfTileable(tileable) {
@@ -324,6 +354,7 @@ export class TileableItem extends TaskBarItem {
     persistentIcon: any;
     title: St.Label;
     signalManager: MsManager;
+    titleSignalKiller: any;
     closeIcon: St.Icon;
     icon: any;
     lastHeight: any;
@@ -335,8 +366,7 @@ export class TileableItem extends TaskBarItem {
         });
         super(container, true);
         this.container = container;
-        this.tileable = tileable;
-        this.app = tileable.app;
+
         if (ShellVersionMatch('3.34')) {
             this.startIconContainer = new St.Bin({
                 y_align: 1,
@@ -383,11 +413,7 @@ export class TileableItem extends TaskBarItem {
                 `${Me.path}/assets/icons/pin-off-symbolic.svg`
             )
         );
-        if (this.tileable._persistent) {
-            this.makePersistentAction.hide();
-        } else {
-            this.unmakePersistentAction.hide();
-        }
+
         this.menu.addAction(
             'Close',
             () => {
@@ -420,17 +446,13 @@ export class TileableItem extends TaskBarItem {
             getSettings('theme'),
             'changed::taskbar-item-style',
             () => {
-                this.style = getSettings('theme').get_string(
-                    'taskbar-item-style'
-                );
+                this.style =
+                    getSettings('theme').get_string('taskbar-item-style');
                 this.updateTitle();
                 this.setStyle();
             }
         );
-        this.signalManager.observe(this.tileable, 'title-changed', () =>
-            this.updateTitle()
-        );
-        this.setStyle();
+
         this.connect('destroy', this._onDestroy.bind(this));
         // CLOSE BUTTON
         this.closeIcon = new St.Icon({
@@ -453,20 +475,36 @@ export class TileableItem extends TaskBarItem {
                 `${Me.path}/assets/icons/pin-symbolic.svg`
             ),
         });
-        if (this.tileable._persistent) {
-            this.endIconContainer.set_child(this.persistentIcon);
-        } else {
-            this.endIconContainer.set_child(this.closeButton);
-        }
+
         // LAYOUT CONTAINER
         this.container.add_child(this.startIconContainer);
         this.container.add_child(this.title);
         this.container.add_child(this.endIconContainer);
+
+        this.setTileable(tileable);
+    }
+
+    setTileable(tileable) {
+        if (this.titleSignalKiller) this.titleSignalKiller();
+        this.tileable = tileable;
+        this.app = tileable.app;
+        this.titleSignalKiller = this.signalManager.observe(
+            this.tileable,
+            'title-changed',
+            () => this.updateTitle()
+        );
+        if (this.tileable._persistent) {
+            this.makePersistentAction.hide();
+            this.endIconContainer.set_child(this.persistentIcon);
+        } else {
+            this.unmakePersistentAction.hide();
+            this.endIconContainer.set_child(this.closeButton);
+        }
+        this.setStyle();
     }
 
     setStyle() {
         this.updateTitle();
-
         if (this.style == 'icon') {
             this.title.hide();
         } else {
@@ -494,6 +532,7 @@ export class TileableItem extends TaskBarItem {
 
     // Update the title and crop it if it's too long
     updateTitle() {
+        assert(this.tileable !== undefined, 'item has no tileable');
         if (this.style == 'full') {
             if (this.tileable.title.includes(this.app.get_name())) {
                 this.title.text = this.tileable.title;
@@ -553,7 +592,6 @@ export class IconTaskBarItem extends TaskBarItem {
         });
         super(container, false);
         this.container = container;
-        this.tileable = tileable;
 
         this.icon = new St.Icon({
             gicon,
@@ -561,6 +599,11 @@ export class IconTaskBarItem extends TaskBarItem {
             icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
+        this.setTileable(tileable);
+    }
+
+    setTileable(tileable) {
+        this.tileable = tileable;
     }
 
     /**

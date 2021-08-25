@@ -47,6 +47,7 @@ export class MsWorkspace extends WithSignals {
     msWorkspaceActor: MsWorkspaceActor;
     layout: any;
     destroyed: boolean | undefined;
+    closing = false;
     monitorIsExternal: any;
     apps: any;
     categorizedAppCard: any;
@@ -123,11 +124,11 @@ export class MsWorkspace extends WithSignals {
 
     destroy() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-
         this.appLauncher.onDestroy();
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
+            delete this.msWorkspaceActor;
         }
         this.destroyed = true;
     }
@@ -160,7 +161,8 @@ export class MsWorkspace extends WithSignals {
             this._state.layoutKey = this.layout.state.key;
         }
         if (this.msWorkspaceCategory) {
-            this._state.forcedCategory = this.msWorkspaceCategory.forcedCategory;
+            this._state.forcedCategory =
+                this.msWorkspaceCategory.forcedCategory;
         }
         return this._state;
     }
@@ -193,12 +195,13 @@ export class MsWorkspace extends WithSignals {
 
     close() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-
+        this.closing = true;
         Promise.all(
             this.msWindowList.map((msWindow) => {
                 return msWindow.kill();
             })
         ).then((_params) => {
+            this.closing = false;
             this.emit('readyToBeClosed');
         });
     }
@@ -253,7 +256,6 @@ export class MsWorkspace extends WithSignals {
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         const oldTileableList: (Tileable | null)[] = [...this.tileableList];
-        oldTileableList[tileableIndex] = null;
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
         if (
@@ -421,9 +423,8 @@ export class MsWorkspace extends WithSignals {
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        const tileableRelativeIndex = this.tileableList.indexOf(
-            tileableRelative
-        );
+        const tileableRelativeIndex =
+            this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
@@ -433,9 +434,8 @@ export class MsWorkspace extends WithSignals {
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        const tileableRelativeIndex = this.tileableList.indexOf(
-            tileableRelative
-        );
+        const tileableRelativeIndex =
+            this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
