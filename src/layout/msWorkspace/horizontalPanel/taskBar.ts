@@ -138,6 +138,11 @@ export class TaskBar extends St.Widget {
             (tileable) => !oldTileableList.includes(tileable)
         );
 
+        if (tileableToRemove.length === 0 && tileableToAdd.length === 0) {
+            this.reshuffleTileableList(newTileableList, oldTileableList);
+            return;
+        }
+
         for (let tileable of tileableToRemove) {
             let item = this.getTaskBarItemOfTileable(tileable);
             item.destroy();
@@ -150,6 +155,26 @@ export class TaskBar extends St.Widget {
             );
         }
         //this.updateItems();
+    }
+
+    reshuffleTileableList(
+        newTileableList: Tileable[],
+        oldTileableList: Tileable[]
+    ) {
+        let movedTileable = oldTileableList.find((tileable: Tileable, index) => {
+            return tileable !== newTileableList[index];
+        });
+
+        if (movedTileable) {
+            let newIndex = newTileableList.indexOf(movedTileable);
+            let item = this.getTaskBarItemOfTileable(movedTileable);
+            item.destroy();
+            item = this.createNewItemForTileable(movedTileable);
+            this.taskButtonContainer.insert_child_at_index(
+                item,
+                newTileableList.indexOf(movedTileable)
+            );
+        }
     }
 
     onFocusChanged(
