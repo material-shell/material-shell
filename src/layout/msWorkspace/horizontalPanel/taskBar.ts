@@ -123,11 +123,26 @@ export class TaskBar extends St.Widget {
         this.tracker = Shell.WindowTracker.get_default();
         this.windowFocused = null;
         this.menuManager = panelMenuManager;
+        let items = [];
         for (let tileable of this.msWorkspace.tileableList) {
             let item = this.createNewItemForTileable(tileable);
-            Me.logFocus('add taskBarItem', item);
-            this.taskButtonContainer.add_child(item);
+            items.push(item);
         }
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            items.forEach((item) => {
+                Me.logFocus('before add text');
+
+                this.taskButtonContainer.add_child(
+                    new St.Label({ text: 'this is test' })
+                );
+                Me.logFocus('before add item', item);
+                this.taskButtonContainer.add_child(item);
+            });
+            if (this.items[this.msWorkspace.focusedIndex]) {
+                this.items[this.msWorkspace.focusedIndex].setActive(true);
+            }
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     get items(): (TileableItem | IconTaskBarItem)[] {
