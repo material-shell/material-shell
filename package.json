@@ -29,7 +29,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "estree-walker": "^2.0.2",
     "glob": "^7.1.6",
-    "node-sass": "^6.0.0",
+    "node-sass": "^6.0.1",
     "prettier": "2.3.0",
     "recast": "^0.20.4",
     "rollup": "^2.47.0",
