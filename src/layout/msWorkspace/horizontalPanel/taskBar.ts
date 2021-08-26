@@ -123,10 +123,13 @@ export class TaskBar extends St.Widget {
         this.tracker = Shell.WindowTracker.get_default();
         this.windowFocused = null;
         this.menuManager = panelMenuManager;
-        for (let tileable of this.msWorkspace.tileableList) {
+
+        for (const tileable of this.msWorkspace.tileableList) {
             let item = this.createNewItemForTileable(tileable);
-            Me.logFocus('add taskBarItem', item);
             this.taskButtonContainer.add_child(item);
+        }
+        if (this.items[this.msWorkspace.focusedIndex]) {
+            this.items[this.msWorkspace.focusedIndex].setActive(true);
         }
     }
 
@@ -330,12 +333,9 @@ export class TaskBarItem extends MatButton {
     }
 
     vfunc_parent_set() {
-        if (this.get_parent()) {
-            this.monitor = Main.layoutManager.findMonitorForActor(
-                this.get_parent()
-            );
-        } else {
-            this.monitor = Main.layoutManager.findMonitorForActor(this);
+        const actor = this.get_parent() || this;
+        if (actor.is_mapped()) {
+            this.monitor = Main.layoutManager.findMonitorForActor(actor);
         }
     }
 
