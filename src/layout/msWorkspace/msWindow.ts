@@ -26,6 +26,10 @@ import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
+export let isMsWindow = (obj: any): obj is MsWindow => {
+    return obj instanceof MsWindow;
+};
+
 interface Dialog {
     metaWindow: MetaWindowWithMsProperties;
     clone: Clutter.Clone;
@@ -178,9 +182,8 @@ export class MsWindow extends Clutter.Actor {
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
             GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
-                const actor = metaWindow.get_compositor_private<
-                    Meta.WindowActor
-                >();
+                const actor =
+                    metaWindow.get_compositor_private<Meta.WindowActor>();
                 if (actor && actor.get_texture()) {
                     resolve(actor);
                 } else {
@@ -331,9 +334,7 @@ export class MsWindow extends Clutter.Actor {
     updateMetaWindowPositionAndSize() {
         const windowActor =
             this._metaWindow &&
-            this._metaWindow.get_compositor_private<
-                MetaWindowActorWithMsProperties
-            >();
+            this._metaWindow.get_compositor_private<MetaWindowActorWithMsProperties>();
 
         if (
             this.destroyed ||
@@ -349,8 +350,8 @@ export class MsWindow extends Clutter.Actor {
             return;
         }
 
-        let shouldBeMaximizedHorizontally = this._metaWindow
-            .maximized_horizontally;
+        let shouldBeMaximizedHorizontally =
+            this._metaWindow.maximized_horizontally;
         let shouldBeMaximizedVertically = this._metaWindow.maximized_vertically;
 
         // Check for maximized only if the msWindow is inside the tileableContainer
@@ -542,7 +543,8 @@ export class MsWindow extends Clutter.Actor {
 
                     // Enforce window positioning since Gnome Terminal don't always move when requested
                     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                        const currentFrameRect = this._metaWindow.get_frame_rect();
+                        const currentFrameRect =
+                            this._metaWindow.get_frame_rect();
 
                         if (
                             currentFrameRect.x !== moveTo.x ||
@@ -601,9 +603,10 @@ export class MsWindow extends Clutter.Actor {
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
             );
-            const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
-                this.msWorkspace.monitor.index
-            );
+            const monitorInFullScreen =
+                global.display.get_monitor_in_fullscreen(
+                    this.msWorkspace.monitor.index
+                );
             const offsetX = monitorInFullScreen
                 ? this.msWorkspace.monitor.x
                 : workArea.x;
@@ -779,9 +782,8 @@ export class MsWindow extends Clutter.Actor {
 
     async onMetaWindowsChanged(): Promise<void> {
         if (this.metaWindow) {
-            this.metaWindowIdentifier = Me.msWindowManager.buildMetaWindowIdentifier(
-                this.metaWindow
-            );
+            this.metaWindowIdentifier =
+                Me.msWindowManager.buildMetaWindowIdentifier(this.metaWindow);
             this.reactive = false;
             await this.onMetaWindowActorExist(this.metaWindow);
             await this.onMetaWindowFirstFrameDrawn();
@@ -995,8 +997,8 @@ export class MsWindowContent extends St.Widget {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
-        const metaWindow: MetaWindowWithMsProperties = this.get_parent()
-            .metaWindow;
+        const metaWindow: MetaWindowWithMsProperties =
+            this.get_parent().metaWindow;
         if (metaWindow && metaWindow.firstFrameDrawn) {
             const windowFrameRect = metaWindow.get_frame_rect();
             const windowBufferRect = metaWindow.get_buffer_rect();

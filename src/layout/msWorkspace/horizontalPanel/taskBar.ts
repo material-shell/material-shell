@@ -24,10 +24,18 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const dragData = null;
 
+let isTileableItem = (obj: any): obj is TileableItem => {
+    return obj instanceof TileableItem;
+};
+
+let isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
+    return obj instanceof IconTaskBarItem;
+};
+
 let isTileableItemOrIconTaskBarItem = (
     obj: any
 ): obj is TileableItem | IconTaskBarItem => {
-    return obj instanceof TileableItem || obj instanceof IconTaskBarItem;
+    return isTileableItem(obj) || isIconTaskBarItem(obj);
 };
 @registerGObjectClass
 export class TaskBar extends St.Widget {
@@ -117,6 +125,7 @@ export class TaskBar extends St.Widget {
         this.menuManager = panelMenuManager;
         for (let tileable of this.msWorkspace.tileableList) {
             let item = this.createNewItemForTileable(tileable);
+            Me.logFocus('add taskBarItem', item);
             this.taskButtonContainer.add_child(item);
         }
     }
@@ -127,6 +136,11 @@ export class TaskBar extends St.Widget {
             .filter(isTileableItemOrIconTaskBarItem);
     }
 
+    /**
+     * Update the current list of taskBarItem with the least of widget manipulation possible
+     * @param newTileableList
+     * @param oldTileableList
+     */
     onTileableListChange(
         newTileableList: Tileable[],
         oldTileableList: Tileable[]
@@ -142,6 +156,7 @@ export class TaskBar extends St.Widget {
             let item = this.getTaskBarItemOfTileable(tileable);
             item.destroy();
         }
+
         for (let tileable of tileableToAdd) {
             let item = this.createNewItemForTileable(tileable);
             this.taskButtonContainer.insert_child_at_index(
@@ -149,7 +164,11 @@ export class TaskBar extends St.Widget {
                 newTileableList.indexOf(tileable)
             );
         }
-        //this.updateItems();
+
+        // Ensure tileable position in case of reorder
+        newTileableList.forEach((tileable, index) => {
+            this.items[index].setTileable(tileable);
+        });
     }
 
     onFocusChanged(
@@ -200,7 +219,7 @@ export class TaskBar extends St.Widget {
             );
         }
         item.connect('left-clicked', (_) => {
-            this.msWorkspace.focusTileable(tileable);
+            this.msWorkspace.focusTileable(item.tileable);
         });
         return item;
     }
@@ -485,7 +504,11 @@ export class TileableItem extends TaskBarItem {
     }
 
     setTileable(tileable) {
+        if (tileable === this.tileable) return;
         if (this.titleSignalKiller) this.titleSignalKiller();
+        if (this.icon) {
+            this.buildIcon(this.lastHeight);
+        }
         this.tileable = tileable;
         this.app = tileable.app;
         this.titleSignalKiller = this.signalManager.observe(
@@ -495,9 +518,11 @@ export class TileableItem extends TaskBarItem {
         );
         if (this.tileable._persistent) {
             this.makePersistentAction.hide();
+            this.unmakePersistentAction.show();
             this.endIconContainer.set_child(this.persistentIcon);
         } else {
             this.unmakePersistentAction.hide();
+            this.makePersistentAction.show();
             this.endIconContainer.set_child(this.closeButton);
         }
         this.setStyle();
@@ -603,12 +628,10 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     setTileable(tileable) {
+        if (tileable === this.tileable) return;
         this.tileable = tileable;
     }
 
-    /**
-     * Just the panel width
-     */
     vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [_forHeight, _forHeight];
     }
