@@ -506,11 +506,11 @@ export class TileableItem extends TaskBarItem {
     setTileable(tileable) {
         if (tileable === this.tileable) return;
         if (this.titleSignalKiller) this.titleSignalKiller();
+        this.tileable = tileable;
+        this.app = tileable.app;
         if (this.icon) {
             this.buildIcon(this.lastHeight);
         }
-        this.tileable = tileable;
-        this.app = tileable.app;
         this.titleSignalKiller = this.signalManager.observe(
             this.tileable,
             'title-changed',
