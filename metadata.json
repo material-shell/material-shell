@@ -4,7 +4,8 @@
     "uuid": "material-shell@papyelgringo",
     "url": "https://material-shell.com",
     "shell-version": [
-        "40"
+        "40",
+        "41"
     ],
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",

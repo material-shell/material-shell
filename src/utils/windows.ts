@@ -2,6 +2,7 @@
 const Util = imports.misc.util;
 import * as Meta from 'meta';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported updateTitleBarVisibility */
 
@@ -26,18 +27,21 @@ export const setTitleBarVisibility = function (
     const windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
-
-    Util.spawn([
-        'xprop',
-        '-id',
-        windowXID,
-        '-f',
-        '_MOTIF_WM_HINTS',
-        '32c',
-        '-set',
-        '_MOTIF_WM_HINTS',
-        `2, 0, ${visible ? '1' : '2'} 0, 0`,
-    ]);
+    try {
+        Util.trySpawn([
+            'xprop',
+            '-id',
+            windowXID,
+            '-f',
+            '_MOTIF_WM_HINTS',
+            '32c',
+            '-set',
+            '_MOTIF_WM_HINTS',
+            `2, 0, ${visible ? '1' : '2'} 0, 0`,
+        ]);
+    } catch (e) {
+        Me.logFocus('xprop', e);
+    }
 
     metaWindow.titleBarVisible = visible;
 };
