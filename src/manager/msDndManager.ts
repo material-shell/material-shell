@@ -1,20 +1,19 @@
 /** Gnome libs imports */
+import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsManager } from 'src/manager/msManager';
+import { KeyBindingAction } from 'src/module/hotKeysModule';
+import { assert } from 'src/utils/assert';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor, throttle } from 'src/utils/index';
+import { MsWindowManager } from './msWindowManager';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { reparentActor, throttle } from 'src/utils/index';
-import { MsManager } from 'src/manager/msManager';
-import { KeyBindingAction } from 'src/module/hotKeysModule';
-import { MsWindowManager } from './msWindowManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { assert } from 'src/utils/assert';
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 
 interface CurrentDrag {
     msWindow: MsWindow;
@@ -45,7 +44,8 @@ export class MsDndManager extends MsManager {
             'active-workspace-changed',
             () => {
                 if (this.dragInProgress !== null) {
-                    const newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                    const newMsWorkspace =
+                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                     if (this.dragInProgress.msWindow.metaWindow) {
                         this.dragInProgress.msWindow.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
@@ -67,7 +67,7 @@ export class MsDndManager extends MsManager {
         this.observe(
             global.display,
             'grab-op-begin',
-            (_, display, metaWindow, op) => {
+            (display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
                     const msWindow = metaWindow.msWindow;
                     if (
@@ -128,7 +128,7 @@ export class MsDndManager extends MsManager {
                     if (this.dragInProgress) return;
                     switch (event.type()) {
                         case Clutter.EventType.MOTION:
-                            if (event.get_state() === 320) {
+                            if ((event.get_state() as number) === 320) {
                                 this.startDrag(msWindow);
                             }
                             break;
@@ -160,7 +160,6 @@ export class MsDndManager extends MsManager {
             ],
             originalParent,
         };
-
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
@@ -211,14 +210,16 @@ export class MsDndManager extends MsManager {
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWindowDragged = this.dragInProgress.msWindow;
         const msWorkspace = msWindowDragged.msWorkspace;
-        if (monitor !== msWorkspace.monitor) {
+        if (monitor.index !== msWorkspace.monitor.index) {
             let newMsWorkspace: MsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
-                newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                newMsWorkspace =
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             } else {
-                newMsWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                    monitor.index
-                )[0];
+                newMsWorkspace =
+                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitor.index
+                    )[0];
             }
 
             Me.msWorkspaceManager.setWindowToMsWorkspace(
