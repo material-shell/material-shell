@@ -546,6 +546,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
         this.panel.visible = Me.layout.panelsVisible && !monitorIsFullscreen;
+        this.verticalPanelSpacer.visible =
+            Me.layout.panelsVisible && !monitorIsFullscreen;
         super.setFullscreen(monitorIsFullscreen);
     }
 
