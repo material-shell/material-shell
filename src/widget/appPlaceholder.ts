@@ -67,11 +67,9 @@ export class AppPlaceholder extends St.Widget {
             style: 'padding:24px; text-align:start;',
         });
 
-        [
-            this.appTitle,
-            this.callToAction,
-            this.spinnerContainer,
-        ].forEach((actor) => this.identityContainer.add_child(actor));
+        [this.appTitle, this.callToAction, this.spinnerContainer].forEach(
+            (actor) => this.identityContainer.add_child(actor)
+        );
 
         this.box = new St.BoxLayout({
             vertical: false,
@@ -106,19 +104,6 @@ export class AppPlaceholder extends St.Widget {
             }
         });
 
-        this.connect('key-press-event', (entry, event) => {
-            const symbol = event.hardware_keycode;
-
-            switch (symbol) {
-                case Clutter.KEY_Return:
-                case Clutter.KEY_KP_Enter:
-                    this.activate(0);
-                    return Clutter.EVENT_STOP;
-            }
-
-            return Clutter.EVENT_PROPAGATE;
-        });
-
         this.connect('key-focus-in', () => {
             this.box.add_style_class_name('surface');
         });
@@ -141,6 +126,18 @@ export class AppPlaceholder extends St.Widget {
         this.callToAction.x_align = this.vertical
             ? Clutter.ActorAlign.CENTER
             : Clutter.ActorAlign.START;
+    }
+    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+        switch (keyEvent.keyval) {
+            case Clutter.KEY_Return:
+            case Clutter.KEY_KP_Enter:
+            case Clutter.KEY_space:
+            case Clutter.KEY_KP_Space:
+                this.activate(0);
+                return Clutter.EVENT_STOP;
+        }
+
+        return Clutter.EVENT_PROPAGATE;
     }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
