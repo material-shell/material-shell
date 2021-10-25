@@ -88,7 +88,7 @@
     <key name="windows-excluded" type="s">
       <default>''</default>
       <summary>Window's class excluded</summary>
-      <description>Comma separated list of window's class that will be ignored by Material shell</description>
+      <description>Comma separated list of window's class that will be ignored by Material shell.  In order to get the class name for an active application: Press Alt + F2, type "lg" and click on the window tab.</description>
     </key>
   </schema>
 </schemalist>
