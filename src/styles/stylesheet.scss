@@ -443,6 +443,7 @@ MsApplicationLauncher {
         @include foreground-medium-emphasis($theme);
         @include background($theme);
         border-radius: 48px;
+        margin: 0px;
     }
     * .search-entry-icon {
         @include foreground-medium-emphasis($theme);
