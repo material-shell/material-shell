@@ -200,6 +200,11 @@ gnome-extensions disable material-shell@papyelgringo
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
+
+if you miss the minimize and maximize button on windows titlebar you can restore them with
+```bash
+/usr/bin/gsettings set org.gnome.desktop.wm.preferences button-layout :minimize,maximize,close
+```
 # History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
