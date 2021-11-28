@@ -148,11 +148,12 @@ export class MatButton extends St.Widget {
 
     // eslint-disable-next-line camelcase
     set_child(child?: St.Widget) {
-        if (!child) return;
         if (this.child) {
             this.remove_child(this.child);
         }
         this.child = child;
-        this.add_child(child);
+        if (child) {
+            this.add_child(child);
+        }
     }
 }
