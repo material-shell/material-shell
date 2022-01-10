@@ -51,7 +51,7 @@
         <key name="panel-size" type="i">
             <default>48</default>
             <summary>Panels size</summary>
-            <description>Width of the vertical panel and heigh of the horizontal panels.</description>
+            <description>Width of the vertical panel and height of the horizontal panels.</description>
         </key>
         <key name="panel-opacity" type="i">
             <default>100</default>
