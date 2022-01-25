@@ -171,7 +171,7 @@ export class MsWorkspace extends WithSignals {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (!this.tileableList) return null;
-        return this.tileableList[this.focusedIndex];
+        return this.tileableList[this.focusedIndex] || null;
     }
 
     get msWindowList() {

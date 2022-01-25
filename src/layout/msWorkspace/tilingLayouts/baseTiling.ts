@@ -1,23 +1,18 @@
 /** Gnome libs imports */
+import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GLib from 'glib';
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { Signal } from 'src/manager/msManager';
+import { Allocate, AllocatePreferredSize } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { InfinityTo0 } from 'src/utils/index';
+import { getSettings } from 'src/utils/settings';
+import { MsWorkspace, Tileable } from '../msWorkspace';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import {
-    SetAllocation,
-    Allocate,
-    AllocatePreferredSize,
-} from 'src/utils/compatibility';
-import { getSettings } from 'src/utils/settings';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { InfinityTo0 } from 'src/utils/index';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace, Tileable } from '../msWorkspace';
-import { Signal } from 'src/manager/msManager';
 
 @registerGObjectClass
 export class BaseTilingLayout extends Clutter.LayoutManager {
@@ -68,7 +63,10 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     get tileableListVisible() {
         return this.msWorkspace.tileableList.filter((tileable) => {
             if (tileable === this.msWorkspace.appLauncher) {
-                return tileable === this.msWorkspace.tileableFocused;
+                return (
+                    tileable === this.msWorkspace.tileableFocused ||
+                    this.msWorkspace.tileableList.length === 1
+                );
             } else {
                 return tileable.visible;
             }
@@ -240,7 +238,9 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         ) {
             this.hideAppLauncher();
         }
-
+        if (tileableList.length == 1 && !this.msWorkspace.appLauncher.visible) {
+            this.showAppLauncher();
+        }
         this.tileAll();
 
         this.layout_changed();
@@ -266,8 +266,8 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     getWorkspaceBounds() {
-        const box = this.msWorkspace.msWorkspaceActor.tileableContainer
-            .allocation;
+        const box =
+            this.msWorkspace.msWorkspaceActor.tileableContainer.allocation;
         return {
             x: 0,
             y: 0,

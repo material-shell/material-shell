@@ -1,11 +1,10 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class HalfLayout extends BaseResizeableTilingLayout {
