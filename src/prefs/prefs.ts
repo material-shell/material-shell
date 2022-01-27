@@ -115,23 +115,18 @@ class HotkeyRowData extends GObject.Object {
 }
 
 @registerGObjectClass
-class HotkeyListBox extends Gtk.TreeView {
+class HotkeyListBox extends Gtk.ListBox {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'HotkeyListBox',
         Template: Me.dir.get_child('hotkey_list_box.ui').get_uri(),
     };
     settings: Gio.Settings;
-    model: Gtk.ListStore;
-    constructor() {
-        const model = new Gtk.ListStore();
-        model.set_column_types([
-            GObject.TYPE_STRING,
-            GObject.TYPE_STRING,
-            GObject.TYPE_INT,
-            GObject.TYPE_INT,
-        ]);
 
-        super({ model: model });
+    constructor() {
+        super();
+        this.connect('row-activated', (_, row: HotkeyListBoxRow) => {
+            row.openDialog();
+        });
 
         this.settings = new Gio.Settings({
             settings_schema: schemaSource.lookup(hotkeysSchemaName, false),
@@ -140,9 +135,11 @@ class HotkeyListBox extends Gtk.TreeView {
         this.settings
             .list_keys()
             .map((key) => {
-                const [_, accelKey, mods] = Gtk.accelerator_parse(
-                    this.settings.get_strv(key)[0]
-                );
+                const [_, accelKey, accelerators, mods] =
+                    Gtk.accelerator_parse_with_keycode(
+                        this.settings.get_strv(key)[0],
+                        null
+                    );
                 let accelName;
                 if (accelKey == 0) {
                     accelName = 'Disabled';
@@ -152,84 +149,120 @@ class HotkeyListBox extends Gtk.TreeView {
                 const summary = this.settings.settings_schema
                     .get_key(key)
                     .get_summary();
-
                 return {
                     key,
                     summary,
                     accelKey,
                     mods,
+                    accelName,
                 };
             })
             .sort((modelEntryA, modelEntryB) => {
                 return modelEntryA.summary > modelEntryB.summary ? 1 : 0;
             })
             .forEach((modelEntry) => {
-                const row = model.insert(-1);
-                log(
-                    modelEntry.key,
-                    modelEntry.summary,
-                    modelEntry.mods,
-                    modelEntry.accelKey
-                );
-                model.set(
-                    row,
-                    [0, 1, 2, 3],
-                    [
+                const row = this.createHotkeyRow(
+                    new HotkeyRowData(
                         modelEntry.key,
                         modelEntry.summary,
-                        modelEntry.mods,
-                        modelEntry.accelKey,
-                    ]
+                        modelEntry.accelName
+                    )
                 );
+                row.connect('accel-changed', (_, value) => {
+                    log('accel-changed', value);
+                    this.settings.set_strv(modelEntry.key, [value]);
+                });
+                this.append(row);
             });
     }
 
-    onAccelEdited(rend, strIter, key, mods) {
-        const value = Gtk.accelerator_name(key, mods);
-        const [success, iter] = this.model.get_iter_from_string(strIter);
-        if (!success) {
-            throw new Error('Something be broken, yo.');
-        }
-        const name = this.model.get_value(iter, 0) as string;
-        this.model.set(iter, [2, 3], [mods, key]);
-        this.settings.set_strv(name, [value]);
-    }
-
-    onAccelCleared(rend, strIter) {
-        const [success, iter] = this.model.get_iter_from_string(strIter);
-        if (!success) {
-            throw new Error('Something be broken, yo.');
-        }
-
-        const name = this.model.get_value(iter, 0) as string;
-        this.model.set(iter, [3], [0]);
-        this.settings.set_strv(name, ['']);
-    }
-
-    /* createHotkeyRow(obj: GObject.Object): Gtk.Widget {
+    createHotkeyRow(obj: GObject.Object): Gtk.Widget {
         const data = obj as HotkeyRowData;
         return new HotkeyListBoxRow(data.key, data.summary, data.accelName);
-    } */
+    }
 }
 
-/* Todo: Replace Gtk TreeView with Gtk ListBox
- @registerGObjectClass
+//Todo: Replace Gtk TreeView with Gtk ListBox
+@registerGObjectClass
 class HotkeyListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'HotkeyListBoxRow',
         Template: Me.dir.get_child('hotkey_list_box_row.ui').get_uri(),
-        InternalChildren: ['accel_label', 'hotkey_label'],
+        InternalChildren: ['accel_label', 'hotkey_label', 'dialog'],
+        Signals: {
+            accel_changed: {
+                param_types: [GObject.TYPE_STRING],
+                accumulator: 0,
+            },
+        },
     };
     private _accel_label: Gtk.Label;
     private _hotkey_label: Gtk.Label;
+    private _dialog: Gtk.Dialog;
+
     key: string;
     constructor(key: string, hotkeyName: string, accel: string) {
         super();
         this.key = key;
         this._accel_label.set_text(accel);
         this._hotkey_label.set_text(hotkeyName);
+        this.connect('activate', () => this.openDialog());
     }
-} */
+
+    openDialog() {
+        log('this', this);
+
+        this._dialog.transient_for = this.get_root() as Gtk.Window;
+        this._dialog.present();
+        (
+            this.get_root().get_surface() as Gdk.Toplevel
+        ).inhibit_system_shortcuts(null);
+    }
+
+    onKeyPressed(
+        _widget,
+        keyval: number,
+        keycode: number,
+        state: Gdk.ModifierType
+    ) {
+        log('KEY PRESS');
+        let mask = state & Gtk.accelerator_get_default_mod_mask();
+        mask &= ~Gdk.ModifierType.LOCK_MASK;
+
+        if (mask === 0 && keyval === Gdk.KEY_Escape) {
+            this.closeDialog();
+            return Gdk.EVENT_STOP;
+        }
+
+        if (mask === 0 && keyval === Gdk.KEY_BackSpace) {
+            this._accel_label.set_text('Disabled');
+            this.emit('accel-changed', '');
+            this.closeDialog();
+            return Gdk.EVENT_STOP;
+        }
+
+        if (!Gtk.accelerator_valid(keyval, mask)) return Gdk.EVENT_STOP;
+        const accel = Gtk.accelerator_name_with_keycode(
+            null,
+            keyval,
+            keycode,
+            mask
+        );
+        this._accel_label.set_text(Gtk.accelerator_get_label(keyval, mask));
+
+        this.emit('accel-changed', accel);
+        /* this.keybinding =  */
+        this.closeDialog();
+        return Gdk.EVENT_STOP;
+    }
+
+    closeDialog() {
+        (
+            this.get_root().get_surface() as Gdk.Toplevel
+        ).restore_system_shortcuts();
+        this._dialog.close();
+    }
+}
 @registerGObjectClass
 class SettingCategoryListBox extends Gtk.Box {
     static metaInfo: GObject.MetaInfo = {

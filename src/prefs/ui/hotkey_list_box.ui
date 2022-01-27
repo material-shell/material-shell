@@ -1,38 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <template class="HotkeyListBox" parent="GtkTreeView">
-        <property name="valign">start</property>
+    <template class="HotkeyListBox" parent="GtkListBox">
+        <property name="selection-mode">none</property>
+        <property name="show-separators">true</property>
+        <property name="activate_on_single_click">True</property>
         <style>
             <class name="frame"/>
-            <class name="content"/>
         </style>
-        <child>
-            <object class="GtkTreeViewColumn" id="test-column">
-                <property name="title">Actions</property>
-                <child>
-                    <object class="GtkCellRendererText" id="text-renderer"/>
-                    <attributes>
-                        <attribute name="text">1</attribute>
-                    </attributes>
-                </child>
-            </object>
-        </child>
-        <child>
-            <object class="GtkTreeViewColumn" id="accel-column">
-                <property name="title">Hotkeys</property>
-                <child>
-                    <object class="GtkCellRendererAccel" id="accel-renderer">
-                        <property name="editable">true</property>
-                        <property name="accel-mode">other</property>
-                        <signal name="accel-edited" handler="onAccelEdited"/>
-                        <signal name="accel-cleared" handler="onAccelCleared"/>
-                    </object>
-                    <attributes>
-                        <attribute name="accel-mods">2</attribute>
-                        <attribute name="accel-key">3</attribute>
-                    </attributes>
-                </child>
-            </object>
-        </child>
     </template>
 </interface>
