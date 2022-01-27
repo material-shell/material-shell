@@ -91,6 +91,8 @@ export class MsWindow extends Clutter.Actor {
         dimmer?: Clutter.BrightnessContrastEffect;
         border?: PrimaryBorderEffect;
     };
+    justResized = false;
+    justMoved = false;
 
     constructor({
         app,
@@ -111,7 +113,8 @@ export class MsWindow extends Clutter.Actor {
         this.app = app;
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
-
+        const metaWindowIsDialog =
+            metaWindow && Me.msWindowManager.isMetaWindowDialog(metaWindow);
         this.dialogs = [];
         this.metaWindowIdentifier = metaWindowIdentifier;
         this.windowClone = new Clutter.Clone();
@@ -134,7 +137,11 @@ export class MsWindow extends Clutter.Actor {
         });
         this.add_child(this.msContent);
         if (metaWindow) {
-            this.setWindow(metaWindow);
+            if (metaWindowIsDialog) {
+                this.addDialog(metaWindow);
+            } else {
+                this.setWindow(metaWindow);
+            }
         }
 
         this.setMsWorkspace(msWorkspace);
@@ -321,6 +328,8 @@ export class MsWindow extends Clutter.Actor {
     }
 
     delayUpdateMetaWindowPositionAndSize() {
+        Me.logFocus('delayUpdateMetaWindowPositionAndSize');
+        this.updateDelayed = true;
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             this.updateDelayed = false;
             this.updateMetaWindowPositionAndSize();
@@ -349,6 +358,32 @@ export class MsWindow extends Clutter.Actor {
         ) {
             return;
         }
+
+        const positionAndSizeSpec = {
+            maximizeHorizontally:
+                this.get_parent() ===
+                    this.msWorkspace.msWorkspaceActor.tileableContainer &&
+                this.x === 0 &&
+                this.width ===
+                    this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_width(),
+            maximizeVertically:
+                this.get_parent() ===
+                    this.msWorkspace.msWorkspaceActor.tileableContainer &&
+                this.y === 0 &&
+                this.height ===
+                    this.msWorkspace.msWorkspaceActor.tileableContainer.allocation.get_height(),
+            width: this.width,
+            height: this.height,
+            x: this.getRelativeMetaWindowPosition(this._metaWindow).x,
+            y: this.getRelativeMetaWindowPosition(this._metaWindow).y,
+        };
+
+        Me.logFocus(
+            'positionAndSizeSpec',
+            this.get_parent() ===
+                this.msWorkspace.msWorkspaceActor.tileableContainer,
+            JSON.stringify(positionAndSizeSpec)
+        );
 
         let shouldBeMaximizedHorizontally =
             this._metaWindow.maximized_horizontally;
@@ -417,6 +452,7 @@ export class MsWindow extends Clutter.Actor {
             needToResize =
                 currentFrameRect.width !== resizeTo.width ||
                 currentFrameRect.height !== resizeTo.height;
+            Me.logFocus('needToResize', needToResize);
             needToMoveOrResize = needToMove || needToResize;
         }
 
@@ -434,7 +470,6 @@ export class MsWindow extends Clutter.Actor {
             windowActor.lastResize &&
             Date.now() - windowActor.lastResize < 100
         ) {
-            this.updateDelayed = true;
             return this.delayUpdateMetaWindowPositionAndSize();
         }
 
@@ -473,6 +508,8 @@ export class MsWindow extends Clutter.Actor {
                 }
             };
 
+            this.justResized = true;
+            this.justMoved = true;
             if (isWayland) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                     callback();
@@ -481,6 +518,7 @@ export class MsWindow extends Clutter.Actor {
             } else {
                 callback();
             }
+            return;
         }
 
         if (needToMoveOrResize) {
@@ -662,6 +700,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeMetaWindows() {
+        Me.logFocus('resizeMetaWindows');
         if (this._metaWindow) {
             this.followMetaWindow
                 ? this.mimicMetaWindowPositionAndSize()
@@ -683,6 +722,13 @@ export class MsWindow extends Clutter.Actor {
                 }
             }),
             this.metaWindow.connect('size-changed', () => {
+                Me.logFocus(
+                    'size-changed',
+                    this.justResized,
+                    this.metaWindow.maximized_horizontally,
+                    this.metaWindow.maximized_vertically
+                );
+                this.justResized = false;
                 if (this.followMetaWindow) {
                     this.mimicMetaWindowPositionAndSize();
                 }
@@ -827,19 +873,27 @@ export class MsWindow extends Clutter.Actor {
 
     onFocus(): void {
         if (this.dialogs.length) {
-            [...this.dialogs]
-                .sort((firstDialog, secondDialog) => {
+            let dialogs = [...this.dialogs].sort(
+                (firstDialog, secondDialog) => {
                     return (
                         firstDialog.metaWindow.user_time -
                         secondDialog.metaWindow.user_time
                     );
-                })
-                .forEach((dialog, index, array) => {
-                    this.set_child_above_sibling(dialog.clone, null);
-                    if (index === array.length - 1) {
-                        dialog.metaWindow.activate(global.get_current_time());
-                    }
-                });
+                }
+            );
+            dialogs.forEach((dialog, index, array) => {
+                this.set_child_above_sibling(dialog.clone, null);
+            });
+
+            let dialogToActivate = dialogs
+                .filter(
+                    (dialog) =>
+                        dialog.metaWindow.window_type != Meta.WindowType.UTILITY
+                )
+                .pop();
+            if (dialogToActivate) {
+                dialogToActivate.metaWindow.activate(global.get_current_time());
+            }
         }
     }
 

@@ -103,7 +103,10 @@ export function initDebug() {
                 TileableItem,
                 LayoutSwitcher,
                 TilingLayoutMenuItem,
-                ReorderableList, */
+                ReorderableList,
+                BaseTilingLayout,
+                BaseResizeableTilingLayout,
+                Portion, */
             ];
             objects
                 .filter((object) => object)
