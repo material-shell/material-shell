@@ -26,7 +26,6 @@ function init() {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
-    log('build pref');
     return new PrefsWidget();
 }
 
@@ -169,7 +168,6 @@ class HotkeyListBox extends Gtk.ListBox {
                     )
                 );
                 row.connect('accel-changed', (_, value) => {
-                    log('accel-changed', value);
                     this.settings.set_strv(modelEntry.key, [value]);
                 });
                 this.append(row);
@@ -210,8 +208,6 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     }
 
     openDialog() {
-        log('this', this);
-
         this._dialog.transient_for = this.get_root() as Gtk.Window;
         this._dialog.present();
         (
@@ -225,7 +221,6 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         keycode: number,
         state: Gdk.ModifierType
     ) {
-        log('KEY PRESS');
         let mask = state & Gtk.accelerator_get_default_mod_mask();
         mask &= ~Gdk.ModifierType.LOCK_MASK;
 
