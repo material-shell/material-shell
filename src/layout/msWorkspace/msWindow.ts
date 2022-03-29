@@ -232,15 +232,15 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    async onMetaWindowFirstFrameDrawn() {
+    async onMetaWindowFirstFrameDrawn(metaWindow: MetaWindowWithMsProperties) {
         return new Promise<void>((resolve) => {
-            if (!this.metaWindow) {
+            if (!metaWindow) {
                 return resolve();
             }
-            if (this.metaWindow.firstFrameDrawn) {
+            if (metaWindow.firstFrameDrawn) {
                 resolve();
             } else {
-                this.metaWindow
+                metaWindow
                     .get_compositor_private<Meta.WindowActor>()
                     .connect('first-frame', () => {
                         resolve();
@@ -722,6 +722,8 @@ export class MsWindow extends Clutter.Actor {
         metaWindow.msWindow = this;
 
         this.registerOnMetaWindowSignals();
+        await this.onMetaWindowActorExist(metaWindow);
+        await this.onMetaWindowFirstFrameDrawn(metaWindow);
         this.updateWorkspaceAndMonitor(metaWindow);
         this.windowClone.set_source(
             metaWindow.get_compositor_private<Meta.WindowActor>()
@@ -742,13 +744,24 @@ export class MsWindow extends Clutter.Actor {
             // We need to move the window before changing the workspace, because
             // the move itself could cause a workspace change if the window enters
             // the primary monitor
-            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
+            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index) {
+                Me.logFocus(
+                    `Before move_to_monitor monitor: ${
+                        this.msWorkspace.monitor.index
+                    } current:${metaWindow.get_monitor()}`
+                );
                 metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
+            }
 
             const workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
                 this.msWorkspace
             );
             if (workspace && metaWindow.get_workspace() != workspace) {
+                Me.logFocus(
+                    `Before change_workspace workspace: ${
+                        workspace.index
+                    } current:${metaWindow.get_workspace().index}`
+                );
                 metaWindow.change_workspace(workspace);
             }
         }
@@ -786,7 +799,7 @@ export class MsWindow extends Clutter.Actor {
                 Me.msWindowManager.buildMetaWindowIdentifier(this.metaWindow);
             this.reactive = false;
             await this.onMetaWindowActorExist(this.metaWindow);
-            await this.onMetaWindowFirstFrameDrawn();
+            await this.onMetaWindowFirstFrameDrawn(this.metaWindow);
             WindowUtils.updateTitleBarVisibility(this.metaWindow);
             this.resizeMetaWindows();
             if (!this._metaWindow) {
