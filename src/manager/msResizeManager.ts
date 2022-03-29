@@ -1,26 +1,19 @@
 /** Gnome libs imports */
-import * as GLib from 'glib';
-import * as Meta from 'meta';
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import * as Meta from 'meta';
+import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
+import { PortionBorder } from 'src/layout/msWorkspace/portion';
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { MsManager } from 'src/manager/msManager';
+import { Rectangular } from 'src/types/mod';
+import { assert } from 'src/utils/assert';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { throttle } from 'src/utils/index';
+import { MsWindowManager } from './msWindowManager';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { reparentActor, throttle } from 'src/utils/index';
-import { MsManager } from 'src/manager/msManager';
-import { KeyBindingAction } from 'src/module/hotKeysModule';
-import {
-    BaseResizeableTilingLayout,
-    ResizableBorderActor,
-} from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { MsWindowManager } from './msWindowManager';
-import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
-import { PortionBorder } from 'src/layout/msWorkspace/portion';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { assert } from 'src/utils/assert';
-import { Rectangular } from 'src/types/mod';
 
 const RESIZE_CODES = [
     Meta.GrabOp.RESIZING_N,
@@ -52,6 +45,7 @@ export class MsResizeManager extends MsManager {
     signalMap: Map<any, any>;
     inputResizer: InputResizer;
     msWorkspace: MsWorkspace | undefined;
+    grab: any;
     resizeInProgress: CurrentResize | null;
     throttledCheckPointerPosition: () => void;
 
@@ -66,7 +60,7 @@ export class MsResizeManager extends MsManager {
         this.observe(
             global.display,
             'grab-op-begin',
-            (_, display, metaWindow, directionOp: Meta.GrabOp) => {
+            (_, metaWindow, directionOp: Meta.GrabOp) => {
                 if (RESIZE_CODES.includes(directionOp)) {
                     const msWindow = metaWindow.msWindow;
 
@@ -83,9 +77,8 @@ export class MsResizeManager extends MsManager {
                             return;
                         }
 
-                        const vertical = RESIZE_VERTICAL_CODES.includes(
-                            directionOp
-                        );
+                        const vertical =
+                            RESIZE_VERTICAL_CODES.includes(directionOp);
                         const after = RESIZE_AFTER_CODES.includes(directionOp);
                         const border = layout.getTileableBorder(
                             msWindow,
@@ -102,7 +95,7 @@ export class MsResizeManager extends MsManager {
         );
 
         this.observe(
-            global.stage,
+            this.inputResizer,
             'captured-event',
             (_, event: Clutter.Event) => {
                 if (this.resizeInProgress !== null) {
@@ -142,10 +135,8 @@ export class MsResizeManager extends MsManager {
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const { msWorkspaceActor } = this.resizeInProgress.msWorkspace;
 
-        const [
-            containerX,
-            containerY,
-        ] = msWorkspaceActor.tileableContainer.get_transformed_position();
+        const [containerX, containerY] =
+            msWorkspaceActor.tileableContainer.get_transformed_position();
         const [globalX, globalY] = global.get_pointer();
         return [globalX - containerX!, globalY - containerY!];
     }
@@ -168,17 +159,15 @@ export class MsResizeManager extends MsManager {
         };
 
         global.stage.add_child(this.inputResizer);
-        Main.pushModal(this.inputResizer);
+        this.grab = Main.pushModal(this.inputResizer);
 
         global.display.set_cursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
     }
 
     updateResize() {
         assert(this.resizeInProgress !== null, 'No resize in progress');
-        const [
-            pointerX,
-            pointerY,
-        ] = this.getPointerPositionRelativeToWorkspace();
+        const [pointerX, pointerY] =
+            this.getPointerPositionRelativeToWorkspace();
         const { x, y, width, height } = this.getFirstPortionPositionAndSize();
         const [relativeX, relativeY] = [pointerX - x, pointerY - y];
         let basisRatio: number;
@@ -197,7 +186,7 @@ export class MsResizeManager extends MsManager {
         assert(this.resizeInProgress !== null, 'No resize in progress');
         this.resizeInProgress = null;
 
-        Main.popModal(this.inputResizer);
+        Main.popModal(this.grab != true ? this.grab : this.inputResizer);
         Me.stateManager.stateChanged();
 
         global.stage.remove_child(this.inputResizer);

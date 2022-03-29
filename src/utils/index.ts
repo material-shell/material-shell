@@ -105,7 +105,8 @@ export const isParentOfActor = (
 
 export const reparentActor = (
     actor: Clutter.Actor | null,
-    parent: Clutter.Actor | null
+    parent: Clutter.Actor | null,
+    first = false
 ) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
@@ -123,7 +124,11 @@ export const reparentActor = (
     if (currentParent) {
         currentParent.remove_child(actor);
     }
-    parent.add_child(actor);
+    if (first) {
+        parent.insert_child_at_index(actor, 0);
+    } else {
+        parent.add_child(actor);
+    }
     if (restoreFocusTo) {
         restoreFocusTo.grab_key_focus();
     }
