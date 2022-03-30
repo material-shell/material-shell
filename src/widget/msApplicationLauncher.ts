@@ -41,11 +41,13 @@ export class MsApplicationLauncher extends St.Widget {
             style: 'padding:64px',
         });
         this.msWorkspace = msWorkspace;
+        /*
         this.add_style_class_name('surface-darker');
         this.appListContainer = new MsApplicationButtonContainer(
             this.msWorkspace
         );
         this.initAppListContainer();
+        */
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
             'clock-app-launcher-changed',
