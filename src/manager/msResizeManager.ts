@@ -61,7 +61,13 @@ export class MsResizeManager extends MsManager {
             global.display,
             'grab-op-begin',
             (_, metaWindow, directionOp: Meta.GrabOp) => {
+                Me.logFocus(
+                    'START DRAG',
+                    directionOp,
+                    RESIZE_CODES.includes(directionOp)
+                );
                 if (RESIZE_CODES.includes(directionOp)) {
+                    Me.logFocus('DRAG ACCEPTED');
                     const msWindow = metaWindow.msWindow;
 
                     if (
