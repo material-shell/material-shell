@@ -95,6 +95,8 @@ export function initDebug() {
                 MsThemeManager,
                 MsMain,
                 MsWorkspace,
+                MsDndManager,
+                MsResizeManager,
                 MsWindow,
                 TaskBar,
                 TaskBarItem,

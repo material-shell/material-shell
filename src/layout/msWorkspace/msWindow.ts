@@ -232,15 +232,15 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    async onMetaWindowFirstFrameDrawn() {
+    async onMetaWindowFirstFrameDrawn(metaWindow: MetaWindowWithMsProperties) {
         return new Promise<void>((resolve) => {
-            if (!this.metaWindow) {
+            if (!metaWindow) {
                 return resolve();
             }
-            if (this.metaWindow.firstFrameDrawn) {
+            if (metaWindow.firstFrameDrawn) {
                 resolve();
             } else {
-                this.metaWindow
+                metaWindow
                     .get_compositor_private<Meta.WindowActor>()
                     .connect('first-frame', () => {
                         resolve();
@@ -281,7 +281,6 @@ export class MsWindow extends Clutter.Actor {
                     secondDialog.metaWindow.user_time
             )
             .forEach((dialog) => {
-                Me.logFocus('Allocate', dialog.metaWindow.title);
                 const dialogFrame = dialog.metaWindow.get_buffer_rect();
                 const x1 = dialogFrame.x - box.x1 - offsetX;
                 const x2 = x1 + dialogFrame.width;
@@ -524,15 +523,6 @@ export class MsWindow extends Clutter.Actor {
                 });
             } else {
                 if (needToResize) {
-                    Me.logFocus(
-                        'move_resize_frame',
-                        this.title,
-                        moveTo.x,
-                        moveTo.y,
-                        resizeTo.width,
-                        resizeTo.height
-                    );
-
                     this._metaWindow.move_resize_frame(
                         true,
                         moveTo.x,
@@ -550,7 +540,6 @@ export class MsWindow extends Clutter.Actor {
                             currentFrameRect.x !== moveTo.x ||
                             currentFrameRect.y !== moveTo.y
                         ) {
-                            Me.logFocus('enforce position of', this.title);
                             this._metaWindow.move_frame(
                                 true,
                                 moveTo.x,
@@ -561,7 +550,6 @@ export class MsWindow extends Clutter.Actor {
                         return GLib.SOURCE_REMOVE;
                     });
                 } else {
-                    Me.logFocus('only_move', this.title, moveTo.x, moveTo.y);
                     this._metaWindow.move_frame(true, moveTo.x, moveTo.y);
                 }
             }
@@ -624,16 +612,6 @@ export class MsWindow extends Clutter.Actor {
             if (needResize && metaWindow.resizeable) {
                 const minWidth = Math.min(frame.width, this.width);
                 const minHeight = Math.min(frame.height, this.height);
-                Me.logFocus(
-                    'resize',
-                    this.title,
-                    needMove
-                        ? offsetX + this.x + (this.width - minWidth) / 2
-                        : frame.x,
-                    needMove
-                        ? offsetY + this.y + (this.height - minHeight) / 2
-                        : frame.y
-                );
                 metaWindow.move_resize_frame(
                     true,
                     needMove
@@ -646,12 +624,6 @@ export class MsWindow extends Clutter.Actor {
                     minHeight
                 );
             } else if (needMove && metaWindow.allows_move()) {
-                Me.logFocus(
-                    'move',
-                    this.title,
-                    offsetX + this.x + (this.width - frame.width) / 2,
-                    offsetY + this.y + (this.height - frame.height) / 2
-                );
                 metaWindow.move_frame(
                     true,
                     offsetX + this.x + (this.width - frame.width) / 2,
@@ -722,6 +694,8 @@ export class MsWindow extends Clutter.Actor {
         metaWindow.msWindow = this;
 
         this.registerOnMetaWindowSignals();
+        await this.onMetaWindowActorExist(metaWindow);
+        await this.onMetaWindowFirstFrameDrawn(metaWindow);
         this.updateWorkspaceAndMonitor(metaWindow);
         this.windowClone.set_source(
             metaWindow.get_compositor_private<Meta.WindowActor>()
@@ -742,8 +716,9 @@ export class MsWindow extends Clutter.Actor {
             // We need to move the window before changing the workspace, because
             // the move itself could cause a workspace change if the window enters
             // the primary monitor
-            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index)
+            if (metaWindow.get_monitor() != this.msWorkspace.monitor.index) {
                 metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
+            }
 
             const workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
                 this.msWorkspace
@@ -786,7 +761,7 @@ export class MsWindow extends Clutter.Actor {
                 Me.msWindowManager.buildMetaWindowIdentifier(this.metaWindow);
             this.reactive = false;
             await this.onMetaWindowActorExist(this.metaWindow);
-            await this.onMetaWindowFirstFrameDrawn();
+            await this.onMetaWindowFirstFrameDrawn(this.metaWindow);
             WindowUtils.updateTitleBarVisibility(this.metaWindow);
             this.resizeMetaWindows();
             if (!this._metaWindow) {

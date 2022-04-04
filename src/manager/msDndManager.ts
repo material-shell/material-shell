@@ -26,6 +26,7 @@ export class MsDndManager extends MsManager {
     signalMap: Map<any, any>;
     dragInProgress: CurrentDrag | null;
     inputGrabber: InputGrabber;
+    grab: any;
     throttledCheckUnderPointer: (this: any) => any;
 
     constructor(msWindowManager: MsWindowManager) {
@@ -82,7 +83,7 @@ export class MsDndManager extends MsManager {
             }
         );
 
-        this.observe(global.stage, 'captured-event', (_, event) => {
+        this.observe(this.inputGrabber, 'captured-event', (_, event) => {
             if (this.dragInProgress !== null) {
                 const [stageX, stageY] = event.get_coords();
                 const msWindowDragged = this.dragInProgress.msWindow;
@@ -172,7 +173,7 @@ export class MsDndManager extends MsManager {
                     msWindow.height * this.dragInProgress.originPointerAnchor[1]
             )
         );
-        Main.pushModal(this.inputGrabber);
+        this.grab = Main.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
@@ -181,7 +182,7 @@ export class MsDndManager extends MsManager {
         const { msWindow, originalParent } = this.dragInProgress;
         this.dragInProgress = null;
 
-        Main.popModal(this.inputGrabber);
+        Main.popModal(this.grab != true ? this.grab : this.inputGrabber);
         global.stage.remove_child(this.inputGrabber);
         msWindow.unFreezeAllocation();
         reparentActor(msWindow, originalParent);
@@ -264,6 +265,7 @@ export class InputGrabber extends Clutter.Actor {
         super({
             name: 'InputGrabber',
             reactive: true,
+            //backgroundColor: Clutter.Color.new(255, 0, 0, 100),
         });
         this.add_constraint(
             new Clutter.BindConstraint({
