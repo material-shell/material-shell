@@ -44,22 +44,6 @@ export class MsFocusManager extends MsManager {
                 });
             }
         );
-
-        this.observe(
-            global.display,
-            'window-demands-attention',
-            (_, _metaWindow) => {
-                Me.logFocus('window-demands-attention', _metaWindow);
-            }
-        );
-
-        this.observe(
-            global.display,
-            'window-marked-urgent',
-            (_, _metaWindow) => {
-                Me.logFocus('window-marked-urgent', _metaWindow);
-            }
-        );
     }
 
     onKeyFocus(): void {
@@ -103,7 +87,8 @@ export class MsFocusManager extends MsManager {
     }
 
     onWindowFocus(): void {
-        const windowFocus = global.display.get_focus_window() as MetaWindowWithMsProperties;
+        const windowFocus =
+            global.display.get_focus_window() as MetaWindowWithMsProperties;
 
         if (!windowFocus || !windowFocus.msWindow) return;
 

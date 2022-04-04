@@ -67,7 +67,6 @@ export class MsResizeManager extends MsManager {
                     RESIZE_CODES.includes(directionOp)
                 );
                 if (RESIZE_CODES.includes(directionOp)) {
-                    Me.logFocus('DRAG ACCEPTED');
                     const msWindow = metaWindow.msWindow;
 
                     if (
