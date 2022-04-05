@@ -7,6 +7,7 @@ import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
 import { assert } from 'src/utils/assert';
+import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor, throttle } from 'src/utils/index';
 import { MsWindowManager } from './msWindowManager';
@@ -195,9 +196,8 @@ export class MsDndManager extends MsManager {
     checkUnderThePointerRoutine() {
         if (this.dragInProgress === null) return;
         this.throttledCheckUnderPointer();
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();
-            return GLib.SOURCE_REMOVE;
         });
     }
 

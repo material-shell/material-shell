@@ -2,6 +2,7 @@
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
+import { Async } from 'src/utils/async';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
@@ -38,9 +39,8 @@ export class MsFocusManager extends MsManager {
             () => {
                 if (!Me.loaded) return;
                 this.focusProtected = true;
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+                Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
-                    return GLib.SOURCE_REMOVE;
                 });
             }
         );

@@ -11,6 +11,7 @@ import {
     MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
 import { Rectangular } from 'src/types/mod';
+import { Async } from 'src/utils/async';
 /** Extension imports */
 import {
     Allocate,
@@ -181,7 +182,7 @@ export class MsWindow extends Clutter.Actor {
     ) {
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+            Async.addTimeout(GLib.PRIORITY_DEFAULT, 50, () => {
                 const actor =
                     metaWindow.get_compositor_private<Meta.WindowActor>();
                 if (actor && actor.get_texture()) {
@@ -194,7 +195,6 @@ export class MsWindow extends Clutter.Actor {
                         reject
                     );
                 }
-                return GLib.SOURCE_REMOVE;
             });
         } else {
             reject();
@@ -320,10 +320,9 @@ export class MsWindow extends Clutter.Actor {
     }
 
     delayUpdateMetaWindowPositionAndSize() {
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.updateDelayed = false;
             this.updateMetaWindowPositionAndSize();
-            return GLib.SOURCE_REMOVE;
         });
     }
 

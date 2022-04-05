@@ -20,6 +20,7 @@ import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
 import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
+import { Async } from './utils/async';
 import { polyfillClutter } from './utils/compatibility';
 
 const Main = imports.ui.main;
@@ -127,13 +128,10 @@ function loaded(disconnect: boolean) {
     Me.msNotificationManager.check();
     if (splashscreenCalled) {
         if (_splashscreenTimeoutId) {
-            GLib.source_remove(_splashscreenTimeoutId);
+            Async.clearTimeoutId(_splashscreenTimeoutId);
             _splashscreenTimeoutId = 0;
         }
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-            hideSplashScreens();
-            return GLib.SOURCE_REMOVE;
-        });
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 1000, hideSplashScreens);
     }
     log('--------------------');
     log('END EXTENSION LOADED');
@@ -150,6 +148,7 @@ function disable() {
         Me.layout.panel.disable();
     } else {
         Me.disableInProgress = true;
+        Async.clearAllPendingTimeout();
         if (!modules) return;
         global.display.disconnect(_closingId);
         Me.emit('extension-disable');
@@ -195,13 +194,12 @@ function showSplashScreens() {
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
     });
-    _splashscreenTimeoutId = GLib.timeout_add(
+    _splashscreenTimeoutId = Async.addTimeout(
         GLib.PRIORITY_DEFAULT,
         5000,
         () => {
             _splashscreenTimeoutId = 0;
             hideSplashScreens();
-            return GLib.SOURCE_REMOVE;
         }
     );
 }
