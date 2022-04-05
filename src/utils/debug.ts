@@ -98,7 +98,8 @@ export function initDebug() {
                 MsDndManager,
                 MsResizeManager,
                 MsWindow,
-                TaskBar,
+                MsFocusManager, */
+                /* TaskBar,
                 TaskBarItem,
                 IconTaskBarItem,
                 TaskActiveIndicator,

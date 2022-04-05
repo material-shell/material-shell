@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
+import { Async } from './async';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -74,14 +75,14 @@ export function throttle<T extends any[], R>(
         context = this;
         if (remaining <= 0 || remaining > wait) {
             if (timeout !== null) {
-                GLib.source_remove(timeout);
+                Async.clearTimeoutId(timeout);
                 timeout = null;
             }
             previous = now;
             result = func.apply(context, args);
             if (!timeout) context = args = null;
         } else if (!timeout && definedOptions.trailing !== false) {
-            timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, remaining, later);
+            timeout = Async.addTimeout(GLib.PRIORITY_DEFAULT, remaining, later);
         }
         return result;
     };
@@ -110,7 +111,6 @@ export const reparentActor = (
 ) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
-
     const restoreFocusTo = actor.has_key_focus()
         ? actor
         : isParentOfActor(actor, global.stage.key_focus)

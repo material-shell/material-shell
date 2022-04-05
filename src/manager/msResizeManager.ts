@@ -45,7 +45,6 @@ export class MsResizeManager extends MsManager {
     signalMap: Map<any, any>;
     inputResizer: InputResizer;
     msWorkspace: MsWorkspace | undefined;
-    grab: any;
     resizeInProgress: CurrentResize | null;
     throttledCheckPointerPosition: () => void;
 
@@ -164,7 +163,7 @@ export class MsResizeManager extends MsManager {
         };
 
         global.stage.add_child(this.inputResizer);
-        this.grab = Main.pushModal(this.inputResizer);
+        this.msWindowManager.msFocusManager.pushModal(this.inputResizer);
 
         global.display.set_cursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
     }
@@ -191,7 +190,7 @@ export class MsResizeManager extends MsManager {
         assert(this.resizeInProgress !== null, 'No resize in progress');
         this.resizeInProgress = null;
 
-        Main.popModal(this.grab != true ? this.grab : this.inputResizer);
+        this.msWindowManager.msFocusManager.popModal(this.inputResizer);
         Me.stateManager.stateChanged();
 
         global.stage.remove_child(this.inputResizer);

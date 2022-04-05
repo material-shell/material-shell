@@ -27,7 +27,6 @@ export class MsDndManager extends MsManager {
     signalMap: Map<any, any>;
     dragInProgress: CurrentDrag | null;
     inputGrabber: InputGrabber;
-    grab: any;
     throttledCheckUnderPointer: (this: any) => any;
 
     constructor(msWindowManager: MsWindowManager) {
@@ -174,7 +173,7 @@ export class MsDndManager extends MsManager {
                     msWindow.height * this.dragInProgress.originPointerAnchor[1]
             )
         );
-        this.grab = Main.pushModal(this.inputGrabber);
+        this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
@@ -183,7 +182,7 @@ export class MsDndManager extends MsManager {
         const { msWindow, originalParent } = this.dragInProgress;
         this.dragInProgress = null;
 
-        Main.popModal(this.grab != true ? this.grab : this.inputGrabber);
+        this.msWindowManager.msFocusManager.popModal(this.inputGrabber);
         global.stage.remove_child(this.inputGrabber);
         msWindow.unFreezeAllocation();
         reparentActor(msWindow, originalParent);

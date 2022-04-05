@@ -1,4 +1,5 @@
 /** Gnome libs imports */
+import { Actor } from 'clutter';
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
@@ -7,6 +8,7 @@ import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
+const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -17,7 +19,7 @@ export class MsFocusManager extends MsManager {
     lastMsWindowFocused: MsWindow | null = null;
     lastKeyFocus: MsWindow | null = null;
     focusProtected?: boolean;
-
+    actorGrabMap: Map<Actor, any> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
@@ -82,7 +84,9 @@ export class MsFocusManager extends MsManager {
         if (isChildrenOfMsWindow) {
             this.setFocusToMsWindow(actor);
         } else {
-            this.lastMsWindowFocused = null;
+            if (keyFocus != Main.layoutManager.uiGroup) {
+                this.lastMsWindowFocused = null;
+            }
         }
     }
 
@@ -99,7 +103,6 @@ export class MsFocusManager extends MsManager {
 
     setFocusToMsWindow(msWindow: MsWindow): void {
         if (msWindow === this.lastMsWindowFocused) return;
-        Me.logFocus('Focus MsWindow', msWindow.title);
         this.lastMsWindowFocused = msWindow;
         this.emit('focus-changed', msWindow);
     }
@@ -113,5 +116,19 @@ export class MsFocusManager extends MsManager {
             msWindow !== this.lastMsWindowFocused &&
             !this.msWindowManager.msDndManager.dragInProgress
         );
+    }
+
+    pushModal(actor, options?) {
+        const currentFocus = global.stage.key_focus;
+        let grab = Main.pushModal(actor, options);
+        this.actorGrabMap.set(actor, grab);
+    }
+
+    popModal(actor) {
+        let grab = this.actorGrabMap.get(actor);
+        if (grab != null) {
+            Main.popModal(grab != true ? grab : actor);
+            this.actorGrabMap.delete(actor);
+        }
     }
 }
