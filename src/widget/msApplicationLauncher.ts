@@ -52,7 +52,7 @@ export class MsApplicationLauncher extends St.Widget {
         
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
-            'workspace-appmenu-changed',
+            'show-application-launcher-changed',
             () => {
                 if (Me.msThemeManager.workspaceAppMenu) {
                     this.add_style_class_name('surface-darker');

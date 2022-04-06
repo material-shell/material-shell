@@ -98,10 +98,10 @@
             <summary>Focus effect</summary>
             <description>Define which focus effect to apply when using tiling layouts</description>
         </key>
-        <key name="workspace-appmenu" type="b">
+        <key name="show-application-launcher" type="b">
             <default>true</default>
-            <summary>Enable/Disable new workspace application menu</summary>
-            <description>Enables/Disables the application menu that appears when a new workspace is opened</description>
+            <summary>Enable/Disable application launcher</summary>
+            <description>Enables/Disables the application launcher that appears when a new workspace is opened</description>
         </key>
     </schema>
     <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
