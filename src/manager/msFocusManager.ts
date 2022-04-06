@@ -1,11 +1,14 @@
 /** Gnome libs imports */
+import { Actor } from 'clutter';
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
+import { Async } from 'src/utils/async';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
+const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -16,7 +19,7 @@ export class MsFocusManager extends MsManager {
     lastMsWindowFocused: MsWindow | null = null;
     lastKeyFocus: MsWindow | null = null;
     focusProtected?: boolean;
-
+    actorGrabMap: Map<Actor, any> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
@@ -38,26 +41,9 @@ export class MsFocusManager extends MsManager {
             () => {
                 if (!Me.loaded) return;
                 this.focusProtected = true;
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+                Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
-                    return GLib.SOURCE_REMOVE;
                 });
-            }
-        );
-
-        this.observe(
-            global.display,
-            'window-demands-attention',
-            (_, _metaWindow) => {
-                Me.logFocus('window-demands-attention', _metaWindow);
-            }
-        );
-
-        this.observe(
-            global.display,
-            'window-marked-urgent',
-            (_, _metaWindow) => {
-                Me.logFocus('window-marked-urgent', _metaWindow);
             }
         );
     }
@@ -98,12 +84,15 @@ export class MsFocusManager extends MsManager {
         if (isChildrenOfMsWindow) {
             this.setFocusToMsWindow(actor);
         } else {
-            this.lastMsWindowFocused = null;
+            if (keyFocus != Main.layoutManager.uiGroup) {
+                this.lastMsWindowFocused = null;
+            }
         }
     }
 
     onWindowFocus(): void {
-        const windowFocus = global.display.get_focus_window() as MetaWindowWithMsProperties;
+        const windowFocus =
+            global.display.get_focus_window() as MetaWindowWithMsProperties;
 
         if (!windowFocus || !windowFocus.msWindow) return;
 
@@ -114,7 +103,6 @@ export class MsFocusManager extends MsManager {
 
     setFocusToMsWindow(msWindow: MsWindow): void {
         if (msWindow === this.lastMsWindowFocused) return;
-        Me.logFocus('Focus MsWindow', msWindow.title);
         this.lastMsWindowFocused = msWindow;
         this.emit('focus-changed', msWindow);
     }
@@ -128,5 +116,19 @@ export class MsFocusManager extends MsManager {
             msWindow !== this.lastMsWindowFocused &&
             !this.msWindowManager.msDndManager.dragInProgress
         );
+    }
+
+    pushModal(actor, options?) {
+        const currentFocus = global.stage.key_focus;
+        let grab = Main.pushModal(actor, options);
+        this.actorGrabMap.set(actor, grab);
+    }
+
+    popModal(actor) {
+        let grab = this.actorGrabMap.get(actor);
+        if (grab != null) {
+            Main.popModal(grab != true ? grab : actor);
+            this.actorGrabMap.delete(actor);
+        }
     }
 }

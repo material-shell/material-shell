@@ -1,16 +1,15 @@
 /** Gnome libs imports */
-import * as St from 'st';
 import * as Clutter from 'clutter';
+import * as GLib from 'glib';
 import * as GObject from 'gobject';
+import { MsManager } from 'src/manager/msManager';
+import { Async } from 'src/utils/async';
+import { registerGObjectClass } from 'src/utils/gjs';
+import * as St from 'st';
 const Main = imports.ui.main;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
-import { MsManager } from 'src/manager/msManager';
-import { SetAllocation } from 'src/utils/compatibility';
-import * as GLib from 'glib';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 export class TooltipManager extends MsManager {
     constructor() {
@@ -31,7 +30,7 @@ export class TooltipManager extends MsManager {
                 }
                 // Cancel countdown, if any
                 if (timeoutId) {
-                    GLib.source_remove(timeoutId);
+                    Async.clearTimeoutId(timeoutId);
                     timeoutId = 0;
                 }
                 if (!actorDestroyed) {
@@ -50,12 +49,11 @@ export class TooltipManager extends MsManager {
                 leaveCallback
             );
 
-            timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+            timeoutId = Async.addTimeout(GLib.PRIORITY_DEFAULT, 200, () => {
                 timeoutId = 0;
                 if (!left) {
                     tooltip = this.createTooltip(actor, params);
                 }
-                return GLib.SOURCE_REMOVE;
             });
         };
         this.observe(actor, 'enter-event', tooltipCallback);

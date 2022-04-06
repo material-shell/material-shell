@@ -311,14 +311,14 @@ export class MsMain extends St.Widget {
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => {
                         this.primaryMonitorContainer.workspaceContainer.clear_effects();
-                        Main.popModal(this);
                     },
                 }
             );
+            Me.msWindowManager.msFocusManager.popModal(this);
         } else {
             this.overviewShown = true;
             if (Main._findModal(this) === -1) {
-                Main.pushModal(this, {
+                Me.msWindowManager.msFocusManager.pushModal(this, {
                     actionMode: Shell.ActionMode.OVERVIEW,
                 });
             }

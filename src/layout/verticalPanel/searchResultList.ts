@@ -5,6 +5,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Shell from 'shell';
+import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
@@ -330,7 +331,7 @@ export class SearchResultList extends St.BoxLayout {
 
     private clearSearchTimeout() {
         if (this.searchTimeoutId > 0) {
-            GLib.source_remove(this.searchTimeoutId);
+            Async.clearTimeoutId(this.searchTimeoutId);
             this.searchTimeoutId = 0;
         }
     }
@@ -338,7 +339,6 @@ export class SearchResultList extends St.BoxLayout {
     private onSearchTimeout() {
         this.searchTimeoutId = 0;
         this.doSearch();
-        return GLib.SOURCE_REMOVE;
     }
 
     private searchCancelled() {
@@ -378,7 +378,7 @@ export class SearchResultList extends St.BoxLayout {
         //this._updateSearchProgress();
 
         if (this.searchTimeoutId == 0)
-            this.searchTimeoutId = GLib.timeout_add(
+            this.searchTimeoutId = Async.addTimeout(
                 GLib.PRIORITY_DEFAULT,
                 150,
                 this.onSearchTimeout.bind(this)

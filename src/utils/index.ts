@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
+import { Async } from './async';
 const Main = imports.ui.main;
 
 /** Extension imports */
@@ -74,14 +75,14 @@ export function throttle<T extends any[], R>(
         context = this;
         if (remaining <= 0 || remaining > wait) {
             if (timeout !== null) {
-                GLib.source_remove(timeout);
+                Async.clearTimeoutId(timeout);
                 timeout = null;
             }
             previous = now;
             result = func.apply(context, args);
             if (!timeout) context = args = null;
         } else if (!timeout && definedOptions.trailing !== false) {
-            timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, remaining, later);
+            timeout = Async.addTimeout(GLib.PRIORITY_DEFAULT, remaining, later);
         }
         return result;
     };
@@ -105,11 +106,11 @@ export const isParentOfActor = (
 
 export const reparentActor = (
     actor: Clutter.Actor | null,
-    parent: Clutter.Actor | null
+    parent: Clutter.Actor | null,
+    first = false
 ) => {
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
-
     const restoreFocusTo = actor.has_key_focus()
         ? actor
         : isParentOfActor(actor, global.stage.key_focus)
@@ -123,7 +124,11 @@ export const reparentActor = (
     if (currentParent) {
         currentParent.remove_child(actor);
     }
-    parent.add_child(actor);
+    if (first) {
+        parent.insert_child_at_index(actor, 0);
+    } else {
+        parent.add_child(actor);
+    }
     if (restoreFocusTo) {
         restoreFocusTo.grab_key_focus();
     }
