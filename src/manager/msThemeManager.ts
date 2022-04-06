@@ -113,6 +113,9 @@ export class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::focus-effect', () => {
             this.emit('focus-effect-changed');
         });
+        this.observe(this.themeSettings, 'changed::workspace-appmenu', () => {
+            this.emit('workspace-appmenu-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -168,6 +171,9 @@ export class MsThemeManager extends MsManager {
 
     get focusEffect() {
         return this.themeSettings.get_enum('focus-effect');
+    }
+    get workspaceAppMenu() {
+        return this.themeSettings.get_boolean('workspace-appmenu');
     }
 
     isColorDark(color) {

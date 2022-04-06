@@ -413,6 +413,7 @@ class PrefsWidget extends Gtk.Box {
         theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
         theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
         theme.addSetting('focus-effect', WidgetType.COMBO);
+        theme.addSetting('workspace-appmenu', WidgetType.BOOLEAN);
         this._settings_box.append(theme);
 
         const tweaks = new SettingCategoryListBox(
