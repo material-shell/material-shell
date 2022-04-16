@@ -86,7 +86,7 @@ export class MsWindow extends Clutter.Actor {
     msContent: MsWindowContent;
     msWorkspace: MsWorkspace;
     destroyed: boolean | undefined;
-    _metaWindow: MetaWindowWithMsProperties;
+    _metaWindow: MetaWindowWithMsProperties; // TODO: Can also be undefined/null
     metaWindowUpdateInProgressPromise: any;
     updateDelayed: boolean | undefined;
     focusEffects?: {
