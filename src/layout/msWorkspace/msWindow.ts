@@ -1,7 +1,7 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
@@ -24,6 +24,7 @@ import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import * as St from 'st';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
+import { App } from 'shell';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
@@ -36,7 +37,7 @@ interface Dialog {
     clone: Clutter.Clone;
 }
 export interface MsWindowState {
-    appId: number;
+    appId: string;
     metaWindowIdentifier: string | null;
     persistent: boolean | undefined;
     x: number;
@@ -46,9 +47,9 @@ export interface MsWindowState {
 }
 
 export interface MsWindowConstructProps {
-    app: any;
+    app: App;
     metaWindowIdentifier: string | null;
-    metaWindow: MetaWindowWithMsProperties;
+    metaWindow: MetaWindowWithMsProperties | null;
     persistent?: boolean;
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
@@ -74,7 +75,7 @@ export class MsWindow extends Clutter.Actor {
         },
     };
 
-    public app: any;
+    public app: App;
     _persistent: boolean | undefined;
     dialogs: Dialog[];
     metaWindowIdentifier: string | null;
@@ -177,8 +178,8 @@ export class MsWindow extends Clutter.Actor {
     delayGetMetaWindowActor(
         metaWindow: MetaWindowWithMsProperties,
         delayedCount: number,
-        resolve,
-        reject
+        resolve: (actor: Meta.WindowActor)=>void,
+        reject: ()=>void
     ) {
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
@@ -304,7 +305,7 @@ export class MsWindow extends Clutter.Actor {
         super.set_size(width, height);
     }
 
-    getRelativeMetaWindowPosition(metaWindow) {
+    getRelativeMetaWindowPosition(metaWindow: Meta.Window) {
         const x = this.x;
         const y = this.y;
 
@@ -378,7 +379,8 @@ export class MsWindow extends Clutter.Actor {
         let needToMove = false;
         let needToResize = false;
         let needToMoveOrResize = false;
-        let moveTo, resizeTo;
+        let moveTo: { x: number, y: number } | undefined = undefined;
+        let resizeTo: { width: number, height: number } | undefined = undefined;
 
         // check if the window need a changes only if we don't need to already maximize
         if (!shouldBeMaximizedHorizontally || !shouldBeMaximizedVertically) {
@@ -481,7 +483,7 @@ export class MsWindow extends Clutter.Actor {
             }
         }
 
-        if (needToMoveOrResize) {
+        if (needToMoveOrResize && moveTo !== undefined && resizeTo !== undefined) {
             // Secure the futur metaWindow Position to ensure it's not outside the current monitor
             if (!this.dragged) {
                 moveTo.x = Math.max(
@@ -505,17 +507,19 @@ export class MsWindow extends Clutter.Actor {
             }
             //Set the size accordingly
             if (isWayland) {
+                const moveTo2 = moveTo;
+                const resizeTo2 = resizeTo;
                 GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                     if (needToResize) {
                         this._metaWindow.move_resize_frame(
                             true,
-                            moveTo.x,
-                            moveTo.y,
-                            resizeTo.width,
-                            resizeTo.height
+                            moveTo2.x,
+                            moveTo2.y,
+                            resizeTo2.width,
+                            resizeTo2.height
                         );
                     } else {
-                        this._metaWindow.move_frame(true, moveTo.x, moveTo.y);
+                        this._metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
                     }
 
                     return GLib.SOURCE_REMOVE;
@@ -531,18 +535,19 @@ export class MsWindow extends Clutter.Actor {
                     );
 
                     // Enforce window positioning since Gnome Terminal don't always move when requested
+                    const moveTo2 = moveTo;
                     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                         const currentFrameRect =
                             this._metaWindow.get_frame_rect();
 
                         if (
-                            currentFrameRect.x !== moveTo.x ||
-                            currentFrameRect.y !== moveTo.y
+                            currentFrameRect.x !== moveTo2.x ||
+                            currentFrameRect.y !== moveTo2.y
                         ) {
                             this._metaWindow.move_frame(
                                 true,
-                                moveTo.x,
-                                moveTo.y
+                                moveTo2.x,
+                                moveTo2.y
                             );
                         }
 
@@ -710,7 +715,7 @@ export class MsWindow extends Clutter.Actor {
         this.onMetaWindowsChanged();
     }
 
-    updateWorkspaceAndMonitor(metaWindow) {
+    updateWorkspaceAndMonitor(metaWindow: Meta.Window) {
         if (metaWindow && this.msWorkspace) {
             // We need to move the window before changing the workspace, because
             // the move itself could cause a workspace change if the window enters

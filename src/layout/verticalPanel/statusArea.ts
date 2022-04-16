@@ -8,7 +8,8 @@ import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import * as St from 'st';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
+import { panel } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -18,7 +19,7 @@ export class MsStatusArea extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsStatusArea',
     };
-    gnomeShellPanel: any;
+    gnomeShellPanel: panel.Panel;
     leftBoxActors: Clutter.Actor[];
     rightBoxActors: Clutter.Actor[];
     dateMenu: any;
@@ -26,7 +27,7 @@ export class MsStatusArea extends Clutter.Actor {
     msDateMenuBox?: MsDateMenuBox;
     leftBoxActorAddedSignal: any;
     centerBoxActorAddedSignal: any;
-    centerBoxActors: any;
+    centerBoxActors: Clutter.Actor[];
     rightBoxActorAddedSignal: any;
 
     constructor() {

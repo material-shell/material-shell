@@ -9,18 +9,14 @@ import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
-
-const AppDisplay = imports.ui.appDisplay;
+import { appDisplay, remoteSearch } from 'ui';
 
 const DND = imports.ui.dnd;
-const Main = imports.ui.main;
 const ShellEntry = imports.ui.shellEntry;
 const ParentalControlsManager = imports.misc.parentalControlsManager;
-const RemoteSearch = imports.ui.remoteSearch;
-const PopupMenu = imports.ui.popupMenu;
 const SystemActions = imports.misc.systemActions;
 
-function getTermsForSearchString(searchString) {
+function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
     if (searchString === '') return [];
     return searchString.split(/\s+/);
@@ -30,13 +26,15 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+type SearchProvider = appDisplay.AppSearchProvider | remoteSearch.RemoteSearchProvider;
+
 @registerGObjectClass
 export class SearchResultHeader extends St.Bin {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'SearchResultHeader',
     };
     label: St.Label;
-    constructor(text) {
+    constructor(text: string) {
         super({
             style_class: 'subtitle-2 margin margin-top-x2 margin-bottom-x2',
         });
@@ -68,7 +66,7 @@ export class SearchResultEntry extends MatButton {
     });
     title: St.Label;
     description: St.Label;
-    constructor(icon, title, description?, withMenu?) {
+    constructor(icon: St.Icon | null, title: string, description?: string, withMenu?: boolean) {
         super({});
         if (icon) {
             this.icon = icon;
@@ -97,7 +95,7 @@ export class SearchResultEntry extends MatButton {
         } */
     }
 
-    setSelected(selected) {
+    setSelected(selected: boolean) {
         if (selected) {
             this.add_style_class_name('highlighted');
         } else {
@@ -120,12 +118,12 @@ export class SearchResultList extends St.BoxLayout {
     searchEntry: St.Entry;
     text: Text;
     parentalControlsManager;
-    providers = [];
+    providers: SearchProvider[] = [];
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
     startingSearch: boolean;
-    private results: any = {};
+    private results: Record<string,string[]> = {};
     isSubSearch: boolean;
     highlightRegex: RegExp;
     cancellable = new Gio.Cancellable();
@@ -182,7 +180,7 @@ export class SearchResultList extends St.BoxLayout {
             this.reloadRemoteProviders.bind(this)
         );
 
-        this.registerProvider(new AppDisplay.AppSearchProvider());
+        this.registerProvider(new appDisplay.AppSearchProvider());
 
         const appSystem = Shell.AppSystem.get_default();
         appSystem.connect(
@@ -198,12 +196,12 @@ export class SearchResultList extends St.BoxLayout {
         ) as SearchResultEntry[];
     }
 
-    registerProvider(provider): void {
+    registerProvider(provider: SearchProvider): void {
         provider.searchInProgress = false;
 
         // Filter out unwanted providers.
         if (
-            provider.appInfo &&
+            provider.isRemoteProvider &&
             !this.parentalControlsManager.shouldShowApp(provider.appInfo)
         )
             return;
@@ -219,7 +217,7 @@ export class SearchResultList extends St.BoxLayout {
             this.unregisterProvider(provider);
         });
 
-        RemoteSearch.loadRemoteSearchProviders(
+        remoteSearch.loadRemoteSearchProviders(
             this.searchSettings,
             (providers) => {
                 providers.forEach(this.registerProvider.bind(this));
@@ -227,7 +225,7 @@ export class SearchResultList extends St.BoxLayout {
         );
     }
 
-    unregisterProvider(provider): void {
+    unregisterProvider(provider: SearchProvider): void {
         const index = this.providers.indexOf(provider);
         this.providers.splice(index, 1);
 
@@ -262,7 +260,8 @@ export class SearchResultList extends St.BoxLayout {
         }
     }
 
-    onKeyPress(entry, event) {
+    onKeyPress(entry: Clutter.Actor, event: Clutter.KeyEvent) {
+        Me.log(event);
         const symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Escape) {
             this.resetAndClose();
@@ -351,7 +350,7 @@ export class SearchResultList extends St.BoxLayout {
         if (this.text.text !== '') this.reset();
     }
 
-    setTerms(terms): void {
+    setTerms(terms: string[]): void {
         // Check for the case of making a duplicate previous search before
         // setting state of the current search or cancelling the search.
         // This will prevent incorrect state being as a result of a duplicate
@@ -395,12 +394,12 @@ export class SearchResultList extends St.BoxLayout {
         //this.emit('terms-changed');
     }
 
-    gotResults(results, provider) {
+    gotResults(results: string[], provider: SearchProvider) {
         this.results[provider.id] = results;
         this.updateResults(provider, results);
     }
 
-    updateResults(provider, results) {
+    updateResults(provider: SearchProvider, results: string[]) {
         if (!results.length) return;
 
         if (provider.isRemoteProvider) {
@@ -410,13 +409,13 @@ export class SearchResultList extends St.BoxLayout {
         }
         provider.getResultMetas(
             results,
-            (resMetas, index) => {
+            (resMetas) => {
                 this.resMetas = resMetas;
-                let moreEntry;
+                let moreEntry: SearchResultEntry | null = null;
                 //
-                const extraResults = [];
+                const extraResults: SearchResultEntry[] = [];
                 if (resMetas.length > 5) {
-                    moreEntry = new SearchResultEntry(
+                    const more = moreEntry = new SearchResultEntry(
                         new St.Icon({
                             icon_size: 32,
                             gicon: Gio.icon_new_for_string(
@@ -432,11 +431,11 @@ export class SearchResultList extends St.BoxLayout {
                         provider.id === 'applications'
                     );
 
-                    moreEntry.connect('primary-action', () => {
+                    more.connect('primary-action', () => {
                         extraResults.forEach((entry) => {
-                            this.insert_child_below(entry, moreEntry);
+                            this.insert_child_below(entry, more);
                         });
-                        this.remove_child(moreEntry);
+                        this.remove_child(more);
                         this.selectResult(extraResults[0]);
                     });
                 }
@@ -446,7 +445,7 @@ export class SearchResultList extends St.BoxLayout {
                     numberOfRes++;
 
                     let icon = res.createIcon(32);
-                    if (!icon && provider.appInfo) {
+                    if (!icon && provider.isRemoteProvider) {
                         icon = new St.Icon({
                             icon_size: 32,
                             gicon: provider.appInfo.get_icon(),
@@ -533,7 +532,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectNext() {
-        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
+        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
         const nextEntry = this.resultEntryList[currentIndex + 1];
         if (nextEntry) {
             this.selectResult(nextEntry);
@@ -541,7 +540,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectPrevious() {
-        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
+        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
         const previousEntry = this.resultEntryList[currentIndex - 1];
         if (previousEntry) {
             this.selectResult(previousEntry);

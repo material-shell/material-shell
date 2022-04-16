@@ -9,7 +9,6 @@ import {
     HorizontalPanelPositionEnum,
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
-import { Monitor } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import {
     Allocate,
@@ -21,7 +20,9 @@ import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import * as St from 'st';
-const Main = imports.ui.main;
+import { main as Main, layout } from 'ui';
+import Monitor = layout.Monitor;
+
 const Background = imports.ui.background;
 
 /** Extension imports */
@@ -97,8 +98,9 @@ export class MsMain extends St.Widget {
                 const source = event.get_source();
                 const [x, y] = event.get_coords();
 
-                const [x1, y1] = this.panel.get_transformed_position();
-                const [width, height] = this.panel.get_transformed_size();
+                // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
+                const [x1, y1] = this.panel.get_transformed_position() as [number, number];
+                const [width, height] = this.panel.get_transformed_size() as [number, number];
 
                 if (
                     !(x >= x1 && x <= x1 + width && y >= y1 && y <= y1 + height)
@@ -158,7 +160,7 @@ export class MsMain extends St.Widget {
             from: Me.msWorkspaceManager,
             id: Me.msWorkspaceManager.connect(
                 'switch-workspace',
-                (_, from, to) => {
+                (_, from: number, to: number) => {
                     this.onSwitchWorkspace(from, to);
                 }
             ),
@@ -259,7 +261,7 @@ export class MsMain extends St.Widget {
         });
     }
 
-    onSwitchWorkspace(_from, _to): void {
+    onSwitchWorkspace(_from: number, _to: number): void {
         this.onMsWorkspacesChanged();
     }
 
@@ -348,7 +350,7 @@ export class MsMain extends St.Widget {
         this.set_child_above_sibling(this.aboveContainer, null);
     }
 
-    setActorAbove(actor) {
+    setActorAbove(actor: Clutter.Actor) {
         reparentActor(actor, this.aboveContainer);
     }
     vfunc_get_preferred_width(_forHeight: number): [number, number] {

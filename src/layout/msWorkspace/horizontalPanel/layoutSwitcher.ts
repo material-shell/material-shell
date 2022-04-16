@@ -4,13 +4,12 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
-import { TilingLayoutByKey } from 'src/manager/layoutManager';
+import { LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace';
 const Animation = imports.ui.animation;
-const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
+import { main as Main, popupMenu } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -23,11 +22,11 @@ export class LayoutSwitcher extends St.BoxLayout {
     layoutQuickWidgetBin: St.Bin;
     tilingIcon: St.Icon;
     switcherButton: MatPanelButton;
-    menuManager: any;
+    menuManager: popupMenu.PopupMenuManager;
     msWorkspace: MsWorkspace;
-    menu: any;
+    menu: popupMenu.PopupMenu;
 
-    constructor(msWorkspace, panelMenuManager) {
+    constructor(msWorkspace: MsWorkspace, panelMenuManager: popupMenu.PopupMenuManager) {
         super({});
         this.layoutQuickWidgetBin = new St.Bin({
             style_class: 'layout-quick-widget-bin',
@@ -93,7 +92,7 @@ export class LayoutSwitcher extends St.BoxLayout {
 
     buildMenu() {
         if (this.menu) this.menu.destroy();
-        this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
         this.menu.actor.add_style_class_name('horizontal-panel-menu');
         this.menu.actor.hide();
         Object.entries(TilingLayoutByKey).forEach(
@@ -108,7 +107,7 @@ export class LayoutSwitcher extends St.BoxLayout {
                 );
             }
         );
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
         this.menu.addMenuItem(new LayoutsToggle(this.menu));
         Main.uiGroup.add_actor(this.menu.actor);
         this.menuManager.addMenu(this.menu);
@@ -176,8 +175,11 @@ export class LayoutSwitcher extends St.BoxLayout {
 }
 
 @registerGObjectClass
-export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
-    constructor(layoutConstructor, active: boolean, params?) {
+export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
+    layoutConstructor: LayoutType;
+    editable: boolean;
+
+    constructor(layoutConstructor: LayoutType, active: boolean, params?: popupMenu.PopupBaseMenuItemParams) {
         super(layoutConstructor.label, active, params);
         this.layoutConstructor = layoutConstructor;
         this._icon = new St.Icon({
@@ -191,11 +193,11 @@ export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
         this.setEditable(false);
     }
 
-    get layoutSwitcher() {
+    get layoutSwitcher(): LayoutSwitcher {
         return this._parent.sourceActor;
     }
 
-    activate(event) {
+    override activate(event: Clutter.Event) {
         if (!this.editable) {
             this.layoutSwitcher.setLayout(this.layoutConstructor.state.key);
             this.emit('activate', event);
@@ -243,6 +245,7 @@ export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
             duration: 300,
         });
     }
+
     setVisible(visible: boolean) {
         if (!this.mapped) {
             return (this.height = visible ? -1 : 0);
@@ -270,8 +273,15 @@ export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
 }
 
 @registerGObjectClass
-export class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
-    constructor(menu, params?) {
+export class LayoutsToggle extends popupMenu.PopupImageMenuItem {
+    editText: string;
+    editIcon: Gio.IconPrototype;
+    confirmText: string;
+    confirmIcon: Gio.IconPrototype;
+    menu: popupMenu.PopupMenu;
+    editable: boolean;
+
+    constructor(menu: popupMenu.PopupMenu, params?: popupMenu.PopupBaseMenuItemParams) {
         const editText = _('Tweak available layout');
         const editIcon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/category/settings-symbolic.svg`
@@ -287,7 +297,7 @@ export class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
         this.editable = false;
     }
 
-    activate(_event) {
+    activate(_event: Clutter.Event) {
         this.toggleEditMode();
     }
 

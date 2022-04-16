@@ -8,9 +8,10 @@ import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
 import { reparentActor } from 'src/utils/index';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { Tileable } from '../msWorkspace';
+import { MsWorkspace, Tileable } from '../msWorkspace';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { MsWindow } from '../msWindow';
+import { Portion } from '../portion';
 
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;
@@ -20,12 +21,13 @@ export class SplitLayout extends BaseResizeableTilingLayout {
     static state = { key: 'split', nbOfColumns: 2 };
     static label = 'Split';
 
+    _state: { key: 'split', nbOfColumns: number };
     vertical: boolean;
     translationAnimator: TranslationAnimator;
     baseIndex: number;
     activeTileableList: Tileable[];
 
-    constructor(msWorkspace, state) {
+    constructor(msWorkspace: MsWorkspace, state: Partial<typeof SplitLayout.state & { mainPortion: Portion }>) {
         super(msWorkspace, state);
         this.baseIndex = 0;
         this.activeTileableList = [];

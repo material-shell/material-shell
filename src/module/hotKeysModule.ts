@@ -7,14 +7,14 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { TilingLayoutByKey } from 'src/manager/layoutManager';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported HotKeysModule, KeyBindingAction */
 
-export const KeyBindingAction = {
+export const KeyBindingAction: Record<string,string> = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
@@ -49,8 +49,8 @@ export const KeyBindingAction = {
 export class HotKeysModule {
     workspaceManager: Meta.WorkspaceManager;
     settings: Gio.Settings;
-    actionIdToNameMap: Map<any, any>;
-    actionNameToActionMap: Map<any, any>;
+    actionIdToNameMap: Map<number, string>;
+    actionNameToActionMap: Map<string, ()=>void>;
     connectId: number;
     lastStash: number | null;
     nextStash: number | null;
@@ -151,6 +151,8 @@ export class HotKeysModule {
                 return;
             }
 
+            log("Workspace: " + activeMsWorkspace + ", " + activeMsWorkspace.tileableFocused.name);
+
             if (
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
@@ -190,11 +192,12 @@ export class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[
                     currentMsWorkspaceIndex - 1
                 ];
-
+            log("Setting to workspace");
             Me.msWorkspaceManager.setWindowToMsWorkspace(
                 activeMsWorkspace.tileableFocused,
                 nextMsWorkspace
             );
+            log("Activating");
             nextMsWorkspace.activate();
         });
         Meta.keybindings_set_custom_handler(
@@ -338,7 +341,7 @@ export class HotKeysModule {
             }
         );
 
-        ['LEFT', 'UP', 'RIGHT', 'DOWN'].forEach((DIRECTION) => {
+        (['LEFT', 'UP', 'RIGHT', 'DOWN'] as const).forEach((DIRECTION) => {
             this.actionNameToActionMap.set(
                 KeyBindingAction[`FOCUS_MONITOR_${DIRECTION}`],
                 () => {
@@ -520,13 +523,19 @@ export class HotKeysModule {
         this.nextStash = null;
     }
 
-    addKeybinding(name) {
+    addKeybinding(name: string) {
+        const actionCallback = this.actionNameToActionMap.get(name);
+        if (actionCallback === undefined) {
+            Me.log("Error: Cannot add keybinding. No such action exists: " + name);
+            return;
+        }
+
         const actionId = Main.wm.addKeybinding(
             name,
             this.settings,
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL,
-            this.actionNameToActionMap.get(name)
+            actionCallback
         );
         this.actionIdToNameMap.set(actionId, name);
     }

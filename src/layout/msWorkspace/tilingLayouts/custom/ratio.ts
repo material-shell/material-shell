@@ -5,6 +5,7 @@ import * as GObject from 'gobject';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { Portion } from '../../portion';
 
 @registerGObjectClass
 export class RatioLayout extends BaseResizeableTilingLayout {
@@ -12,7 +13,7 @@ export class RatioLayout extends BaseResizeableTilingLayout {
     static label = 'Ratio';
 
     updateMainPortionLength(length: number) {
-        const pushInPortion = (portion) => {
+        const pushInPortion = (portion: Portion) => {
             if (portion.children.length === 2) {
                 pushInPortion(portion.children[1]);
             } else {

@@ -18,13 +18,13 @@ export class FloatLayout extends BaseTilingLayout {
 
     tileableFocused: any;
 
-    constructor(msWorkspace: MsWorkspace, state) {
+    constructor(msWorkspace: MsWorkspace, state: typeof FloatLayout.state) {
         super(msWorkspace, state);
         global.display.connect('restacked', this.windowsRestacked.bind(this));
         this.windowsRestacked();
     }
 
-    alterTileable(tileable) {
+    alterTileable(tileable: Tileable) {
         if (tileable.metaWindow) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
@@ -42,7 +42,7 @@ export class FloatLayout extends BaseTilingLayout {
         super.alterTileable(tileable);
     }
 
-    restoreTileable(tileable) {
+    restoreTileable(tileable: Tileable) {
         if (tileable.metaWindow) {
             tileable.msContent.clip_to_allocation = true;
 
