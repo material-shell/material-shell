@@ -479,9 +479,11 @@ export class SearchResultList extends St.BoxLayout {
                                                 insert: true,
                                             }
                                         );
-                                    Me.msWindowManager.openAppForMsWindow(
-                                        msWindow
-                                    );
+                                    if (msWindow !== undefined) {
+                                        Me.msWindowManager.openAppForMsWindow(
+                                            msWindow
+                                        );
+                                    }
                                 } else {
                                     app.activate();
                                 }
