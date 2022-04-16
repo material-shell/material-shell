@@ -151,8 +151,6 @@ export class HotKeysModule {
                 return;
             }
 
-            log("Workspace: " + activeMsWorkspace + ", " + activeMsWorkspace.tileableFocused.name);
-
             if (
                 activeMsWorkspace ===
                 Me.msWorkspaceManager.primaryMsWorkspaces[0]
@@ -192,12 +190,10 @@ export class HotKeysModule {
                 Me.msWorkspaceManager.primaryMsWorkspaces[
                     currentMsWorkspaceIndex - 1
                 ];
-            log("Setting to workspace");
             Me.msWorkspaceManager.setWindowToMsWorkspace(
                 activeMsWorkspace.tileableFocused,
                 nextMsWorkspace
             );
-            log("Activating");
             nextMsWorkspace.activate();
         });
         Meta.keybindings_set_custom_handler(

@@ -94,8 +94,6 @@ export class MsFocusManager extends MsManager {
             global.display.get_focus_window() as MetaWindowWithMsProperties;
 
         if (!windowFocus || !windowFocus.msWindow) return;
-        Me.logFocus('onWindowFocus', windowFocus.msWindow);
-        Me.log("focus", windowFocus.get_id());
 
         const msWindow = windowFocus.msWindow;
         msWindow.onFocus();
