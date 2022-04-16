@@ -537,10 +537,10 @@ export class HotKeysModule {
     }
 
     destroy() {
-        this.actionIdToNameMap.forEach((key) => {
-            Main.wm.removeKeybinding(key);
-            this.actionIdToNameMap.delete(key);
-        });
+        for (let [_, value] of this.actionIdToNameMap) {
+            Main.wm.removeKeybinding(value);
+        }
+        this.actionIdToNameMap.clear();
         if (this.connectId) {
             global.window_manager.disconnect(this.connectId);
         }
