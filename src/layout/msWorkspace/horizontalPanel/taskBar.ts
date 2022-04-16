@@ -6,7 +6,7 @@ import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
@@ -156,7 +156,7 @@ export class TaskBar extends St.Widget {
         );
 
         for (let tileable of tileableToRemove) {
-            let item = this.getTaskBarItemOfTileable(tileable);
+            let item = assertNotNull(this.getTaskBarItemOfTileable(tileable));
             item.destroy();
         }
 
@@ -170,6 +170,7 @@ export class TaskBar extends St.Widget {
 
         // Ensure tileable position in case of reorder
         newTileableList.forEach((tileable, index) => {
+            assert(tileable instanceof MsWindow, "expected an MsWindow");
             this.items[index].setTileable(tileable);
         });
     }
@@ -182,7 +183,7 @@ export class TaskBar extends St.Widget {
             return;
         }
 
-        const previousItem = this.getTaskBarItemOfTileable(oldTileableFocused);
+        const previousItem = oldTileableFocused !== null ? this.getTaskBarItemOfTileable(oldTileableFocused) : null;
         const nextItem = this.getTaskBarItemOfTileable(tileableFocused);
 
         if (previousItem) {
@@ -316,7 +317,7 @@ export class TaskBarItem extends MatButton {
         this._delegate = this;
         this.draggable = draggable;
         this.contentActor = contentActor;
-        this.monitor = Main.layoutManager.primaryMonitor;
+        this.monitor = assertNotNull(Main.layoutManager.primaryMonitor);
         this.set_child(this.contentActor);
 
         this.connect('primary-action', () => {
@@ -335,7 +336,7 @@ export class TaskBarItem extends MatButton {
     override vfunc_parent_set() {
         const actor = this.get_parent() || this;
         if (actor.is_mapped()) {
-            this.monitor = Main.layoutManager.findMonitorForActor(actor);
+            this.monitor = assertNotNull(Main.layoutManager.findMonitorForActor(actor));
         }
     }
 
