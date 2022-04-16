@@ -150,7 +150,9 @@ export class MaximizeLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.displayTileable(this.msWorkspace.tileableFocused);
+        if (this.msWorkspace.tileableFocused !== null) {
+            this.displayTileable(this.msWorkspace.tileableFocused);
+        }
         this.tileableContainer.remove_child(this.translationAnimator);
     }
 }
