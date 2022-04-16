@@ -240,6 +240,7 @@ declare module 'ui' {
             id: string;
             canLaunchSearch: boolean;
             searchInProgress?: boolean;
+            display: search.SearchResult | null | undefined;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
@@ -247,11 +248,14 @@ declare module 'ui' {
             getResultMetas(identifiers: string[], callback: (metas: { id: string, name: string, createIcon: (size: number)=>St.Icon }[])=>void): void;
         }
 
+        class AppIcon extends GObject.Object {}
+
         class AppSearchProvider implements SearchProvider {
             isRemoteProvider: false;
             id: string;
             canLaunchSearch: boolean;
             searchInProgress?: boolean;
+            display: search.SearchResult | null | undefined;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
@@ -260,12 +264,17 @@ declare module 'ui' {
         }
     }
 
+    export namespace search {
+        class SearchResult extends St.Button {}
+    }
+
     export namespace remoteSearch {
         class RemoteSearchProvider implements appDisplay.SearchProvider {
             isRemoteProvider: true;
             id: string;
             canLaunchSearch: boolean;
             searchInProgress?: boolean;
+            display: search.SearchResult | null | undefined;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
