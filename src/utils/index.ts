@@ -2,7 +2,7 @@
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import { Async } from './async';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -50,7 +50,7 @@ export function throttle<T extends any[], R>(
     options?: Partial<TrottleParams>
 ): (...args: T) => R {
     let context: any;
-    let args, result: R;
+    let args: T | null, result: R;
     let timeout: number | null = null;
     let previous = 0;
     const definedOptions: TrottleParams = Object.assign(
@@ -68,7 +68,7 @@ export function throttle<T extends any[], R>(
         if (!timeout) context = args = null;
         return false;
     };
-    return function (...args) {
+    return function (...args: T) {
         const now = Date.now();
         if (!previous && definedOptions.leading === false) previous = now;
         const remaining = wait - (now - previous);

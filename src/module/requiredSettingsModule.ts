@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 import * as Gio from 'gio';
 import { Signal } from 'src/manager/msManager';
+import { assert } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -10,20 +11,40 @@ interface Setting {
     schema: string;
     key: string;
     value: boolean | string;
-    valueType: string;
+    valueType: "string" | "boolean";
 }
 
 interface RestoreSetting {
     setting: Gio.Settings;
     key: string;
     value: boolean | string;
-    valueType: string;
+    valueType: "string" | "boolean";
 }
 
 interface RestoreKey {
     setting: Gio.Settings;
     key: string;
     shortcut: string[];
+}
+
+function getDynamic(settings: Gio.Settings, key: string, valueType: "string" | "boolean"): string | boolean {
+    switch (valueType) {
+        case "string":
+            return settings.get_string(key);
+        case "boolean":
+            return settings.get_boolean(key);
+    }
+}
+
+function setDynamic(settings: Gio.Settings, key: string, valueType: "string" | "boolean", value: string | boolean) {
+    switch (valueType) {
+        case "string":
+            assert(typeof value === "string", "invalid value");
+            return settings.set_string(key, value);
+        case "boolean":
+            assert(typeof value === "boolean", "invalid value");
+            return settings.set_boolean(key, value);
+    }
 }
 
 export class RequiredSettingsModule {
@@ -123,7 +144,7 @@ export class RequiredSettingsModule {
         this.signals = [];
         this.settingsToRestore.forEach((settingToRestore) => {
             const { setting, key, value, valueType } = settingToRestore;
-            setting[`set_${valueType}`](key, value);
+            setDynamic(setting, key, valueType, value);
         });
         this.keysToRestore.forEach((keyToRestore) => {
             keyToRestore.setting.set_strv(
@@ -138,16 +159,17 @@ export class RequiredSettingsModule {
         setting: Gio.Settings,
         key: string,
         value: string | boolean,
-        valueType: string
+        valueType: "string" | "boolean"
     ) {
-        if (setting[`get_${valueType}`](key) !== value) {
+        const prevVal = getDynamic(setting, key, valueType);
+        if (prevVal !== value) {
             this.settingsToRestore.push({
                 setting,
                 key,
-                value: setting[`get_${valueType}`](key),
+                value: prevVal,
                 valueType,
             });
-            setting[`set_${valueType}`](key, value);
+            setDynamic(setting, key, valueType, value);
         }
     }
 }

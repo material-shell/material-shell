@@ -249,6 +249,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
     }
 
     onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
+        Me.logWithStackTrace("focus changed");
         this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
         if (oldTileable) {
             if (

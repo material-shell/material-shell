@@ -9,7 +9,7 @@ const FOCUS_ONLY = false;
 let indent = 0;
 export function initDebug() {
     // TODO: Essentially dead code
-    const AddLogToFunctions = function (prototype) {
+    const AddLogToFunctions = function (prototype: any) {
         if (!DEBUG) return;
         for (const key of Object.getOwnPropertyNames(prototype)) {
             if (key === 'constructor') continue;
@@ -17,7 +17,7 @@ export function initDebug() {
             if (descriptor) {
                 const value = descriptor.value;
                 if (typeof value === 'function') {
-                    prototype[key] = function (...args) {
+                    prototype[key] = function (...args: any[]) {
                         // Before
                         Me.log(
                             `${prototype.constructor.name}.${key} (${Array.from(
@@ -43,6 +43,10 @@ export function initDebug() {
             }
         }
     };
+
+    Me.logWithStackTrace = function (...args: any[]) {
+        Me.log(...args, new Error().stack);
+    }
 
     Me.log = function (...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;

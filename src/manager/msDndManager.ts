@@ -6,12 +6,12 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
 import { KeyBindingAction } from 'src/module/hotKeysModule';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor, throttle } from 'src/utils/index';
 import { MsWindowManager } from './msWindowManager';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -273,7 +273,7 @@ export class InputGrabber extends Clutter.Actor {
             })
         );
     }
-    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+    override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
         const actionId = global.display.get_keybinding_action(
             keyEvent.hardware_keycode,
             keyEvent.modifier_state
@@ -282,24 +282,24 @@ export class InputGrabber extends Clutter.Actor {
             const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_LEFT
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.NEXT_WINDOW:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_RIGHT
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.PREVIOUS_WORKSPACE:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_TOP
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.NEXT_WORKSPACE:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_BOTTOM
-                    )();
+                    ))();
                     break;
             }
         }

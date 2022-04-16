@@ -22,7 +22,7 @@ export class Portion {
         this.borders = [];
     }
 
-    get state() {
+    get state(): { basis: number, vertical: boolean, children: any[] } {
         return {
             basis: this.basis,
             vertical: this.vertical,
@@ -42,7 +42,7 @@ export class Portion {
         this.updateBorders();
     }
 
-    get portionLength() {
+    get portionLength(): number {
         return this.children.length
             ? this.children.reduce(
                   (sum, portion) => sum + portion.portionLength,
@@ -191,7 +191,7 @@ export class Portion {
         this.updateBorders();
     }
 
-    isBorderInSubPortion(index: number, after = false) {
+    isBorderInSubPortion(index: number, after = false): boolean {
         let portionIndex = 0;
         const afterOffset = after ? 1 : 0;
 
@@ -346,8 +346,8 @@ export class Portion {
             }
 
             const [position, size] = this.vertical
-                ? ['y', 'height']
-                : ['x', 'width'];
+                ? ['y', 'height'] as const
+                : ['x', 'width'] as const;
 
             ratio[position] += ratio[size] * (basisSum / basisTotal);
             ratio[size] *= child.basis / basisTotal;

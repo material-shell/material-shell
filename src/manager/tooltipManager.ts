@@ -6,7 +6,7 @@ import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -156,7 +156,7 @@ export class MatTooltip extends St.Label {
     vfunc_allocate(...args: [Clutter.ActorBox]) {
         const relativeActor = this.params.relativeActor || this.sourceActor;
         const [stageX, stageY] = relativeActor.get_transformed_position();
-        let x, y;
+        let x: number, y: number;
         switch (this.params.side) {
             case TooltipSide.LEFT:
                 x = stageX! - this.get_width();
