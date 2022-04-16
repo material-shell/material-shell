@@ -10,6 +10,7 @@ import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace';
 const Animation = imports.ui.animation;
 import { main as Main, popupMenu } from 'ui';
+import { assert, assertNotNull } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -194,7 +195,9 @@ export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
     }
 
     get layoutSwitcher(): LayoutSwitcher {
-        return this._parent.sourceActor;
+        const layoutSwitcher = assertNotNull(this._parent).sourceActor;
+        assert(layoutSwitcher instanceof LayoutSwitcher, "expected menu's source actor to be a LayoutSwitcher");
+        return layoutSwitcher;
     }
 
     override activate(event: Clutter.Event) {
