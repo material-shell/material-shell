@@ -231,6 +231,13 @@ declare module 'ui' {
 
         class PopupMenu extends PopupMenuBase {
             constructor(sourceActor: Actor, arrowAlignment: number, arrowSide: St.Side);
+            _boxPointer: boxPointer.BoxPointer;
+        }
+    }
+
+    export namespace boxPointer {
+        class BoxPointer extends St.Widget {
+            _calculateArrowSide(arrowSide: St.Side): St.Side;
         }
     }
 
