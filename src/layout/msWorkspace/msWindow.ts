@@ -25,6 +25,7 @@ import * as St from 'st';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 import { App } from 'shell';
+import { assert } from 'src/utils/assert';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
@@ -972,12 +973,13 @@ export class MsWindowContent extends St.Widget {
         this.add_child(this.placeholder);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
-        const metaWindow: MetaWindowWithMsProperties =
-            this.get_parent().metaWindow;
+        const parent = this.get_parent();
+        assert(parent instanceof MsWindow, "expected parent to be an MsWindow");
+        const metaWindow: MetaWindowWithMsProperties = parent.metaWindow;
         if (metaWindow && metaWindow.firstFrameDrawn) {
             const windowFrameRect = metaWindow.get_frame_rect();
             const windowBufferRect = metaWindow.get_buffer_rect();
