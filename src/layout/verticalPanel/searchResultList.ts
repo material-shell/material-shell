@@ -262,7 +262,8 @@ export class SearchResultList extends St.BoxLayout {
 
     onKeyPress(entry: Clutter.Actor, event: Clutter.KeyEvent) {
         Me.log(event);
-        const symbol = event.get_key_symbol();
+        // TODO: any cast
+        const symbol = (event as any).get_key_symbol();
         if (symbol === Clutter.KEY_Escape) {
             this.resetAndClose();
 
