@@ -239,6 +239,7 @@ declare module 'ui' {
             isRemoteProvider: boolean;
             id: string;
             canLaunchSearch: boolean;
+            searchInProgress?: boolean;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
@@ -250,6 +251,7 @@ declare module 'ui' {
             isRemoteProvider: false;
             id: string;
             canLaunchSearch: boolean;
+            searchInProgress?: boolean;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
@@ -263,6 +265,7 @@ declare module 'ui' {
             isRemoteProvider: true;
             id: string;
             canLaunchSearch: boolean;
+            searchInProgress?: boolean;
 
             getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
             getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
