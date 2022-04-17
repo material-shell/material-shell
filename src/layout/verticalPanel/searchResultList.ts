@@ -287,7 +287,9 @@ export class SearchResultList extends St.BoxLayout {
                 symbol === Clutter.KEY_Return ||
                 symbol === Clutter.KEY_KP_Enter
             ) {
-                this.entrySelected.emit('primary-action');
+                if (this.entrySelected !== null) {
+                    this.entrySelected.emit('primary-action');
+                }
                 return Clutter.EVENT_STOP;
             }
         }
