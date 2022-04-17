@@ -130,7 +130,6 @@ export class MsWorkspace extends WithSignals {
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
-            delete this.msWorkspaceActor;
         }
         this.destroyed = true;
     }
