@@ -3,6 +3,7 @@ import { walk } from 'estree-walker';
 import {BaseNode, Program, ClassDeclaration, Identifier, MethodDefinition, SimpleCallExpression, BlockStatement, ClassExpression, ExpressionStatement, AssignmentExpression, FunctionDeclaration, ArrayExpression, ImportDeclaration, VariableDeclaration, ImportSpecifier} from 'estree';
 import { glob } from 'glob';
 import * as fs from 'fs';
+import { ASTNode } from "ast-types";
 
 /// Test case that this script should pass.
 /// It should transpile `testInput` to `testOutput`.
@@ -262,7 +263,15 @@ glob("build/**/*.js", {}, (er, files) => {
         let text = fs.readFileSync(file).toString();
         text = convertImports(text);
         // Parse it into an AST
-        let ast = parse(text);
+        let ast: ASTNode;
+        try {
+            ast = parse(text);
+        } catch(e) {
+            console.log(`Failed to parse ${file}`);
+            console.log("Writing converted text to temp.js");
+            fs.writeFileSync("temp.js", text);
+            throw e;
+        }
         // Change the things we want to change
         transpile(ast);
         // Convert it back into a string
