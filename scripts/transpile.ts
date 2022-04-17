@@ -182,8 +182,6 @@ function convertImports(text: string) {
         ]
     });
 
-    const { x: b } = { x: 2 };
-
     const regexes2: [RegExp, string][] = giImports.map(x => {
         const [name, importpath] = x;
         return [
