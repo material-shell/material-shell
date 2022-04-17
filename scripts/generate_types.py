@@ -20,5 +20,7 @@ for file in dir.glob("types/*.d.ts"):
         text = text.replace("relCurveTo(dx1: number, dy1: number, dx2: number, dy2: number, dx3: number, dy3: number);",
                             "relCurveTo(dx1: number, dy1: number, dx2: number, dy2: number, dx3: number, dy3: number): void;"
                             )
+        text = text.replace("child_type?: VariantType<C> | null,",
+                            "child_type: VariantType<C>,")
     with open(file, "w") as f:
         f.write(text)
