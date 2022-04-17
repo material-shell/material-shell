@@ -68,11 +68,12 @@ export function throttle<T extends any[], R>(
         if (!timeout) context = args = null;
         return false;
     };
-    return function (...args: T) {
+    return function (...params: T) {
         const now = Date.now();
         if (!previous && definedOptions.leading === false) previous = now;
         const remaining = wait - (now - previous);
         context = this;
+        args = params;
         if (remaining <= 0 || remaining > wait) {
             if (timeout !== null) {
                 Async.clearTimeoutId(timeout);
