@@ -9,7 +9,7 @@ import {
     HorizontalPanelPositionEnum,
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import {
     Allocate,
     AllocatePreferredSize,
@@ -65,7 +65,7 @@ export class MsMain extends St.Widget {
         this.add_child(this.backgroundGroup);
 
         this.primaryMonitorContainer = new PrimaryMonitorContainer(
-            this.primaryMonitor,
+            assertNotNull(this.primaryMonitor),
             this.backgroundGroup,
             {
                 clip_to_allocation: true,
@@ -198,7 +198,7 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: Main.layoutManager,
             id: Main.layoutManager.connect('monitors-changed', () => {
-                this.primaryMonitorContainer.setMonitor(this.primaryMonitor);
+                this.primaryMonitorContainer.setMonitor(assertNotNull(this.primaryMonitor));
 
                 const externalMonitorsDiff =
                     Main.layoutManager.monitors.length -
@@ -557,7 +557,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         if (!this.translationAnimator.get_parent()) {
             this.translationAnimator.width = this.width;
             this.translationAnimator.height =
-                Main.layoutManager.primaryMonitor.height;
+                assertNotNull(Main.layoutManager.primaryMonitor).height;
             this.workspaceContainer.add_child(this.translationAnimator);
         }
         const indexOfPrevActor =
