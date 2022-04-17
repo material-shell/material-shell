@@ -32,6 +32,7 @@ export class StateManager {
             's',
             'material-shell-state'
         );
+        Me.log(serializedState);
         if (serializedState) {
             try {
                 this.state = this.updateState(

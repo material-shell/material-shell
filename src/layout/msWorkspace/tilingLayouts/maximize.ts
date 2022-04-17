@@ -22,7 +22,9 @@ export class MaximizeLayout extends BaseTilingLayout {
     currentDisplayed: { tileable: Tileable, destroySignal: number } | null = null;
 
     constructor(msWorkspace: MsWorkspace, state: typeof MaximizeLayout.state) {
+        Me.log("\nSTARTING MAXIMIZE INIT\n");
         super(msWorkspace, state);
+        Me.log("\nFINISHED MAXIMIZE INIT\n");
         this.translationAnimator = new TranslationAnimator();
         this.translationAnimator.connect('transition-completed', () => {
             this.endTransition();
@@ -112,6 +114,7 @@ export class MaximizeLayout extends BaseTilingLayout {
      * Animations
      */
     startTransition(nextActor: Tileable, prevActor: Tileable | null) {
+        Me.log("\nSTARTING TRANSITION\n");
         if (!this.translationAnimator.get_parent()) {
             this.translationAnimator.width = InfinityTo0(
                 this.tileableContainer.allocation.get_width()
