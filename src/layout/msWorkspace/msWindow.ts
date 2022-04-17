@@ -87,7 +87,7 @@ export class MsWindow extends Clutter.Actor {
     msContent: MsWindowContent;
     msWorkspace: MsWorkspace;
     destroyed: boolean | undefined;
-    _metaWindow: MetaWindowWithMsProperties; // TODO: Can also be undefined/null
+    _metaWindow: MetaWindowWithMsProperties | null = null;
     metaWindowUpdateInProgressPromise: any;
     updateDelayed: boolean | undefined;
     focusEffects?: {
@@ -332,9 +332,10 @@ export class MsWindow extends Clutter.Actor {
      * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
      */
     updateMetaWindowPositionAndSize() {
+        const metaWindow = this._metaWindow;
         const windowActor =
-            this._metaWindow &&
-            this._metaWindow.get_compositor_private<MetaWindowActorWithMsProperties>();
+            metaWindow &&
+            metaWindow.get_compositor_private<MetaWindowActorWithMsProperties>();
 
         if (
             this.destroyed ||
@@ -342,17 +343,17 @@ export class MsWindow extends Clutter.Actor {
             !this.mapped ||
             this.width === 0 ||
             this.height === 0 ||
-            !this._metaWindow.firstFrameDrawn ||
+            !metaWindow.firstFrameDrawn ||
             this.followMetaWindow ||
             this.updateDelayed ||
-            this._metaWindow.minimized
+            metaWindow.minimized
         ) {
             return;
         }
 
         let shouldBeMaximizedHorizontally =
-            this._metaWindow.maximized_horizontally;
-        let shouldBeMaximizedVertically = this._metaWindow.maximized_vertically;
+            metaWindow.maximized_horizontally;
+        let shouldBeMaximizedVertically = metaWindow.maximized_vertically;
 
         // Check for maximized only if the msWindow is inside the tileableContainer
         if (
@@ -372,10 +373,10 @@ export class MsWindow extends Clutter.Actor {
 
         const needToChangeMaximizeHorizontally =
             shouldBeMaximizedHorizontally !==
-            this._metaWindow.maximized_horizontally;
+            metaWindow.maximized_horizontally;
         const needToChangeMaximizeVertically =
             shouldBeMaximizedVertically !==
-            this._metaWindow.maximized_vertically;
+            metaWindow.maximized_vertically;
 
         let needToMove = false;
         let needToResize = false;
@@ -385,18 +386,18 @@ export class MsWindow extends Clutter.Actor {
 
         // check if the window need a changes only if we don't need to already maximize
         if (!shouldBeMaximizedHorizontally || !shouldBeMaximizedVertically) {
-            const currentFrameRect = this._metaWindow.get_frame_rect();
+            const currentFrameRect = metaWindow.get_frame_rect();
             const contentBox = this.msContent.allocation;
 
-            if (this._metaWindow.allows_resize()) {
-                moveTo = this.getRelativeMetaWindowPosition(this._metaWindow);
+            if (metaWindow.allows_resize()) {
+                moveTo = this.getRelativeMetaWindowPosition(metaWindow);
                 resizeTo = {
                     width: this.width,
                     height: this.height,
                 };
             } else {
                 const relativePosition = this.getRelativeMetaWindowPosition(
-                    this._metaWindow
+                    metaWindow
                 );
 
                 moveTo = {
@@ -445,32 +446,32 @@ export class MsWindow extends Clutter.Actor {
         ) {
             const shouldMaximizeHorizontally =
                 shouldBeMaximizedHorizontally &&
-                !this._metaWindow.maximized_horizontally;
+                !metaWindow.maximized_horizontally;
             const shouldMaximizeVertically =
                 shouldBeMaximizedVertically &&
-                !this._metaWindow.maximized_vertically;
+                !metaWindow.maximized_vertically;
             const shouldUnMaximizeHorizontally =
                 !shouldBeMaximizedHorizontally &&
-                this._metaWindow.maximized_horizontally;
+                metaWindow.maximized_horizontally;
             const shouldUnMaximizeVertically =
                 !shouldBeMaximizedVertically &&
-                this._metaWindow.maximized_vertically;
+                metaWindow.maximized_vertically;
 
             const callback = () => {
                 if (shouldMaximizeVertically && shouldUnMaximizeVertically) {
-                    this._metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                    metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                 } else if (shouldUnMaximizeHorizontally) {
-                    this._metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL);
+                    metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL);
                 } else if (shouldUnMaximizeVertically) {
-                    this._metaWindow.unmaximize(Meta.MaximizeFlags.VERTICAL);
+                    metaWindow.unmaximize(Meta.MaximizeFlags.VERTICAL);
                 }
 
                 if (shouldMaximizeHorizontally && shouldMaximizeVertically) {
-                    this._metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                    metaWindow.maximize(Meta.MaximizeFlags.BOTH);
                 } else if (shouldMaximizeHorizontally) {
-                    this._metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL);
+                    metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL);
                 } else if (shouldMaximizeVertically) {
-                    this._metaWindow.maximize(Meta.MaximizeFlags.VERTICAL);
+                    metaWindow.maximize(Meta.MaximizeFlags.VERTICAL);
                 }
             };
 
@@ -512,7 +513,7 @@ export class MsWindow extends Clutter.Actor {
                 const resizeTo2 = resizeTo;
                 GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                     if (needToResize) {
-                        this._metaWindow.move_resize_frame(
+                        metaWindow.move_resize_frame(
                             true,
                             moveTo2.x,
                             moveTo2.y,
@@ -520,14 +521,14 @@ export class MsWindow extends Clutter.Actor {
                             resizeTo2.height
                         );
                     } else {
-                        this._metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
+                        metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
                     }
 
                     return GLib.SOURCE_REMOVE;
                 });
             } else {
                 if (needToResize) {
-                    this._metaWindow.move_resize_frame(
+                    metaWindow.move_resize_frame(
                         true,
                         moveTo.x,
                         moveTo.y,
@@ -539,13 +540,13 @@ export class MsWindow extends Clutter.Actor {
                     const moveTo2 = moveTo;
                     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                         const currentFrameRect =
-                            this._metaWindow.get_frame_rect();
+                            metaWindow.get_frame_rect();
 
                         if (
                             currentFrameRect.x !== moveTo2.x ||
                             currentFrameRect.y !== moveTo2.y
                         ) {
-                            this._metaWindow.move_frame(
+                            metaWindow.move_frame(
                                 true,
                                 moveTo2.x,
                                 moveTo2.y
@@ -555,7 +556,7 @@ export class MsWindow extends Clutter.Actor {
                         return GLib.SOURCE_REMOVE;
                     });
                 } else {
-                    this._metaWindow.move_frame(true, moveTo.x, moveTo.y);
+                    metaWindow.move_frame(true, moveTo.x, moveTo.y);
                 }
             }
         }
@@ -711,7 +712,7 @@ export class MsWindow extends Clutter.Actor {
     unsetWindow() {
         this.unregisterOnMetaWindowSignals();
         this.reactive = true;
-        delete this._metaWindow;
+        this._metaWindow = null;
         delete this.metaWindowUpdateInProgressPromise;
         this.onMetaWindowsChanged();
     }
