@@ -144,6 +144,7 @@ export class SearchResultList extends St.BoxLayout {
 
         this.text = this.searchEntry.clutter_text;
         this.text.connect('text-changed', this.onTextChanged.bind(this));
+        // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
         this.text.connect('key-press-event', this.onKeyPress.bind(this));
         this.text.connect('key-focus-in', () => {});
         this.text.connect('key-focus-out', () => {});
@@ -260,8 +261,7 @@ export class SearchResultList extends St.BoxLayout {
         }
     }
 
-    onKeyPress(entry: Clutter.Actor, event: Clutter.KeyEvent) {
-        Me.log(event);
+    onKeyPress(entry: Clutter.Actor, event: Clutter.Event) {
         const symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Escape) {
             this.resetAndClose();
