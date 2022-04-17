@@ -3,7 +3,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -216,7 +216,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         this._dialog.transient_for = this.get_root() as Gtk.Window;
         this._dialog.present();
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).inhibit_system_shortcuts(null);
     }
 
@@ -258,7 +258,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
 
     closeDialog() {
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).restore_system_shortcuts();
         this._dialog.close();
     }
