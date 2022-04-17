@@ -15,6 +15,7 @@ const Util = imports.misc.util;
 const SearchController = imports.ui.searchController;
 
 import { main as Main } from 'ui';
+import { assert } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -345,9 +346,11 @@ export class MsPanel extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
+        const monitor = Main.layoutManager.primaryMonitor;
+        assert(monitor !== null, "found no primary monitor");
         return [
-            Main.layoutManager.primaryMonitor.height,
-            Main.layoutManager.primaryMonitor.height,
+            monitor.height,
+            monitor.height,
         ];
     }
 }
