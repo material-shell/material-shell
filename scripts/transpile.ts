@@ -182,11 +182,21 @@ function convertImports(text: string) {
         ]
     });
 
+    const { x: b } = { x: 2 };
+
     const regexes2: [RegExp, string][] = giImports.map(x => {
         const [name, importpath] = x;
         return [
             new RegExp("import \\{([^\\}]+)\\} from ['\"]" + name + "['\"];", "g"),
             "const {$1} = " + importpath + ";"
+        ]
+    });
+
+    const regexes3: [RegExp, string][] = giImports.map(x => {
+        const [name, importpath] = x;
+        return [
+            new RegExp(`(const {.+) as (.+} = ${importpath};)`, "g"),
+            "$1: $2"
         ]
     });
 
@@ -196,6 +206,12 @@ function convertImports(text: string) {
 
     for (let regex of regexes2) {
         text = text.replace(regex[0], regex[1]);
+    }
+
+    for (let i = 0; i < 3; i++) {
+        for (let regex of regexes3) {
+            text = text.replace(regex[0], regex[1]);
+        }
     }
 
     return text;
