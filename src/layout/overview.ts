@@ -32,20 +32,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 //     return workspaceBox;
 // }
 
-export function OverviewShow(state = overviewControls.ControlsState.APP_GRID) {
-    if (state === overviewControls.ControlsState.HIDDEN)
-        throw new Error('Invalid state, use hide() to hide');
-
-    if (this.isDummy) return;
-    if (this._shown) return;
-    this._shown = true;
-
-    if (!this._syncGrab()) return;
-
-    Main.layoutManager.showOverview();
-    this._animateVisible(state);
-}
-
 @registerGObjectClass
 class MsControlsManager extends St.Widget {
     _searchEntry: St.Entry;
