@@ -44,10 +44,10 @@ export class TaskBar extends St.Widget {
     taskActiveIndicator: TaskActiveIndicator;
     taskButtonContainer: ReorderableList;
     msWorkspace: MsWorkspace;
-    msWorkspaceSignals: any[];
-    tracker: any;
+    msWorkspaceSignals: number[];
+    tracker: Shell.WindowTracker;
     windowFocused: null;
-    menuManager: any;
+    menuManager: PopupMenu.PopupMenuManager;
 
     constructor(msWorkspace: MsWorkspace, panelMenuManager: PopupMenu.PopupMenuManager) {
         super({
@@ -207,7 +207,7 @@ export class TaskBar extends St.Widget {
         let item: TileableItem | IconTaskBarItem;
         if (tileable instanceof MsWindow) {
             item = new TileableItem(tileable);
-            this.menuManager.addMenu(item.menu);
+            this.menuManager.addMenu(assertNotNull(item.menu));
             item.connect('middle-clicked', (_) => {
                 tileable.kill();
             });
@@ -370,13 +370,13 @@ export class TileableItem extends TaskBarItem {
     app!: Shell.App | null;
     startIconContainer: St.Bin;
     endIconContainer: St.Bin;
-    makePersistentAction: any;
-    unmakePersistentAction: any;
+    makePersistentAction: PopupMenu.PopupBaseMenuItem;
+    unmakePersistentAction: PopupMenu.PopupBaseMenuItem;
     closeButton: St.Button;
-    persistentIcon: any;
+    persistentIcon: St.Icon;
     title: St.Label;
     signalManager: MsManager;
-    titleSignalKiller: any;
+    titleSignalKiller: (()=>void) | undefined;
     closeIcon: St.Icon;
     icon: St.Widget | undefined;
     lastHeight: number | undefined;
