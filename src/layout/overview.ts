@@ -40,8 +40,8 @@ class MsControlsManager extends St.Widget {
     dash: dash.Dash;
     _a11ySettings: Gio.Settings;
     _appDisplay: appDisplay.AppDisplay;
-    _init() {
-        super._init({
+    constructor() {
+        super({
             style_class: 'controls-manager',
             x_expand: true,
             y_expand: true,
@@ -220,8 +220,8 @@ class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
     _delegate: any;
 
-    _init() {
-        super._init({
+    constructor() {
+        super({
             name: 'overview',
             /* Translators: This is the main Fview to select
                 activities. See also note for "Activities" string. */
