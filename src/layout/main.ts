@@ -21,6 +21,7 @@ import { SignalHandle } from 'src/utils/signal';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import * as St from 'st';
 import { main as Main, layout } from 'ui';
+import { MsWorkspaceActor } from './msWorkspace/msWorkspace';
 import Monitor = layout.Monitor;
 
 const Background = imports.ui.background;
@@ -33,13 +34,13 @@ export class MsMain extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsMain',
     };
-    panelsVisible: any;
+    panelsVisible: boolean;
     monitorsContainer: MonitorContainer[];
     aboveContainer: Clutter.Actor;
     backgroundGroup: Meta.BackgroundGroup<Clutter.Actor>;
     primaryMonitorContainer: PrimaryMonitorContainer;
     panel: MsPanel;
-    blurEffect: any;
+    blurEffect: Shell.BlurEffect | undefined;
     private _scaleChangedId: SignalHandle | undefined;
     // Definitely assigned because we call registerToSignals
     signals!: Signal[];
@@ -48,9 +49,7 @@ export class MsMain extends St.Widget {
     constructor() {
         super({});
         Me.layout = this;
-        this.panelsVisible = Me.stateManager.getState('panels-visible');
-        this.panelsVisible =
-            this.panelsVisible === undefined ? true : this.panelsVisible;
+        this.panelsVisible = Me.stateManager.getState('panels-visible') ?? true;
 
         Main.uiGroup.insert_child_above(this, global.window_group);
 
@@ -137,7 +136,7 @@ export class MsMain extends St.Widget {
             return;
         }
 
-        this.blurEffect = new Shell.BlurEffect({
+        const effect = this.blurEffect = new Shell.BlurEffect({
             brightness: 0.55,
             sigma: 60 * themeContext.scale_factor,
         });
@@ -146,7 +145,7 @@ export class MsMain extends St.Widget {
             themeContext,
             'notify::scale-factor',
             () => {
-                this.blurEffect.sigma = 60 * themeContext.scale_factor;
+                effect.sigma = 60 * themeContext.scale_factor;
             }
         );
 
@@ -369,15 +368,16 @@ export class MonitorContainer extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MonitorContainer',
     };
-    bgGroup: any;
+    bgGroup: Meta.BackgroundGroup;
     horizontalPanelSpacer: St.Widget<
         Clutter.LayoutManager,
         Clutter.ContentPrototype,
         Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
     >;
     bgManager: any;
-    msWorkspaceActor: any;
-    monitor: any;
+    msWorkspaceActor: MsWorkspaceActor | undefined;
+    // Safety: We definitely set this because we call setMonitor from the constructor
+    monitor!: Monitor;
 
     constructor(
         monitor: Monitor,
@@ -423,7 +423,7 @@ export class MonitorContainer extends St.Widget {
             Me.layout.panelsVisible && !monitorIsFullscreen;
     }
 
-    setMsWorkspaceActor(actor: Clutter.Actor) {
+    setMsWorkspaceActor(actor: MsWorkspaceActor) {
         if (actor === this.msWorkspaceActor) return;
         if (
             this.msWorkspaceActor &&
@@ -528,6 +528,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
 
         this.translationAnimator = new TranslationAnimator(true);
         this.translationAnimator.connect('transition-completed', () => {
+            assert(this.msWorkspaceActor !== undefined, "expected a workspace actor to exist");
             reparentActor(this.msWorkspaceActor, this.workspaceContainer);
             this.workspaceContainer.remove_child(this.translationAnimator);
             this.msWorkspaceActor.updateUI();
@@ -580,7 +581,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         );
     }
 
-    setMsWorkspaceActor(actor: Clutter.Actor) {
+    setMsWorkspaceActor(actor: MsWorkspaceActor) {
         if (actor === this.msWorkspaceActor) return;
         let prevActor;
         if (this.msWorkspaceActor) {
@@ -592,7 +593,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         if (!this.msWorkspaceActor.get_parent()) {
             reparentActor(this.msWorkspaceActor, this.workspaceContainer);
         }
-        this.msWorkspaceActor.msWorkspace.refreshFocus(true);
+        assertNotNull(this.msWorkspaceActor.msWorkspace).refreshFocus(true);
         if (prevActor) {
             this.setTranslation(prevActor, this.msWorkspaceActor);
         }
