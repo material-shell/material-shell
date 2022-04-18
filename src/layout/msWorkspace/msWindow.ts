@@ -951,7 +951,7 @@ export class MsWindow extends Clutter.Actor {
 
 @registerGObjectClass
 export class MsWindowContent extends St.Widget {
-    placeholder: any;
+    placeholder: Clutter.Actor;
     clone: Clutter.Clone;
 
     static metaInfo: GObject.MetaInfo = {
