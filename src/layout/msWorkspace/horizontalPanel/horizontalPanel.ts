@@ -22,8 +22,8 @@ import { LayoutSwitcher } from 'src/layout/msWorkspace/horizontalPanel/layoutSwi
 export class HorizontalPanel extends St.BoxLayout {
     private _delegate: this;
     menuManager: PopupMenu.PopupMenuManager;
-    taskBar: any;
-    layoutSwitcher: any;
+    taskBar: TaskBar;
+    layoutSwitcher: LayoutSwitcher;
     clockLabel: St.Label | undefined;
     clockBin: St.BoxLayout | null | undefined;
     private _wallClock: any;

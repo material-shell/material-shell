@@ -589,7 +589,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         Clutter.LayoutManager,
         Clutter.ContentPrototype
     >;
-    panel: any;
+    panel: HorizontalPanel;
     msWorkspace: MsWorkspace;
 
     constructor(msWorkspace: MsWorkspace) {
