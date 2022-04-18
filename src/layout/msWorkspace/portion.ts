@@ -9,6 +9,12 @@ const Signals = imports.signals;
 
 const MIN_BASIS_RATIO = 0.1;
 
+export type PortionState = {
+    basis: number;
+    vertical: boolean;
+    children: PortionState[];
+}
+
 export class Portion {
     vertical: boolean;
     children: Portion[];
@@ -22,7 +28,7 @@ export class Portion {
         this.borders = [];
     }
 
-    get state(): { basis: number, vertical: boolean, children: any[] } {
+    get state(): PortionState {
         return {
             basis: this.basis,
             vertical: this.vertical,
