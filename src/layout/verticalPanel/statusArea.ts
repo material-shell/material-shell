@@ -250,11 +250,7 @@ export class MsDateMenuBox extends St.Widget {
             layout_manager: new Clutter.BinLayout(),
         });
         this.dateMenu = dateMenu;
-        // Before 3.36 _indicator was just a class with an actor as property
-        this.indicatorActor =
-            this.dateMenu._indicator instanceof Clutter.Actor
-                ? this.dateMenu._indicator
-                : this.dateMenu._indicator.actor;
+        this.indicatorActor = this.dateMenu._indicator;
 
         this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
 
