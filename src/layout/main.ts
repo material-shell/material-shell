@@ -51,7 +51,7 @@ export class MsMain extends St.Widget {
         Me.layout = this;
         this.panelsVisible = Me.stateManager.getState('panels-visible') ?? true;
 
-        Main.uiGroup.insert_child_above(this, global.window_group);
+        Main.layoutManager.uiGroup.insert_child_above(this, global.window_group);
 
         this.monitorsContainer = [];
         this.aboveContainer = new Clutter.Actor();

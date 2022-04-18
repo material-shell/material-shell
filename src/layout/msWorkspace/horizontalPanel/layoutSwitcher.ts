@@ -69,7 +69,7 @@ export class LayoutSwitcher extends St.BoxLayout {
             this.updateLayoutWidget.bind(this)
         );
         this.menu = this.buildMenu();
-        Main.uiGroup.add_actor(this.menu.actor);
+        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
         this.menuManager.addMenu(this.menu);
 
         this.connect('destroy', () => {
