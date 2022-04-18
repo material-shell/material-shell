@@ -179,7 +179,7 @@ export class LayoutSwitcher extends St.BoxLayout {
 @registerGObjectClass
 export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
-    editable: boolean;
+    editable: boolean = false;
 
     constructor(layoutConstructor: LayoutType, active: boolean, params?: popupMenu.PopupBaseMenuItemParams) {
         super(layoutConstructor.label, active, params);
