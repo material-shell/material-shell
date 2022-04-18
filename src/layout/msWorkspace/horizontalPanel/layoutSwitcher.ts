@@ -4,7 +4,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
-import { LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
+import { LayoutState, LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace';
@@ -131,7 +131,8 @@ export class LayoutSwitcher extends St.BoxLayout {
         const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
             return layoutKey === layout.state.key;
         });
-        const newState = Me.layoutManager.getLayoutByKey(layoutKey).state;
+        // Note: This cast is safe, typescript is just not good enough to figure that out
+        const newState = Me.layoutManager.getLayoutByKey(layoutKey).state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
         } else {

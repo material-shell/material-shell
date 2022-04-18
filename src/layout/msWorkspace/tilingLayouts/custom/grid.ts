@@ -8,7 +8,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { Portion } from '../../portion';
 
 @registerGObjectClass
-export class GridLayout extends BaseResizeableTilingLayout {
+export class GridLayout extends BaseResizeableTilingLayout<{ key: 'grid' }> {
     static state = { key: 'grid' };
     static label = 'Grid';
 

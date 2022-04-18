@@ -11,15 +11,17 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
+type FloatLayoutState = { key: 'float' };
+
 @registerGObjectClass
-export class FloatLayout extends BaseTilingLayout {
+export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
     static state = { key: 'float' };
     static label = 'Float';
 
     // TODO: Unused?
     tileableFocused: Tileable | undefined;
 
-    constructor(msWorkspace: MsWorkspace, state: typeof FloatLayout.state) {
+    constructor(msWorkspace: MsWorkspace, state: FloatLayoutState) {
         super(msWorkspace, state);
         global.display.connect('restacked', this.windowsRestacked.bind(this));
         this.windowsRestacked();
