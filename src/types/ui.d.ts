@@ -1,11 +1,20 @@
 import { Actor } from 'clutter';
 import * as Gio from 'gio';
-import { KeyBindingAction, KeyBindingFlags, KeyHandlerFunc, ModalOptions, Rectangle, WindowType } from 'meta';
+import { KeyBindingAction, KeyBindingFlags, KeyHandlerFunc, ModalOptions, Rectangle, WindowType, Workspace } from 'meta';
+import * as Meta from 'meta';
 import { ActionMode } from 'shell';
 import { Widget } from 'st';
 import * as St from 'st';
 import { GObject } from './mod';
 import * as Clutter from 'clutter';
+
+declare module 'meta' {
+    // Expose some additional "private" fields of the Workspace class
+    interface Workspace {
+        _lastRemovedWindow: Meta.Window;
+        _keepAliveId: number | undefined;
+    }
+}
 
 declare module 'ui' {
     export namespace messageTray {
@@ -317,6 +326,7 @@ declare module 'ui' {
         }
 
         export class WorkspaceTracker {
+            _workspaces: Workspace[];
             _checkWorkspaces(): void;
         }
     }
