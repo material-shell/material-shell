@@ -14,7 +14,7 @@ const Util = imports.misc.util;
 
 const SearchController = imports.ui.searchController;
 
-import { main as Main } from 'ui';
+import { main as Main, panel } from 'ui';
 import { assert } from 'src/utils/assert';
 
 /** Extension imports */
@@ -34,8 +34,7 @@ export class PanelContent extends St.BoxLayout {
     topBox: St.BoxLayout;
     workspaceList: WorkspaceList;
     statusArea: MsStatusArea;
-    disableConnect: number;
-    searchButton;
+    searchButton: MatPanelButton;
     buttonIcon: St.Icon;
     constructor() {
         super({
@@ -130,7 +129,6 @@ export class SearchContent extends St.BoxLayout {
     searchEntry: St.Entry;
     searchEntryBin: St.Bin;
     searchResultList: SearchResultList;
-    disableConnect: number;
     scrollView = new St.ScrollView({
         x_expand: true,
         hscrollbar_policy: St.PolicyType.NEVER,
@@ -213,8 +211,7 @@ export class MsPanel extends St.BoxLayout {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsPanel',
     };
-    gnomeShellPanel: any;
-    searchButton: MatPanelButton;
+    gnomeShellPanel: panel.Panel;
     panelContent: PanelContent;
     searchContent: SearchContent;
     divider: MatDivider;
