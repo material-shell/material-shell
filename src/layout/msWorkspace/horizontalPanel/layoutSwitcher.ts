@@ -287,7 +287,7 @@ export class LayoutsToggle extends popupMenu.PopupImageMenuItem {
     editable: boolean;
 
     constructor(menu: popupMenu.PopupMenu, params?: popupMenu.PopupBaseMenuItemParams) {
-        const editText = _('Tweak available layout');
+        const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/category/settings-symbolic.svg`
         );
