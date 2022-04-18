@@ -88,7 +88,6 @@ export class MsWindow extends Clutter.Actor {
     msWorkspace: MsWorkspace;
     destroyed: boolean | undefined;
     _metaWindow: MetaWindowWithMsProperties | null = null;
-    metaWindowUpdateInProgressPromise: any;
     updateDelayed: boolean | undefined;
     focusEffects?: {
         dimmer?: Clutter.BrightnessContrastEffect;
@@ -713,7 +712,6 @@ export class MsWindow extends Clutter.Actor {
         this.unregisterOnMetaWindowSignals();
         this.reactive = true;
         this._metaWindow = null;
-        delete this.metaWindowUpdateInProgressPromise;
         this.onMetaWindowsChanged();
     }
 
