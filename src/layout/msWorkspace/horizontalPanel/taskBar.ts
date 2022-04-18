@@ -608,7 +608,7 @@ export class TileableItem extends TaskBarItem {
 @registerGObjectClass
 export class IconTaskBarItem extends TaskBarItem {
     container: St.Bin;
-    tileable: any;
+    tileable: Tileable;
     icon: St.Icon;
 
     constructor(tileable: Tileable, gicon: Gio.IconPrototype) {
@@ -624,7 +624,7 @@ export class IconTaskBarItem extends TaskBarItem {
             icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
-        this.setTileable(tileable);
+        this.tileable = tileable;
     }
 
     setTileable(tileable: Tileable) {
@@ -632,11 +632,11 @@ export class IconTaskBarItem extends TaskBarItem {
         this.tileable = tileable;
     }
 
-    vfunc_get_preferred_width(_forHeight: number): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [_forHeight, _forHeight];
     }
 
-    vfunc_allocate(...args: [Clutter.ActorBox]) {
+    override vfunc_allocate(...args: [Clutter.ActorBox]) {
         const box = args[0];
         const height = box.get_height() / 2;
 

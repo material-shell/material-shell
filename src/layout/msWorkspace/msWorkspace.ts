@@ -631,13 +631,13 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.visible = !monitorInFullScreen;
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
         const panelPosition = Me.msThemeManager.horizontalPanelPosition;
-        const panelHeight = this.panel.get_preferred_height(-1)[1];
+        const panelHeight = (this.panel.get_preferred_height(-1) as [number, number])[1];
         const panelBox = new Clutter.ActorBox();
         panelBox.x1 = contentBox.x1;
         panelBox.x2 = contentBox.x2;

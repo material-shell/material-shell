@@ -428,7 +428,7 @@ export class PrimaryBorderEffect extends Clutter.Effect {
         this.color = new Cogl.Color();
     }
 
-    vfunc_paint_node(node: any, paintContext: Clutter.PaintContext) {
+    vfunc_paint_node(node: Clutter.PaintNode, paintContext: Clutter.PaintContext) {
         const framebuffer = paintContext.get_framebuffer();
         const coglContext = framebuffer.get_context();
         const actor = this.get_actor();
