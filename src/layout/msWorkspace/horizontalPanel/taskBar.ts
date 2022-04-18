@@ -306,7 +306,7 @@ export class TaskBarItem extends MatButton {
     draggable: boolean;
     contentActor: St.Widget;
     monitor: Monitor;
-    menu: PopupMenu.PopupMenu;
+    menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 
     constructor(contentActor: St.Widget, draggable: boolean) {
@@ -324,7 +324,9 @@ export class TaskBarItem extends MatButton {
             this.emit('left-clicked');
         });
         this.connect('secondary-action', () => {
-            this.menu.toggle();
+            if (this.menu !== undefined) {
+                this.menu.toggle();
+            }
         });
         this.connect('clicked', (actor, button) => {
             if (button === Clutter.BUTTON_MIDDLE) {
@@ -615,7 +617,7 @@ export class TileableItem extends TaskBarItem {
             GLib.Source.remove(this.buildIconIdle);
         }
         this.signalManager.destroy();
-        this.menu.destroy();
+        if (this.menu !== undefined) this.menu.destroy();
     }
 }
 
