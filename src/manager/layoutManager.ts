@@ -21,6 +21,7 @@ import { SimpleVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custo
 import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
 import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { Settings } from 'gio';
 
 type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
 
@@ -72,8 +73,8 @@ export const TilingLayoutByKey: {
 
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
-    layoutList: any[];
-    layoutsSettings: any;
+    layoutList: LayoutType[];
+    layoutsSettings: Settings;
     screenGap: number;
     ratio: number;
     useScreenGap: boolean;
