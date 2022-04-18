@@ -16,7 +16,8 @@ export class FloatLayout extends BaseTilingLayout {
     static state = { key: 'float' };
     static label = 'Float';
 
-    tileableFocused: any;
+    // TODO: Unused?
+    tileableFocused: Tileable | undefined;
 
     constructor(msWorkspace: MsWorkspace, state: typeof FloatLayout.state) {
         super(msWorkspace, state);
