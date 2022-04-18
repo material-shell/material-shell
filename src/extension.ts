@@ -27,7 +27,7 @@ import { main as Main } from 'ui';
 const Signals = imports.signals;
 
 let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
-let modules: any[] | undefined;
+let modules: { destroy(): void }[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
 let _closingId: number | undefined;
