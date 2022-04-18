@@ -51,6 +51,8 @@ declare module 'ui' {
     export namespace Overview {}
 
     export namespace layout {
+        const STARTUP_ANIMATION_TIME: number;
+
         export class Monitor {
             readonly index: number;
             readonly x: number;
@@ -300,10 +302,35 @@ declare module 'ui' {
     }
     
     export namespace overview {
+        class OverviewActor extends St.BoxLayout {
+            _delegate: any;
+        }
+
+        class ShellInfo {
+            constructor();
+        }
+
         class Overview {
+            _initCalled: boolean;
+            _visible: boolean;
+            _shellInfo: ShellInfo;
+            _swipeTracker: swipeTracker.SwipeTracker;
             isDummy: boolean;
+            _overview: OverviewActor;
+            init(): void;
             toggle(): void;
+            _relayout(): void;
+            _gestureBegin(tracker: swipeTracker.SwipeTracker): void;
+            _gestureUpdate(tracker: swipeTracker.SwipeTracker, progress: number): void;
+            _gestureEnd(tracker: swipeTracker.SwipeTracker, duration: number, endProgress: number): void;
             get visible(): boolean;
+        }
+    }
+
+    export namespace swipeTracker {
+        class SwipeTracker extends GObject.Object {
+            orientation: Clutter.Orientation;
+            constructor(actor: Actor, orientation: Clutter.Orientation, allowedModes: ActionMode, params: { allowDrag: boolean, allowScroll: boolean });
         }
     }
 

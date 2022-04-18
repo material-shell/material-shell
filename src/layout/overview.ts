@@ -4,12 +4,9 @@ import * as Meta from 'meta';
 import * as Shell from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-import { searchController, dash, appDisplay, layout, overviewControls, windowManager } from 'ui';
+import { searchController, dash, appDisplay, layout, overviewControls, windowManager, swipeTracker } from 'ui';
 import { main as Main } from 'ui';
-const SwipeTracker = imports.ui.swipeTracker;
-const Overview = imports.ui.overview.Overview;
-const ShellInfo = imports.ui.overview.ShellInfo;
-const Layout = imports.ui.layout;
+import { overview } from 'ui';
 const ANIMATION_TIME = 250;
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 
@@ -187,7 +184,7 @@ class MsControlsManager extends St.Widget {
         // We can't run the animation before the first allocation happens
         //await this.layout_manager.ensureAllocation();
 
-        const { STARTUP_ANIMATION_TIME } = Layout;
+        const { STARTUP_ANIMATION_TIME } = layout;
 
         // Opacity
         this.ease({
@@ -234,6 +231,8 @@ class MsControlsManager extends St.Widget {
 @registerGObjectClass
 class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
+    _delegate: any;
+
     _init() {
         super._init({
             name: 'overview',
@@ -276,7 +275,7 @@ class OverviewActor extends St.BoxLayout {
     }
 }
 
-export class MsOverview extends Overview {
+export class MsOverview extends overview.Overview {
     toto = 'toto';
 
     constructor() {
@@ -287,7 +286,7 @@ export class MsOverview extends Overview {
     // want to access the overview as Main.overview to connect
     // signal handlers and so forth. So we create them after
     // construction in this init() method.
-    init() {
+    override init() {
         this._initCalled = true;
 
         if (this.isDummy) return;
@@ -296,7 +295,7 @@ export class MsOverview extends Overview {
         this._overview._delegate = this;
         Main.layoutManager.overviewGroup.add_child(this._overview);
 
-        this._shellInfo = new ShellInfo();
+        this._shellInfo = new overview.ShellInfo();
 
         Main.layoutManager.connect(
             'monitors-changed',
@@ -314,16 +313,16 @@ export class MsOverview extends Overview {
             this.toggle.bind(this)
         );
 
-        const swipeTracker = new SwipeTracker.SwipeTracker(
+        const tracker = new swipeTracker.SwipeTracker(
             global.stage,
             Clutter.Orientation.VERTICAL,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             { allowDrag: false, allowScroll: false }
         );
-        swipeTracker.orientation = Clutter.Orientation.VERTICAL;
-        swipeTracker.connect('begin', this._gestureBegin.bind(this));
-        swipeTracker.connect('update', this._gestureUpdate.bind(this));
-        swipeTracker.connect('end', this._gestureEnd.bind(this));
-        this._swipeTracker = swipeTracker;
+        tracker.orientation = Clutter.Orientation.VERTICAL;
+        tracker.connect('begin', this._gestureBegin.bind(this));
+        tracker.connect('update', this._gestureUpdate.bind(this));
+        tracker.connect('end', this._gestureEnd.bind(this));
+        this._swipeTracker = tracker;
     }
 }
