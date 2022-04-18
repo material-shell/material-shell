@@ -68,7 +68,10 @@ export class LayoutSwitcher extends St.BoxLayout {
             'tiling-layout-changed',
             this.updateLayoutWidget.bind(this)
         );
-        this.buildMenu();
+        this.menu = this.buildMenu();
+        Main.uiGroup.add_actor(this.menu.actor);
+        this.menuManager.addMenu(this.menu);
+
         this.connect('destroy', () => {
             this.msWorkspace.disconnect(connectId);
         });
@@ -92,13 +95,12 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     buildMenu() {
-        if (this.menu) this.menu.destroy();
-        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
-        this.menu.actor.add_style_class_name('horizontal-panel-menu');
-        this.menu.actor.hide();
+        const menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+        menu.actor.add_style_class_name('horizontal-panel-menu');
+        menu.actor.hide();
         Object.entries(TilingLayoutByKey).forEach(
             ([layoutKey, layoutConstructor]) => {
-                this.menu.addMenuItem(
+                menu.addMenuItem(
                     new TilingLayoutMenuItem(
                         layoutConstructor,
                         this.msWorkspace.state.layoutStateList.find(
@@ -108,10 +110,9 @@ export class LayoutSwitcher extends St.BoxLayout {
                 );
             }
         );
-        this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
-        this.menu.addMenuItem(new LayoutsToggle(this.menu));
-        Main.uiGroup.add_actor(this.menu.actor);
-        this.menuManager.addMenu(this.menu);
+        menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
+        menu.addMenuItem(new LayoutsToggle(menu));
+        return menu;
     }
 
     setLayout(layoutKey: string) {
