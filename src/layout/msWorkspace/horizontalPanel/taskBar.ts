@@ -364,8 +364,10 @@ export class TileableItem extends TaskBarItem {
         },
     };
     container: St.BoxLayout;
-    tileable: Tileable;
-    app: Shell.App | null;
+    // Safety: We definitely initialize this because we call setTileable from the constructor
+    tileable!: Tileable;
+    // Safety: We definitely initialize this because we call setTileable from the constructor
+    app!: Shell.App | null;
     startIconContainer: St.Bin;
     endIconContainer: St.Bin;
     makePersistentAction: any;
@@ -376,8 +378,8 @@ export class TileableItem extends TaskBarItem {
     signalManager: MsManager;
     titleSignalKiller: any;
     closeIcon: St.Icon;
-    icon: St.Widget;
-    lastHeight: number;
+    icon: St.Widget | undefined;
+    lastHeight: number | undefined;
     buildIconIdle: number | undefined;
 
     constructor(tileable: MsWindow) {
@@ -514,7 +516,7 @@ export class TileableItem extends TaskBarItem {
         this.tileable = tileable;
         this.app = tileable instanceof MsWindow ? tileable.app : null;
         if (this.icon) {
-            this.buildIcon(this.lastHeight);
+            this.buildIcon(assertNotNull(this.lastHeight));
         }
         this.titleSignalKiller = this.signalManager.observe(
             this.tileable,
