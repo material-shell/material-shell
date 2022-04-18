@@ -15,14 +15,14 @@ import { main as Main } from 'ui';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
-export class BaseTilingLayout extends Clutter.LayoutManager {
-    _state: { key: string };
+export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutManager {
+    _state: S;
     icon: Gio.IconPrototype;
     msWorkspace: MsWorkspace;
     themeSettings: Gio.Settings;
     signals: Signal[];
 
-    constructor(msWorkspace: MsWorkspace, state = {}) {
+    constructor(msWorkspace: MsWorkspace, state: Partial<S> = {}) {
         super();
         this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(

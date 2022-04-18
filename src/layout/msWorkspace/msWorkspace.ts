@@ -9,7 +9,7 @@ import { LayoutState } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { layout } from 'ui';
-import { logAssert } from 'src/utils/assert';
+import { assertNotNull, logAssert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
@@ -480,13 +480,9 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
-        this.layout = new Layout(
-            this,
-            this.state.layoutStateList.find(
-                (layoutState) => layoutState.key === layoutKey
-            )
-        );
+        this.layout = Me.layoutManager.createLayout(this, assertNotNull(this.state.layoutStateList.find(
+            (layoutState) => layoutState.key === layoutKey
+        )));
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
         this.emit('tiling-layout-changed');
     }
