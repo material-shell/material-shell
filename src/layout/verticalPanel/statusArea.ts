@@ -4,11 +4,11 @@ import * as Gio from 'gio';
 import * as GnomeDesktop from 'gnomedesktop';
 import * as GObject from 'gobject';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import * as St from 'st';
-import { main as Main } from 'ui';
+import { dateMenu, main as Main } from 'ui';
 import { panel } from 'ui';
 
 /** Extension imports */
@@ -22,13 +22,15 @@ export class MsStatusArea extends Clutter.Actor {
     gnomeShellPanel: panel.Panel;
     leftBoxActors: Clutter.Actor[];
     rightBoxActors: Clutter.Actor[];
-    dateMenu: any;
+    dateMenu: dateMenu.DateMenuButton;
     originalDateMenuBox: any;
     msDateMenuBox?: MsDateMenuBox;
-    leftBoxActorAddedSignal: any;
-    centerBoxActorAddedSignal: any;
+    signalIds: {
+        leftBoxActor: number,
+        centerBoxActor: number,
+        rightBoxActor: number,
+    } | null = null;
     centerBoxActors: Clutter.Actor[];
-    rightBoxActorAddedSignal: any;
 
     constructor() {
         super({
@@ -85,7 +87,7 @@ export class MsStatusArea extends Clutter.Actor {
             .forEach((actor) => {
                 this.stealActor(actor, this.leftBoxActors);
             });
-        this.leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
+        const leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
             'actor-added',
             (_, actor) => {
                 this.stealActor(actor, this.leftBoxActors);
@@ -94,7 +96,7 @@ export class MsStatusArea extends Clutter.Actor {
         this.gnomeShellPanel._centerBox.get_children().forEach((actor) => {
             this.stealActor(actor, this.centerBoxActors);
         });
-        this.centerBoxActorAddedSignal =
+        const centerBoxActorAddedSignal =
             this.gnomeShellPanel._centerBox.connect(
                 'actor-added',
                 (_, actor) => {
@@ -107,12 +109,17 @@ export class MsStatusArea extends Clutter.Actor {
             .forEach((actor) => {
                 this.stealActor(actor, this.rightBoxActors);
             });
-        this.rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
+        const rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
             'actor-added',
             (_, actor) => {
                 this.stealActor(actor, this.rightBoxActors);
             }
         );
+        this.signalIds = {
+            rightBoxActor: rightBoxActorAddedSignal,
+            leftBoxActor: leftBoxActorAddedSignal,
+            centerBoxActor: centerBoxActorAddedSignal,
+        };
     }
 
     stealActor(actor: Clutter.Actor, container: Clutter.Actor[]) {
@@ -127,13 +134,10 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     restorePanelActors() {
-        this.gnomeShellPanel._leftBox.disconnect(this.leftBoxActorAddedSignal);
-        this.gnomeShellPanel._centerBox.disconnect(
-            this.centerBoxActorAddedSignal
-        );
-        this.gnomeShellPanel._rightBox.disconnect(
-            this.rightBoxActorAddedSignal
-        );
+        const signalIds = assertNotNull(this.signalIds);
+        this.gnomeShellPanel._leftBox.disconnect(signalIds.leftBoxActor);
+        this.gnomeShellPanel._centerBox.disconnect(signalIds.centerBoxActor);
+        this.gnomeShellPanel._rightBox.disconnect(signalIds.rightBoxActor);
 
         this.leftBoxActors.forEach((actor) => {
             if (!actor) return;
@@ -220,8 +224,8 @@ export class MsDateMenuBox extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsDateMenuBox',
     };
-    dateMenu: any;
-    indicatorActor: any;
+    dateMenu: dateMenu.DateMenuButton;
+    indicatorActor: dateMenu.MessagesIndicator;
     private _wallClock: any;
     clockLabel: St.Label<
         Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
@@ -237,10 +241,10 @@ export class MsDateMenuBox extends St.Widget {
     >;
     private _settings: Gio.Settings;
     iconDisplay: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
-    dateMenuSignal: any;
-    indicatorSignal: any;
+    dateMenuSignal: number;
+    indicatorSignal: number;
 
-    constructor(dateMenu: any) {
+    constructor(dateMenu: dateMenu.DateMenuButton) {
         super({
             x_align: Clutter.ActorAlign.CENTER,
             layout_manager: new Clutter.BinLayout(),

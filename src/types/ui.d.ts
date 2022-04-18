@@ -157,8 +157,11 @@ declare module 'ui' {
 
     export namespace dateMenu {
         class DateMenuButton extends panelMenu.Button {
-
+            _clockDisplay: St.Label;
+            _indicator: MessagesIndicator;
         }
+
+        class MessagesIndicator extends St.Icon {}
     }
 
     export namespace panelMenu {
