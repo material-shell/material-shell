@@ -4,3 +4,4 @@ yarn.lock
 dist.zip
 dist/
 build/
+material-shell.code-workspace
