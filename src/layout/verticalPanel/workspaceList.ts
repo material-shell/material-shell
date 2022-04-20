@@ -14,9 +14,9 @@ import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
 import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace/msWorkspace';
-const PopupMenu = imports.ui.popupMenu;
+import { popupMenu } from 'ui';
 const DND = imports.ui.dnd;
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -26,7 +26,7 @@ export class WorkspaceList extends St.Widget {
     private _delegate: this;
     msWorkspaceButtonMap: Map<any, any>;
     msWorkspaceManager: MsWorkspaceManager;
-    menuManager: any;
+    menuManager: popupMenu.PopupMenuManager;
     buttonList: ReorderableList;
     workspaceActiveIndicator: St.Widget;
     workspaceSignal: number;
@@ -43,7 +43,7 @@ export class WorkspaceList extends St.Widget {
         this.connect('destroy', this._onDestroy.bind(this));
         this.msWorkspaceButtonMap = new Map();
         this.msWorkspaceManager = Me.msWorkspaceManager;
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menuManager = new popupMenu.PopupMenuManager(this);
 
         this.buttonList = new ReorderableList(true);
         this.buttonList.connect('actor-moved', (_, actor, index) => {
@@ -396,10 +396,10 @@ export class WorkspaceButton extends MatButton {
     }
 
     buildMenu() {
-        this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
         this.menu.actor.add_style_class_name('panel-menu');
         this.menu.addMenuItem(
-            new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
+            new popupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
         );
         this.panelIconStyleHybridRadio = this.menu.addAction(
             _('Hybrid'),
@@ -479,10 +479,10 @@ export class WorkspaceButton extends MatButton {
         });
 
         this.menu.addMenuItem(
-            new PopupMenu.PopupSeparatorMenuItem(_('Override category'))
+            new popupMenu.PopupSeparatorMenuItem(_('Override category'))
         );
         const autoSentence = _('Determined automatically');
-        this.subMenu = new PopupMenu.PopupSubMenuMenuItem(
+        this.subMenu = new popupMenu.PopupSubMenuMenuItem(
             this.msWorkspace.msWorkspaceCategory.forcedCategory || autoSentence
         );
         const setCategory = (category?: string) => {
@@ -524,14 +524,14 @@ export class WorkspaceButton extends MatButton {
         });
     }
 
-    handleDragOver(source, actor, x, y) {
+    handleDragOver(source: any, actor: Clutter.Actor, x: number, y: number) {
         if (source instanceof TaskBarItem) {
             return DND.DragMotionResult.MOVE_DROP;
         }
         return DND.DragMotionResult.NO_DROP;
     }
 
-    acceptDrop(source) {
+    acceptDrop(source: any) {
         if (source instanceof TaskBarItem) {
             if (source.tileable instanceof MsWindow) {
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
@@ -618,6 +618,7 @@ export class WorkspaceButtonIcon extends St.Widget {
                 this.desaturateEffect
             );
         } else {
+            assert(this.desaturateEffect !== undefined, "true by construction");
             this.remove_effect(this.desaturateEffect);
             delete this.desaturateEffect;
         }

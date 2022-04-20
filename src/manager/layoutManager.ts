@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
 
@@ -21,7 +21,20 @@ import { SimpleVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custo
 import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
 import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
 
-type LayoutType = typeof BaseTilingLayout;
+export type LayoutState = 
+    (typeof MaximizeLayout)["state"]
+    | (typeof SplitLayout)["state"]
+    | (typeof GridLayout)["state"]
+    | (typeof HalfLayout)["state"]
+    | (typeof HalfHorizontalLayout)["state"]
+    | (typeof HalfVerticalLayout)["state"]
+    | (typeof RatioLayout)["state"]
+    | (typeof SimpleLayout)["state"]
+    | (typeof SimpleHorizontalLayout)["state"]
+    | (typeof SimpleVerticalLayout)["state"]
+    | (typeof FloatLayout)["state"];
+    
+export type LayoutType = typeof BaseTilingLayout & { state: LayoutState, label: string };
 
 const layouts: LayoutType[] = [
     MaximizeLayout,
@@ -38,11 +51,11 @@ const layouts: LayoutType[] = [
 ];
 
 export const TilingLayoutByKey: {
-    [key: string]: typeof BaseTilingLayout;
+    [key: string]: LayoutType;
 } = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
-}, {});
+}, {} as { [key: string]: LayoutType; });
 
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;

@@ -10,17 +10,16 @@ import {
     MsWorkspaceState,
 } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
-import { Monitor } from 'src/types/mod';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
 import { MetaWindowWithMsProperties } from './msWindowManager';
-
-const Main = imports.ui.main;
+import { main as Main, windowManager, layout } from 'ui';
+import Monitor = layout.Monitor;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-const { WorkspaceTracker } = imports.ui.windowManager;
+const WorkspaceTracker = windowManager.WorkspaceTracker;
 
 interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
@@ -36,7 +35,7 @@ export class MsWorkspaceManager extends MsManager {
     metaWindowFocused: Meta.Window | null;
     numOfMonitors: number;
     primaryIndex: number;
-    workspaceTracker: any;
+    workspaceTracker: windowManager.WorkspaceTracker;
     private _updatingMonitors: boolean | undefined;
     restoringState: any;
     stateChangedTriggered: any;
@@ -59,7 +58,7 @@ export class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
-        WorkspaceTracker.prototype._oldCheckWorkspaces =
+        (WorkspaceTracker.prototype as any)._oldCheckWorkspaces =
             WorkspaceTracker.prototype._checkWorkspaces;
         WorkspaceTracker.prototype._checkWorkspaces = function () {
             const workspaceManager = global.workspace_manager;
@@ -215,7 +214,7 @@ export class MsWorkspaceManager extends MsManager {
         this.observe(
             global.window_manager,
             'switch-workspace',
-            (_, from, to) => {
+            (_, from: number, to: number) => {
                 if (!this.restoringState) {
                     this.emit('switch-workspace', from, to);
                     this.stateChanged();
@@ -231,8 +230,8 @@ export class MsWorkspaceManager extends MsManager {
     destroy() {
         super.destroy();
         WorkspaceTracker.prototype._checkWorkspaces =
-            WorkspaceTracker.prototype._oldCheckWorkspaces;
-        delete WorkspaceTracker.prototype._oldCheckWorkspaces;
+            (WorkspaceTracker.prototype as any)._oldCheckWorkspaces;
+        delete (WorkspaceTracker.prototype as any)._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
             const workspace = this.workspaceManager.get_workspace_by_index(
@@ -396,7 +395,7 @@ export class MsWorkspaceManager extends MsManager {
 
             // if there is not external msWorkspace available create one
             if (msWorkspace) {
-                const workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
+                const workspace = assertNotNull(this.getWorkspaceOfMsWorkspace(msWorkspace));
                 msWorkspace.setMonitor(externalMonitor);
                 if (!Meta.prefs_get_dynamic_workspaces()) {
                     this.workspaceManager.remove_workspace(
@@ -417,7 +416,7 @@ export class MsWorkspaceManager extends MsManager {
             )
             .forEach((msWorkspace) => {
                 if (!msWorkspace.monitorIsExternal) {
-                    msWorkspace.setMonitor(Main.layoutManager.primaryMonitor);
+                    msWorkspace.setMonitor(assertNotNull(Main.layoutManager.primaryMonitor));
                 } else {
                     const monitorIsNowPrimary =
                         msWorkspace.monitor ===
@@ -432,7 +431,7 @@ export class MsWorkspaceManager extends MsManager {
 
                     // Try to find an unused monitor;
                     const availableMonitor = Main.layoutManager.monitors.find(
-                        (monitor) => {
+                        (monitor: any) => {
                             return (
                                 monitor != Main.layoutManager.primaryMonitor &&
                                 !this.msWorkspaceList.find((msWorkspace) => {
@@ -471,7 +470,7 @@ export class MsWorkspaceManager extends MsManager {
                             this.restoringState = false;
                         }
                         msWorkspace.setMonitor(
-                            Main.layoutManager.primaryMonitor
+                            assertNotNull(Main.layoutManager.primaryMonitor)
                         );
                         /* this.setMsWorkspaceAt(
                         msWorkspace,
@@ -498,7 +497,7 @@ export class MsWorkspaceManager extends MsManager {
         initialState?: Partial<MsWorkspaceState>
     ) {
         this.createNewMsWorkspace(
-            Main.layoutManager.primaryMonitor,
+            assertNotNull(Main.layoutManager.primaryMonitor),
             initialState
         );
         this.observe(workspace, 'window-added', (workspace, window) => {
@@ -625,7 +624,7 @@ export class MsWorkspaceManager extends MsManager {
         return this.primaryMsWorkspaces[activeWorkspaceIndex];
     }
 
-    getWorkspaceOfMsWorkspace(msWorkspace: MsWorkspace): Meta.Workspace {
+    getWorkspaceOfMsWorkspace(msWorkspace: MsWorkspace): Meta.Workspace | null {
         return this.workspaceManager.get_workspace_by_index(
             this.primaryMsWorkspaces.indexOf(msWorkspace)
         );
@@ -654,7 +653,7 @@ export class MsWorkspaceManager extends MsManager {
         }
     }
 
-    getMsWorkspaceOfMsWindow(msWindow: MsWindow): MsWorkspace {
+    getMsWorkspaceOfMsWindow(msWindow: MsWindow): MsWorkspace | undefined {
         return this.msWorkspaceList.find((msWorkspace) => {
             return msWorkspace.msWindowList.includes(msWindow);
         });
@@ -802,7 +801,7 @@ export class MsWorkspaceManager extends MsManager {
         const backend = Clutter.get_default_backend();
         const seat = backend.get_default_seat();
         const [containerX, containerY] =
-            msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position();
+            msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position() as [number, number];
         seat.warp_pointer(
             containerX +
                 Math.floor(

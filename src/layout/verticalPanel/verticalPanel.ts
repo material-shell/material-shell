@@ -14,7 +14,7 @@ const Util = imports.misc.util;
 
 const SearchController = imports.ui.searchController;
 
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -99,7 +99,7 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea.disable();
     }
 
-    vfunc_get_preferred_width(_forHeight): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -198,7 +198,7 @@ export class SearchContent extends St.BoxLayout {
         this.add_child(this.scrollView);
     }
 
-    vfunc_get_preferred_width(_forHeight): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             448 -
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -344,7 +344,7 @@ export class MsPanel extends St.BoxLayout {
         }
     }
 
-    vfunc_get_preferred_height(_forWidth): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         return [
             Main.layoutManager.primaryMonitor.height,
             Main.layoutManager.primaryMonitor.height,

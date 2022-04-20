@@ -4,8 +4,8 @@ import * as GObject from 'gobject';
 import * as Gio from 'gio';
 import * as St from 'st';
 import * as GnomeDesktop from 'gnomedesktop';
+import { popupMenu as PopupMenu } from 'ui';
 const DND = imports.ui.dnd;
-const PopupMenu = imports.ui.popupMenu;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -21,7 +21,7 @@ import { LayoutSwitcher } from 'src/layout/msWorkspace/horizontalPanel/layoutSwi
 @registerGObjectClass
 export class HorizontalPanel extends St.BoxLayout {
     private _delegate: this;
-    menuManager: any;
+    menuManager: PopupMenu.PopupMenuManager;
     taskBar: any;
     layoutSwitcher: any;
     clockLabel: St.Label | undefined;

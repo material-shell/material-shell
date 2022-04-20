@@ -5,17 +5,19 @@ import * as GObject from 'gobject';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
+import { LayoutState } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { Monitor } from 'src/types/mod';
+import { layout } from 'ui';
 import { logAssert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import Monitor = layout.Monitor;
 const Signals = imports.signals;
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -32,7 +34,7 @@ export interface MsWorkspaceState {
     focusedIndex: number;
     forcedCategory: string | null | undefined;
     msWindowList: MsWindowState[];
-    layoutStateList: any;
+    layoutStateList: LayoutState[];
     layoutKey: string;
 }
 
@@ -249,7 +251,7 @@ export class MsWorkspace extends WithSignals {
         await this.emitTileableListChangedOnce(oldTileableList);
     }
 
-    async removeMsWindow(msWindow) {
+    async removeMsWindow(msWindow: MsWindow) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.msWindowList.indexOf(msWindow) === -1) return;
@@ -300,7 +302,7 @@ export class MsWorkspace extends WithSignals {
         return this.emitTileableChangedInProgress;
     }
 
-    swapTileable(firstTileable, secondTileable) {
+    swapTileable(firstTileable: Tileable, secondTileable: Tileable) {
         const firstIndex = this.tileableList.indexOf(firstTileable);
         const secondIndex = this.tileableList.indexOf(secondTileable);
         const oldTileableList = [...this.tileableList];
@@ -309,7 +311,7 @@ export class MsWorkspace extends WithSignals {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    swapTileableLeft(tileable) {
+    swapTileableLeft(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
         if (index === -1) return;
         if (index > 0 && tileable != this.appLauncher) {
@@ -319,7 +321,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    swapTileableRight(tileable) {
+    swapTileableRight(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
         if (index === -1) return;
         if (
@@ -474,12 +476,16 @@ export class MsWorkspace extends WithSignals {
 
     setLayoutByKey(layoutKey: string) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
+        Me.logFocus(`AAAAAA`);
 
         if (this.layout) {
             this.layout.onDestroy();
         }
 
         const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
+        Me.log(`CREATING NEW LAYOUT from state ${Layout} ${layoutKey} with state ${JSON.stringify(this.state.layoutStateList.find(
+            (layoutState) => layoutState.key === layoutKey
+        ))}`);
         this.layout = new Layout(
             this,
             this.state.layoutStateList.find(
@@ -534,10 +540,10 @@ export class MsWorkspace extends WithSignals {
     //     }
     // }
 
-    setApps(apps) {
-        this.apps = apps;
-        this.categorizedAppCard._loadApps(apps);
-    }
+    // setApps(apps) {
+    //     this.apps = apps;
+    //     this.categorizedAppCard._loadApps(apps);
+    // }
 
     isDisplayed() {
         if (this.monitorIsExternal) {

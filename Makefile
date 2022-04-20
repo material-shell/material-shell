@@ -38,7 +38,8 @@ build_prod: npm_dependencies compile zip_dist
 
 compile: dist schemas sass
 	npx tsc
-	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
+	npx tsc scripts/transpile.ts --outDir build
+	node build/transpile.js
 	npm run rollup-extension && npm run rollup-prefs
 
 	cp metadata.json dist

@@ -1,6 +1,8 @@
 /** Gnome libs imports */
 import { Actor } from 'clutter';
 import * as GLib from 'glib';
+import { ModalOptions } from 'meta';
+import { ActionMode } from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
@@ -8,7 +10,7 @@ import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -17,7 +19,7 @@ export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
     msWindowManager: MsWindowManagerType;
     lastMsWindowFocused: MsWindow | null = null;
-    lastKeyFocus: MsWindow | null = null;
+    lastKeyFocus: Actor | null = null;
     focusProtected?: boolean;
     actorGrabMap: Map<Actor, any> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
@@ -74,19 +76,16 @@ export class MsFocusManager extends MsManager {
         }
 
         let actor = keyFocus;
-        let isChildrenOfMsWindow = false;
-        while (actor.get_parent() && !isChildrenOfMsWindow) {
+        while (actor.get_parent()) {
             actor = actor.get_parent();
             if (actor instanceof MsWindow) {
-                isChildrenOfMsWindow = true;
+                this.setFocusToMsWindow(actor);
+                return;
             }
         }
-        if (isChildrenOfMsWindow) {
-            this.setFocusToMsWindow(actor);
-        } else {
-            if (keyFocus != Main.layoutManager.uiGroup) {
-                this.lastMsWindowFocused = null;
-            }
+
+        if (keyFocus != Main.layoutManager.uiGroup) {
+            this.lastMsWindowFocused = null;
         }
     }
 
@@ -118,13 +117,13 @@ export class MsFocusManager extends MsManager {
         );
     }
 
-    pushModal(actor, options?) {
+    pushModal(actor: Actor, options?: { timestamp?: number, options?: ModalOptions, actionMode?: ActionMode }) {
         const currentFocus = global.stage.key_focus;
         let grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);
     }
 
-    popModal(actor) {
+    popModal(actor: Actor) {
         let grab = this.actorGrabMap.get(actor);
         if (grab != null) {
             Main.popModal(grab != true ? grab : actor);

@@ -9,22 +9,21 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { InfinityTo0 } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsWorkspace, Tileable } from '../msWorkspace';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
 export class BaseTilingLayout extends Clutter.LayoutManager {
-    _state: any;
+    _state: { key: string };
     icon: Gio.IconPrototype;
     msWorkspace: MsWorkspace;
     themeSettings: Gio.Settings;
     signals: Signal[];
 
-    static state: any;
-
     constructor(msWorkspace: MsWorkspace, state = {}) {
+        Me.log(`Creating a new ${BaseTilingLayout}`);
         super();
         this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(
@@ -74,6 +73,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     registerToSignals() {
+        Me.log(`registering ${this} to signals`);
         this.signals.push(
             {
                 from: this.msWorkspace,
@@ -92,6 +92,7 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
                 id: this.msWorkspace.connect(
                     'tileable-focus-changed',
                     (_, tileable, oldTileable) => {
+                        Me.log("tileable-focus-changed");
                         this.onFocusChanged(tileable, oldTileable);
                     }
                 ),
@@ -344,21 +345,21 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         // return a widget to add to the panel
     }
 
-    vfunc_get_preferred_width(
-        _container,
+    override vfunc_get_preferred_width(
+        _container: Clutter.Container,
         _forHeight: number
     ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_get_preferred_height(
-        _container,
+    override vfunc_get_preferred_height(
+        _container: Clutter.Container,
         _forWidth: number
     ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_allocate(
+    override vfunc_allocate(
         container: Clutter.Actor,
         box: Clutter.ActorBox,
         flags?: Clutter.AllocationFlags

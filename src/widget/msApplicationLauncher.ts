@@ -12,7 +12,7 @@ import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -197,7 +197,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     inputLayout: St.BoxLayout;
     searchIcon: St.Icon;
     inputContainer: St.Entry;
-    private _text: any;
+    private _text: Clutter.Text;
     filteredAppButtonListBuffer: MsApplicationButton[];
     container: St.Widget;
     msWorkspace: MsWorkspace;
@@ -741,7 +741,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     hideButton(
-        button,
+        button: MsApplicationButton,
         contentBox: Clutter.ActorBox,
         flags?: Clutter.AllocationFlags
     ) {
@@ -761,12 +761,12 @@ export class MsApplicationButton extends MatButton {
         GTypeName: 'MsApplicationButton',
     };
 
-    app: any;
+    app: Shell.App;
     buttonSize: number;
     layout: St.BoxLayout;
     icon: any;
     title: St.Label | undefined;
-    constructor({ app, buttonSize }: { app: any; buttonSize: number }) {
+    constructor({ app, buttonSize }: { app: Shell.App; buttonSize: number }) {
         super({});
         this.app = app;
         this.buttonSize = buttonSize;
