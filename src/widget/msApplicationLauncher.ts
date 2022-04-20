@@ -48,8 +48,8 @@ export class MsApplicationLauncher extends St.Widget {
         if (Me.msThemeManager.workspaceAppMenu) {
             this.add_style_class_name('surface-darker');
             this.initAppListContainer();
-        } 
-        
+        }
+
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
             'show-application-launcher-changed',
@@ -103,7 +103,7 @@ export class MsApplicationLauncher extends St.Widget {
     }
 
     stopAppListContainer() {
-        this.appListContainer.destroy
+        this.appListContainer.destroy();
     }
 
     restartAppListContainer() {
