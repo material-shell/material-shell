@@ -324,8 +324,6 @@ declare module 'ui' {
         }
 
         export class WorkspaceTracker {
-            _checkWorkspacesId: number;
-            _queueCheckWorkspaces(): void;
             _checkWorkspaces(): void;
         }
     }
