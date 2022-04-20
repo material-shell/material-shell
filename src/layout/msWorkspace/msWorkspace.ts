@@ -476,16 +476,12 @@ export class MsWorkspace extends WithSignals {
 
     setLayoutByKey(layoutKey: string) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-        Me.logFocus(`AAAAAA`);
 
         if (this.layout) {
             this.layout.onDestroy();
         }
 
         const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
-        Me.log(`CREATING NEW LAYOUT from state ${Layout} ${layoutKey} with state ${JSON.stringify(this.state.layoutStateList.find(
-            (layoutState) => layoutState.key === layoutKey
-        ))}`);
         this.layout = new Layout(
             this,
             this.state.layoutStateList.find(

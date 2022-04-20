@@ -12,6 +12,8 @@ export class GridLayout extends BaseResizeableTilingLayout {
     static state = { key: 'grid' };
     static label = 'Grid';
 
+    mainPortion: Portion;
+
     updateMainPortionLength(length: number) {
         const columnLength = Math.ceil(Math.sqrt(length));
         const rowLength = Math.ceil(length / columnLength);

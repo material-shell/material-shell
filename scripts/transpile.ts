@@ -3,7 +3,6 @@ import { walk } from 'estree-walker';
 import {BaseNode, Program, ClassDeclaration, Identifier, MethodDefinition, SimpleCallExpression, BlockStatement, ClassExpression, ExpressionStatement, AssignmentExpression, FunctionDeclaration, ArrayExpression, ImportDeclaration, VariableDeclaration, ImportSpecifier} from 'estree';
 import { glob } from 'glob';
 import * as fs from 'fs';
-import { ASTNode } from "ast-types";
 
 /// Test case that this script should pass.
 /// It should transpile `testInput` to `testOutput`.
@@ -174,21 +173,11 @@ function convertImports(text: string) {
         ]
     });
 
-    const { x: b } = { x: 2 };
-
     const regexes2: [RegExp, string][] = giImports.map(x => {
         const [name, importpath] = x;
         return [
             new RegExp("import \\{([^\\}]+)\\} from ['\"]" + name + "['\"];", "g"),
             "const {$1} = " + importpath + ";"
-        ]
-    });
-
-    const regexes3: [RegExp, string][] = giImports.map(x => {
-        const [name, importpath] = x;
-        return [
-            new RegExp(`(const {.+) as (.+} = ${importpath};)`, "g"),
-            "$1: $2"
         ]
     });
 
@@ -198,12 +187,6 @@ function convertImports(text: string) {
 
     for (let regex of regexes2) {
         text = text.replace(regex[0], regex[1]);
-    }
-
-    for (let i = 0; i < 3; i++) {
-        for (let regex of regexes3) {
-            text = text.replace(regex[0], regex[1]);
-        }
     }
 
     return text;
@@ -279,15 +262,7 @@ glob("build/**/*.js", {}, (er, files) => {
         let text = fs.readFileSync(file).toString();
         text = convertImports(text);
         // Parse it into an AST
-        let ast: ASTNode;
-        try {
-            ast = parse(text);
-        } catch(e) {
-            console.log(`Failed to parse ${file}`);
-            console.log("Writing converted text to temp.js");
-            fs.writeFileSync("temp.js", text);
-            throw e;
-        }
+        let ast = parse(text);
         // Change the things we want to change
         transpile(ast);
         // Convert it back into a string

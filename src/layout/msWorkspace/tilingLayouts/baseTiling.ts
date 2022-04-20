@@ -23,7 +23,6 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     signals: Signal[];
 
     constructor(msWorkspace: MsWorkspace, state = {}) {
-        Me.log(`Creating a new ${BaseTilingLayout}`);
         super();
         this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(
@@ -73,7 +72,6 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     registerToSignals() {
-        Me.log(`registering ${this} to signals`);
         this.signals.push(
             {
                 from: this.msWorkspace,
@@ -92,7 +90,6 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
                 id: this.msWorkspace.connect(
                     'tileable-focus-changed',
                     (_, tileable, oldTileable) => {
-                        Me.log("tileable-focus-changed");
                         this.onFocusChanged(tileable, oldTileable);
                     }
                 ),
