@@ -41,11 +41,29 @@ export class MsApplicationLauncher extends St.Widget {
             style: 'padding:64px',
         });
         this.msWorkspace = msWorkspace;
-        this.add_style_class_name('surface-darker');
         this.appListContainer = new MsApplicationButtonContainer(
             this.msWorkspace
         );
-        this.initAppListContainer();
+
+        if (Me.msThemeManager.workspaceAppMenu) {
+            this.add_style_class_name('surface-darker');
+            this.initAppListContainer();
+        }
+
+        this.launcherChangedSignal = SignalHandle.connect(
+            Me.msThemeManager,
+            'show-application-launcher-changed',
+            () => {
+                if (Me.msThemeManager.workspaceAppMenu) {
+                    this.add_style_class_name('surface-darker');
+                    this.restartAppListContainer();
+                } else {
+                    this.remove_style_class_name('surface-darker');
+                    this.stopAppListContainer();
+                }
+            }
+        );
+
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
             'clock-app-launcher-changed',
@@ -53,6 +71,7 @@ export class MsApplicationLauncher extends St.Widget {
                 this.restartAppListContainer();
             }
         );
+
         this.installedChangedSignal = SignalHandle.connect(
             Shell.AppSystem.get_default(),
             'installed-changed',
@@ -60,6 +79,7 @@ export class MsApplicationLauncher extends St.Widget {
                 this.restartAppListContainer();
             }
         );
+
         this.connect('key-focus-in', () => {
             this.appListContainer.inputContainer.grab_key_focus();
         });
@@ -80,6 +100,10 @@ export class MsApplicationLauncher extends St.Widget {
 
     get dragged() {
         return false;
+    }
+
+    stopAppListContainer() {
+        this.appListContainer.destroy();
     }
 
     restartAppListContainer() {
@@ -111,8 +135,10 @@ export class MsApplicationLauncher extends St.Widget {
                         insert: false,
                     }
                 );
-                Me.msWindowManager.openAppForMsWindow(msWindow);
-                this.appListContainer.reset();
+                if (msWindow) {
+                    Me.msWindowManager.openAppForMsWindow(msWindow);
+                    this.appListContainer.reset();
+                }
             });
             this.appListContainer.addAppButton(button);
         });
