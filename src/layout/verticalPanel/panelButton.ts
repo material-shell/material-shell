@@ -4,7 +4,7 @@ import * as Meta from 'meta';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { MatButton } from 'src/widget/material/button';
 import { registerGObjectClass } from 'src/utils/gjs';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 @registerGObjectClass
 export class MatPanelButton extends MatButton {
@@ -50,7 +50,7 @@ export class MatPanelButton extends MatButton {
     /**
      * Just the panel width
      */
-    vfunc_get_preferred_width(_forHeight): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(this.monitorIndex),
             Me.msThemeManager.getPanelSize(this.monitorIndex),
@@ -60,7 +60,7 @@ export class MatPanelButton extends MatButton {
     /**
      * Just the panel height
      */
-    vfunc_get_preferred_height(_forWidth): [number, number] {
+     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(this.monitorIndex),
             Me.msThemeManager.getPanelSize(this.monitorIndex),

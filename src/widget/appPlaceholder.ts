@@ -2,6 +2,7 @@
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
+import { App } from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
@@ -22,10 +23,10 @@ export class AppPlaceholder extends St.Widget {
             },
         },
     };
-    app: any;
+    app: App;
     icon: any;
     pressed = false;
-    waitForReset: boolean;
+    waitForReset: boolean = false;
     clickableContainer: RippleBackground;
     box: any;
     identityContainer: any;
@@ -35,7 +36,7 @@ export class AppPlaceholder extends St.Widget {
     vertical = true;
     private _spinner: any;
 
-    constructor(app) {
+    constructor(app: App) {
         super({
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
@@ -112,7 +113,7 @@ export class AppPlaceholder extends St.Widget {
         });
     }
 
-    setOrientation(width, height) {
+    setOrientation(width: number, height: number) {
         const vertical = width < height;
         if (vertical === this.vertical) return;
         this.vertical = vertical;
@@ -150,7 +151,7 @@ export class AppPlaceholder extends St.Widget {
         super.vfunc_allocate(...args);
     }
 
-    activate(button) {
+    activate(button: number) {
         if (this.waitForReset) return;
         this.waitForReset = true;
         this.clickableContainer.reactive = false;

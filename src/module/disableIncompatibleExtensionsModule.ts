@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 const { ExtensionManager, ENABLED_EXTENSIONS_KEY } = imports.ui.extensionSystem;
 
 /** Extension imports */
@@ -16,8 +16,7 @@ let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction = ExtensionManager.prototype._callExtensionEnable;
-        ExtensionManager.prototype._callExtensionEnable = function (...args) {
-            const uuid = args[0];
+        ExtensionManager.prototype._callExtensionEnable = function (uuid: string, ...args: any[]) {
             if (incompatibleExtensions.includes(uuid)) return;
             // eslint-disable-next-line prefer-rest-params
             originalFunction!.apply(this, arguments);

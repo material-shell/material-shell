@@ -22,18 +22,19 @@ import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
 import { Async } from './utils/async';
 import { polyfillClutter } from './utils/compatibility';
+import { main as Main } from 'ui';
 
-const Main = imports.ui.main;
 const Signals = imports.signals;
 
 let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
-let modules: any[] | undefined;
+let modules: { destroy(): void }[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
 let _closingId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
 const oldOverview = Main.overview;
+
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
@@ -117,12 +118,12 @@ function loaded(disconnect: boolean) {
     log('----------------');
     log('EXTENSION LOADED');
     log('----------------');
-    if (disconnect) {
+    if (disconnect && _startupPreparedId !== undefined) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
     Me.loaded = true;
     Me.locked = false;
-    if (oldOverview._visible) oldOverview.toggle();
+    if (oldOverview.visible) oldOverview.toggle();
     oldOverview.isDummy = true;
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
@@ -150,7 +151,9 @@ function disable() {
         Me.disableInProgress = true;
         Async.clearAllPendingTimeout();
         if (!modules) return;
-        global.display.disconnect(_closingId);
+        if (_closingId !== undefined) {
+            global.display.disconnect(_closingId);
+        }
         Me.emit('extension-disable');
         modules.reverse().forEach((module) => {
             module.destroy();
