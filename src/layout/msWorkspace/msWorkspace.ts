@@ -113,7 +113,6 @@ export class MsWorkspace extends WithSignals {
         });
 
         this.msWorkspaceCategory.refreshCategory();
-
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.setLayoutByKey(this._state.layoutKey);
 
@@ -214,7 +213,9 @@ export class MsWorkspace extends WithSignals {
             return Promise.resolve();
 
         msWindow.setMsWorkspace(this);
-        return this.addMsWindowUnchecked(msWindow, focus, insert);
+        return this.addMsWindowUnchecked(msWindow, focus, insert).catch((e) =>
+            Me.logFocus('addMsWindowUnchecked failed')
+        );
     }
 
     /// Assumes that msWindow.msWorkspace == this already but that

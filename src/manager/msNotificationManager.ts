@@ -20,7 +20,7 @@ export class MsNotificationManager extends MsManager {
 
     constructor() {
         super();
-        this.httpSession = new Soup.Session({ ssl_use_system_ca_file: true });
+        this.httpSession = new Soup.Session();
     }
     check() {
         if (getSettings('tweaks').get_boolean('disable-notifications')) return;
@@ -94,7 +94,9 @@ let MsNotification: {
 };
 
 if (ShellVersionMatch('3.34')) {
-    MsNotificationSource = class MsNotificationSource extends messageTray.Source {
+    MsNotificationSource = class MsNotificationSource extends (
+        messageTray.Source
+    ) {
         constructor() {
             super('Material Shell');
         }

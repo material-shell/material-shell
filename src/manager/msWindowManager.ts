@@ -184,11 +184,13 @@ export class MsWindowManager extends MsManager {
             initialAllocation,
             msWorkspace: msWorkspace.msWorkspace,
         });
-        msWorkspace.msWorkspace.addMsWindowUnchecked(
-            msWindow,
-            msWorkspace.focus,
-            msWorkspace.insert
-        );
+        msWorkspace.msWorkspace
+            .addMsWindowUnchecked(
+                msWindow,
+                msWorkspace.focus,
+                msWorkspace.insert
+            )
+            .catch((e) => Me.logFocus('addMsWindowUnchecked failed', e));
         msWindow.connect('request-new-meta-window', () => {
             this.openAppForMsWindow(msWindow);
         });
