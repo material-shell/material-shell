@@ -31,15 +31,12 @@ export class DisableIncompatibleExtensionsModule {
 
     disableExtensions() {
         for (const incompatibleExtension of incompatibleExtensions) {
-            const extension = Main.extensionManager.lookup(
-                incompatibleExtension
-            );
-            if (extension) {
-                try {
-                    extension.stateObj.disable();
-                } catch (e) {
-                    Me.logFocus('disable error', incompatibleExtension, e);
+            try {
+                if(Main.extensionManager.disableExtension(incompatibleExtension)) {
+                    Me.log(`Disabled gnome extension ${incompatibleExtension} because it is incompatible with Material Shell`);
                 }
+            } catch (e) {
+                Me.logFocus('disable error', incompatibleExtension, e);
             }
         }
     }
