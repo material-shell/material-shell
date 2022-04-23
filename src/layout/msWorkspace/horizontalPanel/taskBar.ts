@@ -211,6 +211,9 @@ export class TaskBar extends St.Widget {
                 tileable.kill();
             });
             item.connect('close-clicked', (_) => {
+                // If a user manually clicks the 'Close' button we make the tileable not persistent
+                // as otherwise it will not be possible to close it.
+                tileable.persistent = false;
                 tileable.kill();
             });
         } else {
