@@ -10,6 +10,9 @@ const incompatibleExtensions = [
     'ubuntu-dock@ubuntu.com',
     'dash-to-dock@micxgx.gmail.com',
     'ding@rastersoft.com',
+    // 'improved-workspace-indicator' adds styling to the window tabs in a weird greenish color.
+    // That extension is very much redundant anyway, given that MS has its own workspace indicator.
+    'improved-workspace-indicator@michaelaquilina.github.io',
 ];
 
 let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
