@@ -410,7 +410,7 @@ export class TileableItem extends TaskBarItem {
             new PopupMenu.PopupSeparatorMenuItem(_('Open Windows'))
         ); */
         this.makePersistentAction = this.menu.addAction(
-            'Make this fully persistent',
+            'Keep tab when this window closes',
             () => {
                 this.tileable.persistent = true;
                 this.endIconContainer.set_child(this.persistentIcon);
@@ -421,7 +421,7 @@ export class TileableItem extends TaskBarItem {
         );
 
         this.unmakePersistentAction = this.menu.addAction(
-            'Unmake this fully persistent',
+            'Remove tab when this window closes',
             () => {
                 this.tileable.persistent = false;
                 this.endIconContainer.set_child(this.closeButton);
