@@ -10,6 +10,8 @@ const incompatibleExtensions = [
     'ubuntu-dock@ubuntu.com',
     'dash-to-dock@micxgx.gmail.com',
     'ding@rastersoft.com',
+    // Pop Shell is another window manager, it will very likely cause massive conflicts with Material Shell.
+    'pop-shell@system76.com',
     // 'improved-workspace-indicator' adds styling to the window tabs in a weird greenish color.
     // That extension is very much redundant anyway, given that MS has its own workspace indicator.
     'improved-workspace-indicator@michaelaquilina.github.io',
