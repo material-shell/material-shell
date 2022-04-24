@@ -12,25 +12,6 @@ const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-// export function _computeWorkspacesBoxForState(
-//     state,
-//     box,
-//     startY,
-//     searchHeight,
-//     dashHeight,
-//     thumbnailsHeight
-// ) {
-//     const workspaceBox = box.copy();
-//     const [width, height] = workspaceBox.get_size();
-//     const { spacing } = this;
-//     const { expandFraction } = this._workspacesThumbnails;
-
-//     workspaceBox.set_origin(0, startY + searchHeight + spacing);
-//     workspaceBox.set_size(0, 0);
-
-//     return workspaceBox;
-// }
-
 export function OverviewShow(state = overviewControls.ControlsState.APP_GRID) {
     if (state === overviewControls.ControlsState.HIDDEN)
         throw new Error('Invalid state, use hide() to hide');
