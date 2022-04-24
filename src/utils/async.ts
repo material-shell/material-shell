@@ -4,8 +4,7 @@ export class Async {
     static timeoutIdList = [] as number[];
 
     static addTimeout(priority: number, interval: number, func: () => void) {
-        let timeoutId;
-        timeoutId = GLib.timeout_add(priority, interval, () => {
+        const timeoutId = GLib.timeout_add(priority, interval, () => {
             func();
             this.clearTimeoutId(timeoutId);
             return GLib.SOURCE_REMOVE;

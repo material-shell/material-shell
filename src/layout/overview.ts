@@ -4,43 +4,35 @@ import * as Meta from 'meta';
 import * as Shell from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-const Dash = imports.ui.dash;
-const SearchController = imports.ui.searchController;
-const LayoutManager = imports.ui.layout;
-const Main = imports.ui.main;
-const OverviewControls = imports.ui.overviewControls;
-const SwipeTracker = imports.ui.swipeTracker;
-const WindowManager = imports.ui.windowManager;
-const Overview = imports.ui.overview.Overview;
-const ShellInfo = imports.ui.overview.ShellInfo;
-const AppDisplay = imports.ui.appDisplay;
-const Layout = imports.ui.layout;
+import { searchController, dash, appDisplay, layout, overviewControls, windowManager, swipeTracker } from 'ui';
+import { main as Main } from 'ui';
+import { overview } from 'ui';
 const ANIMATION_TIME = 250;
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-export function _computeWorkspacesBoxForState(
-    state,
-    box,
-    startY,
-    searchHeight,
-    dashHeight,
-    thumbnailsHeight
-) {
-    const workspaceBox = box.copy();
-    const [width, height] = workspaceBox.get_size();
-    const { spacing } = this;
-    const { expandFraction } = this._workspacesThumbnails;
+// export function _computeWorkspacesBoxForState(
+//     state,
+//     box,
+//     startY,
+//     searchHeight,
+//     dashHeight,
+//     thumbnailsHeight
+// ) {
+//     const workspaceBox = box.copy();
+//     const [width, height] = workspaceBox.get_size();
+//     const { spacing } = this;
+//     const { expandFraction } = this._workspacesThumbnails;
 
-    workspaceBox.set_origin(0, startY + searchHeight + spacing);
-    workspaceBox.set_size(0, 0);
+//     workspaceBox.set_origin(0, startY + searchHeight + spacing);
+//     workspaceBox.set_size(0, 0);
 
-    return workspaceBox;
-}
+//     return workspaceBox;
+// }
 
-export function OverviewShow(state = OverviewControls.ControlsState.APP_GRID) {
-    if (state === OverviewControls.ControlsState.HIDDEN)
+export function OverviewShow(state = overviewControls.ControlsState.APP_GRID) {
+    if (state === overviewControls.ControlsState.HIDDEN)
         throw new Error('Invalid state, use hide() to hide');
 
     if (this.isDummy) return;
@@ -57,10 +49,10 @@ export function OverviewShow(state = OverviewControls.ControlsState.APP_GRID) {
 class MsControlsManager extends St.Widget {
     _searchEntry: St.Entry;
     _searchEntryBin: St.Bin;
-    _searchController;
-    dash;
-    _a11ySettings;
-    _appDisplay;
+    _searchController: searchController.SearchController;
+    dash: dash.Dash;
+    _a11ySettings: Gio.Settings;
+    _appDisplay: appDisplay.AppDisplay;
     _init() {
         super._init({
             style_class: 'controls-manager',
@@ -87,9 +79,9 @@ class MsControlsManager extends St.Widget {
             x_align: Clutter.ActorAlign.CENTER,
         });
 
-        this.dash = new Dash.Dash();
+        this.dash = new dash.Dash();
 
-        this._searchController = new SearchController.SearchController(
+        this._searchController = new searchController.SearchController(
             this._searchEntry,
             this.dash.showAppsButton
         );
@@ -98,7 +90,7 @@ class MsControlsManager extends St.Widget {
             this._onSearchChanged.bind(this)
         );
 
-        this._appDisplay = new AppDisplay.AppDisplay();
+        this._appDisplay = new appDisplay.AppDisplay();
 
         this.add_child(this._searchEntryBin);
         this.add_child(this._appDisplay);
@@ -132,12 +124,12 @@ class MsControlsManager extends St.Widget {
         });
     }
 
-    animateToOverview(state, callback) {
+    animateToOverview(state: overviewControls.ControlsState, callback: ()=>void) {
         this._searchController.prepareToEnterOverview();
         callback();
     }
 
-    animateFromOverview(callback) {
+    animateFromOverview(callback: ()=>void) {
         callback();
     }
     _updateAppDisplayVisibility() {
@@ -181,7 +173,7 @@ class MsControlsManager extends St.Widget {
         this._stateAdjustment.gestureInProgress = false;
     } */
 
-    async runStartupAnimation(callback) {
+    async runStartupAnimation(callback: ()=>void) {
         this._searchController.prepareToEnterOverview();
 
         this.dash.showAppsButton.checked = false;
@@ -192,7 +184,7 @@ class MsControlsManager extends St.Widget {
         // We can't run the animation before the first allocation happens
         //await this.layout_manager.ensureAllocation();
 
-        const { STARTUP_ANIMATION_TIME } = Layout;
+        const { STARTUP_ANIMATION_TIME } = layout;
 
         // Opacity
         this.ease({
@@ -203,7 +195,7 @@ class MsControlsManager extends St.Widget {
 
         // Search bar falls from the ceiling
         const { primaryMonitor } = Main.layoutManager;
-        const [, y] = this._searchEntryBin.get_transformed_position();
+        const [, y] = this._searchEntryBin.get_transformed_position() as [number, number];
         const yOffset = y - primaryMonitor.y;
 
         this._searchEntryBin.translation_y = -(
@@ -239,6 +231,8 @@ class MsControlsManager extends St.Widget {
 @registerGObjectClass
 class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
+    _delegate: any;
+
     _init() {
         super._init({
             name: 'overview',
@@ -249,22 +243,22 @@ class OverviewActor extends St.BoxLayout {
         });
 
         this.add_constraint(
-            new LayoutManager.MonitorConstraint({ primary: true })
+            new layout.MonitorConstraint({ primary: true })
         );
 
         this._controls = new MsControlsManager();
         this.add_child(this._controls);
     }
 
-    animateToOverview(state, callback) {
+    animateToOverview(state: overviewControls.ControlsState, callback: ()=>void) {
         this._controls.animateToOverview(state, callback);
     }
 
-    animateFromOverview(callback) {
+    animateFromOverview(callback: ()=>void) {
         this._controls.animateFromOverview(callback);
     }
 
-    runStartupAnimation(callback) {
+    runStartupAnimation(callback: ()=>void) {
         this._controls.runStartupAnimation(callback);
     }
 
@@ -281,7 +275,7 @@ class OverviewActor extends St.BoxLayout {
     }
 }
 
-export class MsOverview extends Overview {
+export class MsOverview extends overview.Overview {
     toto = 'toto';
 
     constructor() {
@@ -292,7 +286,7 @@ export class MsOverview extends Overview {
     // want to access the overview as Main.overview to connect
     // signal handlers and so forth. So we create them after
     // construction in this init() method.
-    init() {
+    override init() {
         this._initCalled = true;
 
         if (this.isDummy) return;
@@ -301,7 +295,7 @@ export class MsOverview extends Overview {
         this._overview._delegate = this;
         Main.layoutManager.overviewGroup.add_child(this._overview);
 
-        this._shellInfo = new ShellInfo();
+        this._shellInfo = new overview.ShellInfo();
 
         Main.layoutManager.connect(
             'monitors-changed',
@@ -312,23 +306,23 @@ export class MsOverview extends Overview {
         Main.wm.addKeybinding(
             'toggle-overview',
             new Gio.Settings({
-                schema_id: WindowManager.SHELL_KEYBINDINGS_SCHEMA,
+                schema_id: windowManager.SHELL_KEYBINDINGS_SCHEMA,
             }),
             Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             this.toggle.bind(this)
         );
 
-        const swipeTracker = new SwipeTracker.SwipeTracker(
+        const tracker = new swipeTracker.SwipeTracker(
             global.stage,
             Clutter.Orientation.VERTICAL,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             { allowDrag: false, allowScroll: false }
         );
-        swipeTracker.orientation = Clutter.Orientation.VERTICAL;
-        swipeTracker.connect('begin', this._gestureBegin.bind(this));
-        swipeTracker.connect('update', this._gestureUpdate.bind(this));
-        swipeTracker.connect('end', this._gestureEnd.bind(this));
-        this._swipeTracker = swipeTracker;
+        tracker.orientation = Clutter.Orientation.VERTICAL;
+        tracker.connect('begin', this._gestureBegin.bind(this));
+        tracker.connect('update', this._gestureUpdate.bind(this));
+        tracker.connect('end', this._gestureEnd.bind(this));
+        this._swipeTracker = tracker;
     }
 }

@@ -46,7 +46,7 @@ export interface Context {
     pushGroupWithContent(content: number): void;
     popGroupToSource(): void;
     rectangle(x: number, y: number, width: number, height: number): void;
-    relCurveTo(dx1: number, dy1: number, dx2: number, dy2: number, dx3: number, dy3: number);
+    relCurveTo(dx1: number, dy1: number, dx2: number, dy2: number, dx3: number, dy3: number): void;
     relLineTo(dx: number, dy: number): void;
     relMoveTo(dx: number, dy: number): void;
     resetClip(): void;

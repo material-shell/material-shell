@@ -74,7 +74,7 @@ export class StateManager {
                     ...workspacesState.externalWorkspaces,
                 ];
 
-                workspacesState.msWorkspaceList.map((msWorkspaceState) => {
+                workspacesState.msWorkspaceList.map((msWorkspaceState: any) => {
                     msWorkspaceState.layoutKey =
                         msWorkspaceState.layoutKey ||
                         msWorkspaceState.tilingLayout;
@@ -96,7 +96,7 @@ export class StateManager {
     getState(key: string) {
         return this.state[key];
     }
-    setState(key: string, value) {
+    setState(key: string, value: any) {
         if (value === undefined) {
             delete this.state[key];
         } else {

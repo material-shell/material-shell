@@ -232,18 +232,20 @@ export class DropPlaceholder extends St.Widget {
             'drag-over': {},
         },
     };
-    private _delegate: this;
+    _delegate: this;
 
     constructor() {
         super({ style_class: 'drop-placeholder' });
         this._delegate = this;
     }
 
-    handleDragOver(source) {
+    /// Called by gnome's drag-drop system via the _delegate field
+    handleDragOver(source: Clutter.Actor) {
         return DND.DragMotionResult.MOVE_DROP;
     }
 
-    acceptDrop(source) {
+    /// Called by gnome's drag-drop system via the _delegate field
+    acceptDrop(source: Clutter.Actor) {
         this.emit('drag-dropped', source);
         return true;
     }

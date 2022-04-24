@@ -6,9 +6,13 @@ import * as Gio from 'gio';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { RippleBackground } from 'src/widget/material/rippleBackground';
 import { registerGObjectClass } from 'src/utils/gjs';
+
+export interface NumberPickerParams {
+    step: number;
+    min: number;
+    max: number;
+}
 
 @registerGObjectClass
 export class MatNumberPicker extends St.BoxLayout {
@@ -22,14 +26,14 @@ export class MatNumberPicker extends St.BoxLayout {
     };
 
     value: number;
-    params: any;
+    params: NumberPickerParams;
     minIcon: St.Icon;
     minButton: St.Button<St.Icon>;
     plusIcon: St.Icon;
     plusButton: St.Button<St.Icon>;
     valueLabel: St.Label;
 
-    constructor(value: number, params) {
+    constructor(value: number, params: Partial<NumberPickerParams>) {
         super({
             y_align: Clutter.ActorAlign.CENTER,
         });

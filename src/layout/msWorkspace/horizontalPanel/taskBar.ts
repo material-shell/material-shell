@@ -15,14 +15,14 @@ import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
 import * as St from 'st';
 import { MsWorkspace, Tileable } from '../msWorkspace';
+import { popupMenu as PopupMenu } from 'ui';
 const DND = imports.ui.dnd;
-const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
+import { layout } from 'ui';
+import Monitor = layout.Monitor;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
-const dragData = null;
 
 let isTileableItem = (obj: any): obj is TileableItem => {
     return obj instanceof TileableItem;
@@ -48,7 +48,7 @@ export class TaskBar extends St.Widget {
     windowFocused: null;
     menuManager: any;
 
-    constructor(msWorkspace: MsWorkspace, panelMenuManager) {
+    constructor(msWorkspace: MsWorkspace, panelMenuManager: PopupMenu.PopupMenuManager) {
         super({
             name: 'taskBar',
             x_expand: true,
@@ -202,7 +202,7 @@ export class TaskBar extends St.Widget {
         return this.items[this.msWorkspace.focusedIndex];
     }
 
-    createNewItemForTileable(tileable) {
+    createNewItemForTileable(tileable: Tileable) {
         let item: TileableItem | IconTaskBarItem;
         if (tileable instanceof MsWindow) {
             item = new TileableItem(tileable);
@@ -227,7 +227,7 @@ export class TaskBar extends St.Widget {
         return item;
     }
 
-    getTaskBarItemOfTileable(tileable) {
+    getTaskBarItemOfTileable(tileable: Tileable) {
         return this.items.find((item) => {
             return item.tileable === tileable;
         });
@@ -302,13 +302,13 @@ export class TaskBarItem extends MatButton {
         },
     };
     private _delegate: this;
-    draggable: any;
-    contentActor: any;
-    monitor: any;
+    draggable: boolean;
+    contentActor: St.Widget;
+    monitor: Monitor;
     menu: any;
     tileable: MsWindow | undefined;
 
-    constructor(contentActor, draggable) {
+    constructor(contentActor: St.Widget, draggable: boolean) {
         super({
             style_class: 'task-bar-item ',
         });
@@ -332,19 +332,19 @@ export class TaskBarItem extends MatButton {
         });
     }
 
-    vfunc_parent_set() {
+    override vfunc_parent_set() {
         const actor = this.get_parent() || this;
         if (actor.is_mapped()) {
             this.monitor = Main.layoutManager.findMonitorForActor(actor);
         }
     }
 
-    vfunc_get_preferred_height(_forWidth: number): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const height = Me.msThemeManager.getPanelSize(this.monitor);
         return [height, height];
     }
 
-    setActive(active) {
+    setActive(active: boolean) {
         if (!active && this.has_style_class_name('active')) {
             this.remove_style_class_name('active');
         }
@@ -363,8 +363,8 @@ export class TileableItem extends TaskBarItem {
         },
     };
     container: St.BoxLayout;
-    tileable: any;
-    app: any;
+    tileable: MsWindow;
+    app: Shell.App;
     startIconContainer: St.Bin;
     endIconContainer: St.Bin;
     makePersistentAction: any;
@@ -379,7 +379,7 @@ export class TileableItem extends TaskBarItem {
     lastHeight: any;
     buildIconIdle: number | undefined;
 
-    constructor(tileable) {
+    constructor(tileable: MsWindow) {
         const container = new St.BoxLayout({
             style_class: 'task-bar-item-content',
         });
@@ -503,7 +503,7 @@ export class TileableItem extends TaskBarItem {
         this.setTileable(tileable);
     }
 
-    setTileable(tileable) {
+    setTileable(tileable: MsWindow) {
         if (tileable === this.tileable) return;
         if (this.titleSignalKiller) this.titleSignalKiller();
         this.tileable = tileable;
@@ -537,7 +537,7 @@ export class TileableItem extends TaskBarItem {
         }
     }
 
-    buildIcon(height) {
+    buildIcon(height: number) {
         if (this.icon) this.icon.destroy();
         this.lastHeight = height;
         this.icon = this.app.create_icon_texture(height / 2);
@@ -608,10 +608,10 @@ export class TileableItem extends TaskBarItem {
 @registerGObjectClass
 export class IconTaskBarItem extends TaskBarItem {
     container: St.Bin;
-    tileable: any;
+    tileable: Tileable;
     icon: St.Icon;
 
-    constructor(tileable, gicon: Gio.IconPrototype) {
+    constructor(tileable: Tileable, gicon: Gio.IconPrototype) {
         const container = new St.Bin({
             style_class: 'task-bar-icon-container',
         });
@@ -624,19 +624,19 @@ export class IconTaskBarItem extends TaskBarItem {
             icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
         this.container.set_child(this.icon);
-        this.setTileable(tileable);
+        this.tileable = tileable;
     }
 
-    setTileable(tileable) {
+    setTileable(tileable: Tileable) {
         if (tileable === this.tileable) return;
         this.tileable = tileable;
     }
 
-    vfunc_get_preferred_width(_forHeight: number): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [_forHeight, _forHeight];
     }
 
-    vfunc_allocate(...args: [Clutter.ActorBox]) {
+    override vfunc_allocate(...args: [Clutter.ActorBox]) {
         const box = args[0];
         const height = box.get_height() / 2;
 
