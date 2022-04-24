@@ -2,6 +2,7 @@ import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
+import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { searchController, dash, appDisplay, layout, overviewControls, windowManager, swipeTracker } from 'ui';
@@ -196,7 +197,7 @@ class MsControlsManager extends St.Widget {
         // Search bar falls from the ceiling
         const { primaryMonitor } = Main.layoutManager;
         const [, y] = this._searchEntryBin.get_transformed_position() as [number, number];
-        const yOffset = y - primaryMonitor.y;
+        const yOffset = y - assertNotNull(primaryMonitor).y;
 
         this._searchEntryBin.translation_y = -(
             yOffset + this._searchEntryBin.height

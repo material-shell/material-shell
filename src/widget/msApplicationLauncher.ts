@@ -111,8 +111,10 @@ export class MsApplicationLauncher extends St.Widget {
                         insert: false,
                     }
                 );
-                Me.msWindowManager.openAppForMsWindow(msWindow);
-                this.appListContainer.reset();
+                if (msWindow) {
+                    Me.msWindowManager.openAppForMsWindow(msWindow);
+                    this.appListContainer.reset();
+                }
             });
             this.appListContainer.addAppButton(button);
         });
