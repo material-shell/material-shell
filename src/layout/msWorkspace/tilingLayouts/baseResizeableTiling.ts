@@ -21,7 +21,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const BORDER_WIDTH = 2;
 @registerGObjectClass
-export class BaseResizeableTilingLayout extends BaseTilingLayout {
+export class BaseResizeableTilingLayout<S extends { key: string }> extends BaseTilingLayout<S> {
     mainPortion: Portion;
     currentFocusEffect: number;
     borderContainer: Clutter.Actor | undefined;
@@ -29,7 +29,7 @@ export class BaseResizeableTilingLayout extends BaseTilingLayout {
 
     constructor(
         msWorkspace: MsWorkspace,
-        state: { mainPortion?: Portion } = {}
+        state: Partial<S> & { mainPortion?: Portion }
     ) {
         super(msWorkspace, state);
         this.mainPortion = new Portion();

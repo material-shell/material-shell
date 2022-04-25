@@ -8,7 +8,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { Portion } from '../../portion';
 
 @registerGObjectClass
-export class RatioLayout extends BaseResizeableTilingLayout {
+export class RatioLayout extends BaseResizeableTilingLayout<{ key: 'ratio' }> {
     static state = { key: 'ratio' };
     static label = 'Ratio';
 

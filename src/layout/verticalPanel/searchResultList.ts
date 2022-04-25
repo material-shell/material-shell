@@ -58,20 +58,22 @@ export class SearchResultEntry extends MatButton {
         },
     };
     layout = new St.BoxLayout();
-    icon: St.Icon;
+    icon: St.Icon | null;
     textLayout = new St.BoxLayout({
         vertical: true,
         styleClass: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
         y_align: Clutter.ActorAlign.CENTER,
     });
     title: St.Label;
-    description: St.Label;
+    description: St.Label | null;
     constructor(icon: St.Icon | null, title: string, description?: string, withMenu?: boolean) {
         super({});
         if (icon) {
             this.icon = icon;
             this.icon.set_style('margin: 12px');
             this.layout.add_child(this.icon);
+        } else {
+            this.icon = null;
         }
 
         this.layout.add_child(this.textLayout);
@@ -86,6 +88,8 @@ export class SearchResultEntry extends MatButton {
                 style: 'margin-top:2px',
             });
             this.textLayout.add_child(this.description);
+        } else {
+            this.description = null;
         }
 
         this.set_child(this.layout);
@@ -122,10 +126,9 @@ export class SearchResultList extends St.BoxLayout {
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
-    startingSearch: boolean;
+    startingSearch: boolean = false;
     private results: Record<string,string[]> = {};
-    isSubSearch: boolean;
-    highlightRegex: RegExp;
+    isSubSearch: boolean = false;
     cancellable = new Gio.Cancellable();
     clearIcon = new St.Icon({
         style_class: 'search-entry-icon',
@@ -388,10 +391,6 @@ export class SearchResultList extends St.BoxLayout {
         const escapedTerms = this.terms.map((term) =>
             Shell.util_regex_escape(term)
         );
-        this.highlightRegex = new RegExp(
-            ('(%s)' as any).format(escapedTerms.join('|')),
-            'gi'
-        );
 
         //this.emit('terms-changed');
     }
@@ -409,107 +408,119 @@ export class SearchResultList extends St.BoxLayout {
         } else {
             this.add_child(new SearchResultHeader(_('Applications')));
         }
-        provider.getResultMetas(
-            results,
-            (resMetas) => {
-                this.resMetas = resMetas;
-                let moreEntry: SearchResultEntry | null = null;
-                //
-                const extraResults: SearchResultEntry[] = [];
-                if (resMetas.length > 5) {
-                    const more = moreEntry = new SearchResultEntry(
-                        new St.Icon({
-                            icon_size: 32,
-                            gicon: Gio.icon_new_for_string(
-                                `${Me.path}/assets/icons/chevron-down-symbolic.svg`
-                            ),
-                        }),
-                        ngettext(
-                            '%d more',
-                            '%d more',
-                            resMetas.length - 5
-                        ).format(resMetas.length - 5),
-                        '',
-                        provider.id === 'applications'
-                    );
 
-                    more.connect('primary-action', () => {
-                        extraResults.forEach((entry) => {
-                            this.insert_child_below(entry, more);
-                        });
-                        this.remove_child(more);
-                        this.selectResult(extraResults[0]);
+        // Note: The remote search provider also provides a description field, but the app search does not
+        const onSearchMetas = (resMetas: { id: string, name: string, description?: string, createIcon: (size: number)=>St.Icon }[] ) => {
+            this.resMetas = resMetas;
+            let moreEntry: SearchResultEntry | null = null;
+            //
+            const extraResults: SearchResultEntry[] = [];
+            if (resMetas.length > 5) {
+                const more = moreEntry = new SearchResultEntry(
+                    new St.Icon({
+                        icon_size: 32,
+                        gicon: Gio.icon_new_for_string(
+                            `${Me.path}/assets/icons/chevron-down-symbolic.svg`
+                        ),
+                    }),
+                    ngettext(
+                        '%d more',
+                        '%d more',
+                        resMetas.length - 5
+                    ).format(resMetas.length - 5),
+                    '',
+                    provider.id === 'applications'
+                );
+
+                more.connect('primary-action', () => {
+                    extraResults.forEach((entry) => {
+                        this.insert_child_below(entry, more);
+                    });
+                    this.remove_child(more);
+                    this.selectResult(extraResults[0]);
+                });
+            }
+            let numberOfRes = 0;
+            for (const res of resMetas) {
+                if (!res.name) return;
+                numberOfRes++;
+
+                let icon = res.createIcon(32);
+                if (!icon && provider.isRemoteProvider) {
+                    icon = new St.Icon({
+                        icon_size: 32,
+                        gicon: provider.appInfo.get_icon(),
                     });
                 }
-                let numberOfRes = 0;
-                for (const res of resMetas) {
-                    if (!res.name) return;
-                    numberOfRes++;
-
-                    let icon = res.createIcon(32);
-                    if (!icon && provider.isRemoteProvider) {
-                        icon = new St.Icon({
-                            icon_size: 32,
-                            gicon: provider.appInfo.get_icon(),
-                        });
-                    }
-                    const entry = new SearchResultEntry(
-                        icon,
-                        res.name,
-                        res.description,
-                        provider.id === 'applications'
-                    );
-                    entry.connect('primary-action', () => {
-                        if (provider.isRemoteProvider) {
-                            provider.activateResult(res.id, this.terms);
-                        } else {
-                            const app =
-                                Shell.AppSystem.get_default().lookup_app(
-                                    res.id
-                                );
-                            if (app) {
-                                if (app.can_open_new_window()) {
-                                    const msWindow =
-                                        Me.msWindowManager.createNewMsWindow(
-                                            app.id,
-                                            null,
-                                            null,
-                                            {
-                                                msWorkspace:
-                                                    Me.msWorkspaceManager.getActiveMsWorkspace(),
-                                                focus: true,
-                                                insert: true,
-                                            }
-                                        );
-                                    if (msWindow !== undefined) {
-                                        Me.msWindowManager.openAppForMsWindow(
-                                            msWindow
-                                        );
-                                    }
-                                } else {
-                                    app.activate();
+                const entry = new SearchResultEntry(
+                    icon,
+                    res.name,
+                    // The remote search provider also provides a description field, but the app search does not
+                    res.description,
+                    provider.id === 'applications'
+                );
+                entry.connect('primary-action', () => {
+                    if (provider.isRemoteProvider) {
+                        provider.activateResult(res.id, this.terms);
+                    } else {
+                        const app =
+                            Shell.AppSystem.get_default().lookup_app(
+                                res.id
+                            );
+                        if (app) {
+                            if (app.can_open_new_window()) {
+                                const msWindow =
+                                    Me.msWindowManager.createNewMsWindow(
+                                        app.id,
+                                        null,
+                                        null,
+                                        {
+                                            msWorkspace:
+                                                Me.msWorkspaceManager.getActiveMsWorkspace(),
+                                            focus: true,
+                                            insert: true,
+                                        }
+                                    );
+                                if (msWindow !== undefined) {
+                                    Me.msWindowManager.openAppForMsWindow(
+                                        msWindow
+                                    );
                                 }
                             } else {
-                                SystemActions.getDefault().activateAction(
-                                    res.id
-                                );
+                                app.activate();
                             }
+                        } else {
+                            SystemActions.getDefault().activateAction(
+                                res.id
+                            );
                         }
-
-                        this.resetAndClose();
-                    });
-                    if (numberOfRes <= 5) {
-                        this.addResult(entry);
-                    } else {
-                        extraResults.push(entry);
                     }
+
+                    this.resetAndClose();
+                });
+                if (numberOfRes <= 5) {
+                    this.addResult(entry);
+                } else {
+                    extraResults.push(entry);
                 }
-                if (moreEntry) {
-                    this.addResult(moreEntry);
-                }
-            },
-            this.cancellable
-        );
+            }
+            if (moreEntry) {
+                this.addResult(moreEntry);
+            }
+        };
+
+        if (provider.isRemoteProvider) {
+            provider.getResultMetas(
+                results,
+                onSearchMetas,
+                this.cancellable
+            );
+        } else {
+            provider.getResultMetas(
+                results,
+                onSearchMetas
+            );
+        }
 
         /* display.updateSearch(results, terms, () => {
             provider.searchInProgress = false;

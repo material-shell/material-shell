@@ -5,11 +5,11 @@ import * as GObject from 'gobject';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
-import { LayoutState } from 'src/manager/layoutManager';
+import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { layout } from 'ui';
-import { logAssert } from 'src/utils/assert';
+import { assertNotNull, logAssert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
@@ -47,15 +47,15 @@ export class MsWorkspace extends WithSignals {
     msWorkspaceCategory: MsWorkspaceCategory;
     precedentIndex: number;
     msWorkspaceActor: MsWorkspaceActor;
-    layout: any;
+    // Safety: We always assign this because we call setLayoutByKey from the constructor
+    layout!: InstanceType<LayoutType>;
     destroyed: boolean | undefined;
     closing = false;
-    monitorIsExternal: any;
-    apps: any;
-    categorizedAppCard: any;
+    // Safety: We always assign this because we call setMonitor from the constructor
+    monitorIsExternal!: boolean;
     // Definitely set because we call `setMonitor` in the constructor
     monitor!: Monitor;
-    emitTileableChangedInProgress: any;
+    emitTileableChangedInProgress: Promise<void> | undefined;
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
@@ -453,7 +453,7 @@ export class MsWorkspace extends WithSignals {
     nextLayout(direction: number) {
         this.layout.onDestroy();
 
-        let { key } = this.layout.constructor.state;
+        let { key } = (this.layout.constructor as LayoutType).state;
         if (
             !this.state.layoutStateList.find(
                 (layoutState) => layoutState.key === key
@@ -481,13 +481,9 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
-        this.layout = new Layout(
-            this,
-            this.state.layoutStateList.find(
-                (layoutState) => layoutState.key === layoutKey
-            )
-        );
+        this.layout = Me.layoutManager.createLayout(this, assertNotNull(this.state.layoutStateList.find(
+            (layoutState) => layoutState.key === layoutKey
+        )));
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
         this.emit('tiling-layout-changed');
     }
@@ -599,7 +595,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         Clutter.LayoutManager,
         Clutter.ContentPrototype
     >;
-    panel: any;
+    panel: HorizontalPanel;
     msWorkspace: MsWorkspace;
 
     constructor(msWorkspace: MsWorkspace) {

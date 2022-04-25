@@ -32,20 +32,6 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 //     return workspaceBox;
 // }
 
-export function OverviewShow(state = overviewControls.ControlsState.APP_GRID) {
-    if (state === overviewControls.ControlsState.HIDDEN)
-        throw new Error('Invalid state, use hide() to hide');
-
-    if (this.isDummy) return;
-    if (this._shown) return;
-    this._shown = true;
-
-    if (!this._syncGrab()) return;
-
-    Main.layoutManager.showOverview();
-    this._animateVisible(state);
-}
-
 @registerGObjectClass
 class MsControlsManager extends St.Widget {
     _searchEntry: St.Entry;
@@ -54,8 +40,8 @@ class MsControlsManager extends St.Widget {
     dash: dash.Dash;
     _a11ySettings: Gio.Settings;
     _appDisplay: appDisplay.AppDisplay;
-    _init() {
-        super._init({
+    constructor() {
+        super({
             style_class: 'controls-manager',
             x_expand: true,
             y_expand: true,
@@ -234,8 +220,8 @@ class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
     _delegate: any;
 
-    _init() {
-        super._init({
+    constructor() {
+        super({
             name: 'overview',
             /* Translators: This is the main Fview to select
                 activities. See also note for "Activities" string. */

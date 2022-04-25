@@ -16,18 +16,23 @@ import { Portion } from '../portion';
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;
 
+type SplitLayoutState = {
+    key: 'split';
+    nbOfColumns: number;
+}
+
 @registerGObjectClass
-export class SplitLayout extends BaseResizeableTilingLayout {
+export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     static state = { key: 'split', nbOfColumns: 2 };
     static label = 'Split';
 
-    _state: { key: 'split', nbOfColumns: number };
+    // _state: { key: 'split', nbOfColumns: number };
     vertical: boolean;
     translationAnimator: TranslationAnimator;
     baseIndex: number;
     activeTileableList: Tileable[];
 
-    constructor(msWorkspace: MsWorkspace, state: Partial<typeof SplitLayout.state & { mainPortion: Portion }>) {
+    constructor(msWorkspace: MsWorkspace, state: Partial<SplitLayoutState & { mainPortion: Portion }>) {
         super(msWorkspace, state);
         this.baseIndex = 0;
         this.activeTileableList = [];

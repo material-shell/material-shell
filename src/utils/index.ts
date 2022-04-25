@@ -3,6 +3,7 @@ import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import { Async } from './async';
 import { main as Main } from 'ui';
+import { assert } from './assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -44,13 +45,14 @@ interface TrottleParams {
 // as much as it can, without ever going more than once per `wait` duration;
 // but if you'd like to disable the execution on the leading edge, pass
 // `{leading: false}`. To disable execution on the trailing edge, ditto.
-export function throttle<T extends any[], R>(
+export function throttle<T extends any[], R, C>(
+    this: C,
     func: (...args: T) => R,
     wait: number,
     options?: Partial<TrottleParams>
 ): (...args: T) => R {
-    let context: any;
-    let args: T | null, result: R;
+    let call: { context: C, args: T } | null;
+    let result: R;
     let timeout: number | null = null;
     let previous = 0;
     const definedOptions: TrottleParams = Object.assign(
@@ -64,24 +66,24 @@ export function throttle<T extends any[], R>(
     const later = function () {
         previous = definedOptions.leading === false ? 0 : Date.now();
         timeout = null;
-        result = func.apply(context, args);
-        if (!timeout) context = args = null;
+        assert(call !== null, "unreachable");
+        result = func.apply(call.context, call.args);
+        if (!timeout) call = null;
         return false;
     };
-    return function (...params: T) {
+    return function (this: C, ...params: T) {
         const now = Date.now();
         if (!previous && definedOptions.leading === false) previous = now;
         const remaining = wait - (now - previous);
-        context = this;
-        args = params;
+        call = { context: this, args: params };
         if (remaining <= 0 || remaining > wait) {
             if (timeout !== null) {
                 Async.clearTimeoutId(timeout);
                 timeout = null;
             }
             previous = now;
-            result = func.apply(context, args);
-            if (!timeout) context = args = null;
+            result = func.apply(call.context, call.args);
+            if (!timeout) call = null;
         } else if (!timeout && definedOptions.trailing !== false) {
             timeout = Async.addTimeout(GLib.PRIORITY_DEFAULT, remaining, later);
         }

@@ -44,10 +44,10 @@ export class TaskBar extends St.Widget {
     taskActiveIndicator: TaskActiveIndicator;
     taskButtonContainer: ReorderableList;
     msWorkspace: MsWorkspace;
-    msWorkspaceSignals: any[];
-    tracker: any;
+    msWorkspaceSignals: number[];
+    tracker: Shell.WindowTracker;
     windowFocused: null;
-    menuManager: any;
+    menuManager: PopupMenu.PopupMenuManager;
 
     constructor(msWorkspace: MsWorkspace, panelMenuManager: PopupMenu.PopupMenuManager) {
         super({
@@ -207,7 +207,7 @@ export class TaskBar extends St.Widget {
         let item: TileableItem | IconTaskBarItem;
         if (tileable instanceof MsWindow) {
             item = new TileableItem(tileable);
-            this.menuManager.addMenu(item.menu);
+            this.menuManager.addMenu(assertNotNull(item.menu));
             item.connect('middle-clicked', (_) => {
                 tileable.kill();
             });
@@ -306,7 +306,7 @@ export class TaskBarItem extends MatButton {
     draggable: boolean;
     contentActor: St.Widget;
     monitor: Monitor;
-    menu: PopupMenu.PopupMenu;
+    menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 
     constructor(contentActor: St.Widget, draggable: boolean) {
@@ -324,7 +324,9 @@ export class TaskBarItem extends MatButton {
             this.emit('left-clicked');
         });
         this.connect('secondary-action', () => {
-            this.menu.toggle();
+            if (this.menu !== undefined) {
+                this.menu.toggle();
+            }
         });
         this.connect('clicked', (actor, button) => {
             if (button === Clutter.BUTTON_MIDDLE) {
@@ -364,20 +366,22 @@ export class TileableItem extends TaskBarItem {
         },
     };
     container: St.BoxLayout;
-    tileable: Tileable;
-    app: Shell.App | null;
+    // Safety: We definitely initialize this because we call setTileable from the constructor
+    tileable!: Tileable;
+    // Safety: We definitely initialize this because we call setTileable from the constructor
+    app!: Shell.App | null;
     startIconContainer: St.Bin;
     endIconContainer: St.Bin;
-    makePersistentAction: any;
-    unmakePersistentAction: any;
+    makePersistentAction: PopupMenu.PopupBaseMenuItem;
+    unmakePersistentAction: PopupMenu.PopupBaseMenuItem;
     closeButton: St.Button;
-    persistentIcon: any;
+    persistentIcon: St.Icon;
     title: St.Label;
     signalManager: MsManager;
-    titleSignalKiller: any;
+    titleSignalKiller: (()=>void) | undefined;
     closeIcon: St.Icon;
-    icon: St.Widget;
-    lastHeight: number;
+    icon: St.Widget | undefined;
+    lastHeight: number | undefined;
     buildIconIdle: number | undefined;
 
     constructor(tileable: MsWindow) {
@@ -455,7 +459,7 @@ export class TileableItem extends TaskBarItem {
             })
         );
         this.menu.box.add_child(item); */
-        Main.uiGroup.add_actor(this.menu.actor);
+        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
         this.menu.actor.hide();
         // TITLE
         this.title = new St.Label({
@@ -514,7 +518,7 @@ export class TileableItem extends TaskBarItem {
         this.tileable = tileable;
         this.app = tileable instanceof MsWindow ? tileable.app : null;
         if (this.icon) {
-            this.buildIcon(this.lastHeight);
+            this.buildIcon(assertNotNull(this.lastHeight));
         }
         this.titleSignalKiller = this.signalManager.observe(
             this.tileable,
@@ -613,7 +617,7 @@ export class TileableItem extends TaskBarItem {
             GLib.Source.remove(this.buildIconIdle);
         }
         this.signalManager.destroy();
-        this.menu.destroy();
+        if (this.menu !== undefined) this.menu.destroy();
     }
 }
 
