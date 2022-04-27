@@ -125,6 +125,7 @@ declare module 'ui' {
     export namespace extensionSystem {
         class ExtensionManager {
             lookup(uuid: string): { uuid: string, stateObj: extension.Extension } | undefined;
+            disableExtension(uuid: string): boolean;
         }
     }
 
