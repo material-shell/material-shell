@@ -8,8 +8,7 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import * as St from 'st';
-import { dateMenu, main as Main } from 'ui';
-import { panel } from 'ui';
+import { dateMenu, main as Main, panel } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -26,9 +25,9 @@ export class MsStatusArea extends Clutter.Actor {
     originalDateMenuBox: any;
     msDateMenuBox?: MsDateMenuBox;
     signalIds: {
-        leftBoxActor: number,
-        centerBoxActor: number,
-        rightBoxActor: number,
+        leftBoxActor: number;
+        centerBoxActor: number;
+        rightBoxActor: number;
     } | null = null;
     centerBoxActors: Clutter.Actor[];
 
@@ -65,11 +64,6 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     unVerticaliseDateMenuButton() {
-        assert(
-            this.msDateMenuBox !== undefined,
-            "date menu button hasn't been verticalized"
-        );
-        this.msDateMenuBox.destroy();
         delete this.msDateMenuBox;
         this.dateMenu.add_child(this.originalDateMenuBox);
     }
@@ -192,10 +186,183 @@ export class MsStatusArea extends Clutter.Actor {
                 (menu._boxPointer as any).oldArrowSideFunction =
                     menu._boxPointer._calculateArrowSide;
                 menu._boxPointer._calculateArrowSide = function () {
+                    log('_calculateArrowSide');
                     return Me.msThemeManager.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
                         ? St.Side.LEFT
                         : St.Side.RIGHT;
+                };
+                menu._boxPointer._arrowSide =
+                    menu._boxPointer._calculateArrowSide(
+                        menu._boxPointer._arrowSide
+                    );
+                (menu._boxPointer as any)._reposition = function (
+                    allocationBox: Clutter.ActorBox
+                ) {
+                    let sourceActor = this._sourceActor;
+                    let alignment = this._arrowAlignment;
+                    let monitorIndex = (
+                        Main.layoutManager as any
+                    ).findIndexForActor(sourceActor);
+
+                    this._sourceExtents = sourceActor.get_transformed_extents();
+                    this._workArea =
+                        Main.layoutManager.getWorkAreaForMonitor(monitorIndex);
+                    log(
+                        `_workArea ${this._workArea.x} ${this._workArea.y} ${this._workArea.width} ${this._workArea.height}`
+                    );
+                    // Position correctly relative to the sourceActor
+                    const sourceAllocation = sourceActor.get_allocation_box();
+                    const sourceContentBox =
+                        sourceActor instanceof St.Widget
+                            ? sourceActor
+                                  .get_theme_node()
+                                  .get_content_box(sourceAllocation)
+                            : new Clutter.ActorBox({
+                                  x2: sourceAllocation.get_width(),
+                                  y2: sourceAllocation.get_height(),
+                              });
+                    let sourceTopLeft = this._sourceExtents.get_top_left();
+                    let sourceBottomRight =
+                        this._sourceExtents.get_bottom_right();
+                    let sourceCenterX =
+                        sourceTopLeft.x +
+                        sourceContentBox.x1 +
+                        (sourceContentBox.x2 - sourceContentBox.x1) *
+                            this._sourceAlignment;
+                    let sourceCenterY =
+                        sourceTopLeft.y +
+                        sourceContentBox.y1 +
+                        (sourceContentBox.y2 - sourceContentBox.y1) *
+                            this._sourceAlignment;
+                    let [, , natWidth, natHeight] = this.get_preferred_size();
+
+                    // We also want to keep it onscreen, and separated from the
+                    // edge by the same distance as the main part of the box is
+                    // separated from its sourceActor
+                    let workarea = this._workArea;
+                    let themeNode = this.get_theme_node();
+                    let borderWidth = themeNode.get_length(
+                        '-arrow-border-width'
+                    );
+                    let arrowBase = themeNode.get_length('-arrow-base');
+                    let borderRadius = themeNode.get_length(
+                        '-arrow-border-radius'
+                    );
+                    let margin = 4 * borderRadius + borderWidth + arrowBase;
+
+                    let gap = themeNode.get_length('-boxpointer-gap');
+                    let padding = themeNode.get_length('-arrow-rise');
+
+                    let resX, resY;
+                    log('_arrowSide ' + this._arrowSide);
+
+                    switch (this._arrowSide) {
+                        case St.Side.TOP:
+                            resY = sourceBottomRight.y + gap;
+                            break;
+                        case St.Side.BOTTOM:
+                            resY = sourceTopLeft.y - natHeight - gap;
+                            break;
+                        case St.Side.LEFT:
+                            resX = sourceBottomRight.x + gap;
+                            break;
+                        case St.Side.RIGHT:
+                            resX = sourceTopLeft.x - natWidth - gap;
+                            break;
+                    }
+
+                    // Now align and position the pointing axis, making sure it fits on
+                    // screen. If the arrowOrigin is so close to the edge that the arrow
+                    // will not be isosceles, we try to compensate as follows:
+                    //   - We skip the rounded corner and settle for a right angled arrow
+                    //     as shown below. See _drawBorder for further details.
+                    //     |\_____
+                    //     |
+                    //     |
+                    //   - If the arrow was going to be acute angled, we move the position
+                    //     of the box to maintain the arrow's accuracy.
+
+                    let arrowOrigin;
+                    let halfBase = Math.floor(arrowBase / 2);
+                    let halfBorder = borderWidth / 2;
+                    let halfMargin = margin / 2;
+                    let [x1, y1] = [halfBorder, halfBorder];
+                    let [x2, y2] = [
+                        natWidth - halfBorder,
+                        natHeight - halfBorder,
+                    ];
+
+                    switch (this._arrowSide) {
+                        case St.Side.TOP:
+                        case St.Side.BOTTOM:
+                            resX =
+                                sourceCenterX -
+                                (halfMargin + (natWidth - margin) * alignment);
+
+                            resX = Math.max(resX, workarea.x + padding);
+                            resX = Math.min(
+                                resX,
+                                workarea.x +
+                                    workarea.width -
+                                    (padding + natWidth)
+                            );
+
+                            arrowOrigin = sourceCenterX - resX;
+                            if (arrowOrigin <= x1 + (borderRadius + halfBase)) {
+                                if (arrowOrigin > x1) resX += arrowOrigin - x1;
+                                arrowOrigin = x1;
+                            } else if (
+                                arrowOrigin >=
+                                x2 - (borderRadius + halfBase)
+                            ) {
+                                if (arrowOrigin < x2) resX -= x2 - arrowOrigin;
+                                arrowOrigin = x2;
+                            }
+                            break;
+
+                        case St.Side.LEFT:
+                        case St.Side.RIGHT:
+                            resY =
+                                sourceCenterY -
+                                (halfMargin + (natHeight - margin) * alignment);
+
+                            resY = Math.max(resY, workarea.y + padding);
+                            resY = Math.min(
+                                resY,
+                                workarea.y +
+                                    workarea.height -
+                                    (padding + natHeight)
+                            );
+
+                            arrowOrigin = sourceCenterY - resY;
+                            if (arrowOrigin <= y1 + (borderRadius + halfBase)) {
+                                if (arrowOrigin > y1) resY += arrowOrigin - y1;
+                                arrowOrigin = y1;
+                            } else if (
+                                arrowOrigin >=
+                                y2 - (borderRadius + halfBase)
+                            ) {
+                                if (arrowOrigin < y2) resY -= y2 - arrowOrigin;
+                                arrowOrigin = y2;
+                            }
+                            break;
+                    }
+
+                    this.setArrowOrigin(arrowOrigin);
+
+                    let parent = this.get_parent();
+                    let success, x, y;
+                    while (!success) {
+                        [success, x, y] = parent.transform_stage_point(
+                            resX,
+                            resY
+                        );
+                        parent = parent.get_parent();
+                    }
+                    log('x: ' + Math.floor(x) + ' y: ' + Math.floor(y));
+                    // Actually set the position
+                    allocationBox.set_origin(Math.floor(x), Math.floor(y));
                 };
             }
         });
@@ -204,8 +371,9 @@ export class MsStatusArea extends Clutter.Actor {
     restorePanelMenuSide() {
         this.gnomeShellPanel.menuManager._menus.forEach((menu) => {
             if (menu._boxPointer) {
-                menu._boxPointer._calculateArrowSide =
-                    (menu._boxPointer as any).oldArrowSideFunction;
+                menu._boxPointer._calculateArrowSide = (
+                    menu._boxPointer as any
+                ).oldArrowSideFunction;
                 delete (menu._boxPointer as any).oldArrowSideFunction;
             }
         });

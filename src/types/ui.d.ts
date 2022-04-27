@@ -1,12 +1,20 @@
+import * as Clutter from 'clutter';
 import { Actor } from 'clutter';
 import * as Gio from 'gio';
-import { KeyBindingAction, KeyBindingFlags, KeyHandlerFunc, ModalOptions, Rectangle, WindowType, Workspace } from 'meta';
 import * as Meta from 'meta';
+import {
+    KeyBindingAction,
+    KeyBindingFlags,
+    KeyHandlerFunc,
+    ModalOptions,
+    Rectangle,
+    WindowType,
+    Workspace,
+} from 'meta';
 import { ActionMode } from 'shell';
-import { Widget } from 'st';
 import * as St from 'st';
+import { Widget } from 'st';
 import { GObject } from './mod';
-import * as Clutter from 'clutter';
 
 declare module 'meta' {
     // Expose some additional "private" fields of the Workspace class
@@ -63,7 +71,13 @@ declare module 'ui' {
         }
 
         class MonitorConstraint extends Clutter.Constraint {
-            constructor(props: Partial<{ primary: boolean, workArea: boolean, index: number }>);
+            constructor(
+                props: Partial<{
+                    primary: boolean;
+                    workArea: boolean;
+                    index: number;
+                }>
+            );
             get primary(): boolean;
             set primary(v: boolean);
             get workArea(): boolean;
@@ -72,8 +86,7 @@ declare module 'ui' {
             set index(v: number);
         }
 
-        export class UiActor extends St.Widget {
-        }
+        export class UiActor extends St.Widget {}
 
         export class LayoutManager extends GObject.Object {
             monitors: Monitor[];
@@ -94,11 +107,14 @@ declare module 'ui' {
             removeChrome(actor: Actor): void;
             addChrome(actor: Actor): void;
             _findActor(actor: Actor): number;
-            _trackActor(actor: Actor, params: {
-                trackFullscreen?: boolean;
-                affectsStruts?: boolean;
-                affectsInputRegion?: boolean;
-            }): void;
+            _trackActor(
+                actor: Actor,
+                params: {
+                    trackFullscreen?: boolean;
+                    affectsStruts?: boolean;
+                    affectsInputRegion?: boolean;
+                }
+            ): void;
             _untrackActor(actor: Actor): void;
             getWorkAreaForMonitor(monitorIndex: number): Rectangle;
             findMonitorForActor(actor: Actor): Monitor | null;
@@ -115,16 +131,25 @@ declare module 'ui' {
         messageTray: messageTray.MessageTray;
         uiGroup: layout.UiActor;
         extensionManager: extensionSystem.ExtensionManager;
-        pushModal(actor: Actor, options?: { timestamp?: number, options?: ModalOptions, actionMode?: ActionMode }): void;
+        pushModal(
+            actor: Actor,
+            options?: {
+                timestamp?: number;
+                options?: ModalOptions;
+                actionMode?: ActionMode;
+            }
+        ): void;
         popModal(actor: Actor): void;
         _findModal(grab: any): number;
         loadTheme(): void;
         reloadThemeResource(): void;
-    }
+    };
 
     export namespace extensionSystem {
         class ExtensionManager {
-            lookup(uuid: string): { uuid: string, stateObj: extension.Extension } | undefined;
+            lookup(
+                uuid: string
+            ): { uuid: string; stateObj: extension.Extension } | undefined;
         }
     }
 
@@ -143,15 +168,15 @@ declare module 'ui' {
             menuManager: popupMenu.PopupMenuManager;
             statusArea: {
                 // TODO: Make all optional?
-                activities: any, // ActivitiesButton,
-                aggregateMenu: any, // AggregateMenu,
-                appMenu: any, // AppMenuButton,
-                dateMenu: dateMenu.DateMenuButton,
-                a11y: any, // imports.ui.status.accessibility.ATIndicator,
-                keyboard: any, // imports.ui.status.keyboard.InputSourceIndicator,
-                dwellClick: any, // imports.ui.status.dwellClick.DwellClickIndicator,
-                screenRecording: any, // imports.ui.status.remoteAccess.ScreenRecordingIndicator,
-            }
+                activities: any; // ActivitiesButton,
+                aggregateMenu: any; // AggregateMenu,
+                appMenu: any; // AppMenuButton,
+                dateMenu: dateMenu.DateMenuButton;
+                a11y: any; // imports.ui.status.accessibility.ATIndicator,
+                keyboard: any; // imports.ui.status.keyboard.InputSourceIndicator,
+                dwellClick: any; // imports.ui.status.dwellClick.DwellClickIndicator,
+                screenRecording: any; // imports.ui.status.remoteAccess.ScreenRecordingIndicator,
+            };
         }
     }
 
@@ -167,8 +192,7 @@ declare module 'ui' {
     export namespace panelMenu {
         class ButtonBox extends St.Widget {}
 
-        class Button extends ButtonBox {
-        }
+        class Button extends ButtonBox {}
     }
 
     export namespace popupMenu {
@@ -180,11 +204,11 @@ declare module 'ui' {
         }
 
         interface PopupBaseMenuItemParams {
-            reactive?: boolean,
-            activate?: boolean,
-            hover?: boolean,
-            style_class?: string | null,
-            can_focus?: boolean,
+            reactive?: boolean;
+            activate?: boolean;
+            hover?: boolean;
+            style_class?: string | null;
+            can_focus?: boolean;
         }
 
         class PopupBaseMenuItem extends St.BoxLayout {
@@ -201,7 +225,11 @@ declare module 'ui' {
         class PopupImageMenuItem extends PopupBaseMenuItem {
             label: St.Label;
             _icon: St.Icon;
-            constructor(text: string, icon: Gio.Icon | string, params?: PopupBaseMenuItemParams);
+            constructor(
+                text: string,
+                icon: Gio.Icon | string,
+                params?: PopupBaseMenuItemParams
+            );
         }
 
         class PopupSubMenuMenuItem extends PopupBaseMenuItem {
@@ -212,7 +240,11 @@ declare module 'ui' {
         class PopupSwitchMenuItem extends PopupBaseMenuItem {
             _statusBin: St.Bin;
             get state(): boolean;
-            constructor(text: string, active: boolean, params?: PopupBaseMenuItemParams);
+            constructor(
+                text: string,
+                active: boolean,
+                params?: PopupBaseMenuItemParams
+            );
         }
 
         class PopupMenuBase {
@@ -221,8 +253,19 @@ declare module 'ui' {
             toggle(): void;
             destroy(): void;
             removeAll(): void;
-            addMenuItem(menuItem: PopupMenuSection | PopupSubMenuMenuItem | PopupSeparatorMenuItem | PopupBaseMenuItem, position?: number): void;
-            addAction(title: string, callback: (event: any)=>void, icon?: Gio.IconPrototype): PopupBaseMenuItem;
+            addMenuItem(
+                menuItem:
+                    | PopupMenuSection
+                    | PopupSubMenuMenuItem
+                    | PopupSeparatorMenuItem
+                    | PopupBaseMenuItem,
+                position?: number
+            ): void;
+            addAction(
+                title: string,
+                callback: (event: any) => void,
+                icon?: Gio.IconPrototype
+            ): PopupBaseMenuItem;
             _getMenuItems(): (PopupBaseMenuItem | PopupMenuSection)[];
             get numMenuItems(): number;
         }
@@ -231,9 +274,12 @@ declare module 'ui' {
 
         class PopupSubMenu extends PopupMenuBase {}
 
-
         class PopupMenu extends PopupMenuBase {
-            constructor(sourceActor: Actor, arrowAlignment: number, arrowSide: St.Side);
+            constructor(
+                sourceActor: Actor,
+                arrowAlignment: number,
+                arrowSide: St.Side
+            );
             _boxPointer: boxPointer.BoxPointer;
         }
     }
@@ -241,6 +287,7 @@ declare module 'ui' {
     export namespace boxPointer {
         class BoxPointer extends St.Widget {
             _calculateArrowSide(arrowSide: St.Side): St.Side;
+            _arrowSide: St.Side;
         }
     }
 
@@ -257,10 +304,28 @@ declare module 'ui' {
             searchInProgress?: boolean;
             display: search.SearchResult | null | undefined;
 
-            getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
-            getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
+            getInitialResultSet(
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
+            getSubsearchResultSet(
+                previousResults: string[],
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
             activateResult(id: string, terms: string[]): void;
-            getResultMetas(identifiers: string[], callback: (metas: { id: string, name: string, createIcon: (size: number)=>St.Icon }[])=>void): void;
+            getResultMetas(
+                identifiers: string[],
+                callback: (
+                    metas: {
+                        id: string;
+                        name: string;
+                        createIcon: (size: number) => St.Icon;
+                    }[]
+                ) => void
+            ): void;
         }
 
         class AppIcon extends GObject.Object {}
@@ -272,10 +337,28 @@ declare module 'ui' {
             searchInProgress?: boolean;
             display: search.SearchResult | null | undefined;
 
-            getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
-            getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
+            getInitialResultSet(
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
+            getSubsearchResultSet(
+                previousResults: string[],
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
             activateResult(id: string, terms: string[]): void;
-            getResultMetas(identifiers: string[], callback: (metas: { id: string, name: string, createIcon: (size: number)=>St.Icon }[])=>void): void;
+            getResultMetas(
+                identifiers: string[],
+                callback: (
+                    metas: {
+                        id: string;
+                        name: string;
+                        createIcon: (size: number) => St.Icon;
+                    }[]
+                ) => void
+            ): void;
         }
     }
 
@@ -291,15 +374,38 @@ declare module 'ui' {
             searchInProgress?: boolean;
             display: search.SearchResult | null | undefined;
 
-            getInitialResultSet(terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
-            getSubsearchResultSet(previousResults: string[], terms: string[], callback: (results: string[])=>void, _cancellable: Gio.Cancellable): void;
+            getInitialResultSet(
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
+            getSubsearchResultSet(
+                previousResults: string[],
+                terms: string[],
+                callback: (results: string[]) => void,
+                _cancellable: Gio.Cancellable
+            ): void;
             activateResult(id: string, terms: string[]): void;
-            getResultMetas(identifiers: string[], callback: (metas: { id: string, name: string, description: string, createIcon: (size: number)=>St.Icon }[])=>void, cancellable?: Gio.Cancellable): void;
+            getResultMetas(
+                identifiers: string[],
+                callback: (
+                    metas: {
+                        id: string;
+                        name: string;
+                        description: string;
+                        createIcon: (size: number) => St.Icon;
+                    }[]
+                ) => void,
+                cancellable?: Gio.Cancellable
+            ): void;
 
-            appInfo: Gio.DesktopAppInfo
+            appInfo: Gio.DesktopAppInfo;
         }
 
-        function loadRemoteSearchProviders(searchSettings: Gio.Settings, callback: (providers: remoteSearch.RemoteSearchProvider[])=>void): void;
+        function loadRemoteSearchProviders(
+            searchSettings: Gio.Settings,
+            callback: (providers: remoteSearch.RemoteSearchProvider[]) => void
+        ): void;
     }
 
     export namespace sessionMode {
@@ -310,7 +416,7 @@ declare module 'ui' {
             get currentMode(): string;
         }
     }
-    
+
     export namespace overview {
         class OverviewActor extends St.BoxLayout {
             _delegate: any;
@@ -331,8 +437,15 @@ declare module 'ui' {
             toggle(): void;
             _relayout(): void;
             _gestureBegin(tracker: swipeTracker.SwipeTracker): void;
-            _gestureUpdate(tracker: swipeTracker.SwipeTracker, progress: number): void;
-            _gestureEnd(tracker: swipeTracker.SwipeTracker, duration: number, endProgress: number): void;
+            _gestureUpdate(
+                tracker: swipeTracker.SwipeTracker,
+                progress: number
+            ): void;
+            _gestureEnd(
+                tracker: swipeTracker.SwipeTracker,
+                duration: number,
+                endProgress: number
+            ): void;
             get visible(): boolean;
         }
     }
@@ -340,7 +453,12 @@ declare module 'ui' {
     export namespace swipeTracker {
         class SwipeTracker extends GObject.Object {
             orientation: Clutter.Orientation;
-            constructor(actor: Actor, orientation: Clutter.Orientation, allowedModes: ActionMode, params: { allowDrag: boolean, allowScroll: boolean });
+            constructor(
+                actor: Actor,
+                orientation: Clutter.Orientation,
+                allowedModes: ActionMode,
+                params: { allowDrag: boolean; allowScroll: boolean }
+            );
         }
     }
 
@@ -359,7 +477,13 @@ declare module 'ui' {
             _workspaceTracker: WorkspaceTracker;
             _shouldAnimate(actor: Actor, types: WindowType[]): void;
             removeKeybinding(name: string): void;
-            addKeybinding(name: string, settings: Gio.Settings, flags: KeyBindingFlags, modes: ActionMode, handler: KeyHandlerFunc): number | KeyBindingAction.NONE;
+            addKeybinding(
+                name: string,
+                settings: Gio.Settings,
+                flags: KeyBindingFlags,
+                modes: ActionMode,
+                handler: KeyHandlerFunc
+            ): number | KeyBindingAction.NONE;
         }
 
         export class WorkspaceTracker {
