@@ -36,7 +36,7 @@ export class SearchResultHeader extends St.Bin {
     label: St.Label;
     constructor(text: string) {
         super({
-            style_class: 'subtitle-2 margin margin-top-x2 margin-bottom-x2',
+            style_class: 'subtitle-2 margin margin-top-x2 margin-bottom-x2 text-high-emphasis',
         });
 
         this.label = new St.Label({
