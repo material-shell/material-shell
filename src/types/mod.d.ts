@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
 /* eslint-disable @typescript-eslint/ban-types */
 import * as Clutter from 'clutter';
+import { AppLaunchContext } from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
+import * as Shell from 'shell';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { MsOverview } from 'src/layout/overview';
 import { LayoutManager } from 'src/manager/layoutManager';
@@ -53,14 +55,14 @@ declare global {
              * @param timestamp the timestamp for the launch (or 0 for current time)
              * @param workspace a workspace index, or -1 to indicate the current one
              */
-            create_app_launch_context(timestep: number, workspace: number);
+            create_app_launch_context(timestep: number, workspace: number): AppLaunchContext;
             /** Material shell */
             ms: Extension;
             display: Meta.Display;
             session_mode: string;
-            stage: Clutter.Stage & { key_focus: any };
+            stage: Clutter.Stage;
             window_group: Clutter.Actor;
-            window_manager: any;
+            window_manager: Shell.WM;
             workspace_manager: Meta.WorkspaceManager;
             top_window_group: Clutter.Actor;
         }
@@ -90,6 +92,7 @@ declare global {
         layout: any;
         uuid: string;
         path: string;
+        logWithStackTrace: (...args: any[]) => void;
         logFocus: (...args: any[]) => void;
         logBlank: () => void;
         log: (...args: any[]) => void;
@@ -110,14 +113,6 @@ declare global {
     interface Object {
         emit(name: string, ...args: any[]): void;
     }
-}
-
-export interface Monitor {
-    readonly index: number;
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
 }
 
 export interface Rectangular {
@@ -167,7 +162,7 @@ declare module 'gobject' {
 
 declare module 'clutter' {
     export interface Actor {
-        metaWindow?: any;
+        // metaWindow?: any;
         msWorkspace?: MsWorkspace;
     }
 
@@ -260,21 +255,21 @@ declare module 'clutter' {
     }
 }
 
-declare namespace Shell {
-    interface Dialog extends St.Widget {
-        _dialog: St.Widget;
-        contentLayout: St.Widget;
-    }
+// declare namespace Shell {
+//     interface Dialog extends St.Widget {
+//         _dialog: St.Widget;
+//         contentLayout: St.Widget;
+//     }
 
-    interface ModalDialog extends St.Widget {
-        contentLayout: St.Widget;
-        dialogLayout: Dialog;
+//     interface ModalDialog extends St.Widget {
+//         contentLayout: St.Widget;
+//         dialogLayout: Dialog;
 
-        addButton(action: DialogButtonAction): void;
+//         addButton(action: DialogButtonAction): void;
 
-        close(timestamp: number): void;
-        open(timestamp: number, on_primary: boolean): void;
+//         close(timestamp: number): void;
+//         open(timestamp: number, on_primary: boolean): void;
 
-        setInitialKeyFocus(actor: Clutter.Actor): void;
-    }
-}
+//         setInitialKeyFocus(actor: Clutter.Actor): void;
+//     }
+// }

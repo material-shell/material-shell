@@ -9,18 +9,14 @@ import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
-
-const AppDisplay = imports.ui.appDisplay;
+import { appDisplay, remoteSearch } from 'ui';
 
 const DND = imports.ui.dnd;
-const Main = imports.ui.main;
 const ShellEntry = imports.ui.shellEntry;
 const ParentalControlsManager = imports.misc.parentalControlsManager;
-const RemoteSearch = imports.ui.remoteSearch;
-const PopupMenu = imports.ui.popupMenu;
 const SystemActions = imports.misc.systemActions;
 
-function getTermsForSearchString(searchString) {
+function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
     if (searchString === '') return [];
     return searchString.split(/\s+/);
@@ -30,13 +26,15 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+type SearchProvider = appDisplay.AppSearchProvider | remoteSearch.RemoteSearchProvider;
+
 @registerGObjectClass
 export class SearchResultHeader extends St.Bin {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'SearchResultHeader',
     };
     label: St.Label;
-    constructor(text) {
+    constructor(text: string) {
         super({
             style_class: 'subtitle-2 margin margin-top-x2 margin-bottom-x2',
         });
@@ -60,20 +58,22 @@ export class SearchResultEntry extends MatButton {
         },
     };
     layout = new St.BoxLayout();
-    icon: St.Icon;
+    icon: St.Icon | null;
     textLayout = new St.BoxLayout({
         vertical: true,
         styleClass: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
         y_align: Clutter.ActorAlign.CENTER,
     });
     title: St.Label;
-    description: St.Label;
-    constructor(icon, title, description?, withMenu?) {
+    description: St.Label | null;
+    constructor(icon: St.Icon | null, title: string, description?: string, withMenu?: boolean) {
         super({});
         if (icon) {
             this.icon = icon;
             this.icon.set_style('margin: 12px');
             this.layout.add_child(this.icon);
+        } else {
+            this.icon = null;
         }
 
         this.layout.add_child(this.textLayout);
@@ -88,6 +88,8 @@ export class SearchResultEntry extends MatButton {
                 style: 'margin-top:2px',
             });
             this.textLayout.add_child(this.description);
+        } else {
+            this.description = null;
         }
 
         this.set_child(this.layout);
@@ -97,7 +99,7 @@ export class SearchResultEntry extends MatButton {
         } */
     }
 
-    setSelected(selected) {
+    setSelected(selected: boolean) {
         if (selected) {
             this.add_style_class_name('highlighted');
         } else {
@@ -120,14 +122,13 @@ export class SearchResultList extends St.BoxLayout {
     searchEntry: St.Entry;
     text: Text;
     parentalControlsManager;
-    providers = [];
+    providers: SearchProvider[] = [];
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
-    startingSearch: boolean;
-    private results: any = {};
-    isSubSearch: boolean;
-    highlightRegex: RegExp;
+    startingSearch: boolean = false;
+    private results: Record<string,string[]> = {};
+    isSubSearch: boolean = false;
     cancellable = new Gio.Cancellable();
     clearIcon = new St.Icon({
         style_class: 'search-entry-icon',
@@ -146,6 +147,7 @@ export class SearchResultList extends St.BoxLayout {
 
         this.text = this.searchEntry.clutter_text;
         this.text.connect('text-changed', this.onTextChanged.bind(this));
+        // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
         this.text.connect('key-press-event', this.onKeyPress.bind(this));
         this.text.connect('key-focus-in', () => {});
         this.text.connect('key-focus-out', () => {});
@@ -182,7 +184,7 @@ export class SearchResultList extends St.BoxLayout {
             this.reloadRemoteProviders.bind(this)
         );
 
-        this.registerProvider(new AppDisplay.AppSearchProvider());
+        this.registerProvider(new appDisplay.AppSearchProvider());
 
         const appSystem = Shell.AppSystem.get_default();
         appSystem.connect(
@@ -198,12 +200,12 @@ export class SearchResultList extends St.BoxLayout {
         ) as SearchResultEntry[];
     }
 
-    registerProvider(provider): void {
+    registerProvider(provider: SearchProvider): void {
         provider.searchInProgress = false;
 
         // Filter out unwanted providers.
         if (
-            provider.appInfo &&
+            provider.isRemoteProvider &&
             !this.parentalControlsManager.shouldShowApp(provider.appInfo)
         )
             return;
@@ -219,7 +221,7 @@ export class SearchResultList extends St.BoxLayout {
             this.unregisterProvider(provider);
         });
 
-        RemoteSearch.loadRemoteSearchProviders(
+        remoteSearch.loadRemoteSearchProviders(
             this.searchSettings,
             (providers) => {
                 providers.forEach(this.registerProvider.bind(this));
@@ -227,7 +229,7 @@ export class SearchResultList extends St.BoxLayout {
         );
     }
 
-    unregisterProvider(provider): void {
+    unregisterProvider(provider: SearchProvider): void {
         const index = this.providers.indexOf(provider);
         this.providers.splice(index, 1);
 
@@ -262,7 +264,7 @@ export class SearchResultList extends St.BoxLayout {
         }
     }
 
-    onKeyPress(entry, event) {
+    onKeyPress(entry: Clutter.Actor, event: Clutter.Event) {
         const symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Escape) {
             this.resetAndClose();
@@ -288,7 +290,9 @@ export class SearchResultList extends St.BoxLayout {
                 symbol === Clutter.KEY_Return ||
                 symbol === Clutter.KEY_KP_Enter
             ) {
-                this.entrySelected.emit('primary-action');
+                if (this.entrySelected !== null) {
+                    this.entrySelected.emit('primary-action');
+                }
                 return Clutter.EVENT_STOP;
             }
         }
@@ -351,7 +355,7 @@ export class SearchResultList extends St.BoxLayout {
         if (this.text.text !== '') this.reset();
     }
 
-    setTerms(terms): void {
+    setTerms(terms: string[]): void {
         // Check for the case of making a duplicate previous search before
         // setting state of the current search or cancelling the search.
         // This will prevent incorrect state being as a result of a duplicate
@@ -387,20 +391,16 @@ export class SearchResultList extends St.BoxLayout {
         const escapedTerms = this.terms.map((term) =>
             Shell.util_regex_escape(term)
         );
-        this.highlightRegex = new RegExp(
-            ('(%s)' as any).format(escapedTerms.join('|')),
-            'gi'
-        );
 
         //this.emit('terms-changed');
     }
 
-    gotResults(results, provider) {
+    gotResults(results: string[], provider: SearchProvider) {
         this.results[provider.id] = results;
         this.updateResults(provider, results);
     }
 
-    updateResults(provider, results) {
+    updateResults(provider: SearchProvider, results: string[]) {
         if (!results.length) return;
 
         if (provider.isRemoteProvider) {
@@ -408,105 +408,119 @@ export class SearchResultList extends St.BoxLayout {
         } else {
             this.add_child(new SearchResultHeader(_('Applications')));
         }
-        provider.getResultMetas(
-            results,
-            (resMetas, index) => {
-                this.resMetas = resMetas;
-                let moreEntry;
-                //
-                const extraResults = [];
-                if (resMetas.length > 5) {
-                    moreEntry = new SearchResultEntry(
-                        new St.Icon({
-                            icon_size: 32,
-                            gicon: Gio.icon_new_for_string(
-                                `${Me.path}/assets/icons/chevron-down-symbolic.svg`
-                            ),
-                        }),
-                        ngettext(
-                            '%d more',
-                            '%d more',
-                            resMetas.length - 5
-                        ).format(resMetas.length - 5),
-                        '',
-                        provider.id === 'applications'
-                    );
 
-                    moreEntry.connect('primary-action', () => {
-                        extraResults.forEach((entry) => {
-                            this.insert_child_below(entry, moreEntry);
-                        });
-                        this.remove_child(moreEntry);
-                        this.selectResult(extraResults[0]);
+        // Note: The remote search provider also provides a description field, but the app search does not
+        const onSearchMetas = (resMetas: { id: string, name: string, description?: string, createIcon: (size: number)=>St.Icon }[] ) => {
+            this.resMetas = resMetas;
+            let moreEntry: SearchResultEntry | null = null;
+            //
+            const extraResults: SearchResultEntry[] = [];
+            if (resMetas.length > 5) {
+                const more = moreEntry = new SearchResultEntry(
+                    new St.Icon({
+                        icon_size: 32,
+                        gicon: Gio.icon_new_for_string(
+                            `${Me.path}/assets/icons/chevron-down-symbolic.svg`
+                        ),
+                    }),
+                    ngettext(
+                        '%d more',
+                        '%d more',
+                        resMetas.length - 5
+                    ).format(resMetas.length - 5),
+                    '',
+                    provider.id === 'applications'
+                );
+
+                more.connect('primary-action', () => {
+                    extraResults.forEach((entry) => {
+                        this.insert_child_below(entry, more);
+                    });
+                    this.remove_child(more);
+                    this.selectResult(extraResults[0]);
+                });
+            }
+            let numberOfRes = 0;
+            for (const res of resMetas) {
+                if (!res.name) return;
+                numberOfRes++;
+
+                let icon = res.createIcon(32);
+                if (!icon && provider.isRemoteProvider) {
+                    icon = new St.Icon({
+                        icon_size: 32,
+                        gicon: provider.appInfo.get_icon(),
                     });
                 }
-                let numberOfRes = 0;
-                for (const res of resMetas) {
-                    if (!res.name) return;
-                    numberOfRes++;
-
-                    let icon = res.createIcon(32);
-                    if (!icon && provider.appInfo) {
-                        icon = new St.Icon({
-                            icon_size: 32,
-                            gicon: provider.appInfo.get_icon(),
-                        });
-                    }
-                    const entry = new SearchResultEntry(
-                        icon,
-                        res.name,
-                        res.description,
-                        provider.id === 'applications'
-                    );
-                    entry.connect('primary-action', () => {
-                        if (provider.isRemoteProvider) {
-                            provider.activateResult(res.id, this.terms);
-                        } else {
-                            const app =
-                                Shell.AppSystem.get_default().lookup_app(
-                                    res.id
-                                );
-                            if (app) {
-                                if (app.can_open_new_window()) {
-                                    const msWindow =
-                                        Me.msWindowManager.createNewMsWindow(
-                                            app.id,
-                                            null,
-                                            null,
-                                            {
-                                                msWorkspace:
-                                                    Me.msWorkspaceManager.getActiveMsWorkspace(),
-                                                focus: true,
-                                                insert: true,
-                                            }
-                                        );
+                const entry = new SearchResultEntry(
+                    icon,
+                    res.name,
+                    // The remote search provider also provides a description field, but the app search does not
+                    res.description,
+                    provider.id === 'applications'
+                );
+                entry.connect('primary-action', () => {
+                    if (provider.isRemoteProvider) {
+                        provider.activateResult(res.id, this.terms);
+                    } else {
+                        const app =
+                            Shell.AppSystem.get_default().lookup_app(
+                                res.id
+                            );
+                        if (app) {
+                            if (app.can_open_new_window()) {
+                                const msWindow =
+                                    Me.msWindowManager.createNewMsWindow(
+                                        app.id,
+                                        null,
+                                        null,
+                                        {
+                                            msWorkspace:
+                                                Me.msWorkspaceManager.getActiveMsWorkspace(),
+                                            focus: true,
+                                            insert: true,
+                                        }
+                                    );
+                                if (msWindow !== undefined) {
                                     Me.msWindowManager.openAppForMsWindow(
                                         msWindow
                                     );
-                                } else {
-                                    app.activate();
                                 }
                             } else {
-                                SystemActions.getDefault().activateAction(
-                                    res.id
-                                );
+                                app.activate();
                             }
+                        } else {
+                            SystemActions.getDefault().activateAction(
+                                res.id
+                            );
                         }
-
-                        this.resetAndClose();
-                    });
-                    if (numberOfRes <= 5) {
-                        this.addResult(entry);
-                    } else {
-                        extraResults.push(entry);
                     }
+
+                    this.resetAndClose();
+                });
+                if (numberOfRes <= 5) {
+                    this.addResult(entry);
+                } else {
+                    extraResults.push(entry);
                 }
-                if (moreEntry) {
-                    this.addResult(moreEntry);
-                }
-            },
-            this.cancellable
-        );
+            }
+            if (moreEntry) {
+                this.addResult(moreEntry);
+            }
+        };
+
+        if (provider.isRemoteProvider) {
+            provider.getResultMetas(
+                results,
+                onSearchMetas,
+                this.cancellable
+            );
+        } else {
+            provider.getResultMetas(
+                results,
+                onSearchMetas
+            );
+        }
 
         /* display.updateSearch(results, terms, () => {
             provider.searchInProgress = false;
@@ -533,7 +547,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectNext() {
-        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
+        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
         const nextEntry = this.resultEntryList[currentIndex + 1];
         if (nextEntry) {
             this.selectResult(nextEntry);
@@ -541,7 +555,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectPrevious() {
-        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
+        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
         const previousEntry = this.resultEntryList[currentIndex - 1];
         if (previousEntry) {
             this.selectResult(previousEntry);

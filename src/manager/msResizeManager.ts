@@ -10,7 +10,7 @@ import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { throttle } from 'src/utils/index';
 import { MsWindowManager } from './msWindowManager';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -148,6 +148,7 @@ export class MsResizeManager extends MsManager {
     getFirstPortionPositionAndSize(): Rectangular {
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const { layout } = this.resizeInProgress.msWorkspace;
+        assert(layout instanceof BaseResizeableTilingLayout, "expected a resizable layout");
         const ratio = layout.mainPortion.getRatioForPortion(
             this.resizeInProgress.border.firstPortion
         );

@@ -14,7 +14,8 @@ const Util = imports.misc.util;
 
 const SearchController = imports.ui.searchController;
 
-const Main = imports.ui.main;
+import { main as Main, panel } from 'ui';
+import { assert } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -33,8 +34,7 @@ export class PanelContent extends St.BoxLayout {
     topBox: St.BoxLayout;
     workspaceList: WorkspaceList;
     statusArea: MsStatusArea;
-    disableConnect: number;
-    searchButton;
+    searchButton: MatPanelButton;
     buttonIcon: St.Icon;
     constructor() {
         super({
@@ -99,7 +99,7 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea.disable();
     }
 
-    vfunc_get_preferred_width(_forHeight): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -129,7 +129,6 @@ export class SearchContent extends St.BoxLayout {
     searchEntry: St.Entry;
     searchEntryBin: St.Bin;
     searchResultList: SearchResultList;
-    disableConnect: number;
     scrollView = new St.ScrollView({
         x_expand: true,
         hscrollbar_policy: St.PolicyType.NEVER,
@@ -198,7 +197,7 @@ export class SearchContent extends St.BoxLayout {
         this.add_child(this.scrollView);
     }
 
-    vfunc_get_preferred_width(_forHeight): [number, number] {
+    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             448 -
                 Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -212,8 +211,7 @@ export class MsPanel extends St.BoxLayout {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsPanel',
     };
-    gnomeShellPanel: any;
-    searchButton: MatPanelButton;
+    gnomeShellPanel: panel.Panel;
     panelContent: PanelContent;
     searchContent: SearchContent;
     divider: MatDivider;
@@ -344,10 +342,12 @@ export class MsPanel extends St.BoxLayout {
         }
     }
 
-    vfunc_get_preferred_height(_forWidth): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
+        const monitor = Main.layoutManager.primaryMonitor;
+        assert(monitor !== null, "found no primary monitor");
         return [
-            Main.layoutManager.primaryMonitor.height,
-            Main.layoutManager.primaryMonitor.height,
+            monitor.height,
+            monitor.height,
         ];
     }
 }

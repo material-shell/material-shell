@@ -10,7 +10,7 @@ export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
 ) {
     const msWorkspaceIsInFloatLayout =
-        metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
+        metaWindow.msWindow?.msWorkspace.layout.state.key === 'float' ?? false;
     const shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
     if (
         !metaWindow.titleBarVisible ||
@@ -46,9 +46,9 @@ export const setTitleBarVisibility = function (
     metaWindow.titleBarVisible = visible;
 };
 
-export const getWindowXID = function (win: Meta.Window) {
+export const getWindowXID = function (win: Meta.Window): string | null {
     const desc = win.get_description() || '';
-    const match = desc.match(/0x[0-9a-f]+/) || [null];
+    const match = desc.match(/0x[0-9a-f]+/);
 
-    return match[0];
+    return match !== null ? match[0] : null;
 };

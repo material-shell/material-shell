@@ -6,7 +6,7 @@ import { MsManager } from 'src/manager/msManager';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -57,11 +57,11 @@ export class MsThemeManager extends MsManager {
             Me.log('theme changed');
             this.theme = this.themeContext.get_theme();
 
-            if (Main.uiGroup.has_style_class_name('no-theme')) {
-                Main.uiGroup.remove_style_class_name('no-theme');
+            if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
+                Main.layoutManager.uiGroup.remove_style_class_name('no-theme');
             }
             if (!this.theme.application_stylesheet) {
-                Main.uiGroup.add_style_class_name('no-theme');
+                Main.layoutManager.uiGroup.add_style_class_name('no-theme');
             }
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
@@ -155,7 +155,7 @@ export class MsThemeManager extends MsManager {
         return this.themeSettings.get_boolean('clock-app-launcher');
     }
 
-    getPanelSize(monitorIndex) {
+    getPanelSize(monitorIndex: number) {
         return (
             this.themeSettings.get_int('panel-size') *
             global.display.get_monitor_scale(monitorIndex)
@@ -170,7 +170,7 @@ export class MsThemeManager extends MsManager {
         return this.themeSettings.get_enum('focus-effect');
     }
 
-    isColorDark(color) {
+    isColorDark(color: string) {
         color = color.replace('#', '');
         const r = parseInt(color.substring(0, 2), 16);
         const g = parseInt(color.substring(2, 4), 16);
@@ -237,7 +237,7 @@ export class MsThemeManager extends MsManager {
         });
     }
 
-    async buildThemeStylesheetToFile(file) {
+    async buildThemeStylesheetToFile(file: Gio.FilePrototype) {
         const originThemeFile = Gio.file_new_for_path(
             `${Me.path}/style-${this.themeValue}-theme.css`
         );
@@ -251,7 +251,7 @@ export class MsThemeManager extends MsManager {
     async regenerateStylesheet() {
         this.unloadStylesheet();
         if (!this.theme.application_stylesheet) {
-            Main.uiGroup.add_style_class_name('no-theme');
+            Main.layoutManager.uiGroup.add_style_class_name('no-theme');
         }
         if (ShellVersionMatch('3.34')) {
             //TODO The new code may prevent crashes on 3.34 without this, needs testing
@@ -269,8 +269,8 @@ export class MsThemeManager extends MsManager {
     }
 
     unloadStylesheet() {
-        if (Main.uiGroup.has_style_class_name('no-theme')) {
-            Main.uiGroup.remove_style_class_name('no-theme');
+        if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
+            Main.layoutManager.uiGroup.remove_style_class_name('no-theme');
         }
         this.theme.unload_stylesheet(this.themeFile);
     }

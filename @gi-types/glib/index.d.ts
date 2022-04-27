@@ -4265,7 +4265,7 @@ export class Variant<S extends string = any> {
     static ["new"]<S extends string>(sig: S, value: $ParseDeepVariant<typeof sig>): Variant<S>;
     static _new_internal<S extends string>(sig: S, value: $ParseDeepVariant<typeof sig>): Variant<S>;
     static new_array<C extends string = "a?">(
-        child_type?: VariantType<C> | null,
+        child_type: VariantType<C>,
         children?: Variant<$VariantTypeToString<typeof child_type>>[] | null
     ): Variant<`a${C}`>;
     static new_boolean(value: boolean): Variant<"b">;

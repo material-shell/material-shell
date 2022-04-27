@@ -3,21 +3,24 @@ import { walk } from 'estree-walker';
 import {BaseNode, Program, ClassDeclaration, Identifier, MethodDefinition, SimpleCallExpression, BlockStatement, ClassExpression, ExpressionStatement, AssignmentExpression, FunctionDeclaration, ArrayExpression, ImportDeclaration, VariableDeclaration, ImportSpecifier} from 'estree';
 import { glob } from 'glob';
 import * as fs from 'fs';
+import { ASTNode } from "ast-types";
 
 /// Test case that this script should pass.
 /// It should transpile `testInput` to `testOutput`.
+/// Note: Typescript generates the `= TestClass_1` sometimes if you use `TestClass` as a value (not a type) inside the class.
 const testInput = `
 import * as GLib from 'glib';
 import { a, b } from 'glib';
+var TestClass_1;
 
-let TestClass = class TestClass extends Clutter.Actor {
+let TestClass = TestClass_1 = class TestClass extends Clutter.Actor {
     constructor(params) {
         super(params);
         // This is a test comment
     }
 };
 
-TestClass = __decorate([
+TestClass = TestClass_1 = __decorate([
     registerGObjectClass
 ], TestClass);
 `;
@@ -25,15 +28,16 @@ TestClass = __decorate([
 const testOutput = `
 const GLib = imports.gi.GLib;
 const { a, b } = imports.gi.GLib;
+var TestClass_1;
 
-let TestClass = class TestClass extends Clutter.Actor {
+let TestClass = TestClass_1 = class TestClass extends Clutter.Actor {
     _init(params) {
         super._init(params);
         // This is a test comment
     }
 };
 
-TestClass = __decorate([
+TestClass = TestClass_1 = __decorate([
     registerGObjectClass
 ], TestClass);
 `;
@@ -111,12 +115,17 @@ function getDecoratorTargets(node: BaseNode): string[] | null {
         for (let child of node.body) {
             if (!isExpressionStatement(child)) continue;
             if (!isAssignmentExpression(child.expression)) continue;
-            if (!isSimpleCallExpression(child.expression.right)) continue;
-            if (!isIdentifier(child.expression.right.callee)) continue;
+            let rhs = child.expression.right;
 
-            if (child.expression.right.callee.name != "__decorate") continue;
+            // Essentially go from expressions on the form `a = b = c = d` to `a = d`
+            while (isAssignmentExpression(rhs)) rhs = rhs.right;
 
-            let args = child.expression.right.arguments;
+            if (!isSimpleCallExpression(rhs)) continue;
+            if (!isIdentifier(rhs.callee)) continue;
+
+            if (rhs.callee.name != "__decorate") continue;
+
+            let args = rhs.arguments;
             if (args.length != 2) continue;
 
             let decoratorFunctions = args[0];
@@ -181,12 +190,26 @@ function convertImports(text: string) {
         ]
     });
 
+    const regexes3: [RegExp, string][] = giImports.map(x => {
+        const [name, importpath] = x;
+        return [
+            new RegExp(`(const {.+) as (.+} = ${importpath};)`, "g"),
+            "$1: $2"
+        ]
+    });
+
     for (let regex of regexes) {
         text = text.replace(regex[0], regex[1]);
     }
 
     for (let regex of regexes2) {
         text = text.replace(regex[0], regex[1]);
+    }
+
+    for (let i = 0; i < 3; i++) {
+        for (let regex of regexes3) {
+            text = text.replace(regex[0], regex[1]);
+        }
     }
 
     return text;
@@ -226,7 +249,6 @@ function transpile(ast: BaseNode) {
                     }
                 }
                 if (isSimpleCallExpression(node)) {
-                    // console.log(node);
                     if (node.callee.type == "Super") {
                         // We found a `super(...)` call
                         // Change it to `super._init(...)`
@@ -262,7 +284,15 @@ glob("build/**/*.js", {}, (er, files) => {
         let text = fs.readFileSync(file).toString();
         text = convertImports(text);
         // Parse it into an AST
-        let ast = parse(text);
+        let ast: ASTNode;
+        try {
+            ast = parse(text);
+        } catch(e) {
+            console.log(`Failed to parse ${file}`);
+            console.log("Writing converted text to temp.js");
+            fs.writeFileSync("temp.js", text);
+            throw e;
+        }
         // Change the things we want to change
         transpile(ast);
         // Convert it back into a string

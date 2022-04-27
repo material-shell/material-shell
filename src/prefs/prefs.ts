@@ -3,6 +3,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -22,10 +23,13 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {}
+function init() {
+    log("INITIALIZING PREFERENCES");
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
+    log("Prefs widget");
     return new PrefsWidget();
 }
 
@@ -85,12 +89,12 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
         ],
     };
 
-    private _name_label: Gtk.Label;
-    private _description_label: Gtk.Label;
-    private _widget_container: Gtk.Box;
+    private declare _name_label: Gtk.Label;
+    private declare _description_label: Gtk.Label;
+    private declare _widget_container: Gtk.Box;
     private _settings_widget: Gtk.Widget;
 
-    constructor(summary, description, widget) {
+    constructor(summary: string, description: string, widget: Gtk.Widget) {
         super();
         this._name_label.set_text(summary);
         this._description_label.set_text(description);
@@ -128,21 +132,25 @@ class HotkeyListBox extends Gtk.ListBox {
         });
 
         this.settings = new Gio.Settings({
-            settings_schema: schemaSource.lookup(hotkeysSchemaName, false),
+            settings_schema: schemaSource.lookup(hotkeysSchemaName, false) || undefined,
         });
 
         this.settings
             .list_keys()
             .map((key) => {
-                const [_, accelKey, accelerators, mods] =
+                const [ok, accelKey, accelerators, mods] =
                     Gtk.accelerator_parse_with_keycode(
                         this.settings.get_strv(key)[0],
                         null
                     );
+                if (!ok) {
+                    Me.log(`Could not parse key for ${key}: ${this.settings.get_strv(key)[0]}`);
+                }
                 let accelName;
                 if (accelKey == 0) {
                     accelName = 'Disabled';
                 } else {
+                    assert(accelKey !== null && mods !== null, "parse should have succeeded");
                     accelName = Gtk.accelerator_get_label(accelKey, mods);
                 }
                 const summary = this.settings.settings_schema
@@ -194,9 +202,10 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
             },
         },
     };
-    private _accel_label: Gtk.Label;
-    private _hotkey_label: Gtk.Label;
-    private _dialog: Gtk.Dialog;
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _accel_label: Gtk.Label;
+    private declare _hotkey_label: Gtk.Label;
+    private declare _dialog: Gtk.Dialog;
 
     key: string;
     constructor(key: string, hotkeyName: string, accel: string) {
@@ -211,12 +220,12 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         this._dialog.transient_for = this.get_root() as Gtk.Window;
         this._dialog.present();
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).inhibit_system_shortcuts(null);
     }
 
     onKeyPressed(
-        _widget,
+        _widget: Gtk.Widget,
         keyval: number,
         keycode: number,
         state: Gdk.ModifierType
@@ -253,7 +262,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
 
     closeDialog() {
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).restore_system_shortcuts();
         this._dialog.close();
     }
@@ -274,8 +283,11 @@ class SettingCategoryListBox extends Gtk.Box {
         },
         InternalChildren: ['title_label', 'list_box'],
     };
-    private _title_label: Gtk.Label;
-    private _list_box: Gtk.ListBox;
+
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _title_label: Gtk.Label;
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _list_box: Gtk.ListBox;
 
     public settings: Gio.Settings;
 
@@ -283,7 +295,7 @@ class SettingCategoryListBox extends Gtk.Box {
         super();
 
         this.settings = new Gio.Settings({
-            settings_schema: schemaSource.lookup(schema, false),
+            settings_schema: schemaSource.lookup(schema, false) || undefined,
         });
         this.title = title;
     }
@@ -300,7 +312,7 @@ class SettingCategoryListBox extends Gtk.Box {
         const settingKey = this.settings.settings_schema.get_key(key);
         const summary = settingKey.get_summary();
         const description = settingKey.get_description();
-        let widget;
+        let widget: Gtk.Widget;
         switch (type) {
             case WidgetType.BOOLEAN:
                 widget = new Gtk.Switch();
@@ -313,13 +325,13 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.COMBO:
-                widget = new Gtk.ComboBoxText();
+                const combo = widget = new Gtk.ComboBoxText();
                 const a = settingKey
                     .get_range()
                     .get_child_value(1)
                     .recursiveUnpack() as any[];
                 a.forEach((value) => {
-                    widget.append(value, value);
+                    combo.append(value, value);
                 });
                 this.settings.bind(
                     key,
@@ -330,10 +342,10 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.COLOR: {
-                widget = new Gtk.ColorButton();
+                const btn = widget = new Gtk.ColorButton();
                 const rgba = new Gdk.RGBA();
                 rgba.parse(this.settings.get_string(key));
-                widget.set_rgba(rgba);
+                btn.set_rgba(rgba);
                 widget.connect('color-set', (button) => {
                     const rgba = button.get_rgba();
                     const css = rgba.to_string();
@@ -343,20 +355,20 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
             }
             case WidgetType.INT:
-                widget = Gtk.SpinButton.new_with_range(0, 1000, 1);
+                const spin = widget = Gtk.SpinButton.new_with_range(0, 1000, 1);
                 this.settings.bind(
                     key,
-                    widget.get_adjustment(),
+                    spin.get_adjustment(),
                     'value',
                     Gio.SettingsBindFlags.DEFAULT
                 );
                 break;
 
             case WidgetType.DECIMAL:
-                widget = Gtk.SpinButton.new_with_range(0, 1, 0.1);
+                const spin2 = widget = Gtk.SpinButton.new_with_range(0, 1, 0.1);
                 this.settings.bind(
                     key,
-                    widget.get_adjustment(),
+                    spin2.get_adjustment(),
                     'value',
                     Gio.SettingsBindFlags.DEFAULT
                 );
@@ -373,6 +385,9 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.CUSTOM:
+                if (customWidget == undefined) {
+                    throw new Error("Supplied custom widget is undefined");
+                }
                 widget = customWidget;
                 break;
         }
@@ -389,7 +404,9 @@ class PrefsWidget extends Gtk.Box {
         Template: Me.dir.get_child('prefs.ui').get_uri(),
         InternalChildren: ['settings_box'],
     };
-    private _settings_box: Gtk.Box;
+
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _settings_box: Gtk.Box;
 
     constructor() {
         super();
@@ -469,7 +486,7 @@ class PrefsWidget extends Gtk.Box {
 
 function cssHexString(css: string) {
     let rrggbb = '#';
-    let start: number;
+    let start: number | undefined = undefined;
     for (let loop = 0; loop < 3; loop++) {
         let end = 0;
         let xx = '';
@@ -484,6 +501,7 @@ function cssHexString(css: string) {
                 start = end;
             }
         }
+        assert(start !== undefined, "true by construction");
         xx = parseInt(css.slice(start, end)).toString(16);
         if (xx.length == 1) xx = `0${xx}`;
         rrggbb += xx;
