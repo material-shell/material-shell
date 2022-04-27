@@ -157,8 +157,11 @@ declare module 'ui' {
 
     export namespace dateMenu {
         class DateMenuButton extends panelMenu.Button {
-
+            _clockDisplay: St.Label;
+            _indicator: MessagesIndicator;
         }
+
+        class MessagesIndicator extends St.Icon {}
     }
 
     export namespace panelMenu {
@@ -219,7 +222,7 @@ declare module 'ui' {
             destroy(): void;
             removeAll(): void;
             addMenuItem(menuItem: PopupMenuSection | PopupSubMenuMenuItem | PopupSeparatorMenuItem | PopupBaseMenuItem, position?: number): void;
-            addAction(title: string, callback: (event: any)=>void, icon?: Gio.IconPrototype): void;
+            addAction(title: string, callback: (event: any)=>void, icon?: Gio.IconPrototype): PopupBaseMenuItem;
             _getMenuItems(): (PopupBaseMenuItem | PopupMenuSection)[];
             get numMenuItems(): number;
         }

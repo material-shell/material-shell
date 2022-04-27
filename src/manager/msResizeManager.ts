@@ -148,6 +148,7 @@ export class MsResizeManager extends MsManager {
     getFirstPortionPositionAndSize(): Rectangular {
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const { layout } = this.resizeInProgress.msWorkspace;
+        assert(layout instanceof BaseResizeableTilingLayout, "expected a resizable layout");
         const ratio = layout.mainPortion.getRatioForPortion(
             this.resizeInProgress.border.firstPortion
         );

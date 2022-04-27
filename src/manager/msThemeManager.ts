@@ -57,11 +57,11 @@ export class MsThemeManager extends MsManager {
             Me.log('theme changed');
             this.theme = this.themeContext.get_theme();
 
-            if (Main.uiGroup.has_style_class_name('no-theme')) {
-                Main.uiGroup.remove_style_class_name('no-theme');
+            if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
+                Main.layoutManager.uiGroup.remove_style_class_name('no-theme');
             }
             if (!this.theme.application_stylesheet) {
-                Main.uiGroup.add_style_class_name('no-theme');
+                Main.layoutManager.uiGroup.add_style_class_name('no-theme');
             }
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
@@ -251,7 +251,7 @@ export class MsThemeManager extends MsManager {
     async regenerateStylesheet() {
         this.unloadStylesheet();
         if (!this.theme.application_stylesheet) {
-            Main.uiGroup.add_style_class_name('no-theme');
+            Main.layoutManager.uiGroup.add_style_class_name('no-theme');
         }
         if (ShellVersionMatch('3.34')) {
             //TODO The new code may prevent crashes on 3.34 without this, needs testing
@@ -269,8 +269,8 @@ export class MsThemeManager extends MsManager {
     }
 
     unloadStylesheet() {
-        if (Main.uiGroup.has_style_class_name('no-theme')) {
-            Main.uiGroup.remove_style_class_name('no-theme');
+        if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
+            Main.layoutManager.uiGroup.remove_style_class_name('no-theme');
         }
         this.theme.unload_stylesheet(this.themeFile);
     }

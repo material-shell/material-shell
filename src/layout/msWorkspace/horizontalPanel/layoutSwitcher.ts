@@ -4,7 +4,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
-import { LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
+import { LayoutState, LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace';
@@ -68,7 +68,10 @@ export class LayoutSwitcher extends St.BoxLayout {
             'tiling-layout-changed',
             this.updateLayoutWidget.bind(this)
         );
-        this.buildMenu();
+        this.menu = this.buildMenu();
+        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
+        this.menuManager.addMenu(this.menu);
+
         this.connect('destroy', () => {
             this.msWorkspace.disconnect(connectId);
         });
@@ -92,13 +95,12 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     buildMenu() {
-        if (this.menu) this.menu.destroy();
-        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
-        this.menu.actor.add_style_class_name('horizontal-panel-menu');
-        this.menu.actor.hide();
+        const menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+        menu.actor.add_style_class_name('horizontal-panel-menu');
+        menu.actor.hide();
         Object.entries(TilingLayoutByKey).forEach(
             ([layoutKey, layoutConstructor]) => {
-                this.menu.addMenuItem(
+                menu.addMenuItem(
                     new TilingLayoutMenuItem(
                         layoutConstructor,
                         this.msWorkspace.state.layoutStateList.find(
@@ -108,10 +110,9 @@ export class LayoutSwitcher extends St.BoxLayout {
                 );
             }
         );
-        this.menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
-        this.menu.addMenuItem(new LayoutsToggle(this.menu));
-        Main.uiGroup.add_actor(this.menu.actor);
-        this.menuManager.addMenu(this.menu);
+        menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
+        menu.addMenuItem(new LayoutsToggle(menu));
+        return menu;
     }
 
     setLayout(layoutKey: string) {
@@ -130,7 +131,8 @@ export class LayoutSwitcher extends St.BoxLayout {
         const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
             return layoutKey === layout.state.key;
         });
-        const newState = Me.layoutManager.getLayoutByKey(layoutKey).state;
+        // Note: This cast is safe, typescript is just not good enough to figure that out
+        const newState = Me.layoutManager.getLayoutByKey(layoutKey).state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
         } else {
@@ -178,7 +180,7 @@ export class LayoutSwitcher extends St.BoxLayout {
 @registerGObjectClass
 export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
-    editable: boolean;
+    editable: boolean = false;
 
     constructor(layoutConstructor: LayoutType, active: boolean, params?: popupMenu.PopupBaseMenuItemParams) {
         super(layoutConstructor.label, active, params);
@@ -285,7 +287,7 @@ export class LayoutsToggle extends popupMenu.PopupImageMenuItem {
     editable: boolean;
 
     constructor(menu: popupMenu.PopupMenu, params?: popupMenu.PopupBaseMenuItemParams) {
-        const editText = _('Tweak available layout');
+        const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/category/settings-symbolic.svg`
         );

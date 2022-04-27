@@ -86,9 +86,6 @@ export class MsWorkspaceManager extends MsManager {
                 return false;
             }
 
-            // Update workspaces only if Dynamic Workspace Management has not been paused by some other function
-            if (this._pauseWorkspaceCheck) return true;
-
             for (i = 0; i < this._workspaces.length; i++) {
                 const lastRemoved = this._workspaces[i]._lastRemovedWindow;
                 if (
