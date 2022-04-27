@@ -10,6 +10,11 @@ const incompatibleExtensions = [
     'ubuntu-dock@ubuntu.com',
     'dash-to-dock@micxgx.gmail.com',
     'ding@rastersoft.com',
+    // Pop Shell is another window manager, it will very likely cause massive conflicts with Material Shell.
+    'pop-shell@system76.com',
+    // 'improved-workspace-indicator' adds styling to the window tabs in a weird greenish color.
+    // That extension is very much redundant anyway, given that MS has its own workspace indicator.
+    'improved-workspace-indicator@michaelaquilina.github.io',
 ];
 
 let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
@@ -27,15 +32,12 @@ export class DisableIncompatibleExtensionsModule {
 
     disableExtensions() {
         for (const incompatibleExtension of incompatibleExtensions) {
-            const extension = Main.extensionManager.lookup(
-                incompatibleExtension
-            );
-            if (extension) {
-                try {
-                    extension.stateObj.disable();
-                } catch (e) {
-                    Me.logFocus('disable error', incompatibleExtension, e);
+            try {
+                if(Main.extensionManager.disableExtension(incompatibleExtension)) {
+                    Me.log(`Disabled gnome extension ${incompatibleExtension} because it is incompatible with Material Shell`);
                 }
+            } catch (e) {
+                Me.logFocus('disable error', incompatibleExtension, e);
             }
         }
     }
