@@ -11,22 +11,24 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
+type FloatLayoutState = { key: 'float' };
+
 @registerGObjectClass
-export class FloatLayout extends BaseTilingLayout {
+export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
     static state = { key: 'float' };
     static label = 'Float';
 
     // TODO: Unused?
     tileableFocused: Tileable | undefined;
 
-    constructor(msWorkspace: MsWorkspace, state: typeof FloatLayout.state) {
+    constructor(msWorkspace: MsWorkspace, state: FloatLayoutState) {
         super(msWorkspace, state);
         global.display.connect('restacked', this.windowsRestacked.bind(this));
         this.windowsRestacked();
     }
 
     alterTileable(tileable: Tileable) {
-        if (tileable.metaWindow) {
+        if (tileable instanceof MsWindow && tileable.metaWindow) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
                 tileable.mimicMetaWindowPositionAndSize();
@@ -44,7 +46,7 @@ export class FloatLayout extends BaseTilingLayout {
     }
 
     restoreTileable(tileable: Tileable) {
-        if (tileable.metaWindow) {
+        if (tileable instanceof MsWindow && tileable.metaWindow) {
             tileable.msContent.clip_to_allocation = true;
 
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
@@ -98,13 +100,12 @@ export class FloatLayout extends BaseTilingLayout {
 
     windowsRestacked() {
         global.window_group.get_children().forEach((actor) => {
-            const metaWindow = actor.metaWindow;
-            if (metaWindow && metaWindow.msWindow) {
+            if (actor instanceof MsWindow && actor.metaWindow && actor.metaWindow.msWindow) {
                 if (
-                    this.msWorkspace.tileableList.includes(metaWindow.msWindow)
+                    this.msWorkspace.tileableList.includes(actor.metaWindow.msWindow)
                 ) {
                     this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
-                        metaWindow.msWindow,
+                        actor.metaWindow.msWindow,
                         null
                     );
                 }

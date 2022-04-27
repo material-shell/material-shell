@@ -2,6 +2,7 @@ import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
+import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { searchController, dash, appDisplay, layout, overviewControls, windowManager, swipeTracker } from 'ui';
@@ -12,20 +13,6 @@ const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-export function OverviewShow(state = overviewControls.ControlsState.APP_GRID) {
-    if (state === overviewControls.ControlsState.HIDDEN)
-        throw new Error('Invalid state, use hide() to hide');
-
-    if (this.isDummy) return;
-    if (this._shown) return;
-    this._shown = true;
-
-    if (!this._syncGrab()) return;
-
-    Main.layoutManager.showOverview();
-    this._animateVisible(state);
-}
-
 @registerGObjectClass
 class MsControlsManager extends St.Widget {
     _searchEntry: St.Entry;
@@ -34,8 +21,8 @@ class MsControlsManager extends St.Widget {
     dash: dash.Dash;
     _a11ySettings: Gio.Settings;
     _appDisplay: appDisplay.AppDisplay;
-    _init() {
-        super._init({
+    constructor() {
+        super({
             style_class: 'controls-manager',
             x_expand: true,
             y_expand: true,
@@ -177,7 +164,7 @@ class MsControlsManager extends St.Widget {
         // Search bar falls from the ceiling
         const { primaryMonitor } = Main.layoutManager;
         const [, y] = this._searchEntryBin.get_transformed_position() as [number, number];
-        const yOffset = y - primaryMonitor.y;
+        const yOffset = y - assertNotNull(primaryMonitor).y;
 
         this._searchEntryBin.translation_y = -(
             yOffset + this._searchEntryBin.height
@@ -214,8 +201,8 @@ class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
     _delegate: any;
 
-    _init() {
-        super._init({
+    constructor() {
+        super({
             name: 'overview',
             /* Translators: This is the main Fview to select
                 activities. See also note for "Activities" string. */

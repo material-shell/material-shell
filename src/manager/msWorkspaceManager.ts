@@ -10,7 +10,7 @@ import {
     MsWorkspaceState,
 } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
 import { MetaWindowWithMsProperties } from './msWindowManager';
@@ -35,7 +35,7 @@ export class MsWorkspaceManager extends MsManager {
     metaWindowFocused: Meta.Window | null;
     numOfMonitors: number;
     primaryIndex: number;
-    workspaceTracker: any;
+    workspaceTracker: windowManager.WorkspaceTracker;
     private _updatingMonitors: boolean | undefined;
     restoringState: any;
     stateChangedTriggered: any;
@@ -85,9 +85,6 @@ export class MsWorkspaceManager extends MsManager {
 
                 return false;
             }
-
-            // Update workspaces only if Dynamic Workspace Management has not been paused by some other function
-            if (this._pauseWorkspaceCheck) return true;
 
             for (i = 0; i < this._workspaces.length; i++) {
                 const lastRemoved = this._workspaces[i]._lastRemovedWindow;
@@ -395,7 +392,7 @@ export class MsWorkspaceManager extends MsManager {
 
             // if there is not external msWorkspace available create one
             if (msWorkspace) {
-                const workspace = this.getWorkspaceOfMsWorkspace(msWorkspace);
+                const workspace = assertNotNull(this.getWorkspaceOfMsWorkspace(msWorkspace));
                 msWorkspace.setMonitor(externalMonitor);
                 if (!Meta.prefs_get_dynamic_workspaces()) {
                     this.workspaceManager.remove_workspace(
@@ -416,7 +413,7 @@ export class MsWorkspaceManager extends MsManager {
             )
             .forEach((msWorkspace) => {
                 if (!msWorkspace.monitorIsExternal) {
-                    msWorkspace.setMonitor(Main.layoutManager.primaryMonitor);
+                    msWorkspace.setMonitor(assertNotNull(Main.layoutManager.primaryMonitor));
                 } else {
                     const monitorIsNowPrimary =
                         msWorkspace.monitor ===
@@ -470,7 +467,7 @@ export class MsWorkspaceManager extends MsManager {
                             this.restoringState = false;
                         }
                         msWorkspace.setMonitor(
-                            Main.layoutManager.primaryMonitor
+                            assertNotNull(Main.layoutManager.primaryMonitor)
                         );
                         /* this.setMsWorkspaceAt(
                         msWorkspace,
@@ -497,7 +494,7 @@ export class MsWorkspaceManager extends MsManager {
         initialState?: Partial<MsWorkspaceState>
     ) {
         this.createNewMsWorkspace(
-            Main.layoutManager.primaryMonitor,
+            assertNotNull(Main.layoutManager.primaryMonitor),
             initialState
         );
         this.observe(workspace, 'window-added', (workspace, window) => {

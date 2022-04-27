@@ -402,7 +402,7 @@ export class MsWindowManager extends MsManager {
             Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                 msWindow.msWorkspace
             );
-        msWindow.app.launch(0, workspaceIndex, false);
+        msWindow.app.launch(0, workspaceIndex, Shell.AppLaunchGpu.APP_PREF);
     }
 
     _handleWindow(metaWindow: MetaWindowWithMsProperties) {

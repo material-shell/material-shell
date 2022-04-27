@@ -3,7 +3,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Gtk from 'gtk';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -23,10 +23,13 @@ function log(...args: any[]) {
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {}
+function init() {
+    log("INITIALIZING PREFERENCES");
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
+    log("Prefs widget");
     return new PrefsWidget();
 }
 
@@ -86,9 +89,9 @@ class SettingListBoxRow extends Gtk.ListBoxRow {
         ],
     };
 
-    private _name_label: Gtk.Label;
-    private _description_label: Gtk.Label;
-    private _widget_container: Gtk.Box;
+    private declare _name_label: Gtk.Label;
+    private declare _description_label: Gtk.Label;
+    private declare _widget_container: Gtk.Box;
     private _settings_widget: Gtk.Widget;
 
     constructor(summary: string, description: string, widget: Gtk.Widget) {
@@ -199,9 +202,10 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
             },
         },
     };
-    private _accel_label: Gtk.Label;
-    private _hotkey_label: Gtk.Label;
-    private _dialog: Gtk.Dialog;
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _accel_label: Gtk.Label;
+    private declare _hotkey_label: Gtk.Label;
+    private declare _dialog: Gtk.Dialog;
 
     key: string;
     constructor(key: string, hotkeyName: string, accel: string) {
@@ -216,7 +220,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         this._dialog.transient_for = this.get_root() as Gtk.Window;
         this._dialog.present();
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).inhibit_system_shortcuts(null);
     }
 
@@ -258,7 +262,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
 
     closeDialog() {
         (
-            this.get_root().get_surface() as Gdk.Toplevel
+            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).restore_system_shortcuts();
         this._dialog.close();
     }
@@ -279,8 +283,11 @@ class SettingCategoryListBox extends Gtk.Box {
         },
         InternalChildren: ['title_label', 'list_box'],
     };
-    private _title_label: Gtk.Label;
-    private _list_box: Gtk.ListBox;
+
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _title_label: Gtk.Label;
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _list_box: Gtk.ListBox;
 
     public settings: Gio.Settings;
 
@@ -397,7 +404,9 @@ class PrefsWidget extends Gtk.Box {
         Template: Me.dir.get_child('prefs.ui').get_uri(),
         InternalChildren: ['settings_box'],
     };
-    private _settings_box: Gtk.Box;
+
+    // Note: will be created by gjs from the InternalChildren meta info property
+    private declare _settings_box: Gtk.Box;
 
     constructor() {
         super();

@@ -7,10 +7,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
-export class HalfLayout extends BaseResizeableTilingLayout {
-    static state = { key: 'half' };
-    static label = 'Half';
-
+export class HalfLayoutBase<S extends { key: string }> extends BaseResizeableTilingLayout<S> {
     updateMainPortionLength(length: number) {
         while (this.mainPortion.portionLength > length) {
             this.mainPortion.pop();
@@ -40,4 +37,10 @@ export class HalfLayout extends BaseResizeableTilingLayout {
 
         super.tileAll(box);
     }
+}
+
+@registerGObjectClass
+export class HalfLayout extends HalfLayoutBase<{ key: 'half' }> {
+    static state = { key: 'half' };
+    static label = 'Half';
 }
