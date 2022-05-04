@@ -1,7 +1,9 @@
 import { assert, logAssert } from "./assert";
 const { PACKAGE_VERSION } = imports.misc.config;
 
-/// List of all (relevant) known gnome versions
+/// List of all (relevant) known gnome versions.
+/// The versions should be ordered from oldest to newest.
+/// It doesn't need to contain every version, only those that we want to use for compatibility checks (e.g. using `IntroducedInGnome<V>`).
 type VERSIONS = ["ancient", "36.0", "38.0", "39.0", "40.0", "41.0", "41.5", "42.0"];
 
 /// Equivalent to `A.indexOf(T)` but implemented in the type system.
