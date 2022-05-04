@@ -7,6 +7,7 @@ import { Widget } from 'st';
 import * as St from 'st';
 import { GObject } from './mod';
 import * as Clutter from 'clutter';
+import { IntroducedInGnome, RemovedInGnome } from 'src/utils/shellVersionMatch';
 
 declare module 'meta' {
     // Expose some additional "private" fields of the Workspace class
@@ -173,9 +174,10 @@ declare module 'ui' {
     }
 
     export namespace popupMenu {
+        
         class PopupMenuManager {
             constructor(owner: any, params?: any);
-            _menus: PopupMenu[];
+            _menus: ((PopupMenu & IntroducedInGnome<"42.0"> & RemovedInGnome<"never">) | ({menu: PopupMenu} & IntroducedInGnome<"ancient"> & RemovedInGnome<"42.0">))[];
             addMenu(menu: PopupMenu, position?: number): void;
             removeMenu(menu: PopupMenu): void;
         }
@@ -232,9 +234,9 @@ declare module 'ui' {
 
         class PopupSubMenu extends PopupMenuBase {}
 
-
         class PopupMenu extends PopupMenuBase {
             constructor(sourceActor: Actor, arrowAlignment: number, arrowSide: St.Side);
+            menu: PopupMenu | undefined;
             _boxPointer: boxPointer.BoxPointer;
         }
     }
