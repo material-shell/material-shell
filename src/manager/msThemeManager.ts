@@ -113,6 +113,9 @@ export class MsThemeManager extends MsManager {
         this.observe(this.themeSettings, 'changed::focus-effect', () => {
             this.emit('focus-effect-changed');
         });
+        this.observe(this.themeSettings, 'changed::show-application-launcher', () => {
+            this.emit('show-application-launcher-changed');
+        });
     }
 
     get verticalPanelPosition() {
@@ -168,6 +171,10 @@ export class MsThemeManager extends MsManager {
 
     get focusEffect() {
         return this.themeSettings.get_enum('focus-effect');
+    }
+
+    get showApplicationLauncher() {
+        return this.themeSettings.get_boolean('show-application-launcher');
     }
 
     isColorDark(color: string) {

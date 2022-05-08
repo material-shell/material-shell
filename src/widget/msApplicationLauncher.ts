@@ -41,10 +41,24 @@ export class MsApplicationLauncher extends St.Widget {
             style: 'padding:64px',
         });
         this.msWorkspace = msWorkspace;
-        this.add_style_class_name('surface-darker');
         this.appListContainer = new MsApplicationButtonContainer(
             this.msWorkspace
         );
+
+        this.launcherChangedSignal = SignalHandle.connect(
+            Me.msThemeManager,
+            'show-application-launcher-changed',
+            () => {
+                if (Me.msThemeManager.showApplicationLauncher) {
+                    this.startAppListContainer();
+                } 
+                
+                if (!Me.msThemeManager.showApplicationLauncher) {
+                    this.stopAppListContainer();
+                }
+            }
+        );
+
         this.initAppListContainer();
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
@@ -88,6 +102,23 @@ export class MsApplicationLauncher extends St.Widget {
             this.msWorkspace
         );
         this.initAppListContainer();
+    }
+
+    startAppListContainer() {
+        this.appListContainer.destroy();
+        this.appListContainer = new MsApplicationButtonContainer(
+            this.msWorkspace
+        );
+        this.add_style_class_name('surface-darker');
+        this.initAppListContainer();
+    }
+
+    stopAppListContainer() {
+        this.appListContainer.destroy
+        this.appListContainer = new MsApplicationButtonContainer(
+            this.msWorkspace
+        );
+        this.remove_style_class_name('surface-darker');
     }
 
     initAppListContainer() {
