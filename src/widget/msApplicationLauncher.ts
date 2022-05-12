@@ -59,7 +59,7 @@ export class MsApplicationLauncher extends St.Widget {
             }
         );
 
-        this.initAppListContainer();
+        // this.initAppListContainer();
         this.launcherChangedSignal = SignalHandle.connect(
             Me.msThemeManager,
             'clock-app-launcher-changed',
@@ -97,11 +97,13 @@ export class MsApplicationLauncher extends St.Widget {
     }
 
     restartAppListContainer() {
-        this.appListContainer.destroy();
-        this.appListContainer = new MsApplicationButtonContainer(
-            this.msWorkspace
-        );
-        this.initAppListContainer();
+        if (Me.msThemeManager.showApplicationLauncher) {
+            this.startAppListContainer();
+        } 
+        
+        if (!Me.msThemeManager.showApplicationLauncher) {
+            this.stopAppListContainer();
+        }
     }
 
     startAppListContainer() {
