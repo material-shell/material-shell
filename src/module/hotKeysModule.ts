@@ -53,9 +53,9 @@ export class HotKeysModule {
     actionNameToActionMap: Map<string, ()=>void>;
     lastWorkspaceIndex!: number | null;
     nextWorkspaceIndex!: number | null;
-    switchWorkspaceConnectionId: number;
     lastTileableIndex!: number | null;
     nextTileableIndex!: number | null;
+    switchWorkspaceConnectionId: number;
     tilableFocusChangeConnectionId!: number;
 
     constructor() {
