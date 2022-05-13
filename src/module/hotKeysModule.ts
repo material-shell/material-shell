@@ -51,9 +51,9 @@ export class HotKeysModule {
     settings: Gio.Settings;
     actionIdToNameMap: Map<number, string>;
     actionNameToActionMap: Map<string, ()=>void>;
-    switchWorkspaceConnectionId: number;
     lastWorkspaceIndex!: number | null;
     nextWorkspaceIndex!: number | null;
+    switchWorkspaceConnectionId: number;
     lastTileableIndex!: number | null;
     nextTileableIndex!: number | null;
     tilableFocusChangeConnectionId!: number;
