@@ -1,0 +1,9 @@
+{
+    "name": "GModule",
+    "api_version": "2.0",
+    "package_version": "2.0",
+    "imports": {
+        "GLib": "2.0",
+        "GObject": "2.0"
+    }
+}

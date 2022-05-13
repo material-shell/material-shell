@@ -3,7 +3,13 @@
 $theme: 'dark' !default;
 $color-primary: #3f51b5; // Don't change this value since it's dynamically changed by the theme Manager
 $ripple: rgba(255, 255, 255, 0.12);
-$shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+$shadow-opacity: 0.4;
+
+@if $theme== 'light' {
+    $shadow-opacity: 0.15;
+}
+
+$shadow: 3px 3px 6px rgba(0, 0, 0, $shadow-opacity);
 $surface-opacity: 0.987; // Don't change this value since it's dynamically changed by the theme Manager
 $panel-opacity: 0.876; // Don't change this value since it's dynamically changed by the theme Manager
 
@@ -31,6 +37,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 
     @if ($theme== 'primary') {
+        color: getForegroundColor('dark', $opacity);
+
         @at-root .light-primary#{&} {
             color: getForegroundColor('light', $opacity);
         }
@@ -56,7 +64,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
 }
 
 @function getDarkerColor($color) {
-    @return hsl(hue($color), saturation($color), lightness($color) * 0.7);
+    @return hsl(hue($color), saturation($color), lightness($color) * 0.85);
 }
 
 @function getLighterColor($color) {
@@ -77,6 +85,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 
     @if ($theme== 'primary') {
+        background: rgba(255, 255, 255, $opacity);
+
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, $opacity);
         }
@@ -89,7 +99,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
 
 @mixin hover($theme) {
     @if ($theme== 'light') {
-        background: rgba(0, 0, 0, 0.04);
+        background: rgba(0, 0, 0, 0.08);
     }
 
     @if ($theme== 'dark') {
@@ -97,6 +107,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 
     @if ($theme== 'primary') {
+        background: getLighterColor(getBackgroundColor($theme));
+
         @at-root .light-primary#{&} {
             background: getDarkerColor(getBackgroundColor($theme));
         }
@@ -117,6 +129,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 
     @if ($theme== 'primary') {
+        background: rgba(255, 255, 255, 0.12);
+
         @at-root .light-primary#{&} {
             background: rgba(0, 0, 0, 0.12);
         }
@@ -213,6 +227,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             }
         }
     }
+}
+
+.background-primary {
+    @include background('primary');
 }
 
 #msPanel {
@@ -382,11 +400,19 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
             &:hover {
-                background: rgba(255, 255, 255, 0.12);
+                @if ($theme== 'light') {
+                    background: rgba(0, 0, 0, 0.12);
+                } @else {
+                    background: rgba(255, 255, 255, 0.12);
+                }
             }
 
             &:hover:active {
-                background: rgba(255, 255, 255, 0.24);
+                @if ($theme== 'light') {
+                    background: rgba(0, 0, 0, 0.24);
+                } @else {
+                    background: rgba(255, 255, 255, 0.24);
+                }
             }
         }
         .task-small-icon {
@@ -434,11 +460,16 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include foreground-high-emphasis($theme);
     }
 }
-MsApplicationLauncher {
+MsApplicationLauncher, MsPanel {
     * .search-entry {
         @include foreground-medium-emphasis($theme);
         @include background($theme);
         border-radius: 48px;
+        margin: 0px;
+
+        * {
+            @include foreground-medium-emphasis($theme);
+        }
     }
     * .search-entry-icon {
         @include foreground-medium-emphasis($theme);
@@ -455,6 +486,10 @@ MatTooltip {
     min-height: 24px;
     @extend .caption;
     text-align: center;
+}
+
+MatDivider {
+    @include hover($theme);
 }
 
 .surface {
@@ -478,7 +513,7 @@ MatTooltip {
     -arrow-rise: 0px;
 }
 // If there is no custom theme loaded we can override adwaita to provide better material theme
-/* .no-theme { 
+/* .no-theme {
     .popup-menu {
         margin: 0;
         -boxpointer-gap: 0px;
@@ -580,11 +615,18 @@ LayoutSwitcher {
 }
 
 MatNumberPicker {
-    background: getDarkerColor(getBackgroundColor($theme));
+    @include foreground-high-emphasis($theme);
+    @if $theme== 'dark' {
+        background: getDarkerColor(getBackgroundColor($theme));
+    }
     //This is a hack because percentage is not handled yet
     border-radius: 10000px;
     StButton {
-        background: getLighterColor(getBackgroundColor($theme));
+        @if $theme== 'light' {
+            @include hover($theme);
+        } @else {
+            background: getLighterColor(getBackgroundColor($theme));
+        }
         width: 32px;
         StIcon {
             margin: 8px;
@@ -596,14 +638,24 @@ MatNumberPicker {
             border-radius: 0 32px 32px 0;
         }
         &:hover {
-            background: getLighterColor(
-                getLighterColor(getBackgroundColor($theme))
-            );
+            @if $theme== 'light' {
+                background: getDarkerColor(getBackgroundColor($theme));
+            } @else {
+                background: getLighterColor(
+                    getLighterColor(getBackgroundColor($theme))
+                );
+            }
         }
         &:active {
-            background: getLighterColor(
-                getLighterColor(getLighterColor(getBackgroundColor($theme)))
-            );
+            @if $theme== 'light' {
+                background: getDarkerColor(
+                    getDarkerColor(getBackgroundColor($theme))
+                );
+            } @else {
+                background: getLighterColor(
+                    getLighterColor(getLighterColor(getBackgroundColor($theme)))
+                );
+            }
         }
     }
     StLabel {

@@ -1,20 +1,16 @@
 /** Gnome libs imports */
 const Util = imports.misc.util;
 import * as Meta from 'meta';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported updateTitleBarVisibility */
 
-interface MetaWindowWithVisiblity extends Meta.Window {
-    titleBarVisible?: boolean;
-    msWindow: MsWindow;
-}
-
 export const updateTitleBarVisibility = function (
-    metaWindow: MetaWindowWithVisiblity
+    metaWindow: MetaWindowWithMsProperties
 ) {
     const msWorkspaceIsInFloatLayout =
-        metaWindow.msWindow.msWorkspace.layout.state.key === 'float';
+        metaWindow.msWindow?.msWorkspace.layout.state.key === 'float' ?? false;
     const shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
     if (
         !metaWindow.titleBarVisible ||
@@ -25,31 +21,34 @@ export const updateTitleBarVisibility = function (
 };
 
 export const setTitleBarVisibility = function (
-    metaWindow: MetaWindowWithVisiblity,
+    metaWindow: MetaWindowWithMsProperties,
     visible: boolean
 ) {
     const windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
-
-    Util.spawn([
-        'xprop',
-        '-id',
-        windowXID,
-        '-f',
-        '_MOTIF_WM_HINTS',
-        '32c',
-        '-set',
-        '_MOTIF_WM_HINTS',
-        `2, 0, ${visible ? '1' : '2'} 0, 0`,
-    ]);
+    try {
+        Util.trySpawn([
+            'xprop',
+            '-id',
+            windowXID,
+            '-f',
+            '_MOTIF_WM_HINTS',
+            '32c',
+            '-set',
+            '_MOTIF_WM_HINTS',
+            `2, 0, ${visible ? '1' : '2'} 0, 0`,
+        ]);
+    } catch (e) {
+        Me.logFocus('xprop', e);
+    }
 
     metaWindow.titleBarVisible = visible;
 };
 
-export const getWindowXID = function (win: Meta.Window) {
+export const getWindowXID = function (win: Meta.Window): string | null {
     const desc = win.get_description() || '';
-    const match = desc.match(/0x[0-9a-f]+/) || [null];
+    const match = desc.match(/0x[0-9a-f]+/);
 
-    return match[0];
+    return match !== null ? match[0] : null;
 };

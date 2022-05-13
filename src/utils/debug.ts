@@ -9,7 +9,7 @@ const FOCUS_ONLY = false;
 let indent = 0;
 export function initDebug() {
     // TODO: Essentially dead code
-    const AddLogToFunctions = function (prototype) {
+    const AddLogToFunctions = function (prototype: any) {
         if (!DEBUG) return;
         for (const key of Object.getOwnPropertyNames(prototype)) {
             if (key === 'constructor') continue;
@@ -17,7 +17,7 @@ export function initDebug() {
             if (descriptor) {
                 const value = descriptor.value;
                 if (typeof value === 'function') {
-                    prototype[key] = function (...args) {
+                    prototype[key] = function (...args: any[]) {
                         // Before
                         Me.log(
                             `${prototype.constructor.name}.${key} (${Array.from(
@@ -43,6 +43,10 @@ export function initDebug() {
             }
         }
     };
+
+    Me.logWithStackTrace = function (...args: any[]) {
+        Me.log(...args, new Error().stack);
+    }
 
     Me.log = function (...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;
@@ -90,27 +94,23 @@ export function initDebug() {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             const objects: any[] = [
-                /* Me.imports.src.manager.msWindowManager.MsWindowManager,
-                Me.imports.src.manager.msWorkspaceManager.MsWorkspaceManager,
-                Me.imports.src.manager.msThemeManager.MsThemeManager,
-                Me.imports.src.layout.main.MsMain,
-                Me.imports.src.layout.msWorkspace.msWorkspace.MsWorkspace,
-                Me.imports.src.layout.msWorkspace.msWindow.MsWindow,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskBar,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskBarItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .IconTaskBarItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TaskActiveIndicator,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.taskBar
-                    .TileableItem,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .LayoutSwitcher,
-                Me.imports.src.layout.msWorkspace.horizontalPanel.layoutSwitcher
-                    .TilingLayoutMenuItem,
-                Me.imports.src.widget.reorderableList.ReorderableList, */
+                /* MsWindowManager,
+                MsWorkspaceManager,
+                MsThemeManager,
+                MsMain,
+                MsWorkspace,
+                MsDndManager,
+                MsResizeManager,
+                MsWindow,
+                MsFocusManager, */
+                /* TaskBar,
+                TaskBarItem,
+                IconTaskBarItem,
+                TaskActiveIndicator,
+                TileableItem,
+                LayoutSwitcher,
+                TilingLayoutMenuItem,
+                ReorderableList, */
             ];
             objects
                 .filter((object) => object)

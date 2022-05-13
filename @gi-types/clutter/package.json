@@ -1,0 +1,73 @@
+{
+  "_from": "@gi-types/clutter",
+  "_id": "@gi-types/clutter@7.0.6",
+  "_inBundle": false,
+  "_integrity": "sha512-hLQ5K+wnq40B1VWFVJPtENw82at2SHHE1CN+BCagjO6L9PpAvO9sCV9uUSbl9K5zrzcfgxYdwFrXW5NP6wSKTg==",
+  "_location": "/@gi-types/clutter",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@gi-types/clutter",
+    "name": "@gi-types/clutter",
+    "escapedName": "@gi-types%2fclutter",
+    "scope": "@gi-types",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/clutter/-/clutter-7.0.6.tgz",
+  "_shasum": "c6c908600d84a74555482c6aa2ec7d0c203ad7c1",
+  "_spec": "@gi-types/clutter",
+  "_where": "/var/home/papyelgringo/workspace/material-shell",
+  "bundleDependencies": false,
+  "contentHash": "c0913dc0b8cde87c27156354bb9f51e2",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/atk": "^2.36.7",
+    "@gi-types/cairo": "^1.0.3",
+    "@gi-types/cogl": "^7.0.3",
+    "@gi-types/coglpango": "^7.0.2",
+    "@gi-types/gio": "^2.66.9",
+    "@gi-types/glib": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8",
+    "@gi-types/graphene": "^1.0.1",
+    "@gi-types/json": "^1.6.5",
+    "@gi-types/pango": "^1.0.5"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for Clutter",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/clutter",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/clutter7"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "7.0.6"
+}

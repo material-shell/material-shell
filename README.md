@@ -145,22 +145,18 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 
 #### Get the most up to date version with Git
 
-1. Check your GNOME Shell version as we only support **gnome-shell >= 3.34.0**
+1. Check your GNOME Shell version as we only support **gnome-shell >= 40.0**
 
 2. Download the extension. Depending on your distribution, there are several ways to acquire it:
 
-| Distribution | Install via | Command |
-| :----------- | :---------- | :------ |
-| Manjaro      | PACMAN      | `pacman -S gnome-shell-extension-material-shell` |
-| Arch Linux   | AUR         | From latest master: `yay -S gnome-shell-extension-material-shell-git` |
-| Arch Linux   | AUR         | From latest release: `yay -S gnome-shell-extension-material-shell` |
-| Fedora       | DNF         | `sudo dnf install gnome-shell-extension-material-shell` |
-| NixOS        | nix         | `nix-env -i gnome-shell-extension-material-shell` |
-| Others       | source      | `git clone https://github.com/material-shell/material-shell.git && cd material-shell && make install` |
+Install via          | Command |
+:--------------------| :------ |
+extensions.gnome.org | Navigate to [extensions.gnome.org](https://extensions.gnome.org/extension/3357/material-shell/) && switch the toggle ON |
+source               | `git clone https://github.com/material-shell/material-shell.git && cd material-shell && make install` |
 
 (We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
 
-3. Reload GNOME Shell:
+1. Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
   + On Wayland: Log out and back in
 
@@ -199,6 +195,11 @@ gnome-extensions disable material-shell@papyelgringo
 2. Delete the extension directory.
 ```bash
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
+```
+
+if you miss the minimize and maximize button on windows titlebar you can restore them with
+```bash
+/usr/bin/gsettings set org.gnome.desktop.wm.preferences button-layout :minimize,maximize,close
 ```
 # History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).

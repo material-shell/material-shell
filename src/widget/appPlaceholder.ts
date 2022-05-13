@@ -2,6 +2,7 @@
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
+import { App } from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
@@ -16,17 +17,17 @@ export class AppPlaceholder extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'AppPlaceholder',
         Signals: {
-            clicked: {
+            activated: {
                 param_types: [GObject.TYPE_INT],
                 accumulator: 0.0,
             },
         },
     };
-    app: any;
+    app: App;
     icon: any;
     pressed = false;
-    waitForReset: boolean | undefined;
-    clickableContainer: any;
+    waitForReset: boolean = false;
+    clickableContainer: RippleBackground;
     box: any;
     identityContainer: any;
     appTitle: any;
@@ -35,7 +36,7 @@ export class AppPlaceholder extends St.Widget {
     vertical = true;
     private _spinner: any;
 
-    constructor(app) {
+    constructor(app: App) {
         super({
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
@@ -67,11 +68,9 @@ export class AppPlaceholder extends St.Widget {
             style: 'padding:24px; text-align:start;',
         });
 
-        [
-            this.appTitle,
-            this.callToAction,
-            this.spinnerContainer,
-        ].forEach((actor) => this.identityContainer.add_child(actor));
+        [this.appTitle, this.callToAction, this.spinnerContainer].forEach(
+            (actor) => this.identityContainer.add_child(actor)
+        );
 
         this.box = new St.BoxLayout({
             vertical: false,
@@ -88,50 +87,22 @@ export class AppPlaceholder extends St.Widget {
         this.clickableContainer.y_expand = true;
         this.add_child(this.clickableContainer);
         this.connect('event', (actor, event) => {
-            const eventType = event.type();
-            if (
-                [
-                    Clutter.EventType.BUTTON_PRESS,
-                    Clutter.EventType.TOUCH_BEGIN,
-                ].indexOf(eventType) > -1
-            ) {
-                this.pressed = true;
-            } else if (
-                [
-                    Clutter.EventType.BUTTON_RELEASE,
-                    Clutter.EventType.TOUCH_END,
-                ].indexOf(eventType) > -1
-            ) {
-                if (this.pressed && !this.waitForReset) {
-                    this.waitForReset = true;
+            switch (event.type()) {
+                case Clutter.EventType.BUTTON_PRESS:
+                case Clutter.EventType.TOUCH_BEGIN:
+                    this.pressed = true;
+                    break;
+                case Clutter.EventType.BUTTON_RELEASE:
+                case Clutter.EventType.TOUCH_END:
                     this.activate(event.get_button());
                     this.pressed = false;
-                }
-            } else if (eventType === Clutter.EventType.LEAVE) {
-                this.pressed = false;
+                    break;
+                case Clutter.EventType.LEAVE:
+                    this.pressed = false;
+                    break;
+                default:
+                    break;
             }
-        });
-
-        this.connect('key-press-event', (entry, event) => {
-            const symbol = event.hardware_keycode;
-
-            if (ShellVersionMatch('3.34')) {
-                switch (symbol) {
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        this.activate(0);
-                        return Clutter.EVENT_STOP;
-                }
-            } else {
-                switch (symbol) {
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        this.activate(0);
-                        return Clutter.EVENT_STOP;
-                }
-            }
-
-            return Clutter.EVENT_PROPAGATE;
         });
 
         this.connect('key-focus-in', () => {
@@ -142,7 +113,7 @@ export class AppPlaceholder extends St.Widget {
         });
     }
 
-    setOrientation(width, height) {
+    setOrientation(width: number, height: number) {
         const vertical = width < height;
         if (vertical === this.vertical) return;
         this.vertical = vertical;
@@ -157,6 +128,18 @@ export class AppPlaceholder extends St.Widget {
             ? Clutter.ActorAlign.CENTER
             : Clutter.ActorAlign.START;
     }
+    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+        switch (keyEvent.keyval) {
+            case Clutter.KEY_Return:
+            case Clutter.KEY_KP_Enter:
+            case Clutter.KEY_space:
+            case Clutter.KEY_KP_Space:
+                this.activate(0);
+                return Clutter.EVENT_STOP;
+        }
+
+        return Clutter.EVENT_PROPAGATE;
+    }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
         const width = args[0].get_width();
@@ -168,8 +151,9 @@ export class AppPlaceholder extends St.Widget {
         super.vfunc_allocate(...args);
     }
 
-    activate(button) {
-        this.emit('clicked', button);
+    activate(button: number) {
+        if (this.waitForReset) return;
+        this.waitForReset = true;
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16);
         let spinnerActor;
@@ -181,6 +165,7 @@ export class AppPlaceholder extends St.Widget {
         this.spinnerContainer.add_child(spinnerActor);
         this._spinner.play();
         this.spinnerContainer.set_opacity(255);
+        this.emit('activated', button);
     }
 
     reset() {
@@ -193,6 +178,6 @@ export class AppPlaceholder extends St.Widget {
             }
         }
         this.spinnerContainer.set_opacity(0);
-        delete this.waitForReset;
+        this.waitForReset = false;
     }
 }

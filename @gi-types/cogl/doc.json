@@ -1,0 +1,12 @@
+{
+    "name": "Cogl",
+    "api_version": "7",
+    "package_version": "7.0",
+    "imports": {
+        "GL": "1.0",
+        "GObject": "2.0",
+        "Graphene": "1.0",
+        "cairo": "1.0",
+        "GLib": "2.0"
+    }
+}

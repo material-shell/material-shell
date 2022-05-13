@@ -1,20 +1,20 @@
 /** Gnome libs imports */
+import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-const Main = imports.ui.main;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsManager } from 'src/manager/msManager';
+import { KeyBindingAction } from 'src/module/hotKeysModule';
+import { assert, assertNotNull } from 'src/utils/assert';
+import { Async } from 'src/utils/async';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor, throttle } from 'src/utils/index';
+import { MsWindowManager } from './msWindowManager';
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { reparentActor, throttle } from 'src/utils/index';
-import { MsManager } from 'src/manager/msManager';
-import { KeyBindingAction } from 'src/module/hotKeysModule';
-import { MsWindowManager } from './msWindowManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { assert } from 'src/utils/assert';
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 
 interface CurrentDrag {
     msWindow: MsWindow;
@@ -45,7 +45,8 @@ export class MsDndManager extends MsManager {
             'active-workspace-changed',
             () => {
                 if (this.dragInProgress !== null) {
-                    const newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                    const newMsWorkspace =
+                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                     if (this.dragInProgress.msWindow.metaWindow) {
                         this.dragInProgress.msWindow.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
@@ -67,7 +68,7 @@ export class MsDndManager extends MsManager {
         this.observe(
             global.display,
             'grab-op-begin',
-            (_, display, metaWindow, op) => {
+            (display, metaWindow, op) => {
                 if (op === Meta.GrabOp.MOVING) {
                     const msWindow = metaWindow.msWindow;
                     if (
@@ -82,7 +83,7 @@ export class MsDndManager extends MsManager {
             }
         );
 
-        this.observe(global.stage, 'captured-event', (_, event) => {
+        this.observe(this.inputGrabber, 'captured-event', (_, event) => {
             if (this.dragInProgress !== null) {
                 const [stageX, stageY] = event.get_coords();
                 const msWindowDragged = this.dragInProgress.msWindow;
@@ -128,7 +129,7 @@ export class MsDndManager extends MsManager {
                     if (this.dragInProgress) return;
                     switch (event.type()) {
                         case Clutter.EventType.MOTION:
-                            if (event.get_state() === 320) {
+                            if ((event.get_state() as number) === 320) {
                                 this.startDrag(msWindow);
                             }
                             break;
@@ -160,7 +161,6 @@ export class MsDndManager extends MsManager {
             ],
             originalParent,
         };
-
         Me.layout.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
@@ -173,7 +173,7 @@ export class MsDndManager extends MsManager {
                     msWindow.height * this.dragInProgress.originPointerAnchor[1]
             )
         );
-        Main.pushModal(this.inputGrabber);
+        this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
         global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
     }
 
@@ -182,7 +182,7 @@ export class MsDndManager extends MsManager {
         const { msWindow, originalParent } = this.dragInProgress;
         this.dragInProgress = null;
 
-        Main.popModal(this.inputGrabber);
+        this.msWindowManager.msFocusManager.popModal(this.inputGrabber);
         global.stage.remove_child(this.inputGrabber);
         msWindow.unFreezeAllocation();
         reparentActor(msWindow, originalParent);
@@ -195,9 +195,8 @@ export class MsDndManager extends MsManager {
     checkUnderThePointerRoutine() {
         if (this.dragInProgress === null) return;
         this.throttledCheckUnderPointer();
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();
-            return GLib.SOURCE_REMOVE;
         });
     }
 
@@ -211,14 +210,16 @@ export class MsDndManager extends MsManager {
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWindowDragged = this.dragInProgress.msWindow;
         const msWorkspace = msWindowDragged.msWorkspace;
-        if (monitor !== msWorkspace.monitor) {
+        if (monitor.index !== msWorkspace.monitor.index) {
             let newMsWorkspace: MsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
-                newMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                newMsWorkspace =
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             } else {
-                newMsWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                    monitor.index
-                )[0];
+                newMsWorkspace =
+                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        monitor.index
+                    )[0];
             }
 
             Me.msWorkspaceManager.setWindowToMsWorkspace(
@@ -263,6 +264,7 @@ export class InputGrabber extends Clutter.Actor {
         super({
             name: 'InputGrabber',
             reactive: true,
+            //backgroundColor: Clutter.Color.new(255, 0, 0, 100),
         });
         this.add_constraint(
             new Clutter.BindConstraint({
@@ -271,7 +273,7 @@ export class InputGrabber extends Clutter.Actor {
             })
         );
     }
-    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+    override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
         const actionId = global.display.get_keybinding_action(
             keyEvent.hardware_keycode,
             keyEvent.modifier_state
@@ -280,24 +282,24 @@ export class InputGrabber extends Clutter.Actor {
             const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_LEFT
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.NEXT_WINDOW:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_RIGHT
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.PREVIOUS_WORKSPACE:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_TOP
-                    )();
+                    ))();
                     break;
                 case KeyBindingAction.NEXT_WORKSPACE:
-                    Me.hotKeysModule.actionNameToActionMap.get(
+                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
                         KeyBindingAction.MOVE_WINDOW_BOTTOM
-                    )();
+                    ))();
                     break;
             }
         }

@@ -1,17 +1,13 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
-
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 
-@registerGObjectClass
-export class HalfLayout extends BaseResizeableTilingLayout {
-    static state = { key: 'half' };
-    static label = 'Half';
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+@registerGObjectClass
+export class HalfLayoutBase<S extends { key: string }> extends BaseResizeableTilingLayout<S> {
     updateMainPortionLength(length: number) {
         while (this.mainPortion.portionLength > length) {
             this.mainPortion.pop();
@@ -41,4 +37,10 @@ export class HalfLayout extends BaseResizeableTilingLayout {
 
         super.tileAll(box);
     }
+}
+
+@registerGObjectClass
+export class HalfLayout extends HalfLayoutBase<{ key: 'half' }> {
+    static state = { key: 'half' };
+    static label = 'Half';
 }

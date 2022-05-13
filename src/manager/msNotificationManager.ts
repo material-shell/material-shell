@@ -7,7 +7,7 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { messageTray } from 'ui';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 
@@ -20,7 +20,7 @@ export class MsNotificationManager extends MsManager {
 
     constructor() {
         super();
-        this.httpSession = new Soup.Session({ ssl_use_system_ca_file: true });
+        this.httpSession = new Soup.Session();
     }
     check() {
         if (getSettings('tweaks').get_boolean('disable-notifications')) return;
@@ -46,7 +46,7 @@ export class MsNotificationManager extends MsManager {
             let notifications: NotificationResponseItem[] = [];
             try {
                 notifications = JSON.parse(message.response_body.data);
-            } catch (e) {
+            } catch (e: any) {
                 global.log(`error unpack notification error ${e.toString()}`);
                 return;
             }
@@ -94,7 +94,9 @@ let MsNotification: {
 };
 
 if (ShellVersionMatch('3.34')) {
-    MsNotificationSource = class MsNotificationSource extends messageTray.Source {
+    MsNotificationSource = class MsNotificationSource extends (
+        messageTray.Source
+    ) {
         constructor() {
             super('Material Shell');
         }

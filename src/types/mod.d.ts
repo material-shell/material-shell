@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
 /* eslint-disable @typescript-eslint/ban-types */
 import * as Clutter from 'clutter';
+import { AppLaunchContext } from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
+import * as Shell from 'shell';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsOverview } from 'src/layout/overview';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { MsThemeManager } from 'src/manager/msThemeManager';
@@ -31,6 +34,7 @@ declare global {
      */
     function _(format: string): string;
 
+    function ngettext(singular: string, plurial: string, format: any): any;
     interface Date {
         /**
          * @deprecated toLocaleFormat is deprecated
@@ -51,14 +55,14 @@ declare global {
              * @param timestamp the timestamp for the launch (or 0 for current time)
              * @param workspace a workspace index, or -1 to indicate the current one
              */
-            create_app_launch_context(timestep: number, workspace: number);
+            create_app_launch_context(timestep: number, workspace: number): AppLaunchContext;
             /** Material shell */
             ms: Extension;
             display: Meta.Display;
             session_mode: string;
-            stage: Clutter.Stage & { key_focus: any };
+            stage: Clutter.Stage;
             window_group: Clutter.Actor;
-            window_manager: any;
+            window_manager: Shell.WM;
             workspace_manager: Meta.WorkspaceManager;
             top_window_group: Clutter.Actor;
         }
@@ -77,6 +81,7 @@ declare global {
         locked: boolean | undefined;
         reparentInProgress: boolean | undefined;
         stateManager: StateManager;
+        msOverview: MsOverview;
         showSplashScreens: () => void;
         hideSplashScreens: () => void;
         closing: boolean;
@@ -87,6 +92,7 @@ declare global {
         layout: any;
         uuid: string;
         path: string;
+        logWithStackTrace: (...args: any[]) => void;
         logFocus: (...args: any[]) => void;
         logBlank: () => void;
         log: (...args: any[]) => void;
@@ -109,14 +115,6 @@ declare global {
     }
 }
 
-export interface Monitor {
-    readonly index: number;
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
-}
-
 export interface Rectangular {
     x: number;
     y: number;
@@ -135,20 +133,6 @@ declare type ProcessResult = [boolean, any, any, number];
 declare type SignalID = number;
 
 declare module 'gobject' {
-    // Why these are not in the documentation or auto-generated typedefs, I do not know.
-    export const TYPE_INT: GObject.GType<number>;
-    export const TYPE_STRING: GObject.GType<string>;
-    export const TYPE_BOOLEAN: GObject.GType<boolean>;
-
-    // Extra interfaces used to help define GObject classes in js; these
-    // aren't part of gi.
-    export interface SignalDefinition {
-        flags?: SignalFlags;
-        accumulator?: number;
-        return_type?: GType;
-        param_types?: GType[];
-    }
-
     export interface MetaInfo {
         GTypeName: string;
         GTypeFlags?: TypeFlags;
@@ -178,7 +162,7 @@ declare module 'gobject' {
 
 declare module 'clutter' {
     export interface Actor {
-        metaWindow?: any;
+        // metaWindow?: any;
         msWorkspace?: MsWorkspace;
     }
 
@@ -259,16 +243,7 @@ declare module 'clutter' {
     interface Actor extends Rectangular, GObject.Object {
         // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
         ease(params: EasingParamsWithProperties): void;
-        ease_property(
-            propName: AnimatableActorFields,
-            target: number,
-            params: EasingParams
-        ): void;
-        ease_property(
-            propName: '@effects.dimmer.brightness',
-            target: Clutter.Color,
-            params: EasingParams
-        ): void;
+        ease_property: any;
     }
 
     // The Clutter.d.ts file doesn't have proper 'extends' information
@@ -280,21 +255,21 @@ declare module 'clutter' {
     }
 }
 
-declare namespace Shell {
-    interface Dialog extends St.Widget {
-        _dialog: St.Widget;
-        contentLayout: St.Widget;
-    }
+// declare namespace Shell {
+//     interface Dialog extends St.Widget {
+//         _dialog: St.Widget;
+//         contentLayout: St.Widget;
+//     }
 
-    interface ModalDialog extends St.Widget {
-        contentLayout: St.Widget;
-        dialogLayout: Dialog;
+//     interface ModalDialog extends St.Widget {
+//         contentLayout: St.Widget;
+//         dialogLayout: Dialog;
 
-        addButton(action: DialogButtonAction): void;
+//         addButton(action: DialogButtonAction): void;
 
-        close(timestamp: number): void;
-        open(timestamp: number, on_primary: boolean): void;
+//         close(timestamp: number): void;
+//         open(timestamp: number, on_primary: boolean): void;
 
-        setInitialKeyFocus(actor: Clutter.Actor): void;
-    }
-}
+//         setInitialKeyFocus(actor: Clutter.Actor): void;
+//     }
+// }

@@ -1,34 +1,32 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as St from 'st';
 import * as Gio from 'gio';
-const PopupMenu = imports.ui.popupMenu;
-const DND = imports.ui.dnd;
-const Main = imports.ui.main;
-
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MatButton } from 'src/widget/material/button';
-import { ReorderableList } from 'src/widget/reorderableList';
-
+import * as GObject from 'gobject';
 import { TaskBarItem } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
-
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
-import { registerGObjectClass } from 'src/utils/gjs';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { MsWorkspace } from '../msWorkspace/msWorkspace';
 import { assert } from 'src/utils/assert';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { MatButton } from 'src/widget/material/button';
+import { ReorderableList } from 'src/widget/reorderableList';
+import * as St from 'st';
+import { MsWorkspace } from '../msWorkspace/msWorkspace';
+import { popupMenu } from 'ui';
+const DND = imports.ui.dnd;
+import { main as Main } from 'ui';
+
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
     private _delegate: this;
     msWorkspaceButtonMap: Map<any, any>;
     msWorkspaceManager: MsWorkspaceManager;
-    menuManager: any;
+    menuManager: popupMenu.PopupMenuManager;
     buttonList: ReorderableList;
     workspaceActiveIndicator: St.Widget;
     workspaceSignal: number;
@@ -45,7 +43,7 @@ export class WorkspaceList extends St.Widget {
         this.connect('destroy', this._onDestroy.bind(this));
         this.msWorkspaceButtonMap = new Map();
         this.msWorkspaceManager = Me.msWorkspaceManager;
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menuManager = new popupMenu.PopupMenuManager(this);
 
         this.buttonList = new ReorderableList(true);
         this.buttonList.connect('actor-moved', (_, actor, index) => {
@@ -398,10 +396,10 @@ export class WorkspaceButton extends MatButton {
     }
 
     buildMenu() {
-        this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
         this.menu.actor.add_style_class_name('panel-menu');
         this.menu.addMenuItem(
-            new PopupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
+            new popupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
         );
         this.panelIconStyleHybridRadio = this.menu.addAction(
             _('Hybrid'),
@@ -481,10 +479,10 @@ export class WorkspaceButton extends MatButton {
         });
 
         this.menu.addMenuItem(
-            new PopupMenu.PopupSeparatorMenuItem(_('Override category'))
+            new popupMenu.PopupSeparatorMenuItem(_('Override category'))
         );
         const autoSentence = _('Determined automatically');
-        this.subMenu = new PopupMenu.PopupSubMenuMenuItem(
+        this.subMenu = new popupMenu.PopupSubMenuMenuItem(
             this.msWorkspace.msWorkspaceCategory.forcedCategory || autoSentence
         );
         const setCategory = (category?: string) => {
@@ -510,7 +508,7 @@ export class WorkspaceButton extends MatButton {
         });
 
         this.menu.addMenuItem(this.subMenu);
-        Main.uiGroup.add_actor(this.menu.actor);
+        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
         this.menu.close();
     }
 
@@ -526,14 +524,14 @@ export class WorkspaceButton extends MatButton {
         });
     }
 
-    handleDragOver(source, actor, x, y) {
+    handleDragOver(source: any, actor: Clutter.Actor, x: number, y: number) {
         if (source instanceof TaskBarItem) {
             return DND.DragMotionResult.MOVE_DROP;
         }
         return DND.DragMotionResult.NO_DROP;
     }
 
-    acceptDrop(source) {
+    acceptDrop(source: any) {
         if (source instanceof TaskBarItem) {
             if (source.tileable instanceof MsWindow) {
                 Me.msWorkspaceManager.setWindowToMsWorkspace(
@@ -609,12 +607,18 @@ export class WorkspaceButtonIcon extends St.Widget {
 
     desaturateIcons() {
         const shouldDesaturate = !Me.msThemeManager.panelIconColor;
-        const isDesaturate = this.desaturateEffect !== undefined && this.desaturateEffect === this.get_effect('desaturate_icons');
+        const isDesaturate =
+            this.desaturateEffect !== undefined &&
+            this.desaturateEffect === this.get_effect('desaturate_icons');
         if (shouldDesaturate === isDesaturate) return;
         if (shouldDesaturate) {
             this.desaturateEffect = new Clutter.DesaturateEffect();
-            this.add_effect_with_name('desaturate_icons', this.desaturateEffect);
+            this.add_effect_with_name(
+                'desaturate_icons',
+                this.desaturateEffect
+            );
         } else {
+            assert(this.desaturateEffect !== undefined, "true by construction");
             this.remove_effect(this.desaturateEffect);
             delete this.desaturateEffect;
         }

@@ -1,0 +1,67 @@
+{
+  "_from": "@gi-types/cogl@^7.0.3",
+  "_id": "@gi-types/cogl@7.0.3",
+  "_inBundle": false,
+  "_integrity": "sha512-yub8mzFnUvZfcBGCxeTS/mShT9pOWcx/FaVmBU+NCEdUlv6LwA+kaVeDJx9SjVFOIrybsJ06q7f/QedkQOfUQQ==",
+  "_location": "/@gi-types/cogl",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@gi-types/cogl@^7.0.3",
+    "name": "@gi-types/cogl",
+    "escapedName": "@gi-types%2fcogl",
+    "scope": "@gi-types",
+    "rawSpec": "^7.0.3",
+    "saveSpec": null,
+    "fetchSpec": "^7.0.3"
+  },
+  "_requiredBy": [
+    "/@gi-types/clutter",
+    "/@gi-types/coglpango"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/cogl/-/cogl-7.0.3.tgz",
+  "_shasum": "807d65614ce8906d9d7800c6a50bd231ace4c5ae",
+  "_spec": "@gi-types/cogl@^7.0.3",
+  "_where": "/var/home/papyelgringo/workspace/material-shell/node_modules/@gi-types/clutter",
+  "bundleDependencies": false,
+  "contentHash": "07c84f6f1e233d3f5741b71350e4c02d",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/cairo": "^1.0.3",
+    "@gi-types/glib": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8",
+    "@gi-types/graphene": "^1.0.1"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for Cogl",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/cogl",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/cogl7"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "7.0.3"
+}

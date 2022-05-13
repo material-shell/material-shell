@@ -1,0 +1,9 @@
+{
+    "name": "HarfBuzz",
+    "api_version": "0.0",
+    "package_version": "0.0",
+    "imports": {
+        "GObject": "2.0",
+        "GLib": "2.0"
+    }
+}

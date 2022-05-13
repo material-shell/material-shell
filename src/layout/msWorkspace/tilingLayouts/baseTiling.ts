@@ -1,35 +1,28 @@
 /** Gnome libs imports */
+import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GLib from 'glib';
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-const Main = imports.ui.main;
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { Signal } from 'src/manager/msManager';
+import { Allocate, AllocatePreferredSize } from 'src/utils/compatibility';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { InfinityTo0 } from 'src/utils/index';
+import { getSettings } from 'src/utils/settings';
+import { MsWorkspace, Tileable } from '../msWorkspace';
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import {
-    SetAllocation,
-    Allocate,
-    AllocatePreferredSize,
-} from 'src/utils/compatibility';
-import { getSettings } from 'src/utils/settings';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
-import { InfinityTo0 } from 'src/utils/index';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace, Tileable } from '../msWorkspace';
-import { Signal } from 'src/manager/msManager';
 
 @registerGObjectClass
-export class BaseTilingLayout extends Clutter.LayoutManager {
-    _state: any;
+export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutManager {
+    _state: S;
     icon: Gio.IconPrototype;
     msWorkspace: MsWorkspace;
     themeSettings: Gio.Settings;
     signals: Signal[];
 
-    static state: any;
-
-    constructor(msWorkspace: MsWorkspace, state = {}) {
+    constructor(msWorkspace: MsWorkspace, state: Partial<S> = {}) {
         super();
         this._state = Object.assign({}, (this.constructor as any).state, state);
         this.icon = Gio.icon_new_for_string(
@@ -68,7 +61,10 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     get tileableListVisible() {
         return this.msWorkspace.tileableList.filter((tileable) => {
             if (tileable === this.msWorkspace.appLauncher) {
-                return tileable === this.msWorkspace.tileableFocused;
+                return (
+                    tileable === this.msWorkspace.tileableFocused ||
+                    this.msWorkspace.tileableList.length === 1
+                );
             } else {
                 return tileable.visible;
             }
@@ -240,7 +236,9 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         ) {
             this.hideAppLauncher();
         }
-
+        if (tileableList.length == 1 && !this.msWorkspace.appLauncher.visible) {
+            this.showAppLauncher();
+        }
         this.tileAll();
 
         this.layout_changed();
@@ -266,8 +264,8 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
     }
 
     getWorkspaceBounds() {
-        const box = this.msWorkspace.msWorkspaceActor.tileableContainer
-            .allocation;
+        const box =
+            this.msWorkspace.msWorkspaceActor.tileableContainer.allocation;
         return {
             x: 0,
             y: 0,
@@ -344,21 +342,21 @@ export class BaseTilingLayout extends Clutter.LayoutManager {
         // return a widget to add to the panel
     }
 
-    vfunc_get_preferred_width(
-        _container,
+    override vfunc_get_preferred_width(
+        _container: Clutter.Container,
         _forHeight: number
     ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_get_preferred_height(
-        _container,
+    override vfunc_get_preferred_height(
+        _container: Clutter.Container,
         _forWidth: number
     ): [number, number] {
         return [-1, -1];
     }
 
-    vfunc_allocate(
+    override vfunc_allocate(
         container: Clutter.Actor,
         box: Clutter.ActorBox,
         flags?: Clutter.AllocationFlags

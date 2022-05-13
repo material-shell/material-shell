@@ -1,39 +1,43 @@
 /** Gnome libs imports */
-import * as St from 'st';
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GnomeDesktop from 'gnomedesktop';
-const Main = imports.ui.main;
+import * as GObject from 'gobject';
+import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { assert, assertNotNull } from 'src/utils/assert';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { gnomeVersionGreaterOrEqualTo, gnomeVersionLessOrEqualTo } from 'src/utils/shellVersionMatch';
+import * as St from 'st';
+import { dateMenu, main as Main } from 'ui';
+import { panel } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { reparentActor } from 'src/utils/index';
-import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { assert } from 'src/utils/assert';
 
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsStatusArea',
     };
-    gnomeShellPanel: any;
+    gnomeShellPanel: panel.Panel;
     leftBoxActors: Clutter.Actor[];
     rightBoxActors: Clutter.Actor[];
-    dateMenu: any;
+    dateMenu: dateMenu.DateMenuButton;
     originalDateMenuBox: any;
     msDateMenuBox?: MsDateMenuBox;
-    leftBoxActorAddedSignal: any;
-    centerBoxActorAddedSignal: any;
-    centerBoxActors: any;
-    rightBoxActorAddedSignal: any;
+    signalIds: {
+        leftBoxActor: number,
+        centerBoxActor: number,
+        rightBoxActor: number,
+    } | null = null;
+    centerBoxActors: Clutter.Actor[];
 
     constructor() {
         super({
             layout_manager: new Clutter.BoxLayout({
                 orientation: Clutter.Orientation.VERTICAL,
-                pack_start: true,
+                pack_start: false,
             }),
         });
         this.gnomeShellPanel = Main.panel;
@@ -84,7 +88,7 @@ export class MsStatusArea extends Clutter.Actor {
             .forEach((actor) => {
                 this.stealActor(actor, this.leftBoxActors);
             });
-        this.leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
+        const leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
             'actor-added',
             (_, actor) => {
                 this.stealActor(actor, this.leftBoxActors);
@@ -93,24 +97,30 @@ export class MsStatusArea extends Clutter.Actor {
         this.gnomeShellPanel._centerBox.get_children().forEach((actor) => {
             this.stealActor(actor, this.centerBoxActors);
         });
-        this.centerBoxActorAddedSignal = this.gnomeShellPanel._centerBox.connect(
-            'actor-added',
-            (_, actor) => {
-                this.stealActor(actor, this.centerBoxActors);
-            }
-        );
+        const centerBoxActorAddedSignal =
+            this.gnomeShellPanel._centerBox.connect(
+                'actor-added',
+                (_, actor) => {
+                    this.stealActor(actor, this.centerBoxActors);
+                }
+            );
         this.gnomeShellPanel._rightBox
             .get_children()
             .reverse()
             .forEach((actor) => {
                 this.stealActor(actor, this.rightBoxActors);
             });
-        this.rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
+        const rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
             'actor-added',
             (_, actor) => {
                 this.stealActor(actor, this.rightBoxActors);
             }
         );
+        this.signalIds = {
+            rightBoxActor: rightBoxActorAddedSignal,
+            leftBoxActor: leftBoxActorAddedSignal,
+            centerBoxActor: centerBoxActorAddedSignal,
+        };
     }
 
     stealActor(actor: Clutter.Actor, container: Clutter.Actor[]) {
@@ -121,17 +131,14 @@ export class MsStatusArea extends Clutter.Actor {
         actor.y_expand = false;
         actor.x_expand = true;
         this.recursivelySetVertical(actor, true);
-        reparentActor(actor, this);
+        reparentActor(actor, this, true);
     }
 
     restorePanelActors() {
-        this.gnomeShellPanel._leftBox.disconnect(this.leftBoxActorAddedSignal);
-        this.gnomeShellPanel._centerBox.disconnect(
-            this.centerBoxActorAddedSignal
-        );
-        this.gnomeShellPanel._rightBox.disconnect(
-            this.rightBoxActorAddedSignal
-        );
+        const signalIds = assertNotNull(this.signalIds);
+        this.gnomeShellPanel._leftBox.disconnect(signalIds.leftBoxActor);
+        this.gnomeShellPanel._centerBox.disconnect(signalIds.centerBoxActor);
+        this.gnomeShellPanel._rightBox.disconnect(signalIds.rightBoxActor);
 
         this.leftBoxActors.forEach((actor) => {
             if (!actor) return;
@@ -181,30 +188,35 @@ export class MsStatusArea extends Clutter.Actor {
 
     overridePanelMenuSide() {
         // For each menu override the opening side to match the vertical panel
-        this.gnomeShellPanel.menuManager._menus.forEach((menuData) => {
-            if (menuData.menu._boxPointer) {
-                menuData.menu._boxPointer.oldArrowSideFunction =
-                    menuData.menu._boxPointer._calculateArrowSide;
-                menuData.menu._boxPointer._calculateArrowSide = function () {
+        for (const menuData of this.gnomeShellPanel.menuManager._menus) {
+            const menu = gnomeVersionGreaterOrEqualTo(menuData, "42.0") ? menuData : menuData.menu;
+
+            if (menu._boxPointer) {
+                (menu._boxPointer as any).oldArrowSideFunction =
+                    menu._boxPointer._calculateArrowSide;
+                menu._boxPointer._calculateArrowSide = function () {
                     return Me.msThemeManager.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
                         ? St.Side.LEFT
                         : St.Side.RIGHT;
                 };
             }
-        });
+        }
     }
 
     restorePanelMenuSide() {
-        this.gnomeShellPanel.menuManager._menus.forEach((menuData) => {
-            if (menuData.menu._boxPointer) {
-                menuData.menu._boxPointer._calculateArrowSide =
-                    menuData.menu._boxPointer.oldArrowSideFunction;
-                delete menuData.menu._boxPointer.oldArrowSideFunction;
+        for (const menuData of this.gnomeShellPanel.menuManager._menus) {
+            const menu = gnomeVersionGreaterOrEqualTo(menuData, "42.0") ? menuData : menuData.menu;
+
+            if (menu._boxPointer) {
+                menu._boxPointer._calculateArrowSide =
+                    (menu._boxPointer as any).oldArrowSideFunction;
+                delete (menu._boxPointer as any).oldArrowSideFunction;
             }
-        });
+        }
     }
     disable() {
+        Me.logFocus('disable statusArea');
         this.unVerticaliseDateMenuButton();
         this.restorePanelMenuSide();
         this.restorePanelActors();
@@ -217,8 +229,8 @@ export class MsDateMenuBox extends St.Widget {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsDateMenuBox',
     };
-    dateMenu: any;
-    indicatorActor: any;
+    dateMenu: dateMenu.DateMenuButton;
+    indicatorActor: dateMenu.MessagesIndicator;
     private _wallClock: any;
     clockLabel: St.Label<
         Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
@@ -234,20 +246,16 @@ export class MsDateMenuBox extends St.Widget {
     >;
     private _settings: Gio.Settings;
     iconDisplay: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
-    dateMenuSignal: any;
-    indicatorSignal: any;
+    dateMenuSignal: number;
+    indicatorSignal: number;
 
-    constructor(dateMenu: any) {
+    constructor(dateMenu: dateMenu.DateMenuButton) {
         super({
             x_align: Clutter.ActorAlign.CENTER,
             layout_manager: new Clutter.BinLayout(),
         });
         this.dateMenu = dateMenu;
-        // Before 3.36 _indicator was just a class with an actor as property
-        this.indicatorActor =
-            this.dateMenu._indicator instanceof Clutter.Actor
-                ? this.dateMenu._indicator
-                : this.dateMenu._indicator.actor;
+        this.indicatorActor = this.dateMenu._indicator;
 
         this._wallClock = new GnomeDesktop.WallClock({ time_only: true });
 

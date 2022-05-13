@@ -14,15 +14,15 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { MsWindow } from '../msWindow';
 
+type MaximizeLayoutState = { key: 'maximize' };
 @registerGObjectClass
-export class MaximizeLayout extends BaseTilingLayout {
+export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     static state = { key: 'maximize' };
     static label = 'Maximize';
     translationAnimator: TranslationAnimator;
-    currentDisplayedActor: any;
-    currentDisplayedActorDestroySignal: number | undefined;
+    currentDisplayed: { tileable: Tileable, destroySignal: number } | null = null;
 
-    constructor(msWorkspace: MsWorkspace, state) {
+    constructor(msWorkspace: MsWorkspace, state: MaximizeLayoutState) {
         super(msWorkspace, state);
         this.translationAnimator = new TranslationAnimator();
         this.translationAnimator.connect('transition-completed', () => {
@@ -36,30 +36,32 @@ export class MaximizeLayout extends BaseTilingLayout {
         );
     }
 
-    displayTileable(actor) {
-        if (this.currentDisplayedActor) {
+    displayTileable(actor: Tileable) {
+        if (this.currentDisplayed) {
             if (
                 this.tileableContainer
                     .get_children()
-                    .includes(this.currentDisplayedActor)
+                    .includes(this.currentDisplayed.tileable)
             ) {
-                this.tileableContainer.remove_child(this.currentDisplayedActor);
+                this.tileableContainer.remove_child(this.currentDisplayed.tileable);
             }
 
-            this.currentDisplayedActor.disconnect(
-                this.currentDisplayedActorDestroySignal
+            this.currentDisplayed.tileable.disconnect(
+                this.currentDisplayed.destroySignal
             );
         }
-        this.currentDisplayedActor = actor;
-        this.currentDisplayedActorDestroySignal = this.currentDisplayedActor.connect(
-            'destroy',
-            () => {
-                delete this.currentDisplayedActor;
-            }
-        );
+        this.currentDisplayed = {
+            tileable: actor,
+            destroySignal: actor.connect(
+                'destroy',
+                () => {
+                    this.currentDisplayed = null;
+                }
+            )
+        }
 
-        reparentActor(this.currentDisplayedActor, this.tileableContainer);
-        this.currentDisplayedActor.grab_key_focus();
+        reparentActor(actor, this.tileableContainer);
+        actor.grab_key_focus();
     }
 
     showAppLauncher() {
@@ -149,7 +151,9 @@ export class MaximizeLayout extends BaseTilingLayout {
     }
 
     endTransition() {
-        this.displayTileable(this.msWorkspace.tileableFocused);
+        if (this.msWorkspace.tileableFocused !== null) {
+            this.displayTileable(this.msWorkspace.tileableFocused);
+        }
         this.tileableContainer.remove_child(this.translationAnimator);
     }
 }

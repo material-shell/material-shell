@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
 
@@ -20,8 +20,35 @@ import { SimpleHorizontalLayout } from 'src/layout/msWorkspace/tilingLayouts/cus
 import { SimpleVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simpleVertical';
 import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
 import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { Settings } from 'gio';
 
-type LayoutType = typeof BaseTilingLayout;
+type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
+
+export type LayoutState = 
+    ExtractState<MaximizeLayout>
+    | ExtractState<SplitLayout>
+    | ExtractState<GridLayout>
+    | ExtractState<HalfLayout>
+    | ExtractState<HalfHorizontalLayout>
+    | ExtractState<HalfVerticalLayout>
+    | ExtractState<RatioLayout>
+    | ExtractState<SimpleLayout>
+    | ExtractState<SimpleHorizontalLayout>
+    | ExtractState<SimpleVerticalLayout>
+    | ExtractState<FloatLayout>
+    
+export type LayoutType = (typeof MaximizeLayout
+    | typeof SplitLayout
+    | typeof GridLayout
+    | typeof HalfLayout
+    | typeof HalfHorizontalLayout
+    | typeof HalfVerticalLayout
+    | typeof RatioLayout
+    | typeof SimpleLayout
+    | typeof SimpleHorizontalLayout
+    | typeof SimpleVerticalLayout
+    | typeof FloatLayout)
 
 const layouts: LayoutType[] = [
     MaximizeLayout,
@@ -38,16 +65,16 @@ const layouts: LayoutType[] = [
 ];
 
 export const TilingLayoutByKey: {
-    [key: string]: typeof BaseTilingLayout;
+    [key: string]: LayoutType;
 } = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
-}, {});
+}, {} as { [key: string]: LayoutType; });
 
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
-    layoutList: any[];
-    layoutsSettings: any;
+    layoutList: LayoutType[];
+    layoutsSettings: Settings;
     screenGap: number;
     ratio: number;
     useScreenGap: boolean;
@@ -116,6 +143,22 @@ export class LayoutManager extends MsManager {
         return layoutKeys.map((layoutKey) => {
             return TilingLayoutByKey[layoutKey];
         });
+    }
+
+    createLayout(workspace: MsWorkspace, state: LayoutState): InstanceType<LayoutType> {
+        switch(state.key) {
+            case "maximize": return new MaximizeLayout(workspace, state);
+            case "split": return new SplitLayout(workspace, state);
+            case "grid": return new GridLayout(workspace, state);
+            case "half": return new HalfLayout(workspace, state);
+            case "half-horizontal": return new HalfHorizontalLayout(workspace, state);
+            case "half-vertical": return new HalfVerticalLayout(workspace, state);
+            case "ratio": return new RatioLayout(workspace, state);
+            case "simple": return new SimpleLayout(workspace, state);
+            case "simple-horizontal": return new SimpleHorizontalLayout(workspace, state);
+            case "simple-vertical": return new SimpleVerticalLayout(workspace, state);
+            case "float": return new FloatLayout(workspace, state);
+        }
     }
 
     getLayoutByKey(key: string): LayoutType {

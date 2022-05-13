@@ -1,0 +1,70 @@
+{
+  "_args": [
+    [
+      "@gi-types/cairo@1.0.3",
+      "/var/home/papyelgringo/workspace/material-shell"
+    ]
+  ],
+  "_development": true,
+  "_from": "@gi-types/cairo@1.0.3",
+  "_id": "@gi-types/cairo@1.0.3",
+  "_inBundle": false,
+  "_integrity": "sha512-IT4JbSYgMj2aJbx7Yy8nzHgga2vX5i5OHR2+vXKc9vg/wrnExHiSbacWbxO7CZdk6YBqpH/7cjOa4bkTmBN8tg==",
+  "_location": "/@gi-types/cairo",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@gi-types/cairo@1.0.3",
+    "name": "@gi-types/cairo",
+    "escapedName": "@gi-types%2fcairo",
+    "scope": "@gi-types",
+    "rawSpec": "1.0.3",
+    "saveSpec": null,
+    "fetchSpec": "1.0.3"
+  },
+  "_requiredBy": [
+    "/@gi-types/gdk",
+    "/@gi-types/gtk",
+    "/@gi-types/pango"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/cairo/-/cairo-1.0.3.tgz",
+  "_spec": "1.0.3",
+  "_where": "/var/home/papyelgringo/workspace/material-shell",
+  "contentHash": "aaf4cf5543c11d1dd167158d3698bda7",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/gobject": "^2.66.8"
+  },
+  "description": "TypeScript definitions for cairo",
+  "files": [
+    "index.d.ts",
+    "override.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/cairo",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/cairo1"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "override.d.ts",
+  "version": "1.0.3"
+}

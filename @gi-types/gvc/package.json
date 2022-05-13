@@ -1,0 +1,64 @@
+{
+  "_from": "@gi-types/gvc@^1.0.2",
+  "_id": "@gi-types/gvc@1.0.2",
+  "_inBundle": false,
+  "_integrity": "sha512-u5QMX4nI6FJSvnc/Se0JObycRlMznTz6BlZ2CM84i9ePhL0K6vplM0UIeTfWDxJiwS+M9mofQnA10uWt8CZRhA==",
+  "_location": "/@gi-types/gvc",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@gi-types/gvc@^1.0.2",
+    "name": "@gi-types/gvc",
+    "escapedName": "@gi-types%2fgvc",
+    "scope": "@gi-types",
+    "rawSpec": "^1.0.2",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.2"
+  },
+  "_requiredBy": [
+    "/@gi-types/shell"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/gvc/-/gvc-1.0.2.tgz",
+  "_shasum": "8669ca80ab9b8496e277ab6cb7b2f1b04e1e30c9",
+  "_spec": "@gi-types/gvc@^1.0.2",
+  "_where": "/var/home/papyelgringo/workspace/material-shell/node_modules/@gi-types/shell",
+  "bundleDependencies": false,
+  "contentHash": "79b0ef2d919dc4b6024f4b34e476f575",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/gio": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for Gvc",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/gvc",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/gvc1"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "1.0.2"
+}

@@ -1,0 +1,8 @@
+{
+    "name": "GDesktopEnums",
+    "api_version": "3.0",
+    "package_version": "3.0",
+    "imports": {
+        "GObject": "2.0"
+    }
+}

@@ -1,0 +1,65 @@
+{
+  "_from": "@gi-types/nm@^1.28.9",
+  "_id": "@gi-types/nm@1.28.9",
+  "_inBundle": false,
+  "_integrity": "sha512-sZd0HWWJ4aeXTrbnmTlN80jkjqdAohGhhAbtdfrlnIzrR76hROuXe+vxs1dn++FwV/67c1hQuxCERD3JyqEfnw==",
+  "_location": "/@gi-types/nm",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@gi-types/nm@^1.28.9",
+    "name": "@gi-types/nm",
+    "escapedName": "@gi-types%2fnm",
+    "scope": "@gi-types",
+    "rawSpec": "^1.28.9",
+    "saveSpec": null,
+    "fetchSpec": "^1.28.9"
+  },
+  "_requiredBy": [
+    "/@gi-types/shell"
+  ],
+  "_resolved": "https://registry.npmjs.org/@gi-types/nm/-/nm-1.28.9.tgz",
+  "_shasum": "6a2d0845b66a5c09edb44c00d8ecf0d18467584e",
+  "_spec": "@gi-types/nm@^1.28.9",
+  "_where": "/var/home/papyelgringo/workspace/material-shell/node_modules/@gi-types/shell",
+  "bundleDependencies": false,
+  "contentHash": "400cff652da31003c328f3dbd37c03cc",
+  "contributors": [
+    {
+      "name": "Evan Welsh",
+      "url": "https://gitlab.gnome.org/ewlsh/"
+    }
+  ],
+  "dependencies": {
+    "@gi-types/gio": "^2.66.9",
+    "@gi-types/glib": "^2.66.9",
+    "@gi-types/gobject": "^2.66.8"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for NM",
+  "files": [
+    "index.d.ts",
+    "doc.json",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "gitHead": "cb145d0ec2a32eb2a101448518a9feff4a2e843b",
+  "license": "MIT",
+  "main": "",
+  "name": "@gi-types/nm",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.gnome.org/ewlsh/packages.gi.ts.git",
+    "directory": "packages/nm1"
+  },
+  "scripts": {},
+  "typeScriptVersion": "4.1",
+  "types": "index.d.ts",
+  "version": "1.28.9"
+}

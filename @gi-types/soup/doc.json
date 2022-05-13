@@ -1,0 +1,10 @@
+{
+    "name": "Soup",
+    "api_version": "2.4",
+    "package_version": "2.72.0",
+    "imports": {
+        "Gio": "2.0",
+        "GObject": "2.0",
+        "GLib": "2.0"
+    }
+}

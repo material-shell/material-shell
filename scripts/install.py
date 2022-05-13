@@ -3,6 +3,9 @@ import subprocess
 import os
 import shutil
 from shutil import which
+from subprocess import check_output
+import re
+
 
 # Ansi escape codes to get colors in terminals
 RED = "\33[31m"
@@ -50,10 +53,15 @@ def install():
         printc(RED, "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/")
         exit(1)
 
-    if which("gnome-shell") is None:
-        printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
-        exit(1)
+    #if which("gnome-shell") is None:
+    #    printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
+    #    exit(1)
 
+    output = check_output(['gnome-shell', '--version']).decode('utf-8')
+    match = re.search("\d+", output)
+    if match is None or int(match.group(0)) < 40:
+        printc(RED, "Your gnome shell version seem to be below 40 and this current version is only compatible with gnome 40 and above. Try the 3.38 branch")
+        exit(1)
     # Create install directory
     os.makedirs(install_directory, exist_ok=True)
 

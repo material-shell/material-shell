@@ -20,34 +20,33 @@ import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
 import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
+import { Async } from './utils/async';
 import { polyfillClutter } from './utils/compatibility';
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
+
 const Signals = imports.signals;
 
 let disableIncompatibleExtensionsModule: DisableIncompatibleExtensionsModule;
-let modules: any[] | undefined;
+let modules: { destroy(): void }[] | undefined;
 let _startupPreparedId: number | undefined;
 let _splashscreenTimeoutId: number | undefined;
+let _closingId: number | undefined;
 let splashscreenCalled: boolean | undefined;
 let splashScreens: St.Bin[] = [];
+const oldOverview = Main.overview;
 
 // eslint-disable-next-line no-unused-vars
 function init() {
     log('--------------');
     log('INIT EXTENSION');
     log('--------------');
-    polyfillClutter();
-    Signals.addSignalMethods(Me);
+
     global.ms = Me;
     Me.showSplashScreens = showSplashScreens;
     Me.hideSplashScreens = hideSplashScreens;
     Me.closing = false;
     Me.locked = false;
     splashscreenCalled = false;
-    //St.set_slow_down_factor(10);
-    global.display.connect('closing', () => {
-        Me.closing = true;
-    });
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -55,12 +54,20 @@ function enable() {
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
+
     if (Me.locked) {
         Me.locked = false;
         Me.layout.panel.enable();
+        oldOverview.isDummy = true;
+
         return;
     }
+    Signals.addSignalMethods(Me);
+    polyfillClutter();
     debug.initDebug();
+    _closingId = global.display.connect('closing', () => {
+        Me.closing = true;
+    });
     Me.monitorsLength = Main.layoutManager.monitors.length;
     // Show a splashscreen while we are updating the UI layout and theme
     if (Main.layoutManager._startingUp) {
@@ -68,9 +75,11 @@ function enable() {
     }
     Me.loaded = false;
     Me.stateManager = new StateManager();
+
     GLib.idle_add(GLib.PRIORITY_LOW, () => {
         //Then disable incompatibles extensions;
-        disableIncompatibleExtensionsModule = new DisableIncompatibleExtensionsModule();
+        disableIncompatibleExtensionsModule =
+            new DisableIncompatibleExtensionsModule();
 
         //Load persistent data
         Me.stateManager.loadRegistry((state) => {
@@ -109,22 +118,21 @@ function loaded(disconnect: boolean) {
     log('----------------');
     log('EXTENSION LOADED');
     log('----------------');
-    if (disconnect) {
+    if (disconnect && _startupPreparedId !== undefined) {
         Main.layoutManager.disconnect(_startupPreparedId);
     }
     Me.loaded = true;
     Me.locked = false;
+    if (oldOverview.visible) oldOverview.toggle();
+    oldOverview.isDummy = true;
     Me.emit('extension-loaded');
     Me.msNotificationManager.check();
     if (splashscreenCalled) {
         if (_splashscreenTimeoutId) {
-            GLib.source_remove(_splashscreenTimeoutId);
+            Async.clearTimeoutId(_splashscreenTimeoutId);
             _splashscreenTimeoutId = 0;
         }
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-            hideSplashScreens();
-            return GLib.SOURCE_REMOVE;
-        });
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 1000, hideSplashScreens);
     }
     log('--------------------');
     log('END EXTENSION LOADED');
@@ -141,7 +149,11 @@ function disable() {
         Me.layout.panel.disable();
     } else {
         Me.disableInProgress = true;
+        Async.clearAllPendingTimeout();
         if (!modules) return;
+        if (_closingId !== undefined) {
+            global.display.disconnect(_closingId);
+        }
         Me.emit('extension-disable');
         modules.reverse().forEach((module) => {
             module.destroy();
@@ -185,13 +197,12 @@ function showSplashScreens() {
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
     });
-    _splashscreenTimeoutId = GLib.timeout_add(
+    _splashscreenTimeoutId = Async.addTimeout(
         GLib.PRIORITY_DEFAULT,
         5000,
         () => {
             _splashscreenTimeoutId = 0;
             hideSplashScreens();
-            return GLib.SOURCE_REMOVE;
         }
     );
 }

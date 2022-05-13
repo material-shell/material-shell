@@ -1,0 +1,9 @@
+{
+    "name": "Atk",
+    "api_version": "1.0",
+    "package_version": "2.36.0",
+    "imports": {
+        "GObject": "2.0",
+        "GLib": "2.0"
+    }
+}

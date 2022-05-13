@@ -16,7 +16,7 @@ dist/style-light-theme.css: dist src/styles/light-theme.scss
 	npx node-sass src/styles/light-theme.scss dist/style-light-theme.css
 
 dist/style-primary-theme.css: dist src/styles/primary-theme.scss
-	npx node-sass src/styles/primary-theme.scss dist/style-primary-theme.css	
+	npx node-sass src/styles/primary-theme.scss dist/style-primary-theme.css
 
 dist:
 	mkdir dist
@@ -27,12 +27,14 @@ disable:
 enable:
 	$(extension_tool) -e $(extension)
 
-npm_dependencies: 
+npm_dependencies:
 	npm install
 
-build_prod: npm_dependencies compile
+zip_dist:
 	rm -f dist.zip
 	cd dist && zip -r ../dist.zip *
+
+build_prod: npm_dependencies compile zip_dist
 
 compile: dist schemas sass
 	npx tsc

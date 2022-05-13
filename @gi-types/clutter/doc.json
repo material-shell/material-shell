@@ -1,0 +1,18 @@
+{
+    "name": "Clutter",
+    "api_version": "7",
+    "package_version": "7.0",
+    "imports": {
+        "Atk": "1.0",
+        "Cogl": "7",
+        "CoglPango": "7",
+        "GL": "1.0",
+        "GObject": "2.0",
+        "Json": "1.0",
+        "cairo": "1.0",
+        "Pango": "1.0",
+        "GLib": "2.0",
+        "Graphene": "1.0",
+        "Gio": "2.0"
+    }
+}

@@ -2,7 +2,7 @@
 import * as Clutter from 'clutter';
 import * as GObject from 'gobject';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { reparentActor } from 'src/utils/index';
+import { InfinityTo0, reparentActor } from 'src/utils/index';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -78,7 +78,7 @@ export class TranslationAnimator extends Clutter.Actor {
                         this.transitionContainer.remove_actor(actor);
                         this.transitionContainer.translation_y =
                             this.transitionContainer.translation_y +
-                            allocationBox.get_height();
+                            InfinityTo0(allocationBox.get_height());
                     }
                     if (allocationBox.y1 > visibleArea.y2) {
                         this.transitionContainer.remove_actor(actor);
@@ -88,7 +88,7 @@ export class TranslationAnimator extends Clutter.Actor {
                         this.transitionContainer.remove_actor(actor);
                         this.transitionContainer.translation_x =
                             this.transitionContainer.translation_x +
-                            allocationBox.get_width();
+                            InfinityTo0(allocationBox.get_width());
                     }
                     if (allocationBox.x1 > visibleArea.x2) {
                         this.transitionContainer.remove_actor(actor);

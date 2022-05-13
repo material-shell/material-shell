@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="SettingListBoxRow" parent="GtkListBoxRow">
+        <child>
+            <object class="GtkBox">
+                <property name="spacing">8</property>
+                <child>
+                    <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="hexpand">1</property>
+                        <property name="margin-end">16</property>
+                        <child>
+                            <object class="GtkLabel" id="name_label">
+                                <property name="xalign">0</property>
+                                <property name="use-markup">1</property>
+                                <property name="margin-top">8</property>
+                                <property name="margin-start">8</property>
+                            </object>
+                        </child>
+                        <child>
+                            <object class="GtkLabel" id="description_label">
+                                <property name="xalign">0</property>
+                                <property name="use-markup">1</property>
+                                <property name="wrap">1</property>
+                                <property name="margin-top">8</property>
+                                <property name="margin-start">8</property>
+                                <property name="margin-bottom">8</property>
+                                <style>
+                                    <class name="dim-label"/>
+                                </style>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="GtkBox" id="widget_container">
+                        <property name="halign">3</property>
+                        <property name="margin-end">16</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </template>
+</interface>

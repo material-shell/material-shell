@@ -1,0 +1,11 @@
+{
+    "name": "PolkitAgent",
+    "api_version": "1.0",
+    "package_version": "1.0",
+    "imports": {
+        "Gio": "2.0",
+        "Polkit": "1.0",
+        "GObject": "2.0",
+        "GLib": "2.0"
+    }
+}

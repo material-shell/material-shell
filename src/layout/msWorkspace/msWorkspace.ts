@@ -1,24 +1,26 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
+import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
+import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
+import { LayoutState, LayoutType } from 'src/manager/layoutManager';
+import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
+import { layout } from 'ui';
+import { assertNotNull, logAssert } from 'src/utils/assert';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { getSettings } from 'src/utils/settings';
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import Monitor = layout.Monitor;
 const Signals = imports.signals;
-const Main = imports.ui.main;
+import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { SetAllocation, Allocate } from 'src/utils/compatibility';
-import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
-import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { reparentActor } from 'src/utils/index';
-import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
-import { getSettings } from 'src/utils/settings';
-import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
-import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
-import { logAssert } from 'src/utils/assert';
-import { Monitor } from 'src/types/mod';
 
 export type Tileable = MsWindow | MsApplicationLauncher;
 
@@ -32,7 +34,7 @@ export interface MsWorkspaceState {
     focusedIndex: number;
     forcedCategory: string | null | undefined;
     msWindowList: MsWindowState[];
-    layoutStateList: any;
+    layoutStateList: LayoutState[];
     layoutKey: string;
 }
 
@@ -45,14 +47,15 @@ export class MsWorkspace extends WithSignals {
     msWorkspaceCategory: MsWorkspaceCategory;
     precedentIndex: number;
     msWorkspaceActor: MsWorkspaceActor;
-    layout: any;
+    // Safety: We always assign this because we call setLayoutByKey from the constructor
+    layout!: InstanceType<LayoutType>;
     destroyed: boolean | undefined;
-    monitorIsExternal: any;
-    apps: any;
-    categorizedAppCard: any;
+    closing = false;
+    // Safety: We always assign this because we call setMonitor from the constructor
+    monitorIsExternal!: boolean;
     // Definitely set because we call `setMonitor` in the constructor
     monitor!: Monitor;
-    emitTileableChangedInProgress: any;
+    emitTileableChangedInProgress: Promise<void> | undefined;
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
@@ -112,7 +115,6 @@ export class MsWorkspace extends WithSignals {
         });
 
         this.msWorkspaceCategory.refreshCategory();
-
         this.msWorkspaceActor = new MsWorkspaceActor(this);
         this.setLayoutByKey(this._state.layoutKey);
 
@@ -123,7 +125,6 @@ export class MsWorkspace extends WithSignals {
 
     destroy() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-
         this.appLauncher.onDestroy();
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
@@ -160,7 +161,8 @@ export class MsWorkspace extends WithSignals {
             this._state.layoutKey = this.layout.state.key;
         }
         if (this.msWorkspaceCategory) {
-            this._state.forcedCategory = this.msWorkspaceCategory.forcedCategory;
+            this._state.forcedCategory =
+                this.msWorkspaceCategory.forcedCategory;
         }
         return this._state;
     }
@@ -169,7 +171,7 @@ export class MsWorkspace extends WithSignals {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (!this.tileableList) return null;
-        return this.tileableList[this.focusedIndex];
+        return this.tileableList[this.focusedIndex] || null;
     }
 
     get msWindowList() {
@@ -193,12 +195,13 @@ export class MsWorkspace extends WithSignals {
 
     close() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-
+        this.closing = true;
         Promise.all(
             this.msWindowList.map((msWindow) => {
                 return msWindow.kill();
             })
         ).then((_params) => {
+            this.closing = false;
             this.emit('readyToBeClosed');
         });
     }
@@ -211,7 +214,9 @@ export class MsWorkspace extends WithSignals {
             return Promise.resolve();
 
         msWindow.setMsWorkspace(this);
-        return this.addMsWindowUnchecked(msWindow, focus, insert);
+        return this.addMsWindowUnchecked(msWindow, focus, insert).catch((e) =>
+            Me.logFocus('addMsWindowUnchecked failed')
+        );
     }
 
     /// Assumes that msWindow.msWorkspace == this already but that
@@ -246,14 +251,13 @@ export class MsWorkspace extends WithSignals {
         await this.emitTileableListChangedOnce(oldTileableList);
     }
 
-    async removeMsWindow(msWindow) {
+    async removeMsWindow(msWindow: MsWindow) {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         const oldTileableList: (Tileable | null)[] = [...this.tileableList];
-        oldTileableList[tileableIndex] = null;
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
         if (
@@ -298,7 +302,7 @@ export class MsWorkspace extends WithSignals {
         return this.emitTileableChangedInProgress;
     }
 
-    swapTileable(firstTileable, secondTileable) {
+    swapTileable(firstTileable: Tileable, secondTileable: Tileable) {
         const firstIndex = this.tileableList.indexOf(firstTileable);
         const secondIndex = this.tileableList.indexOf(secondTileable);
         const oldTileableList = [...this.tileableList];
@@ -307,7 +311,7 @@ export class MsWorkspace extends WithSignals {
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
 
-    swapTileableLeft(tileable) {
+    swapTileableLeft(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
         if (index === -1) return;
         if (index > 0 && tileable != this.appLauncher) {
@@ -317,7 +321,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    swapTileableRight(tileable) {
+    swapTileableRight(tileable: Tileable) {
         const index = this.tileableList.indexOf(tileable);
         if (index === -1) return;
         if (
@@ -421,9 +425,8 @@ export class MsWorkspace extends WithSignals {
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        const tileableRelativeIndex = this.tileableList.indexOf(
-            tileableRelative
-        );
+        const tileableRelativeIndex =
+            this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
@@ -433,9 +436,8 @@ export class MsWorkspace extends WithSignals {
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
-        const tileableRelativeIndex = this.tileableList.indexOf(
-            tileableRelative
-        );
+        const tileableRelativeIndex =
+            this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
         this.emit('tileableList-changed', this.tileableList, oldTileableList);
     }
@@ -451,7 +453,7 @@ export class MsWorkspace extends WithSignals {
     nextLayout(direction: number) {
         this.layout.onDestroy();
 
-        let { key } = this.layout.constructor.state;
+        let { key } = (this.layout.constructor as LayoutType).state;
         if (
             !this.state.layoutStateList.find(
                 (layoutState) => layoutState.key === key
@@ -479,13 +481,9 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        const Layout = Me.layoutManager.getLayoutByKey(layoutKey);
-        this.layout = new Layout(
-            this,
-            this.state.layoutStateList.find(
-                (layoutState) => layoutState.key === layoutKey
-            )
-        );
+        this.layout = Me.layoutManager.createLayout(this, assertNotNull(this.state.layoutStateList.find(
+            (layoutState) => layoutState.key === layoutKey
+        )));
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
         this.emit('tiling-layout-changed');
     }
@@ -533,11 +531,6 @@ export class MsWorkspace extends WithSignals {
     //         }
     //     }
     // }
-
-    setApps(apps) {
-        this.apps = apps;
-        this.categorizedAppCard._loadApps(apps);
-    }
 
     isDisplayed() {
         if (this.monitorIsExternal) {
@@ -597,13 +590,14 @@ export class MsWorkspaceActor extends Clutter.Actor {
         Clutter.LayoutManager,
         Clutter.ContentPrototype
     >;
-    panel: any;
+    panel: HorizontalPanel;
     msWorkspace: MsWorkspace;
 
     constructor(msWorkspace: MsWorkspace) {
         super({
             clip_to_allocation: true,
             x_expand: true,
+            y_expand: true,
             //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
         });
         this.msWorkspace = msWorkspace;
@@ -628,13 +622,13 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.visible = !monitorInFullScreen;
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
         const panelPosition = Me.msThemeManager.horizontalPanelPosition;
-        const panelHeight = this.panel.get_preferred_height(-1)[1];
+        const panelHeight = (this.panel.get_preferred_height(-1) as [number, number])[1];
         const panelBox = new Clutter.ActorBox();
         panelBox.x1 = contentBox.x1;
         panelBox.x2 = contentBox.x2;

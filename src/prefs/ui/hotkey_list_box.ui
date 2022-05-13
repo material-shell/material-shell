@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="HotkeyListBox" parent="GtkListBox">
+        <property name="selection-mode">none</property>
+        <property name="show-separators">true</property>
+        <property name="activate_on_single_click">True</property>
+        <style>
+            <class name="frame"/>
+        </style>
+    </template>
+</interface>
