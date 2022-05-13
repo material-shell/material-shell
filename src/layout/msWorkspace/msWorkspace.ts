@@ -110,7 +110,8 @@ export class MsWorkspace extends WithSignals {
                     y: msWindowData.y,
                     width: msWindowData.width,
                     height: msWindowData.height,
-                }
+                },
+                msWindowData.matchingInfo
             );
         });
 

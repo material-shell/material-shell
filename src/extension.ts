@@ -82,7 +82,7 @@ function enable() {
             new DisableIncompatibleExtensionsModule();
 
         //Load persistent data
-        Me.stateManager.loadRegistry((state) => {
+        Me.stateManager.loadRegistry(async (state) => {
             modules = [new RequiredSettingsModule(), new OverrideModule()];
             Me.tooltipManager = new TooltipManager();
             Me.layoutManager = new LayoutManager();
@@ -100,7 +100,7 @@ function enable() {
                 Me.msWorkspaceManager.initState();
             }
             new MsMain();
-            Me.msWindowManager.handleExistingMetaWindow();
+            await Me.msWindowManager.handleExistingMetaWindow();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
                     'startup-complete',

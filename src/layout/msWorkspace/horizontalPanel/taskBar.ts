@@ -555,6 +555,10 @@ export class TileableItem extends TaskBarItem {
         this.icon = icon;
         this.icon.style_class = 'app-icon';
         this.icon.set_size(height / 2, height / 2);
+        this.icon.connect('destroy', () => {
+            Me.log("Icon was destroyed", icon);
+            if (this.icon === icon) this.icon = undefined;
+        })
         this.startIconContainer.set_child(this.icon);
         const smallIconSize = Math.max(Math.round(height / 3), 18);
         this.persistentIcon.set_icon_size(smallIconSize);
