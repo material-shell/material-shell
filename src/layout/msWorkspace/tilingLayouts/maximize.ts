@@ -65,6 +65,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     }
 
     showAppLauncher() {
+        if (!this.msWorkspace.appLauncher) return;
         const actor = this.msWorkspace.appLauncher;
         actor.visible = true;
     }
@@ -73,7 +74,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         // Never hide the Applauncher
     }
 
-    onFocusChanged(windowFocused: Tileable, oldWindowFocused: Tileable | null) {
+    onFocusChanged(windowFocused: Tileable | null, oldWindowFocused: Tileable | null) {
+        if (!windowFocused) return;
+
         if (windowFocused.dragged) {
             this.displayTileable(windowFocused);
         } else {

@@ -60,6 +60,13 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     updateActiveTileableListFromFocused() {
+        if (this.msWorkspace.focusedIndex === null && this.msWorkspace.tileableList.length > 0) {
+            this.msWorkspace.focusedIndex = 0;
+        } else if (this.msWorkspace.focusedIndex === null) {
+            this.activeTileableList = this.msWorkspace.tileableList;
+            this.baseIndex = 0;
+            return;
+        }
         this.baseIndex = Math.max(
             0,
             Math.min(
@@ -100,9 +107,11 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     onFocusChanged(
-        tileableFocused: Tileable,
+        tileableFocused: Tileable | null,
         oldTileableFocused: Tileable | null
     ) {
+        if (!tileableFocused) return;
+
         if (this.activeTileableList.includes(tileableFocused)) {
             this.activeTileableList.forEach((tileable) => {
                 this.setUnFocusEffect(
@@ -131,8 +140,8 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
                 newIndex + this._state.nbOfColumns
             );
         }
-        this.baseIndex = this.msWorkspace.tileableList.indexOf(
-            this.activeTileableList[0]
+        this.baseIndex = Math.max(0,
+            this.msWorkspace.tileableList.indexOf(this.activeTileableList[0])
         );
 
         this.startTransition(oldTileableList, this.activeTileableList);
@@ -146,6 +155,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     showAppLauncher() {
+        if (!this.msWorkspace.appLauncher) return;
         const actor = this.msWorkspace.appLauncher;
         actor.visible = true;
     }

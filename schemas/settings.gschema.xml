@@ -98,6 +98,11 @@
             <summary>Focus effect</summary>
             <description>Define which focus effect to apply when using tiling layouts</description>
         </key>
+        <key name="app-launcher" type="b">
+            <default>true</default>
+            <summary>Show app launcher</summary>
+            <description>Show app launcher on empty workspaces and at the end of the task bar</description>
+        </key>
     </schema>
     <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
         <key name="cycle-through-windows" type="b" >

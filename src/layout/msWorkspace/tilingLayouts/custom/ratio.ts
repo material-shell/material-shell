@@ -13,6 +13,8 @@ export class RatioLayout extends BaseResizeableTilingLayout<{ key: 'ratio' }> {
     static label = 'Ratio';
 
     updateMainPortionLength(length: number) {
+        if (length <= 0) return; // Safeguard against infinite loops that freeze the OS
+
         const pushInPortion = (portion: Portion) => {
             if (portion.children.length === 2) {
                 pushInPortion(portion.children[1]);

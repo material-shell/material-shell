@@ -129,7 +129,7 @@ export class TaskBar extends St.Widget {
             let item = this.createNewItemForTileable(tileable);
             this.taskButtonContainer.add_child(item);
         }
-        if (this.items[this.msWorkspace.focusedIndex]) {
+        if (this.msWorkspace.focusedIndex !== null && this.items[this.msWorkspace.focusedIndex]) {
             this.items[this.msWorkspace.focusedIndex].setActive(true);
         }
     }
@@ -200,7 +200,9 @@ export class TaskBar extends St.Widget {
     }
 
     getActiveItem() {
-        return this.items[this.msWorkspace.focusedIndex];
+        if (this.msWorkspace.focusedIndex !== null) {
+            return this.items[this.msWorkspace.focusedIndex];
+        }
     }
 
     createNewItemForTileable(tileable: Tileable) {
@@ -238,14 +240,20 @@ export class TaskBar extends St.Widget {
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         Allocate(this.taskButtonContainer, contentBox, flags);
+        const activeItem = this.getActiveItem();
 
-        const taskActiveIndicatorBox = new Clutter.ActorBox({
-            x1: this.getActiveItem().x,
-            x2: this.getActiveItem().x + this.getActiveItem().width,
-            y1: contentBox.get_height() - this.taskActiveIndicator.height,
-            y2: contentBox.get_height(),
-        });
-        Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
+        if (activeItem) {
+            this.taskActiveIndicator.show();
+            const taskActiveIndicatorBox = new Clutter.ActorBox({
+                x1: activeItem.x,
+                x2: activeItem.x + activeItem.width,
+                y1: contentBox.get_height() - this.taskActiveIndicator.height,
+                y2: contentBox.get_height(),
+            });
+            Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
+        } else {
+            this.taskActiveIndicator.hide();
+        }
     }
 
     _onDestroy() {

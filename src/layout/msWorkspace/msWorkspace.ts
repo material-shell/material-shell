@@ -14,6 +14,7 @@ import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
+import { SignalHandle } from 'src/utils/signal';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import Monitor = layout.Monitor;
 const Signals = imports.signals;
@@ -31,7 +32,7 @@ function isMsWindow(argument: any): argument is MsWindow {
 export interface MsWorkspaceState {
     // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
     external: boolean;
-    focusedIndex: number;
+    focusedIndex: number | null;
     forcedCategory: string | null | undefined;
     msWindowList: MsWindowState[];
     layoutStateList: LayoutState[];
@@ -42,10 +43,10 @@ export class MsWorkspace extends WithSignals {
     msWorkspaceManager: MsWorkspaceManager;
     private _state: MsWorkspaceState;
     insertedMsWindow: MsWindow | null;
-    appLauncher: MsApplicationLauncher;
+    appLauncher: MsApplicationLauncher | undefined;
     tileableList: Tileable[];
     msWorkspaceCategory: MsWorkspaceCategory;
-    precedentIndex: number;
+    precedentIndex: number | null;
     msWorkspaceActor: MsWorkspaceActor;
     // Safety: We always assign this because we call setLayoutByKey from the constructor
     layout!: InstanceType<LayoutType>;
@@ -56,6 +57,7 @@ export class MsWorkspace extends WithSignals {
     // Definitely set because we call `setMonitor` in the constructor
     monitor!: Monitor;
     emitTileableChangedInProgress: Promise<void> | undefined;
+    appLauncherChangedSignal: SignalHandle;
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
@@ -83,10 +85,50 @@ export class MsWorkspace extends WithSignals {
             state
         );
         this.insertedMsWindow = null;
-        this.appLauncher = new MsApplicationLauncher(this);
 
-        // First add AppLauncher since windows are inserted before it otherwise the order is a mess
-        this.tileableList = [this.appLauncher];
+        this.appLauncherChangedSignal = SignalHandle.connect(
+            Me.msThemeManager,
+            'app-launcher-changed',
+            () => {
+                if (Me.msThemeManager.appLauncher) {
+                    if (!this.appLauncher) {
+                        // Create new AppLauncher instance
+                        if (!this.appLauncher) {
+                            const oldTileableList = [...this.tileableList];
+                            this.appLauncher = new MsApplicationLauncher(this);
+                            this.tileableList.push(this.appLauncher);
+                            this.emitTileableListChangedOnce(oldTileableList);
+                        }
+                    }
+                } else {
+                    if (this.appLauncher) {
+                        // Destroy AppLauncher instance
+                        if (this.appLauncher) {
+                            const oldTileableList = [...this.tileableList];
+                            const tileableIndex = this.tileableList.indexOf(this.appLauncher);
+                            if (this.tileableFocused === this.appLauncher) {
+                                this.focusPreviousTileable();
+                            }
+                            if (tileableIndex >= 0) {
+                                this.tileableList.splice(tileableIndex, 1);
+                                this.emitTileableListChangedOnce(oldTileableList);
+                            }
+                            this.appLauncher.onDestroy();
+                        }
+                        delete this.appLauncher;
+                    }
+                }
+            }
+        );
+
+        if (Me.msThemeManager.appLauncher) {
+            this.appLauncher = new MsApplicationLauncher(this);
+
+            // First add AppLauncher since windows are inserted before it otherwise the order is a mess
+            this.tileableList = [this.appLauncher];
+        } else {
+            this.tileableList = [];
+        }
 
         this.msWorkspaceCategory = new MsWorkspaceCategory(
             this,
@@ -125,7 +167,10 @@ export class MsWorkspace extends WithSignals {
 
     destroy() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-        this.appLauncher.onDestroy();
+        if (this.appLauncher) {
+            this.appLauncher.onDestroy();
+        }
+        this.appLauncherChangedSignal.disconnect();
         this.layout.onDestroy();
         if (this.msWorkspaceActor) {
             this.msWorkspaceActor.destroy();
@@ -170,7 +215,13 @@ export class MsWorkspace extends WithSignals {
     get tileableFocused() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
-        if (!this.tileableList) return null;
+        if (
+            !this.tileableList ||
+            (this.tileableList && !this.tileableList.length) ||
+            this.focusedIndex === null
+        ) {
+            return null;
+        }
         return this.tileableList[this.focusedIndex] || null;
     }
 
@@ -237,7 +288,12 @@ export class MsWorkspace extends WithSignals {
         let insertAt = this.tileableList.length - 1;
 
         // Do not insert tileable after App Launcher
-        if (insert && this.tileableFocused !== this.appLauncher) {
+        if (
+            insert &&
+            this.tileableFocused &&
+            this.tileableFocused !== this.appLauncher &&
+            this.focusedIndex !== null
+        ) {
             insertAt = this.focusedIndex + 1;
             this.insertedMsWindow = msWindow;
         }
@@ -259,23 +315,35 @@ export class MsWorkspace extends WithSignals {
         const tileableIndex = this.tileableList.indexOf(msWindow);
         const oldTileableList: (Tileable | null)[] = [...this.tileableList];
         this.tileableList.splice(tileableIndex, 1);
-        // Update the focusedIndex
-        if (
-            (tileableIsFocused && this.insertedMsWindow) ||
-            this.focusedIndex > tileableIndex
-        ) {
-            this.focusedIndex--;
-        } else if (
-            this.focusedIndex === this.tileableList.length - 1 &&
-            this.tileableList.length > 1
-        ) {
-            this.focusedIndex--;
+        let appLauncherIndex = -1;
+        if (this.appLauncher) {
+            appLauncherIndex = this.tileableList.indexOf(this.appLauncher);
         }
-        await this.emitTileableListChangedOnce(oldTileableList);
-        // If there's no more focused msWindow on this workspace focus the last one
+        // Update the focusedIndex
+        if (this.tileableList.length === 0) {
+            this.focusedIndex = null;
+        } else {
+            if (
+                // If there's no more focused msWindow on this workspace focus the last one
+                this.focusedIndex === null ||
+                this.focusedIndex >= this.tileableList.length
+            ) {
+                this.focusedIndex = this.tileableList.length - 1
+            } else if (
+                // If the removed window has just been inserted focus previous instead of next
+                (tileableIsFocused && this.insertedMsWindow) ||
+                // If the removed window is to the left of the focused window focus previous instead of next
+                this.focusedIndex > tileableIndex ||
+                // Always try to focus a window instead of the AppLauncher
+                (appLauncherIndex > -1 && this.focusedIndex >= appLauncherIndex)
+            ) {
+                this.focusedIndex = Math.max(0, this.focusedIndex - 1);
+            }
+        }
 
-        if (tileableIsFocused) {
-            // If the window removed as just been inserted focus previous instead of next
+        await this.emitTileableListChangedOnce(oldTileableList);
+
+        if (this.focusedIndex !== null) {
             this.focusTileable(this.tileableList[this.focusedIndex], true);
         }
         this.msWorkspaceActor.updateUI();
@@ -338,6 +406,11 @@ export class MsWorkspace extends WithSignals {
     }
 
     focusNextTileable() {
+        if (this.focusedIndex === null && this.tileableList.length > 0) {
+            this.focusedIndex = 0;
+        } else if (this.focusedIndex === null) {
+            return;
+        }
         if (this.focusedIndex === this.tileableList.length - 1) {
             if (this.shouldCycleTileableNavigation()) {
                 this.focusTileable(this.tileableList[0]);
@@ -349,6 +422,11 @@ export class MsWorkspace extends WithSignals {
     }
 
     focusPreviousTileable() {
+        if (this.focusedIndex === null && this.tileableList.length > 0) {
+            this.focusedIndex = 0;
+        } else if (this.focusedIndex === null) {
+            return;
+        }
         if (this.focusedIndex === 0) {
             if (this.shouldCycleTileableNavigation()) {
                 this.focusTileable(
@@ -364,16 +442,20 @@ export class MsWorkspace extends WithSignals {
 
     focusAppLauncher() {
         if (
-            !this.tileableList ||
-            this.tileableList.length < 2 ||
-            this.tileableFocused === this.appLauncher
+            Me.msThemeManager.appLauncher &&
+            this.appLauncher &&
+            this.tileableList
         ) {
-            return;
+            this.focusTileable(this.appLauncher);
         }
-        this.focusTileable(this.appLauncher);
     }
 
     focusPrecedentTileable() {
+        if (this.precedentIndex === null && this.tileableList.length > 0) {
+            this.precedentIndex = 0;
+        } else if (this.precedentIndex === null) {
+            return;
+        }
         if (!this.tileableList || this.tileableList.length < 2) return;
         if (
             this.focusedIndex !== this.precedentIndex &&
@@ -400,8 +482,11 @@ export class MsWorkspace extends WithSignals {
             this.precedentIndex = this.focusedIndex;
         }
 
-        this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
-        if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
+        if (tileable && this.tileableList.length) {
+            this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
+        }
+
+        if (tileable && this.msWorkspaceManager.getActiveMsWorkspace() === this) {
             tileable.grab_key_focus();
         }
 
@@ -561,6 +646,11 @@ export class MsWorkspace extends WithSignals {
     }
 
     focusLastTileable() {
+        if (this.focusedIndex === null && this.tileableList.length > 0) {
+            this.focusedIndex = 0;
+        } else if (this.focusedIndex === null) {
+            return;
+        }
         if (this.tileableList.length) {
             const lastTileable =
                 this.tileableList[this.focusedIndex] ||

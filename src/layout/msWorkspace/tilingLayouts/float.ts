@@ -57,6 +57,7 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
     }
 
     showAppLauncher() {
+        if (!this.msWorkspace.appLauncher) return;
         const actor = this.msWorkspace.appLauncher;
         actor.x = 0;
         actor.y = 0;
@@ -65,9 +66,12 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
         super.showAppLauncher();
     }
 
-    onFocusChanged(tileableFocused: Tileable, oldTileable: Tileable | null) {
+    onFocusChanged(tileableFocused: Tileable | null, oldTileable: Tileable | null) {
+        if (!tileableFocused) return;
+
         if (
             tileableFocused != this.msWorkspace.appLauncher &&
+            this.msWorkspace.appLauncher &&
             this.msWorkspace.appLauncher.visible
         ) {
             this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_below_sibling(

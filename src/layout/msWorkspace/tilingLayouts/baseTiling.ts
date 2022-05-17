@@ -166,6 +166,7 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
     }
 
     showAppLauncher() {
+        if (!this.msWorkspace.appLauncher) return;
         const actor = this.msWorkspace.appLauncher;
 
         actor.visible = true;
@@ -185,6 +186,7 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
     }
 
     hideAppLauncher() {
+        if (!this.msWorkspace.appLauncher) return;
         const actor = this.msWorkspace.appLauncher;
         actor.ease({
             scale_x: 0.8,
@@ -231,12 +233,17 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
             this.restoreTileable(tileable);
         });
         if (
+            this.msWorkspace.appLauncher &&
             this.msWorkspace.appLauncher.visible &&
             this.msWorkspace.tileableFocused !== this.msWorkspace.appLauncher
         ) {
             this.hideAppLauncher();
         }
-        if (tileableList.length == 1 && !this.msWorkspace.appLauncher.visible) {
+        if (
+            this.msWorkspace.appLauncher &&
+            !this.msWorkspace.appLauncher.visible &&
+            tileableList.length == 1
+        ) {
             this.showAppLauncher();
         }
         this.tileAll();
@@ -250,7 +257,7 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
         );
     }
 
-    onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
+    onFocusChanged(tileable: Tileable | null, oldTileable: Tileable | null) {
         if (tileable === this.msWorkspace.appLauncher) {
             this.tileAll();
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {

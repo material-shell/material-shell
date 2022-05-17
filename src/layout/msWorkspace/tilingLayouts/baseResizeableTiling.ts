@@ -147,6 +147,8 @@ export class BaseResizeableTilingLayout<S extends { key: string }> extends BaseT
     }
 
     updateMainPortionLength(length: number) {
+        if (length <= 0) return; // Safeguard against infinite loops that freeze the OS
+
         while (this.mainPortion.portionLength > length) {
             this.mainPortion.pop();
         }
@@ -248,7 +250,9 @@ export class BaseResizeableTilingLayout<S extends { key: string }> extends BaseT
         });
     }
 
-    onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
+    onFocusChanged(tileable: Tileable | null, oldTileable: Tileable | null) {
+        if (!tileable) return;
+
         this.setUnFocusEffect(tileable, this.currentFocusEffect, true);
         if (oldTileable) {
             if (

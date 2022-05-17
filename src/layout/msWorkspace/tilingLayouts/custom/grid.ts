@@ -13,6 +13,8 @@ export class GridLayout extends BaseResizeableTilingLayout<{ key: 'grid' }> {
     static label = 'Grid';
 
     updateMainPortionLength(length: number) {
+        if (length <= 0) return; // Safeguard against infinite loops that freeze the OS
+
         const columnLength = Math.ceil(Math.sqrt(length));
         const rowLength = Math.ceil(length / columnLength);
 

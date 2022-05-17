@@ -9,6 +9,8 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 @registerGObjectClass
 export class HalfLayoutBase<S extends { key: string }> extends BaseResizeableTilingLayout<S> {
     updateMainPortionLength(length: number) {
+        if (length <= 0) return; // Safeguard against infinite loops that freeze the OS
+
         while (this.mainPortion.portionLength > length) {
             this.mainPortion.pop();
         }
