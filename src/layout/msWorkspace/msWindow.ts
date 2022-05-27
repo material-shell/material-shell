@@ -60,11 +60,9 @@ export interface MsWindowState {
 export interface MsWindowConstructProps {
     app: App;
     metaWindowIdentifier: string | null;
-    metaWindow: MetaWindowWithMsProperties | null;
     persistent?: boolean;
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
-    matchingInfo?: MsWindowMatchingInfo,
     lifecycleState: MsWindowLifecycleState,
 }
 
@@ -124,7 +122,6 @@ export class MsWindow extends Clutter.Actor {
     constructor({
         app,
         metaWindowIdentifier,
-        metaWindow,
         persistent,
         initialAllocation,
         msWorkspace,
@@ -162,9 +159,6 @@ export class MsWindow extends Clutter.Actor {
             clone: this.windowClone,
         });
         this.add_child(this.msContent);
-        if (metaWindow) {
-            this.setWindow(metaWindow);
-        }
 
         this.setMsWorkspace(msWorkspace);
     }
@@ -772,6 +766,7 @@ export class MsWindow extends Clutter.Actor {
         this.reactive = true;
         this.lifecycleState = {
             type: 'app-placeholder',
+            matchingInfo: undefined,
         }
         this.onMetaWindowsChanged();
     }

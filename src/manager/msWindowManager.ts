@@ -102,9 +102,11 @@ export class MsWindowManager extends MsManager {
 
         for (const [groupKey, windowActorGroup] of groupedMetaWindowsByApp.entries()) {
             let candidateMsWindows = groupedMsWindowsByApp.get(groupKey) || [];
+            // Handle all non-dialog windows. Dialog windows are handled by assignDialogWindows
+            let filteredWindowActorGroup = windowActorGroup.filter(w => !this.isMetaWindowDialog(w.metaWindow));
             let costMatrix: number[][] = [];
             const INF_COST = 100000;
-            for (const windowActor of windowActorGroup) {
+            for (const windowActor of filteredWindowActorGroup) {
                 const costs = [];
                 const metaWindow = windowActor.metaWindow;
                 const wmClass = metaWindow.get_wm_class_instance();
@@ -131,21 +133,74 @@ export class MsWindowManager extends MsManager {
 
                 // Add N items representing potential new windows at the end.
                 // In case there are no existing MsWindows, we want to be able to create new ones
-                for (let i = 0; i < windowActorGroup.length; i++) {
+                for (let i = 0; i < filteredWindowActorGroup.length; i++) {
                     costs.push(INF_COST - 1);
                 }
                 costMatrix.push(costs);
             }
 
             let { cost, assignments } = hungarian(costMatrix);
-            Me.log(`Got matching between for ${groupKey}: ${windowActorGroup.length}x${candidateMsWindows.length} with total cost ${cost}. Matching ${assignments}`);
+            Me.log(`Got matching between for ${groupKey}: ${filteredWindowActorGroup.length}x${candidateMsWindows.length} with total cost ${cost}. Matching ${assignments}`);
             for (let i = 0; i < assignments.length; i++) {
                 const idx = assignments[i];
                 if (idx < candidateMsWindows.length) {
-                    Me.log(`Matching ${this.buildMetaWindowIdentifier(windowActorGroup[i].metaWindow)} to ${candidateMsWindows[idx].metaWindowIdentifier}`);
+                    Me.log(`Matching ${this.buildMetaWindowIdentifier(filteredWindowActorGroup[i].metaWindow)} to ${candidateMsWindows[idx].metaWindowIdentifier}`);
                 } else {
-                    Me.log(`Matching ${this.buildMetaWindowIdentifier(windowActorGroup[i].metaWindow)} to a new window`);
+                    Me.log(`Matching ${this.buildMetaWindowIdentifier(filteredWindowActorGroup[i].metaWindow)} to a new window`);
                 }
+            }
+        }
+    }
+
+    async assignDialogWindows() {
+        
+        for (const windowActor of global.get_window_actors()) {
+            if (!this.isMetaWindowDialog(windowActor.metaWindow)) continue;
+
+            // TODO: Check if handled already
+
+            const metaWindow = windowActor.metaWindow;
+            let msWindowFound: MsWindow | null = null;
+            const app = this.windowTracker.get_window_app(metaWindow);
+
+            // If window is dialog try t0 find its parent
+            // The best way to find its parent is with the root ancestor.
+            let root: MetaWindowWithMsProperties | undefined;
+            metaWindow.foreach_ancestor(
+                (ancestor) => {
+                    if (!root && (ancestor as MetaWindowWithMsProperties).msWindow) {
+                        root = ancestor;
+                    }
+                    return true;
+                }
+            );
+            msWindowFound = root?.msWindow ?? null;
+
+            if (msWindowFound == null && app) {
+                // But sometimes the we fail to find one.
+                // So we try to find a regular window with the same app
+                const sameAppMsWindowList: (MsWindow & { lifecycleState: { type: "window "}})[] = this.msWindowList.filter(
+                    (msWindow) => {
+                        return (
+                            msWindow.lifecycleState.type == "window" && msWindow.app.get_id() == app.get_id()
+                        );
+                    }
+                ).map(x => x as MsWindow & { lifecycleState: { type: "window "}});
+                //We take the msWindow focused the last
+                sameAppMsWindowList.forEach((msWindow) => {
+                    if (
+                        !msWindowFound ||
+                        (msWindow.metaWindow && msWindowFound.metaWindow!.get_user_time() < msWindow.metaWindow.get_user_time()
+                    ) {
+                        msWindowFound = msWindow;
+                    }
+                });
+            }
+
+            if (msWindowFound) {
+                msWindowFound.addDialog(metaWindow);
+            } else {
+                // Create new MsWindow to handle the dialog
             }
         }
     }
@@ -268,21 +323,19 @@ export class MsWindowManager extends MsManager {
         }
         const msWindow = new MsWindow({
             app,
+            // TODO: Remove
             metaWindowIdentifier: description,
-            metaWindow,
             persistent,
             initialAllocation,
             msWorkspace: msWorkspace.msWorkspace,
-            lifecycleState: metaWindow !== null ? {
-                type: 'window',
-                metaWindow: metaWindow
-            } : {
+            lifecycleState: {
                 type: 'app-placeholder',
-                app: app,
-                waitingForAppToStart: true,
+                matchingInfo
             },
-            matchingInfo
         });
+        if (metaWindow !== null) {
+            msWindow.setWindow(metaWindow);
+        }
         msWorkspace.msWorkspace
             .addMsWindowUnchecked(
                 msWindow,
@@ -538,7 +591,7 @@ export class MsWindowManager extends MsManager {
         return types.includes(metaWindow.window_type);
     }
 
-    isMetaWindowDialog(metaWindow: MetaWindowWithMsProperties) {
+    isMetaWindowDialog(metaWindow: Meta.Window) {
         const dialogTypes = [
             Meta.WindowType.DIALOG,
             Meta.WindowType.MODAL_DIALOG,
