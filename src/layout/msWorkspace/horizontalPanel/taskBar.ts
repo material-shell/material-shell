@@ -209,10 +209,10 @@ export class TaskBar extends St.Widget {
             item = new TileableItem(tileable);
             this.menuManager.addMenu(assertNotNull(item.menu));
             item.connect('middle-clicked', (_) => {
-                tileable.kill();
+                if (item.tileable instanceof MsWindow) item.tileable.kill();
             });
             item.connect('close-clicked', (_) => {
-                tileable.kill();
+                if (item.tileable instanceof MsWindow) item.tileable.kill();
             });
         } else {
             item = new IconTaskBarItem(
