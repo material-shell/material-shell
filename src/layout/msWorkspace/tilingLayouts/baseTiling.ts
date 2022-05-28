@@ -10,17 +10,21 @@ import { InfinityTo0 } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 import { main as Main } from 'ui';
+import { diffLists } from 'src/utils/diff_list';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
-export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutManager {
+export class BaseTilingLayout<
+    S extends { key: string }
+> extends Clutter.LayoutManager {
     _state: S;
     icon: Gio.IconPrototype;
     msWorkspace: MsWorkspace;
     themeSettings: Gio.Settings;
     signals: Signal[];
+    private lastObservedTileableList: Tileable[] = [];
 
     constructor(msWorkspace: MsWorkspace, state: Partial<S> = {}) {
         super();
@@ -39,7 +43,7 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
     }
 
     afterInit() {
-        this.onTileableListChanged(this.msWorkspace.tileableList, []);
+        this.onTileableListChanged(this.msWorkspace.tileableList);
     }
 
     get state() {
@@ -77,11 +81,8 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
                 from: this.msWorkspace,
                 id: this.msWorkspace.connect(
                     'tileableList-changed',
-                    (_, tileableList, oldTileableList) => {
-                        this.onTileableListChanged(
-                            tileableList,
-                            oldTileableList
-                        );
+                    (_, tileableList) => {
+                        this.onTileableListChanged(tileableList);
                     }
                 ),
             },
@@ -204,32 +205,24 @@ export class BaseTilingLayout<S extends { key: string }> extends Clutter.LayoutM
         });
     }
 
-    onTileableListChanged(
-        tileableList: Tileable[],
-        oldTileableList: (Tileable | null)[]
-    ) {
-        const enteringTileableList = tileableList.filter(
-            (tileable) => !oldTileableList.includes(tileable)
-        );
+    onTileableListChanged(tileableList: Tileable[]) {
+        let { added: enteringTileableList, removed: leavingTileableList } =
+            diffLists(this.lastObservedTileableList, tileableList);
+        this.lastObservedTileableList = [...tileableList];
 
-        const leavingPredicate = function (
-            tileable: Tileable | null
-        ): tileable is MsWindow {
-            return (
-                tileable instanceof MsWindow &&
-                !tileableList.includes(tileable) &&
-                Me.msWindowManager.msWindowList.includes(tileable)
-            );
-        };
-
-        const leavingTileableList = oldTileableList.filter(leavingPredicate);
-
-        enteringTileableList.forEach((tileable) => {
+        for (const tileable of enteringTileableList) {
             this.alterTileable(tileable);
-        });
-        leavingTileableList.forEach((tileable) => {
-            this.restoreTileable(tileable);
-        });
+        }
+
+        for (const tileable of leavingTileableList) {
+            if (
+                tileable instanceof MsWindow &&
+                Me.msWindowManager.msWindowList.includes(tileable)
+            ) {
+                this.restoreTileable(tileable);
+            }
+        }
+
         if (
             this.msWorkspace.appLauncher.visible &&
             this.msWorkspace.tileableFocused !== this.msWorkspace.appLauncher

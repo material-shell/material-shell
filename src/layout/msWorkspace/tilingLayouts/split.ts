@@ -76,10 +76,9 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     onTileableListChanged(
-        newWindows: Tileable[],
-        oldWindows: (Tileable | null)[]
+        newWindows: Tileable[]
     ) {
-        super.onTileableListChanged(newWindows, oldWindows);
+        super.onTileableListChanged(newWindows);
         this.updateActiveTileableListFromFocused();
         this.refreshVisibleActors();
     }
