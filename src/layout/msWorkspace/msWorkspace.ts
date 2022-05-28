@@ -232,8 +232,6 @@ export class MsWorkspace extends WithSignals {
             reparentActor(msWindow, this.msWorkspaceActor.tileableContainer);
         }
 
-        const oldTileableList = [...this.tileableList];
-
         let insertAt = this.tileableList.length - 1;
 
         // Do not insert tileable after App Launcher
@@ -248,7 +246,7 @@ export class MsWorkspace extends WithSignals {
             this.focusTileable(msWindow);
         }
         this.msWorkspaceActor.updateUI();
-        await this.emitTileableListChangedOnce(oldTileableList);
+        await this.emitTileableListChangedOnce();
     }
 
     async removeMsWindow(msWindow: MsWindow) {
@@ -257,7 +255,6 @@ export class MsWorkspace extends WithSignals {
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
-        const oldTileableList: (Tileable | null)[] = [...this.tileableList];
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
         if (
@@ -271,7 +268,7 @@ export class MsWorkspace extends WithSignals {
         ) {
             this.focusedIndex--;
         }
-        await this.emitTileableListChangedOnce(oldTileableList);
+        await this.emitTileableListChangedOnce();
         // If there's no more focused msWindow on this workspace focus the last one
 
         if (tileableIsFocused) {
@@ -282,7 +279,7 @@ export class MsWorkspace extends WithSignals {
         this.refreshFocus();
     }
 
-    async emitTileableListChangedOnce(oldTileableList: (Tileable | null)[]) {
+    async emitTileableListChangedOnce() {
         if (!this.emitTileableChangedInProgress) {
             this.emitTileableChangedInProgress = new Promise<void>(
                 (resolve) => {
@@ -290,8 +287,7 @@ export class MsWorkspace extends WithSignals {
                         delete this.emitTileableChangedInProgress;
                         this.emit(
                             'tileableList-changed',
-                            this.tileableList,
-                            oldTileableList
+                            this.tileableList
                         );
                         resolve();
                         return GLib.SOURCE_REMOVE;
@@ -305,10 +301,9 @@ export class MsWorkspace extends WithSignals {
     swapTileable(firstTileable: Tileable, secondTileable: Tileable) {
         const firstIndex = this.tileableList.indexOf(firstTileable);
         const secondIndex = this.tileableList.indexOf(secondTileable);
-        const oldTileableList = [...this.tileableList];
         this.tileableList[firstIndex] = secondTileable;
         this.tileableList[secondIndex] = firstTileable;
-        this.emit('tileableList-changed', this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList);
     }
 
     swapTileableLeft(tileable: Tileable) {
@@ -421,33 +416,30 @@ export class MsWorkspace extends WithSignals {
     }
 
     setTileableBefore(tileableToMove: Tileable, tileableRelative: Tileable) {
-        const oldTileableList = [...this.tileableList];
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
         const tileableRelativeIndex =
             this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
-        this.emit('tileableList-changed', this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList);
     }
 
     setTileableAfter(tileableToMove: Tileable, tileableRelative: Tileable) {
-        const oldTileableList = [...this.tileableList];
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
 
         const tileableRelativeIndex =
             this.tileableList.indexOf(tileableRelative);
         this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
-        this.emit('tileableList-changed', this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList);
     }
 
     setTileableAtIndex(tileableToMove: Tileable, index: number) {
-        const oldTileableList = [...this.tileableList];
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
         this.tileableList.splice(index, 0, tileableToMove);
-        this.emit('tileableList-changed', this.tileableList, oldTileableList);
+        this.emit('tileableList-changed', this.tileableList);
     }
 
     nextLayout(direction: number) {
