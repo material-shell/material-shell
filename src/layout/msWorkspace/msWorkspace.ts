@@ -206,17 +206,20 @@ export class MsWorkspace extends WithSignals {
         });
     }
 
-    addMsWindow(msWindow: MsWindow, focus = false, insert = false) {
+    async addMsWindow(msWindow: MsWindow, focus = false, insert = false) {
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
-        )
-            return Promise.resolve();
+        ) {
+            return;
+        }
 
         msWindow.setMsWorkspace(this);
-        return this.addMsWindowUnchecked(msWindow, focus, insert).catch((e) =>
-            Me.logFocus('addMsWindowUnchecked failed')
-        );
+        try {
+            return await this.addMsWindowUnchecked(msWindow, focus, insert);
+        } catch (e) {
+            return Me.logWithStackTrace('addMsWindowUnchecked failed');
+        }
     }
 
     /// Assumes that msWindow.msWorkspace == this already but that
