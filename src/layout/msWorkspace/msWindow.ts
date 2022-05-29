@@ -25,6 +25,7 @@ import * as St from 'st';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 import { App } from 'shell';
+import { throttle } from 'src/utils';
 import { assert } from 'src/utils/assert';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
@@ -88,11 +89,11 @@ export class MsWindow extends Clutter.Actor {
     msWorkspace: MsWorkspace;
     destroyed: boolean | undefined;
     _metaWindow: MetaWindowWithMsProperties | null = null;
-    updateDelayed: boolean | undefined;
     focusEffects?: {
         dimmer?: Clutter.BrightnessContrastEffect;
         border?: PrimaryBorderEffect;
     };
+    updateMetaWindowPositionAndSizeThrottled: ()=>void;
 
     constructor({
         app,
@@ -113,6 +114,7 @@ export class MsWindow extends Clutter.Actor {
         this.app = app;
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
+        this.updateMetaWindowPositionAndSizeThrottled = throttle(() => this.updateMetaWindowPositionAndSizeInternal(), 16);
 
         this.dialogs = [];
         this.metaWindowIdentifier = metaWindowIdentifier;
@@ -320,17 +322,15 @@ export class MsWindow extends Clutter.Actor {
         };
     }
 
-    delayUpdateMetaWindowPositionAndSize() {
-        Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
-            this.updateDelayed = false;
-            this.updateMetaWindowPositionAndSize();
-        });
-    }
-
     /*
      * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
      */
     updateMetaWindowPositionAndSize() {
+        // This will call updateMetaWindowPositionAndSizeInternal immediately, or in a little while if it has been throttled
+        this.updateMetaWindowPositionAndSizeThrottled();
+    }
+
+    private updateMetaWindowPositionAndSizeInternal() {
         const metaWindow = this._metaWindow;
         const windowActor =
             metaWindow &&
@@ -344,7 +344,6 @@ export class MsWindow extends Clutter.Actor {
             this.height === 0 ||
             !metaWindow.firstFrameDrawn ||
             this.followMetaWindow ||
-            this.updateDelayed ||
             metaWindow.minimized
         ) {
             return;
@@ -428,15 +427,6 @@ export class MsWindow extends Clutter.Actor {
             !needToMoveOrResize
         ) {
             return;
-        }
-
-        // Delay the update if the previous one is too recent to prevent freeze bug aka window don't update anymore
-        if (
-            windowActor.lastResize &&
-            Date.now() - windowActor.lastResize < 100
-        ) {
-            this.updateDelayed = true;
-            return this.delayUpdateMetaWindowPositionAndSize();
         }
 
         if (
