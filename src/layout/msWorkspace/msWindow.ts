@@ -939,6 +939,12 @@ export class MsWindow extends Clutter.Actor {
     }
 
     toString() {
+        // When MS function parameter logging is enabled, toString may be called on windows that have been destroyed.
+        // So we need to guard against this. super.toString would otherwise try to access the destroyed C object.
+        if (this.destroyed) {
+            return `[destroyed MsWindow - ${this.app.get_name()}]`;
+        }
+
         const string = super.toString();
         return `${string.slice(0, string.length - 1)} ${this.app.get_name()}]`;
     }
