@@ -126,10 +126,7 @@ export class TaskBar extends St.Widget {
         this.windowFocused = null;
         this.menuManager = panelMenuManager;
 
-        for (const tileable of this.msWorkspace.tileableList) {
-            let item = this.createNewItemForTileable(tileable);
-            this.taskButtonContainer.add_child(item);
-        }
+        this.onTileableListChange(this.msWorkspace.tileableList);
         if (this.items[this.msWorkspace.focusedIndex]) {
             this.items[this.msWorkspace.focusedIndex].setActive(true);
         }
@@ -143,8 +140,6 @@ export class TaskBar extends St.Widget {
 
     /**
      * Update the current list of taskBarItem with the least of widget manipulation possible
-     * @param newTileableList
-     * @param oldTileableList
      */
     onTileableListChange(
         newTileableList: Tileable[],
