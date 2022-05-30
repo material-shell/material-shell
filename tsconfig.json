@@ -17,6 +17,7 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "strictNullChecks": true,
+        "noFallthroughCasesInSwitch": true,
         "allowJs": true,
         "strict": true,
         "moduleResolution": "node",
