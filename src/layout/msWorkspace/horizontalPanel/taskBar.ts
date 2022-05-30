@@ -22,6 +22,7 @@ import { layout } from 'ui';
 import Monitor = layout.Monitor;
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { diffLists } from 'src/utils/diff_list';
+import { IdleDebounce } from 'src/utils/idle_debounce';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -377,7 +378,7 @@ export class TileableItem extends TaskBarItem {
     closeIcon: St.Icon;
     icon: St.Widget | undefined;
     lastHeight: number | undefined;
-    buildIconIdle: number | undefined;
+    buildIconIdle: IdleDebounce<[number]>;
 
     constructor(tileable: MsWindow) {
         const container = new St.BoxLayout({
@@ -385,6 +386,7 @@ export class TileableItem extends TaskBarItem {
         });
         super(container, true);
         this.container = container;
+        this.buildIconIdle = new IdleDebounce(this.buildIcon.bind(this));
 
         if (ShellVersionMatch('3.34')) {
             this.startIconContainer = new St.Bin({
@@ -596,21 +598,12 @@ export class TileableItem extends TaskBarItem {
         const height = box.get_height();
 
         if (!this.icon || this.lastHeight != height) {
-            this.buildIconIdle = GLib.idle_add(
-                GLib.PRIORITY_DEFAULT_IDLE,
-                () => {
-                    delete this.buildIconIdle;
-                    this.buildIcon(height);
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
+            this.buildIconIdle.schedule(height);
         }
         super.vfunc_allocate(...args);
     }
     _onDestroy() {
-        if (this.buildIconIdle) {
-            GLib.Source.remove(this.buildIconIdle);
-        }
+        this.buildIconIdle.cancel();
         this.signalManager.destroy();
         if (this.menu !== undefined) this.menu.destroy();
     }
@@ -621,6 +614,7 @@ export class IconTaskBarItem extends TaskBarItem {
     container: St.Bin;
     tileable: Tileable;
     icon: St.Icon;
+    buildIconIdle: IdleDebounce<[number]>;
 
     constructor(tileable: Tileable, gicon: Gio.IconPrototype) {
         const container = new St.Bin({
@@ -628,6 +622,9 @@ export class IconTaskBarItem extends TaskBarItem {
         });
         super(container, false);
         this.container = container;
+        this.buildIconIdle = new IdleDebounce((height) => {
+            this.icon.set_icon_size(height);
+        });
 
         this.icon = new St.Icon({
             gicon,
@@ -636,6 +633,7 @@ export class IconTaskBarItem extends TaskBarItem {
         });
         this.container.set_child(this.icon);
         this.tileable = tileable;
+        this.connect('destroy', this._onDestroy.bind(this));
     }
 
     setTileable(tileable: Tileable) {
@@ -652,11 +650,12 @@ export class IconTaskBarItem extends TaskBarItem {
         const height = box.get_height() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
-            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                this.icon.set_icon_size(height);
-                return GLib.SOURCE_REMOVE;
-            });
+            this.buildIconIdle.schedule(height);
         }
         super.vfunc_allocate(...args);
+    }
+
+    _onDestroy() {
+        this.buildIconIdle.cancel();
     }
 }
