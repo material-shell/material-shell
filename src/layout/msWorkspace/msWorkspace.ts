@@ -133,6 +133,9 @@ export class MsWorkspace extends WithSignals {
         this.destroyed = true;
     }
 
+    /** Index of the focused tileable.
+     * If there are no tileables in the workspace, this will be zero.
+     */
     get focusedIndex() {
         return this._state.focusedIndex;
     }
@@ -265,12 +268,9 @@ export class MsWorkspace extends WithSignals {
             this.focusedIndex > tileableIndex
         ) {
             this.focusedIndex--;
-        } else if (
-            this.focusedIndex === this.tileableList.length - 1 &&
-            this.tileableList.length > 1
-        ) {
-            this.focusedIndex--;
         }
+        this.focusedIndex = Math.max(0, Math.min(this.tileableList.length - 1, this.focusedIndex));
+
         await this.emitTileableListChangedOnce();
         // If there's no more focused msWindow on this workspace focus the last one
 
