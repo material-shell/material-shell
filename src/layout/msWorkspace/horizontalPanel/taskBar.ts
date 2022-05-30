@@ -21,6 +21,7 @@ import { main as Main } from 'ui';
 import { layout } from 'ui';
 import Monitor = layout.Monitor;
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import { diffLists } from 'src/utils/diff_list';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -97,8 +98,8 @@ export class TaskBar extends St.Widget {
         this.msWorkspaceSignals = [
             msWorkspace.connect(
                 'tileableList-changed',
-                (_, newTileableList, oldTileableList) => {
-                    this.onTileableListChange(newTileableList, oldTileableList);
+                (_, newTileableList) => {
+                    this.onTileableListChange(newTileableList);
                 }
             ),
             msWorkspace.connect(
@@ -147,14 +148,8 @@ export class TaskBar extends St.Widget {
      */
     onTileableListChange(
         newTileableList: Tileable[],
-        oldTileableList: Tileable[]
     ) {
-        const tileableToRemove = oldTileableList.filter(
-            (tileable) => !newTileableList.includes(tileable)
-        );
-        const tileableToAdd = newTileableList.filter(
-            (tileable) => !oldTileableList.includes(tileable)
-        );
+        let { added: tileableToAdd, removed: tileableToRemove } = diffLists(this.items.map(item => item.tileable), newTileableList);
 
         for (let tileable of tileableToRemove) {
             let item = assertNotNull(this.getTaskBarItemOfTileable(tileable));
