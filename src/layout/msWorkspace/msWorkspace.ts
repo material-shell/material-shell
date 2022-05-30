@@ -9,7 +9,7 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { layout } from 'ui';
-import { assertNotNull, logAssert } from 'src/utils/assert';
+import { assert, assertNotNull, logAssert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
@@ -206,17 +206,20 @@ export class MsWorkspace extends WithSignals {
         });
     }
 
-    addMsWindow(msWindow: MsWindow, focus = false, insert = false) {
+    async addMsWindow(msWindow: MsWindow, focus = false, insert = false) {
         if (
             !msWindow ||
             (msWindow.msWorkspace && msWindow.msWorkspace === this)
-        )
-            return Promise.resolve();
+        ) {
+            return;
+        }
 
         msWindow.setMsWorkspace(this);
-        return this.addMsWindowUnchecked(msWindow, focus, insert).catch((e) =>
-            Me.logFocus('addMsWindowUnchecked failed')
-        );
+        try {
+            return await this.addMsWindowUnchecked(msWindow, focus, insert);
+        } catch (e) {
+            return Me.logWithStackTrace('addMsWindowUnchecked failed');
+        }
     }
 
     /// Assumes that msWindow.msWorkspace == this already but that
@@ -301,6 +304,8 @@ export class MsWorkspace extends WithSignals {
     swapTileable(firstTileable: Tileable, secondTileable: Tileable) {
         const firstIndex = this.tileableList.indexOf(firstTileable);
         const secondIndex = this.tileableList.indexOf(secondTileable);
+        assert(firstIndex !== -1, "Tileable did not exist in workspace");
+        assert(secondIndex !== -1, "Tileable did not exist in workspace");
         this.tileableList[firstIndex] = secondTileable;
         this.tileableList[secondIndex] = firstTileable;
         this.emit('tileableList-changed', this.tileableList);
