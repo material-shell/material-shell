@@ -30,7 +30,10 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
     alterTileable(tileable: Tileable) {
         if (tileable instanceof MsWindow && tileable.metaWindow) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+                // Need to check again because the metaWindow may have been removed here.
+                if (tileable.metaWindow) {
+                    WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+                }
                 tileable.mimicMetaWindowPositionAndSize();
                 tileable.msContent.clip_to_allocation = false;
                 return GLib.SOURCE_REMOVE;
@@ -50,7 +53,9 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
             tileable.msContent.clip_to_allocation = true;
 
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+                if (tileable.metaWindow) {
+                    WindowUtils.updateTitleBarVisibility(tileable.metaWindow);
+                }
                 return GLib.SOURCE_REMOVE;
             });
         }

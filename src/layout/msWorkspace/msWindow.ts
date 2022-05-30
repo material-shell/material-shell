@@ -11,7 +11,7 @@ import {
     MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
 import { Rectangular } from 'src/types/mod';
-import { Async } from 'src/utils/async';
+import { Async, AsyncDebounce } from 'src/utils/async';
 /** Extension imports */
 import {
     Allocate,
@@ -25,8 +25,9 @@ import * as St from 'st';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 import { App } from 'shell';
+import { assert, assertNotNull } from 'src/utils/assert';
+import { set_style_class } from 'src/utils/styling_utils';
 import { throttle } from 'src/utils';
-import { assert } from 'src/utils/assert';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
@@ -34,12 +35,27 @@ export let isMsWindow = (obj: any): obj is MsWindow => {
     return obj instanceof MsWindow;
 };
 
+export function buildMetaWindowIdentifier(metaWindow: Meta.Window) {
+    return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
+}
+
 interface Dialog {
     metaWindow: MetaWindowWithMsProperties;
     clone: Clutter.Clone;
 }
+
+export interface MsWindowMatchingInfo {
+    appId: string;
+    /** Window title */
+    title: string | undefined,
+    pid: number | undefined,
+    wmClass: string | undefined,
+    /** Meta windows have a unique integer associated with them, this can be used to differentiate otherwise identical windows */
+    stableSeq: number | undefined,
+}
 export interface MsWindowState {
     appId: string;
+    matchingInfo: MsWindowMatchingInfo | undefined,
     metaWindowIdentifier: string | null;
     persistent: boolean | undefined;
     x: number;
@@ -50,11 +66,41 @@ export interface MsWindowState {
 
 export interface MsWindowConstructProps {
     app: App;
-    metaWindowIdentifier: string | null;
-    metaWindow: MetaWindowWithMsProperties | null;
     persistent?: boolean;
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
+    lifecycleState: MsWindowLifecycleState,
+}
+
+type MsWindowLifecycleState = {
+    /** An MsWindow displaying an app with optional dialogs, or in rare cases only dialogs */
+    type: "window",
+    /** The main window. Note that this can be null if a dialog was opened and then the main window closed */
+    metaWindow: MetaWindowWithMsProperties | null,
+    metaWindowSignals: number[],
+    dialogs: Dialog[],
+} | {
+    /** An MsWindow showing a placeholder for a particular app */
+    type: "app-placeholder",
+    /** Desired properties of windows to be assigned to this MsWindow.
+     * This is in particular used when restoring from a persisted state.
+     * It allows meta windows to be associated with the correct MsWindows when restoring.
+     *
+     * These are not hard constraints, they only come into play if there are multiple alternatives
+     * for how meta windows could be associated with MsWindows.
+     */
+    matchingInfo: MsWindowMatchingInfo,
+    /** Set when an app has been launched and this window is expecting to be associated to that app */
+    waitingForAppSince: Date | undefined,
+} | {
+    /** An MsWindow which will be destroyed soon unless another window or dialog opens */
+    type: "waiting-for-destroy",
+} | {
+    /** An MsWindow in the process of getting destroyed */
+    type: "destroying",
+} | {
+    /** A destroyed MsWindow. This cannot be used for anything anymore. */
+    type: "destroyed",
 }
 
 @registerGObjectClass
@@ -77,18 +123,15 @@ export class MsWindow extends Clutter.Actor {
         },
     };
 
+    lifecycleState: MsWindowLifecycleState
+
     public app: App;
     _persistent: boolean | undefined;
-    dialogs: Dialog[];
-    metaWindowIdentifier: string | null;
     windowClone: Clutter.Clone;
     placeholder: AppPlaceholder;
     destroyId: number;
-    metaWindowSignals: number[];
     msContent: MsWindowContent;
     msWorkspace: MsWorkspace;
-    destroyed: boolean | undefined;
-    _metaWindow: MetaWindowWithMsProperties | null = null;
     focusEffects?: {
         dimmer?: Clutter.BrightnessContrastEffect;
         border?: PrimaryBorderEffect;
@@ -97,11 +140,10 @@ export class MsWindow extends Clutter.Actor {
 
     constructor({
         app,
-        metaWindowIdentifier,
-        metaWindow,
         persistent,
         initialAllocation,
         msWorkspace,
+        lifecycleState
     }: MsWindowConstructProps) {
         super({
             reactive: true,
@@ -111,16 +153,14 @@ export class MsWindow extends Clutter.Actor {
             height: initialAllocation ? initialAllocation.height || 0 : 0,
         });
 
+        this.lifecycleState = lifecycleState;
         this.app = app;
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
         this.updateMetaWindowPositionAndSizeThrottled = throttle(() => this.updateMetaWindowPositionAndSizeInternal(), 16);
 
-        this.dialogs = [];
-        this.metaWindowIdentifier = metaWindowIdentifier;
         this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(this.app);
-        this.metaWindowSignals = [];
         this.placeholder.connect('activated', (_) => {
             this.emit('request-new-meta-window');
         });
@@ -137,17 +177,30 @@ export class MsWindow extends Clutter.Actor {
             clone: this.windowClone,
         });
         this.add_child(this.msContent);
-        if (metaWindow) {
-            this.setWindow(metaWindow);
-        }
 
         this.setMsWorkspace(msWorkspace);
     }
 
     get state(): MsWindowState {
+        const metaWindow = this.metaWindow;
         return {
-            appId: this.app.get_id(),
-            metaWindowIdentifier: this.metaWindowIdentifier,
+            appId: this.app.id,
+            // For compatibility we save a meta window identifier string.
+            // This is useful if the user decides to downgrade material-shell to a previous version.
+            metaWindowIdentifier: metaWindow !== null ? buildMetaWindowIdentifier(metaWindow) : null,
+            matchingInfo: this.lifecycleState.type == 'window' ? {
+                appId: this.app.id,
+                title: this.lifecycleState.metaWindow?.title,
+                pid: this.lifecycleState.metaWindow?.get_pid(),
+                wmClass: this.lifecycleState.metaWindow?.get_wm_class_instance(),
+                stableSeq: this.lifecycleState.metaWindow?.get_stable_sequence(),
+            } : {
+                appId: this.app.id,
+                title: undefined,
+                pid: undefined,
+                wmClass: undefined,
+                stableSeq: undefined,
+            },
             persistent: this._persistent,
             x: this.x,
             y: this.y,
@@ -156,19 +209,51 @@ export class MsWindow extends Clutter.Actor {
         };
     }
 
-    get metaWindow(): MetaWindowWithMsProperties {
-        return (
-            this._metaWindow ||
-            (this.dialogs &&
-                this.dialogs[this.dialogs.length - 1] &&
-                this.dialogs[this.dialogs.length - 1].metaWindow)
-        );
+    get metaWindow(): MetaWindowWithMsProperties | null {
+        const state = this.lifecycleState;
+        if (state.type == 'window') {
+            return (
+                state.metaWindow ||
+                (state.dialogs &&
+                    state.dialogs.length > 0 ? state.dialogs[state.dialogs.length - 1].metaWindow : null)
+            );
+        } else {
+            return null;
+        }
+    }
+
+    /** All meta windows represented by this MSWindow.
+     *
+     * This may be more than one window if dialogs are present, or it may be no windows if no app is launched for example.
+     */
+    get metaWindows(): MetaWindowWithMsProperties[] {
+        const state = this.lifecycleState;
+        if (state.type == 'window') {
+            const windows = state.dialogs.map(d => d.metaWindow);
+            if (state.metaWindow !== null) windows.push(state.metaWindow);
+            return windows;
+        } else {
+            return [];
+        }
+    }
+
+    /** A human-readable identifier for this window.
+     * This is not intended for anything other than debugging.
+     */
+    get windowIdentifier(): string {
+        const metaWindow = this.metaWindow;
+        if (metaWindow !== null) {
+            return buildMetaWindowIdentifier(metaWindow)
+        } else {
+            return `${this.app.id}-${this.lifecycleState.type}`;
+        }
     }
 
     get title() {
         if (!this.app) return '';
-        return this.metaWindow
-            ? this.metaWindow.get_title()
+        const metaWindow = this.metaWindow
+        return metaWindow
+            ? metaWindow.get_title()
             : this.app.get_name();
     }
 
@@ -252,7 +337,7 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
@@ -277,32 +362,35 @@ export class MsWindow extends Clutter.Actor {
         const offsetY = monitorInFullScreen
             ? this.msWorkspace.monitor.y
             : workArea.y;
-        [...this.dialogs]
-            .sort(
-                (firstDialog, secondDialog) =>
-                    firstDialog.metaWindow.user_time -
-                    secondDialog.metaWindow.user_time
-            )
-            .forEach((dialog) => {
-                const dialogFrame = dialog.metaWindow.get_buffer_rect();
-                const x1 = dialogFrame.x - box.x1 - offsetX;
-                const x2 = x1 + dialogFrame.width;
-                const y1 = dialogFrame.y - box.y1 - offsetY;
-                const y2 = y1 + dialogFrame.height;
+        if (this.lifecycleState.type === "window") {
+            // The dialogs are sorted because it affects their stacking order when displayed. We show the most recently created one on top.
+            [...this.lifecycleState.dialogs]
+                .sort(
+                    (firstDialog, secondDialog) =>
+                        firstDialog.metaWindow.user_time -
+                        secondDialog.metaWindow.user_time
+                )
+                .forEach((dialog) => {
+                    const dialogFrame = dialog.metaWindow.get_buffer_rect();
+                    const x1 = dialogFrame.x - box.x1 - offsetX;
+                    const x2 = x1 + dialogFrame.width;
+                    const y1 = dialogFrame.y - box.y1 - offsetY;
+                    const y2 = y1 + dialogFrame.height;
 
-                const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-                Allocate(dialog.clone, dialogBox, flags);
-            });
+                    const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
+                    Allocate(dialog.clone, dialogBox, flags);
+                });
+        }
     }
 
     // eslint-disable-next-line camelcase
-    set_position(x: number, y: number) {
+    override set_position(x: number, y: number) {
         if (this.followMetaWindow) return;
         super.set_position(x, y);
     }
 
     // eslint-disable-next-line camelcase
-    set_size(width: number, height: number) {
+    override set_size(width: number, height: number) {
         if (this.followMetaWindow) return;
         super.set_size(width, height);
     }
@@ -331,13 +419,14 @@ export class MsWindow extends Clutter.Actor {
     }
 
     private updateMetaWindowPositionAndSizeInternal() {
-        const metaWindow = this._metaWindow;
+        const state = this.lifecycleState;
+        if (state.type !== "window") return;
+        const metaWindow = state.metaWindow;
         const windowActor =
             metaWindow &&
             metaWindow.get_compositor_private<MetaWindowActorWithMsProperties>();
 
         if (
-            this.destroyed ||
             !windowActor ||
             !this.mapped ||
             this.width === 0 ||
@@ -552,21 +641,22 @@ export class MsWindow extends Clutter.Actor {
     }
 
     mimicMetaWindowPositionAndSize() {
-        if (!this.metaWindow || this.dragged) return;
+        const metaWindow = this.metaWindow;
+        if (!metaWindow || this.dragged) return;
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.metaWindow.get_monitor()
+            metaWindow.get_monitor()
         );
-        const currentFrameRect = this.metaWindow.get_frame_rect();
+        const currentFrameRect = metaWindow.get_frame_rect();
         const newPosition = {
             x:
                 currentFrameRect.x -
-                (this.metaWindow.fullscreen
+                (metaWindow.fullscreen
                     ? this.msWorkspace.monitor.x
                     : workArea.x) -
                 this.msContent.x,
             y:
                 currentFrameRect.y -
-                (this.metaWindow.fullscreen
+                (metaWindow.fullscreen
                     ? this.msWorkspace.monitor.y
                     : workArea.y) -
                 this.msContent.y,
@@ -580,7 +670,8 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeDialogs() {
-        this.dialogs.forEach((dialog) => {
+        if (this.lifecycleState.type !== "window") return;
+        this.lifecycleState.dialogs.forEach((dialog) => {
             const { metaWindow } = dialog;
             const frame = metaWindow.get_frame_rect();
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
@@ -629,7 +720,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeMetaWindows() {
-        if (this._metaWindow) {
+        if (this.lifecycleState.type == "window" && this.lifecycleState.metaWindow !== null) {
             this.followMetaWindow
                 ? this.mimicMetaWindowPositionAndSize()
                 : this.updateMetaWindowPositionAndSize();
@@ -638,57 +729,63 @@ export class MsWindow extends Clutter.Actor {
         this.resizeDialogs();
     }
 
-    registerOnMetaWindowSignals() {
-        if (!this.metaWindow) return;
-        this.metaWindowSignals.push(
-            this.metaWindow.connect('notify::title', (_) => {
+    registerOnMetaWindowSignals(metaWindow: MetaWindowWithMsProperties): number[] {
+        return [
+            metaWindow.connect('notify::title', (_) => {
                 this.emit('title-changed', this.title);
             }),
-            this.metaWindow.connect('position-changed', () => {
+            metaWindow.connect('position-changed', () => {
                 if (this.followMetaWindow) {
                     this.mimicMetaWindowPositionAndSize();
                 }
             }),
-            this.metaWindow.connect('size-changed', () => {
+            metaWindow.connect('size-changed', () => {
                 if (this.followMetaWindow) {
                     this.mimicMetaWindowPositionAndSize();
                 }
             }),
-            this.metaWindow.connect('notify::fullscreen', () => {
+            metaWindow.connect('notify::fullscreen', () => {
                 if (this.followMetaWindow) {
                     this.mimicMetaWindowPositionAndSize();
                 }
             })
-        );
+        ]
     }
 
     unregisterOnMetaWindowSignals() {
-        if (!this.metaWindow) return;
-        this.metaWindowSignals.forEach((signalId) => {
-            this.metaWindow.disconnect(signalId);
-        });
-        this.metaWindowSignals = [];
+        const state = this.lifecycleState;
+        if (state.type !== "window" || state.metaWindow === null) return;
+        for(const signalId of state.metaWindowSignals) {
+            state.metaWindow.disconnect(signalId);
+        }
+        state.metaWindowSignals = [];
     }
 
     setMsWorkspace(msWorkspace: MsWorkspace) {
         this.msWorkspace = msWorkspace;
-        [
-            ...this.dialogs.map((dialog) => dialog.metaWindow),
-            this.metaWindow,
-        ].forEach((metaWindow) => {
-            if (metaWindow) {
-                WindowUtils.updateTitleBarVisibility(metaWindow);
-                this.updateWorkspaceAndMonitor(metaWindow);
-            }
-        });
+        if (this.lifecycleState.type === "window") {
+            [
+                ...this.lifecycleState.dialogs.map((dialog) => dialog.metaWindow),
+                this.lifecycleState.metaWindow,
+            ].forEach((metaWindow) => {
+                if (metaWindow) {
+                    WindowUtils.updateTitleBarVisibility(metaWindow);
+                    this.updateWorkspaceAndMonitor(metaWindow);
+                }
+            });
+        }
         this.resizeMetaWindows();
     }
 
     async setWindow(metaWindow: MetaWindowWithMsProperties): Promise<void> {
-        this._metaWindow = metaWindow;
+        this.lifecycleState = {
+            type: "window",
+            metaWindow: metaWindow,
+            metaWindowSignals: this.registerOnMetaWindowSignals(metaWindow),
+            dialogs: [],
+        }
         metaWindow.msWindow = this;
 
-        this.registerOnMetaWindowSignals();
         await this.onMetaWindowActorExist(metaWindow);
         await this.onMetaWindowFirstFrameDrawn(metaWindow);
         this.updateWorkspaceAndMonitor(metaWindow);
@@ -701,7 +798,17 @@ export class MsWindow extends Clutter.Actor {
     unsetWindow() {
         this.unregisterOnMetaWindowSignals();
         this.reactive = true;
-        this._metaWindow = null;
+        this.lifecycleState = {
+            type: 'app-placeholder',
+            matchingInfo: {
+                appId: this.app.id,
+                title: undefined,
+                pid: undefined,
+                wmClass: undefined,
+                stableSeq: undefined,
+            },
+            waitingForAppSince: undefined,
+        };
         this.onMetaWindowsChanged();
     }
 
@@ -724,6 +831,19 @@ export class MsWindow extends Clutter.Actor {
     }
 
     addDialog(metaWindow: MetaWindowWithMsProperties): void {
+        if (this.lifecycleState.type === "app-placeholder") {
+            this.lifecycleState = {
+                type: "window",
+                metaWindow: null,
+                metaWindowSignals: [],
+                dialogs: []
+            }
+        }
+
+        if (this.lifecycleState.type !== "window") {
+            throw new Error(`Cannot add dialog to an MsWindow in the ${this.lifecycleState.type} state`);
+        };
+
         this.updateWorkspaceAndMonitor(metaWindow);
         const clone = new Clutter.Clone({
             source: metaWindow.get_compositor_private<Meta.WindowActor>(),
@@ -734,7 +854,7 @@ export class MsWindow extends Clutter.Actor {
             clone,
         };
         metaWindow.msWindow = this;
-        this.dialogs.push(dialog);
+        this.lifecycleState.dialogs.push(dialog);
         this.add_child(clone);
         this.resizeDialogs();
         this.onMetaWindowsChanged();
@@ -743,38 +863,21 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
-    removeDialog(dialog: Dialog): void {
-        this.dialogs.splice(this.dialogs.indexOf(dialog), 1);
-        this.remove_child(dialog.clone);
-        dialog.clone.destroy();
-    }
-
     async onMetaWindowsChanged(): Promise<void> {
-        if (this.metaWindow) {
-            this.metaWindowIdentifier =
-                Me.msWindowManager.buildMetaWindowIdentifier(this.metaWindow);
+        if (this.lifecycleState.type == "window") {
             this.reactive = false;
-            await this.onMetaWindowActorExist(this.metaWindow);
-            await this.onMetaWindowFirstFrameDrawn(this.metaWindow);
-            WindowUtils.updateTitleBarVisibility(this.metaWindow);
+            let metaWindow = assertNotNull(this.metaWindow);
+            await this.onMetaWindowActorExist(metaWindow);
+            await this.onMetaWindowFirstFrameDrawn(metaWindow);
+            WindowUtils.updateTitleBarVisibility(metaWindow);
             this.resizeMetaWindows();
-            if (!this._metaWindow) {
-                if (!this.msContent.has_style_class_name('surface-darker')) {
-                    this.msContent.add_style_class_name('surface-darker');
-                }
-            } else {
-                if (this.msContent.has_style_class_name('surface-darker')) {
-                    this.msContent.remove_style_class_name('surface-darker');
-                }
-            }
+            set_style_class(this.msContent, 'surface-darker', this.lifecycleState.metaWindow === null);
             if (this.placeholder.get_parent()) {
                 this.fadeOutPlaceholder();
             }
         } else {
             this.reactive = false;
-            if (this.msContent.has_style_class_name('surface-darker')) {
-                this.msContent.remove_style_class_name('surface-darker');
-            }
+            set_style_class(this.msContent, 'surface-darker', false);
             if (!this.placeholder.get_parent()) {
                 this.msContent.add_child(this.placeholder);
             }
@@ -783,9 +886,8 @@ export class MsWindow extends Clutter.Actor {
     }
 
     grab_key_focus(): void {
-        if (this.dialogs.length) {
-            this.onFocus();
-        }
+        // TODO: Seems a bit redundant to first focus the dialogs and then change focus to the main window (is that even desired?)
+        this.focusDialogs();
         if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
         if (this.metaWindow) {
             this.metaWindow.activate(global.get_current_time());
@@ -794,9 +896,10 @@ export class MsWindow extends Clutter.Actor {
         }
     }
 
-    onFocus(): void {
-        if (this.dialogs.length) {
-            [...this.dialogs]
+    focusDialogs(): boolean {
+        let focused = false;
+        if (this.lifecycleState.type === 'window' && this.lifecycleState.dialogs) {
+            [...this.lifecycleState.dialogs]
                 .sort((firstDialog, secondDialog) => {
                     return (
                         firstDialog.metaWindow.user_time -
@@ -807,9 +910,11 @@ export class MsWindow extends Clutter.Actor {
                     this.set_child_above_sibling(dialog.clone, null);
                     if (index === array.length - 1) {
                         dialog.metaWindow.activate(global.get_current_time());
+                        focused = true;
                     }
                 });
         }
+        return focused;
     }
 
     /**
@@ -817,74 +922,110 @@ export class MsWindow extends Clutter.Actor {
      * @param {MetaWindow} metaWindow the MetaWindow currently unManaged
      */
     metaWindowUnManaged(metaWindow: MetaWindowWithMsProperties): void {
-        const isMainMetaWindow = metaWindow === this._metaWindow;
-        const dialog = this.dialogs.find(
+        const state = this.lifecycleState;
+        assert(state.type == "window", "Expected the MsWindow to be in the 'window' state");
+
+        const isMainMetaWindow = metaWindow === state.metaWindow;
+        const dialog = state.dialogs.find(
             (dialog) => dialog.metaWindow === metaWindow
         );
-        // If it's neither the MainMetaWindow or a Dialog we ignore but this shouldn't happen
+        // If it's neither the MainMetaWindow or a Dialog we ignore, but this shouldn't happen
         if (!isMainMetaWindow && dialog === undefined) {
+            Me.log("Cannot find the window which was unmanaged");
             return;
         }
         if (dialog) {
-            this.removeDialog(dialog);
+            state.dialogs.splice(state.dialogs.indexOf(dialog), 1);
+            this.remove_child(dialog.clone);
+            dialog.clone.destroy();
         }
         if (isMainMetaWindow) {
-            this._metaWindow = null;
+            state.metaWindow = null;
         }
 
-        // We check in an idle that closing dialog didn't popped a new window. If there is no new window we kill the msWindow
-        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            if (!this.dialogs.length && !this._metaWindow) {
-                this.kill();
-            }
-            return GLib.SOURCE_REMOVE;
-        });
-    }
-
-    kill() {
-        const dialogPromises = this.dialogs.map((dialog) => {
-            return new Promise<void>((resolve) => {
-                delete dialog.metaWindow.msWindow;
-                if (
-                    dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
-                ) {
-                    dialog.metaWindow.connect('unmanaged', (_) => {
-                        resolve();
-                    });
-                    dialog.metaWindow.delete(global.get_current_time());
-                }
-            });
-        });
-        const promise = new Promise<void>((resolve) => {
-            if (
-                this.metaWindow &&
-                this.metaWindow.get_compositor_private<Meta.WindowActor>()
-            ) {
-                delete this.metaWindow.msWindow;
-                this.metaWindow.connect('unmanaged', (_) => {
-                    resolve();
-                });
-                this.metaWindow.delete(global.get_current_time());
-            } else {
-                resolve();
-            }
-        });
-        Promise.all([...dialogPromises, promise]).then(() => {
+        if (state.metaWindow == null && state.dialogs.length == 0) {
             if (this._persistent) {
-                this.dialogs = [];
                 this.unsetWindow();
             } else {
-                this._metaWindow = null;
-                if (!this.destroyed) {
-                    this._onDestroy();
-                    this.msWorkspace.removeMsWindow(this);
-                    if (this.destroyId) this.disconnect(this.destroyId);
+                this.lifecycleState = { type: 'waiting-for-destroy' };
+
+                // We check in an idle that closing dialog didn't pop up a new window. If there is no new window we kill the msWindow
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    if (this.lifecycleState.type === 'waiting-for-destroy') {
+                        this.kill();
+                    }
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+        }
+    }
+
+    async kill() {
+        const state = this.lifecycleState;
+
+        switch (state.type) {
+            case "window": {
+                if (this._persistent) {
+                    this.unsetWindow();
+                } else {
+                    this.lifecycleState = { type: "destroying" };
+                }
+
+                const dialogPromises = state.dialogs.map((dialog) => {
+                    return new Promise<void>((resolve) => {
+                        delete dialog.metaWindow.msWindow;
+                        // TODO: When can this return false?
+                        if (
+                            dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
+                        ) {
+                            dialog.metaWindow.connect('unmanaged', (_) => {
+                                resolve();
+                            });
+                            dialog.metaWindow.delete(global.get_current_time());
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+
+                const promise = new Promise<void>((resolve) => {
+                    if (
+                        state.metaWindow &&
+                        state.metaWindow.get_compositor_private<Meta.WindowActor>()
+                    ) {
+                        delete state.metaWindow.msWindow;
+                        state.metaWindow.connect('unmanaged', (_) => {
+                            resolve();
+                        });
+                        state.metaWindow.delete(global.get_current_time());
+                    } else {
+                        resolve();
+                    }
+                });
+
+                await Promise.all([...dialogPromises, promise]);
+
+                if (!this._persistent) {
+                    assert(this.lifecycleState.type === "destroying", "Did not expect the lifecycle state to have changed");
                     this.destroy();
                 }
+                break;
             }
-        });
-
-        return promise;
+            case "app-placeholder": {
+                if (this._persistent) {
+                    // Persistent app placeholders cannot be closed
+                } else {
+                    this.destroy();
+                }
+                break;
+            }
+            case "waiting-for-destroy":
+                this.destroy();
+                break;
+            case "destroyed":
+            case "destroying":
+                break;
+        }
     }
 
     fadeOutPlaceholder() {
@@ -915,15 +1056,16 @@ export class MsWindow extends Clutter.Actor {
     }
 
     updateMetaWindowVisibility() {
-        if (this.metaWindow) {
+        const metaWindow = this.metaWindow;
+        if (metaWindow) {
             const shouldBeHidden =
                 !this.visible ||
                 this.get_parent() === null ||
                 Me.msWindowManager.msDndManager.dragInProgress;
-            if (shouldBeHidden && !this.metaWindow.minimized) {
-                this.metaWindow.minimize();
-            } else if (!shouldBeHidden && this.metaWindow.minimized) {
-                this.metaWindow.unminimize();
+            if (shouldBeHidden && !metaWindow.minimized) {
+                metaWindow.minimize();
+            } else if (!shouldBeHidden && metaWindow.minimized) {
+                metaWindow.unminimize();
             }
         }
     }
@@ -931,7 +1073,7 @@ export class MsWindow extends Clutter.Actor {
     toString() {
         // When MS function parameter logging is enabled, toString may be called on windows that have been destroyed.
         // So we need to guard against this. super.toString would otherwise try to access the destroyed C object.
-        if (this.destroyed) {
+        if (this.lifecycleState.type === "destroyed") {
             return `[destroyed MsWindow - ${this.app.get_name()}]`;
         }
 
@@ -940,8 +1082,10 @@ export class MsWindow extends Clutter.Actor {
     }
 
     _onDestroy() {
-        this.destroyed = true;
+        if (this.destroyId) this.disconnect(this.destroyId);
+        this.msWorkspace.removeMsWindow(this);
         this.unregisterOnMetaWindowSignals();
+        this.lifecycleState = { type: "destroyed" };
     }
 }
 
@@ -974,7 +1118,7 @@ export class MsWindowContent extends St.Widget {
         box = themeNode.get_content_box(box);
         const parent = this.get_parent();
         assert(parent instanceof MsWindow, "expected parent to be an MsWindow");
-        const metaWindow: MetaWindowWithMsProperties = parent.metaWindow;
+        const metaWindow = parent.metaWindow;
         if (metaWindow && metaWindow.firstFrameDrawn) {
             const windowFrameRect = metaWindow.get_frame_rect();
             const windowBufferRect = metaWindow.get_buffer_rect();

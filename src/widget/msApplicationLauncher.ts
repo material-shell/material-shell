@@ -101,20 +101,16 @@ export class MsApplicationLauncher extends St.Widget {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
-                const msWindow = Me.msWindowManager.createNewMsWindow(
-                    app.id,
-                    null,
-                    null,
+                const { msWindow } = Me.msWindowManager.createNewMsWindow(
+                    app,
                     {
                         msWorkspace: this.msWorkspace,
                         focus: true,
                         insert: false,
                     }
                 );
-                if (msWindow) {
-                    Me.msWindowManager.openAppForMsWindow(msWindow);
-                    this.appListContainer.reset();
-                }
+                Me.msWindowManager.openAppForMsWindow(msWindow);
+                this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);
         });

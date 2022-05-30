@@ -18,6 +18,7 @@ import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import Monitor = layout.Monitor;
 const Signals = imports.signals;
 import { main as Main } from 'ui';
+import { App, AppSystem } from 'shell';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -65,7 +66,7 @@ export class MsWorkspace extends WithSignals {
         super();
         this.msWorkspaceManager = msWorkspaceManager;
         this.setMonitor(monitor);
-        this._state = Object.assign(
+        const initialState: MsWorkspaceState = Object.assign(
             {
                 // This is different from monitorIsExternal since it's used to determined if it's should be moved to an external monitor when one is plugged
                 external:
@@ -82,41 +83,79 @@ export class MsWorkspace extends WithSignals {
             },
             state
         );
+        // Note: _state may be updated while some functions in the constructor run, so we keep the original state in initialState.
+        this._state = Object.assign({}, initialState);
+
         this.insertedMsWindow = null;
         this.appLauncher = new MsApplicationLauncher(this);
 
-        // First add AppLauncher since windows are inserted before it otherwise the order is a mess
-        this.tileableList = [this.appLauncher];
-
         this.msWorkspaceCategory = new MsWorkspaceCategory(
             this,
-            this._state.forcedCategory
+            initialState.forcedCategory
         );
-        this.precedentIndex = this._state.focusedIndex;
+        this.precedentIndex = initialState.focusedIndex;
 
-        this._state.msWindowList.forEach((msWindowData) => {
-            Me.msWindowManager.createNewMsWindow(
-                msWindowData.appId,
-                msWindowData.metaWindowIdentifier,
-                null,
-                {
-                    msWorkspace: this,
-                    focus: false,
-                    insert: false,
-                },
-                msWindowData.persistent ? msWindowData.persistent : undefined,
-                {
-                    x: msWindowData.x,
-                    y: msWindowData.y,
-                    width: msWindowData.width,
-                    height: msWindowData.height,
+        this.tileableList = [];
+        this.msWorkspaceActor = new MsWorkspaceActor(this);
+
+        // First add AppLauncher since windows are inserted before it otherwise the order is a mess.
+        // It's important that this is done after the workspace actor is created.
+        this.tileableList.push(this.appLauncher);
+        const appSys = AppSystem.get_default();
+
+        for (const msWindowData of initialState.msWindowList) {
+            let matchingInfo = msWindowData.matchingInfo;
+            if (
+                matchingInfo === undefined &&
+                msWindowData.metaWindowIdentifier !== null
+            ) {
+                // Compatibility
+                const parts = msWindowData.metaWindowIdentifier.split('-');
+                if (
+                    logAssert(
+                        parts.length === 3,
+                        'window identifier had an unknown format'
+                    )
+                ) {
+                    matchingInfo = {
+                        appId: msWindowData.appId,
+                        title: undefined,
+                        pid: Number(parts[1]),
+                        wmClass: parts[0],
+                        stableSeq: Number(parts[2]),
+                    };
                 }
-            );
-        });
+            }
+
+            // Note: lookup_app can return null even though the type definitions don't say that.
+            const app: App | null = appSys.lookup_app(msWindowData.appId);
+            if (app) {
+                Me.msWindowManager.createNewMsWindow(
+                    app,
+                    {
+                        msWorkspace: this,
+                        focus: false,
+                        insert: false,
+                    },
+                    msWindowData.persistent
+                        ? msWindowData.persistent
+                        : undefined,
+                    {
+                        x: msWindowData.x,
+                        y: msWindowData.y,
+                        width: msWindowData.width,
+                        height: msWindowData.height,
+                    },
+                    matchingInfo
+                );
+            }
+        }
 
         this.msWorkspaceCategory.refreshCategory();
-        this.msWorkspaceActor = new MsWorkspaceActor(this);
-        this.setLayoutByKey(this._state.layoutKey);
+        this.setLayoutByKey(initialState.layoutKey);
+
+        // Among other things, informs the TaskBar about the initial windows
+        this.emit('tileableList-changed', this.tileableList);
 
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.refreshCategory();
@@ -252,6 +291,11 @@ export class MsWorkspace extends WithSignals {
             this.focusTileable(msWindow);
         }
         this.msWorkspaceActor.updateUI();
+
+        // TODO: Emitting the event after a small duration is potentially bad.
+        // If the window was focused the task bar will be in an invalid state
+        // until the 'tileableList-changed' event runs because the focus index
+        // will be out of bounds.
         await this.emitTileableListChangedOnce();
     }
 
