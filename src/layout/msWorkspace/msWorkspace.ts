@@ -415,26 +415,6 @@ export class MsWorkspace extends WithSignals {
         if (focused !== null) focused.grab_key_focus();
     }
 
-    setTileableBefore(tileableToMove: Tileable, tileableRelative: Tileable) {
-        const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
-        this.tileableList.splice(tileableToMoveIndex, 1);
-
-        const tileableRelativeIndex =
-            this.tileableList.indexOf(tileableRelative);
-        this.tileableList.splice(tileableRelativeIndex, 0, tileableToMove);
-        this.emit('tileableList-changed', this.tileableList);
-    }
-
-    setTileableAfter(tileableToMove: Tileable, tileableRelative: Tileable) {
-        const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
-        this.tileableList.splice(tileableToMoveIndex, 1);
-
-        const tileableRelativeIndex =
-            this.tileableList.indexOf(tileableRelative);
-        this.tileableList.splice(tileableRelativeIndex + 1, 0, tileableToMove);
-        this.emit('tileableList-changed', this.tileableList);
-    }
-
     setTileableAtIndex(tileableToMove: Tileable, index: number) {
         const tileableToMoveIndex = this.tileableList.indexOf(tileableToMove);
         this.tileableList.splice(tileableToMoveIndex, 1);
@@ -492,38 +472,6 @@ export class MsWorkspace extends WithSignals {
         return getSettings('tweaks').get_boolean('cycle-through-windows');
     }
 
-    // Dead code
-    // emitWindowsChanged(newWindows, oldWindows, debouncedArgs) {
-    //     // In case of direct call check if it has _debouncedArgs
-    //     if (debouncedArgs) {
-    //         // Get first debounced oldWindows
-    //         const firstOldWindows = debouncedArgs[0][1];
-    //         // And compare it with the new newWindows
-    //         if (
-    //             newWindows.length === firstOldWindows.length &&
-    //             newWindows.every((window, i) => firstOldWindows[i] === window)
-    //         ) {
-    //             // If it's the same, the changes have compensated themselves
-    //             // So in the end nothing happened:
-
-    //             return;
-    //         }
-    //         oldWindows = firstOldWindows;
-    //     }
-
-    //     if (!this.destroyed) {
-    //         // Make it async to prevent concurrent debounce calls
-    //         if (debouncedArgs) {
-    //             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-    //                 this.emit('windows-changed', newWindows, oldWindows);
-    //                 return GLib.SOURCE_REMOVE;
-    //             });
-    //         } else {
-    //             this.emit('windows-changed', newWindows, oldWindows);
-    //         }
-    //     }
-    // }
-
     isDisplayed() {
         if (this.monitorIsExternal) {
             return true;
@@ -549,17 +497,6 @@ export class MsWorkspace extends WithSignals {
             );
         } else {
             workspace.activate(global.get_current_time());
-        }
-    }
-
-    focusLastTileable() {
-        if (this.tileableList.length) {
-            const lastTileable =
-                this.tileableList[this.focusedIndex] ||
-                this.tileableList.slice(-1)[0];
-            this.focusTileable(lastTileable);
-        } else {
-            //this.focusTileable(null);
         }
     }
 
