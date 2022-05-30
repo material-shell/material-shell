@@ -3,6 +3,7 @@ import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import { App } from 'shell';
+import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
@@ -24,14 +25,14 @@ export class AppPlaceholder extends St.Widget {
         },
     };
     app: App;
-    icon: any;
+    icon: St.Widget;
     pressed = false;
     waitForReset: boolean = false;
     clickableContainer: RippleBackground;
-    box: any;
-    identityContainer: any;
-    appTitle: any;
-    callToAction: any;
+    box: St.BoxLayout;
+    identityContainer: St.BoxLayout;
+    appTitle: St.Label;
+    callToAction: St.Label;
     spinnerContainer: any;
     vertical = true;
     private _spinner: any;
@@ -44,7 +45,9 @@ export class AppPlaceholder extends St.Widget {
             reactive: true,
         });
         this.app = app;
-        this.icon = this.app.create_icon_texture(248);
+        const icon = this.app.create_icon_texture(248);
+        assert(icon instanceof St.Widget, "expected icon to be a widget");
+        this.icon = icon;
         this.icon.set_style('padding:24px');
         this.spinnerContainer = new Clutter.Actor({});
         this.spinnerContainer.set_opacity(0);
@@ -128,7 +131,8 @@ export class AppPlaceholder extends St.Widget {
             ? Clutter.ActorAlign.CENTER
             : Clutter.ActorAlign.START;
     }
-    vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+
+    override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
         switch (keyEvent.keyval) {
             case Clutter.KEY_Return:
             case Clutter.KEY_KP_Enter:
@@ -141,7 +145,7 @@ export class AppPlaceholder extends St.Widget {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    vfunc_allocate(...args: [Clutter.ActorBox]) {
+    override vfunc_allocate(...args: [Clutter.ActorBox]) {
         const width = args[0].get_width();
         const height = args[0].get_height();
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
