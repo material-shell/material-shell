@@ -190,8 +190,15 @@ export class TaskBar extends St.Widget {
         nextItem.setActive(true);
     }
 
-    getActiveItem() {
-        return this.items[this.msWorkspace.focusedIndex];
+    /** Returns the item for the app which is currently active.
+     * This can only return null in case all apps and the application launcher are removed from a workspace, but the application launcher will in practice always be there.
+     */
+    getActiveItem(): TileableItem | IconTaskBarItem | null {
+        if (this.items.length > 0) {
+            return this.items[this.msWorkspace.focusedIndex];
+        } else {
+            return null;
+        }
     }
 
     createNewItemForTileable(tileable: Tileable) {
@@ -224,19 +231,27 @@ export class TaskBar extends St.Widget {
             return item.tileable === tileable;
         });
     }
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+
+    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         Allocate(this.taskButtonContainer, contentBox, flags);
 
-        const taskActiveIndicatorBox = new Clutter.ActorBox({
-            x1: this.getActiveItem().x,
-            x2: this.getActiveItem().x + this.getActiveItem().width,
-            y1: contentBox.get_height() - this.taskActiveIndicator.height,
-            y2: contentBox.get_height(),
-        });
-        Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
+        const activeItem = this.getActiveItem();
+
+        if (activeItem) {
+            this.taskActiveIndicator.show();
+            const taskActiveIndicatorBox = new Clutter.ActorBox({
+                x1: activeItem.x,
+                x2: activeItem.x + activeItem.width,
+                y1: contentBox.get_height() - this.taskActiveIndicator.height,
+                y2: contentBox.get_height(),
+            });
+            Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
+        } else {
+            this.taskActiveIndicator.hide();
+        }
     }
 
     _onDestroy() {
