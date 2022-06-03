@@ -218,17 +218,14 @@ export class MsWindowManager extends MsManager {
                 !this.isMetaWindowDialog(w.metaWindow)
         );
 
+        const candidateMsWindows = this.msWindowList.filter(
+            (x) => x.lifecycleState.type === 'app-placeholder' || (x.lifecycleState.type === 'window' && now - x.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS)
+        );
         const groupedMsWindowsByApp = groupBy(
-            this.msWindowList.filter(
-                (x) =>
-                    x.lifecycleState.type === 'app-placeholder' || (x.lifecycleState.type === 'window' && now - x.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS)
-            ),
+            candidateMsWindows,
             (window) => {
-                if (window.lifecycleState.type === 'app-placeholder' || window.lifecycleState.type === 'window') {
-                    return window.lifecycleState.matchingInfo.appId;
-                } else {
-                    throw new Error("Unreachable");
-                }
+                assert(window.lifecycleState.type === 'app-placeholder' || window.lifecycleState.type === 'window', "unreachable");
+                return window.lifecycleState.matchingInfo.appId;
             }
         );
         const groupedMetaWindowsByApp = groupBy(
