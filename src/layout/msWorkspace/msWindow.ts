@@ -989,6 +989,10 @@ export class MsWindow extends Clutter.Actor {
             state.metaWindow = null;
         }
 
+        // Not really important since the window is getting destroyed anyway, but here we clean up our association with the meta window.
+        metaWindow.msWindow = undefined;
+        metaWindow.handledByMaterialShell = false;
+
         if (state.metaWindow == null && state.dialogs.length == 0) {
             if (this._persistent) {
                 this.unsetWindow();
@@ -1011,18 +1015,8 @@ export class MsWindow extends Clutter.Actor {
 
         switch (state.type) {
             case "window": {
-                if (this._persistent) {
-                    this.unsetWindow();
-                } else {
-                    this.lifecycleState = { type: "destroying" };
-                }
-
                 const dialogPromises = state.dialogs.map((dialog) => {
                     return new Promise<void>((resolve) => {
-                        delete dialog.metaWindow.msWindow;
-                        // Make sure the window is not re-assigned to another MsWindow in the short duration
-                        // while it is being destroyed.
-                        dialog.metaWindow.handledByMaterialShell = false;
                         // TODO: When can this return false?
                         if (
                             dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
@@ -1042,8 +1036,6 @@ export class MsWindow extends Clutter.Actor {
                         state.metaWindow &&
                         state.metaWindow.get_compositor_private<Meta.WindowActor>()
                     ) {
-                        delete state.metaWindow.msWindow;
-                        state.metaWindow.handledByMaterialShell = false;
                         state.metaWindow.connect('unmanaged', (_) => {
                             resolve();
                         });
@@ -1054,11 +1046,9 @@ export class MsWindow extends Clutter.Actor {
                 });
 
                 await Promise.all([...dialogPromises, promise]);
-
-                if (!this._persistent) {
-                    assert(this.lifecycleState.type === "destroying", "Did not expect the lifecycle state to have changed");
-                    this.destroy();
-                }
+                // The above code will call metaWindowUnManaged for all meta windows managed by this MsWindow which will handle all necessary cleanup.
+                // Note that just because we call `delete` doesn't mean the windows will actually close. For example, some applications
+                // show 'Do you want to save this document' dialogs which allow the user to cancel closing the window.
                 break;
             }
             case "app-placeholder": {
