@@ -232,15 +232,13 @@ export class MsWindow extends Clutter.Actor {
 
     get metaWindow(): MetaWindowWithMsProperties | null {
         const state = this.lifecycleState;
-        if (state.type == 'window') {
-            return (
-                state.metaWindow ||
-                (state.dialogs &&
-                    state.dialogs.length > 0 ? state.dialogs[state.dialogs.length - 1].metaWindow : null)
-            );
-        } else {
-            return null;
-        }
+        if (state.type !== 'window') return null;
+
+        return (
+            state.metaWindow ||
+            (state.dialogs &&
+                state.dialogs.length > 0 ? state.dialogs[state.dialogs.length - 1].metaWindow : null)
+        );
     }
 
     /** All meta windows represented by this MSWindow.
@@ -249,13 +247,11 @@ export class MsWindow extends Clutter.Actor {
      */
     get metaWindows(): MetaWindowWithMsProperties[] {
         const state = this.lifecycleState;
-        if (state.type == 'window') {
-            const windows = state.dialogs.map(d => d.metaWindow);
-            if (state.metaWindow !== null) windows.push(state.metaWindow);
-            return windows;
-        } else {
-            return [];
-        }
+        if (state.type !== 'window') return [];
+
+        const windows = state.dialogs.map(d => d.metaWindow);
+        if (state.metaWindow !== null) windows.push(state.metaWindow);
+        return windows;
     }
 
     /** A human-readable identifier for this window.
