@@ -380,15 +380,54 @@ export class MsWindowManager extends MsManager {
 
             let msWindowFound = root?.msWindow ?? null;
 
+            // TODO: It's unclear if this is necessary or if the foreach_ancestor will work for the same cases.
+            if (msWindowFound === null) {
+                // Dialogs can specify the window they belong to using the `transient for` property.
+                // So we check to see if it is specified and it is an msWindow
+                const transientMetaWindow =
+                    metaWindow.get_transient_for() as MetaWindowWithMsProperties | null;
+                if (
+                    transientMetaWindow?.msWindow?.lifecycleState.type ===
+                    'window'
+                ) {
+                    msWindowFound = transientMetaWindow.msWindow;
+                }
+            }
+
+            if (msWindowFound === null) {
+                // If we still haven't found a window we try to find a regular window with the same PID
+                const pid = metaWindow.get_pid();
+                const samePidMsWindowList = this.msWindowList.filter(
+                    (msWindow) => {
+                        return (
+                            msWindow.lifecycleState.type === 'window' &&
+                            msWindow.lifecycleState.metaWindow?.get_pid() ===
+                                pid
+                        );
+                    }
+                );
+
+                // We take the most recently focused msWindow
+                for (const msWindow of samePidMsWindowList) {
+                    if (
+                        !msWindowFound ||
+                        (msWindow.metaWindow &&
+                            msWindowFound.metaWindow!.get_user_time() <
+                                msWindow.metaWindow.get_user_time())
+                    ) {
+                        msWindowFound = msWindow;
+                    }
+                }
+            }
+
             if (msWindowFound == null && app) {
-                // But sometimes the we fail to find one.
-                // So we try to find a regular window with the same app
+                // If we still haven't found a window we try to find a regular window with the same app
                 const sameAppMsWindowList: (MsWindow & {
                     lifecycleState: { type: 'window ' };
                 })[] = this.msWindowList
                     .filter((msWindow) => {
                         return (
-                            msWindow.lifecycleState.type == 'window' &&
+                            msWindow.lifecycleState.type === 'window' &&
                             msWindow.app.get_id() == app.get_id()
                         );
                     })
