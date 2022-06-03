@@ -30,10 +30,6 @@ export type MetaWindowWithMsProperties = Meta.Window & {
     handledByMaterialShell?: boolean;
     msWindow?: MsWindow;
     titleBarVisible?: boolean;
-    /** Set when we have started destroying the window, but it has not yet completed.
-     * Used to avoid re-assigning windows that have just been removed from an MsWindow that is being destroyed.
-     */
-    destroying?: true,
 };
 
 export type MetaWindowActorWithMsProperties = Meta.WindowActor & {
@@ -184,7 +180,7 @@ export class MsWindowManager extends MsManager {
     private async assignWindows() {
         // We capture the list of all actors at the beginning and don't care about any new ones until the
         // next time we start assigning windows.
-        const actors = global.get_window_actors().filter(x => !(x.metaWindow as MetaWindowWithMsProperties).destroying);
+        const actors = global.get_window_actors().filter(x => (x.metaWindow as MetaWindowWithMsProperties).handledByMaterialShell);
         // Assign all non-dialog windows first
         const windowsDone = this.assignNonDialogWindows(actors);
         // Assign the dialog windows to previously existing MsWindows that fits them.

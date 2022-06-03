@@ -1020,7 +1020,9 @@ export class MsWindow extends Clutter.Actor {
                 const dialogPromises = state.dialogs.map((dialog) => {
                     return new Promise<void>((resolve) => {
                         delete dialog.metaWindow.msWindow;
-                        dialog.metaWindow.destroying = true;
+                        // Make sure the window is not re-assigned to another MsWindow in the short duration
+                        // while it is being destroyed.
+                        dialog.metaWindow.handledByMaterialShell = false;
                         // TODO: When can this return false?
                         if (
                             dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
@@ -1041,7 +1043,7 @@ export class MsWindow extends Clutter.Actor {
                         state.metaWindow.get_compositor_private<Meta.WindowActor>()
                     ) {
                         delete state.metaWindow.msWindow;
-                        state.metaWindow.destroying = true;
+                        state.metaWindow.handledByMaterialShell = false;
                         state.metaWindow.connect('unmanaged', (_) => {
                             resolve();
                         });
