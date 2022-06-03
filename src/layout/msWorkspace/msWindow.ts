@@ -105,9 +105,6 @@ type MsWindowLifecycleState = {
     /** An MsWindow which will be destroyed soon unless another window or dialog opens */
     type: "waiting-for-destroy",
 } | {
-    /** An MsWindow in the process of getting destroyed */
-    type: "destroying",
-} | {
     /** A destroyed MsWindow. This cannot be used for anything anymore. */
     type: "destroyed",
 }
@@ -1062,7 +1059,6 @@ export class MsWindow extends Clutter.Actor {
                 this.destroy();
                 break;
             case "destroyed":
-            case "destroying":
                 break;
         }
     }
