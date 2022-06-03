@@ -202,19 +202,22 @@ export class MsWindowManager extends MsManager {
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
     private assignNonDialogWindows(actors: Meta.WindowActor[]): Promise<void[]> {
-        const handledMetaWindows = new Set(this.managedMetaWindows);
+        const assignedMetaWindows = new Set(this.managedMetaWindows);
 
+        // We allow meta windows to be re-assigned for a short amount of time after they have first been assigned.
+        // See docs for `MAX_WINDOW_REASSOCIATION_TIME_MS` for more details.
+        // Essentially this loop makes those already assigned windows available to be re-assigned.
         const now = new Date().getTime();
         for (const msWindow of this.msWindowList) {
             if (msWindow.lifecycleState.type === "window" && now - msWindow.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS && msWindow.lifecycleState.metaWindow !== null) {
-                handledMetaWindows.delete(msWindow.lifecycleState.metaWindow)
+                assignedMetaWindows.delete(msWindow.lifecycleState.metaWindow)
             }
         }
 
         // Handle all non-dialog windows that haven't been associated with an MsWindow yet. Dialog windows are handled by assignDialogWindows
         const windowActors = actors.filter(
             (w) =>
-                !handledMetaWindows.has(w.metaWindow) &&
+                !assignedMetaWindows.has(w.metaWindow) &&
                 !this.isMetaWindowDialog(w.metaWindow)
         );
 
@@ -344,12 +347,12 @@ export class MsWindowManager extends MsManager {
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
     private assignDialogWindows(actors: Meta.WindowActor[]): Promise<void[]> {
-        const handledMetaWindows = new Set(this.managedMetaWindows);
+        const assignedMetaWindows = new Set(this.managedMetaWindows);
         const promises = [];
 
         for (const windowActor of actors) {
             if (windowActor.is_destroyed()) continue;
-            if (handledMetaWindows.has(windowActor.metaWindow)) continue;
+            if (assignedMetaWindows.has(windowActor.metaWindow)) continue;
             if (!this.isMetaWindowDialog(windowActor.metaWindow)) continue;
 
             const metaWindow = windowActor.metaWindow;
