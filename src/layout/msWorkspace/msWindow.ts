@@ -380,7 +380,7 @@ export class MsWindow extends Clutter.Actor {
             ? this.msWorkspace.monitor.y
             : workArea.y;
         if (this.lifecycleState.type === "window") {
-            // The dialogs are sorted because it affects their stacking order when displayed. We show the most recently created one on top.
+            // The dialogs are sorted because it affects their stacking order when displayed. We show the most recently interacted with window one on top.
             [...this.lifecycleState.dialogs]
                 .sort(
                     (firstDialog, secondDialog) =>
