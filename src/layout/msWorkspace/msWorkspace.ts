@@ -44,7 +44,7 @@ export class MsWorkspace extends WithSignals {
     private _state: MsWorkspaceState;
     insertedMsWindow: MsWindow | null;
     appLauncher: MsApplicationLauncher;
-    tileableList: Tileable[];
+    tileableList: Tileable[] = [];
     msWorkspaceCategory: MsWorkspaceCategory;
     precedentIndex: number;
     msWorkspaceActor: MsWorkspaceActor;
@@ -95,7 +95,6 @@ export class MsWorkspace extends WithSignals {
         );
         this.precedentIndex = initialState.focusedIndex;
 
-        this.tileableList = [];
         this.msWorkspaceActor = new MsWorkspaceActor(this);
 
         // First add AppLauncher since windows are inserted before it otherwise the order is a mess.
@@ -188,7 +187,7 @@ export class MsWorkspace extends WithSignals {
         this._state.msWindowList = this.tileableList
             .filter(isMsWindow)
             .filter((msWindow) => {
-                return !msWindow.app.is_window_backed();
+                return !msWindow.app.is_window_backed() && (msWindow.lifecycleState.type === "app-placeholder" || msWindow.lifecycleState.type === "window");
             })
             .map((msWindow) => {
                 return msWindow.state;

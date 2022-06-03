@@ -28,6 +28,7 @@ import { App } from 'shell';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { set_style_class } from 'src/utils/styling_utils';
 import { throttle } from 'src/utils';
+import { logAsyncException } from 'src/utils/log';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
@@ -79,6 +80,14 @@ type MsWindowLifecycleState = {
     metaWindow: MetaWindowWithMsProperties | null,
     metaWindowSignals: number[],
     dialogs: Dialog[],
+    /** Original matching info from when the window was associated.
+     * This does not necessarily perfectly match the current window.
+     * It is used to allow swapping window association for a small duration after an application has started in case new information becomes available.
+     * For example window titles are often updated if the application loads a document, which it might do automatically on startup.
+     */
+    matchingInfo: MsWindowMatchingInfo,
+    /** Time when the meta window was associated with this MsWindow */
+    matchedAtTime: Date,
 } | {
     /** An MsWindow showing a placeholder for a particular app */
     type: "app-placeholder",
@@ -183,24 +192,36 @@ export class MsWindow extends Clutter.Actor {
 
     get state(): MsWindowState {
         const metaWindow = this.metaWindow;
+        let matchingInfo: MsWindowMatchingInfo;
+        switch(this.lifecycleState.type) {
+            case 'app-placeholder':
+                matchingInfo = this.lifecycleState.matchingInfo;
+                break;
+            case 'window':
+                matchingInfo = {
+                    appId: this.app.id,
+                    title: this.lifecycleState.metaWindow?.title,
+                    pid: this.lifecycleState.metaWindow?.get_pid(),
+                    wmClass: this.lifecycleState.metaWindow?.get_wm_class_instance(),
+                    stableSeq: this.lifecycleState.metaWindow?.get_stable_sequence(),
+                }
+                break;
+            default:
+                matchingInfo = {
+                    appId: this.app.id,
+                    title: undefined,
+                    pid: undefined,
+                    wmClass: undefined,
+                    stableSeq: undefined,
+                }
+        }
+
         return {
             appId: this.app.id,
             // For compatibility we save a meta window identifier string.
             // This is useful if the user decides to downgrade material-shell to a previous version.
             metaWindowIdentifier: metaWindow !== null ? buildMetaWindowIdentifier(metaWindow) : null,
-            matchingInfo: this.lifecycleState.type == 'window' ? {
-                appId: this.app.id,
-                title: this.lifecycleState.metaWindow?.title,
-                pid: this.lifecycleState.metaWindow?.get_pid(),
-                wmClass: this.lifecycleState.metaWindow?.get_wm_class_instance(),
-                stableSeq: this.lifecycleState.metaWindow?.get_stable_sequence(),
-            } : {
-                appId: this.app.id,
-                title: undefined,
-                pid: undefined,
-                wmClass: undefined,
-                stableSeq: undefined,
-            },
+            matchingInfo: matchingInfo,
             persistent: this._persistent,
             x: this.x,
             y: this.y,
@@ -778,11 +799,15 @@ export class MsWindow extends Clutter.Actor {
     }
 
     async setWindow(metaWindow: MetaWindowWithMsProperties): Promise<void> {
+        assert(this.lifecycleState.type === "app-placeholder", "Can only set the window if the MsWindow is in the app-placeholder state.");
+
         this.lifecycleState = {
             type: "window",
             metaWindow: metaWindow,
             metaWindowSignals: this.registerOnMetaWindowSignals(metaWindow),
             dialogs: [],
+            matchingInfo: this.lifecycleState.matchingInfo,
+            matchedAtTime: new Date(),
         }
         metaWindow.msWindow = this;
 
@@ -795,21 +820,19 @@ export class MsWindow extends Clutter.Actor {
         await this.onMetaWindowsChanged();
     }
 
-    unsetWindow() {
+    public unsetWindow() {
+        assert(this.lifecycleState.type === "window", "Can only unset the window when in the window state");
         this.unregisterOnMetaWindowSignals();
+        // Required when re-assigning windows.
+        // Normally if a window is destroyed the source is implicitly cleared because the source window doesn't exist anymore.
+        this.windowClone.set_source(null);
         this.reactive = true;
         this.lifecycleState = {
             type: 'app-placeholder',
-            matchingInfo: {
-                appId: this.app.id,
-                title: undefined,
-                pid: undefined,
-                wmClass: undefined,
-                stableSeq: undefined,
-            },
+            matchingInfo: this.lifecycleState.matchingInfo,
             waitingForAppSince: undefined,
         };
-        this.onMetaWindowsChanged();
+        this.onMetaWindowsChanged().catch(logAsyncException);
     }
 
     updateWorkspaceAndMonitor(metaWindow: Meta.Window) {
@@ -836,7 +859,9 @@ export class MsWindow extends Clutter.Actor {
                 type: "window",
                 metaWindow: null,
                 metaWindowSignals: [],
-                dialogs: []
+                dialogs: [],
+                matchingInfo: this.lifecycleState.matchingInfo,
+                matchedAtTime: new Date(),
             }
         }
 
@@ -861,6 +886,31 @@ export class MsWindow extends Clutter.Actor {
         if (this.msWorkspace.tileableFocused === this) {
             this.grab_key_focus();
         }
+    }
+
+    removeAllDialogs() {
+        if (this.lifecycleState.type === "window") {
+            const d = [...this.lifecycleState.dialogs];
+            for (const dialog of d) {
+                this.removeDialog(dialog.metaWindow);
+            }
+        }
+    }
+
+    removeDialog(metaWindow: MetaWindowWithMsProperties) {
+        if (this.lifecycleState.type !== "window") {
+            throw new Error("Can only remove dialogs when in the window state");
+        }
+
+        const idx = this.lifecycleState.dialogs.findIndex(x => x.metaWindow == metaWindow);
+        if (idx === -1) {
+            throw new Error("Dialog is not added to window");
+        }
+
+        const dialog = this.lifecycleState.dialogs[idx];
+        this.lifecycleState.dialogs.splice(idx, 1);
+        this.remove_child(dialog.clone);
+        metaWindow.msWindow = undefined;
     }
 
     async onMetaWindowsChanged(): Promise<void> {
@@ -974,6 +1024,7 @@ export class MsWindow extends Clutter.Actor {
                 const dialogPromises = state.dialogs.map((dialog) => {
                     return new Promise<void>((resolve) => {
                         delete dialog.metaWindow.msWindow;
+                        dialog.metaWindow.destroying = true;
                         // TODO: When can this return false?
                         if (
                             dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
@@ -994,6 +1045,7 @@ export class MsWindow extends Clutter.Actor {
                         state.metaWindow.get_compositor_private<Meta.WindowActor>()
                     ) {
                         delete state.metaWindow.msWindow;
+                        state.metaWindow.destroying = true;
                         state.metaWindow.connect('unmanaged', (_) => {
                             resolve();
                         });

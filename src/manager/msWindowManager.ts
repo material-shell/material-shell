@@ -30,6 +30,10 @@ export type MetaWindowWithMsProperties = Meta.Window & {
     handledByMaterialShell?: boolean;
     msWindow?: MsWindow;
     titleBarVisible?: boolean;
+    /** Set when we have started destroying the window, but it has not yet completed.
+     * Used to avoid re-assigning windows that have just been removed from an MsWindow that is being destroyed.
+     */
+    destroying?: true,
 };
 
 export type MetaWindowActorWithMsProperties = Meta.WindowActor & {
@@ -53,6 +57,74 @@ function matchingCost<T>(
     }
 }
 
+const INF_COST = 100000;
+
+/** After a meta window has been associated with an MsWindow, we allow this association to change
+ * for a small amount of time.
+ *
+ * This is to allow for the case where the window title changes and another association becomes much
+ * more desirable. This happens often when opening text editors that restore the previously opened documents.
+ * In those cases multiple windows may open with initially identical window titles, but once the documents
+ * have loaded the window titles change and we might be able to make better associations.
+ */
+const MAX_WINDOW_REASSOCIATION_TIME_MS = 3000;
+
+/** Cost for associating the the given metaWindow to the msWindow.
+ *
+ * windowInfo are the matching details for the meta window, for example its window title.
+ *
+ * A higher returned cost means the match is less desirable.
+ */
+function windowMatchingCost(
+    windowInfo: MsWindowMatchingInfo,
+    metaWindow: Meta.Window,
+    msWindow: MsWindow,
+) {
+    assert(msWindow.lifecycleState.type === "window" || msWindow.lifecycleState.type === "app-placeholder", "MsWindow has no matching info");
+    const matchingInfo = msWindow.lifecycleState.matchingInfo;
+
+    let cost = 0;
+    // The wmClass *must* match if specified
+    cost += matchingCost(
+        matchingInfo.wmClass,
+        windowInfo.wmClass,
+        INF_COST,
+        1
+    );
+    cost += matchingCost(matchingInfo.pid, windowInfo.pid, 100, 1);
+    cost += matchingCost(
+        matchingInfo.title,
+        windowInfo.title,
+        50,
+        1
+    );
+    cost += matchingCost(
+        matchingInfo.stableSeq,
+        windowInfo.stableSeq,
+        10,
+        1
+    );
+
+    if (msWindow.lifecycleState.type === "window") {
+        // Prefer to keep existing matchings
+        cost += msWindow.lifecycleState.metaWindow === metaWindow ? 0 : 5;
+    } else {
+        cost += 5;
+    }
+
+    if (msWindow.lifecycleState.type === "app-placeholder") {
+        // Prefer matching to MsWindows which are waiting for an app to open
+        cost +=
+            msWindow.lifecycleState.waitingForAppSince !== undefined
+                ? 0
+                : 1;
+    } else {
+        cost += 2;
+    }
+
+    return cost;
+}
+
 export type MsWindowManagerType = InstanceType<typeof MsWindowManager>;
 export class MsWindowManager extends MsManager {
     private windowTracker: Shell.WindowTracker;
@@ -60,16 +132,11 @@ export class MsWindowManager extends MsManager {
     msDndManager: MsDndManager;
     msResizeManager: MsResizeManager;
     msFocusManager: MsFocusManager;
-    private assignWindowsDebounce: AsyncDebounce;
     private checkWindowsForAssignationsDebounce: AsyncDebounce;
 
     constructor() {
         super();
 
-        this.assignWindowsDebounce = new AsyncDebounce(
-            0,
-            this.assignWindows.bind(this)
-        );
         this.checkWindowsForAssignationsDebounce = new AsyncDebounce(
             50,
             this.checkWindowsForAssignations.bind(this)
@@ -115,58 +182,14 @@ export class MsWindowManager extends MsManager {
     }
 
     private async assignWindows() {
-        // The window assignation code is asynchronous, so to prevent the race condition where a
-        // new window actor appears while we are in the middle of assigning windows, we capture
-        // the list of all actors at the beginning and don't care about any new ones until the
+        // We capture the list of all actors at the beginning and don't care about any new ones until the
         // next time we start assigning windows.
-        const actors = global.get_window_actors();
+        const actors = global.get_window_actors().filter(x => !(x.metaWindow as MetaWindowWithMsProperties).destroying);
         // Assign all non-dialog windows first
         const windowsDone = this.assignNonDialogWindows(actors);
-        // Create any new MsWindows that might need to be created for the non-dialog windows
-        // Actors could in theory have been destroyed here, since the window assignation code is asynchronous
-        // await this.createNewRequiredMsWindows(
-        //     actors.filter(
-        //         (a) =>
-        //             !a.is_destroyed() && !this.isMetaWindowDialog(a.metaWindow)
-        //     )
-        // );
         // Assign the dialog windows to previously existing MsWindows that fits them.
         const dialogsDone = this.assignDialogWindows(actors);
         await Promise.all([windowsDone, dialogsDone]);
-
-        // Create new MsWindows for any leftover dialogs if they cannot be matched to an existing MsWindow.
-        // await this.createNewRequiredMsWindows(
-        //     actors.filter((a) => !a.is_destroyed())
-        // );
-    }
-
-    private async createNewRequiredMsWindows(actors: Meta.WindowActor[]) {
-        const handledMetaWindows = new Set(this.managedMetaWindows);
-
-        const promises = [];
-        for (const windowActor of actors) {
-            if (handledMetaWindows.has(windowActor.metaWindow)) continue;
-
-            const msWorkspace =
-                Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                    windowActor.metaWindow
-                );
-            const app = this.windowTracker.get_window_app(
-                windowActor.metaWindow
-            );
-            const { msWindow, done } = this.createNewMsWindow(
-                windowActor.metaWindow,
-                {
-                    msWorkspace,
-                    focus: true,
-                    insert: true,
-                }
-            );
-
-            promises.push(done);
-        }
-
-        await Promise.all(promises);
     }
 
     /** Assign non-dialog windows to either existing empty MsWindows or determine that new MsWindows should be created for them.
@@ -178,12 +201,19 @@ export class MsWindowManager extends MsManager {
      * The cost function is particularly important when restoring from a persisted state.
      * In the persisted state there is information about the windows' wmClass, title, process id, etc. and this is
      * used in the cost function to try to restore windows to their correct locations as accurately as possible.
-     * 
+     *
      * Returns a promise which resolves when the first frames of all assigned and newly created windows have been drawn.
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
     private assignNonDialogWindows(actors: Meta.WindowActor[]): Promise<void[]> {
         const handledMetaWindows = new Set(this.managedMetaWindows);
+
+        const now = new Date().getTime();
+        for (const msWindow of this.msWindowList) {
+            if (msWindow.lifecycleState.type === "window" && now - msWindow.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS && msWindow.lifecycleState.metaWindow !== null) {
+                handledMetaWindows.delete(msWindow.lifecycleState.metaWindow)
+            }
+        }
 
         // Handle all non-dialog windows that haven't been associated with an MsWindow yet. Dialog windows are handled by assignDialogWindows
         const windowActors = actors.filter(
@@ -196,14 +226,14 @@ export class MsWindowManager extends MsManager {
         const groupedMsWindowsByApp = groupBy(
             this.msWindowList.filter(
                 (x) =>
-                    x.lifecycleState.type === 'app-placeholder'
+                    x.lifecycleState.type === 'app-placeholder' || (x.lifecycleState.type === 'window' && now - x.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS)
             ),
             (window) => {
-                assert(
-                    window.lifecycleState.type === 'app-placeholder',
-                    'unreachable'
-                );
-                return window.lifecycleState.matchingInfo.appId;
+                if (window.lifecycleState.type === 'app-placeholder' || window.lifecycleState.type === 'window') {
+                    return window.lifecycleState.matchingInfo.appId;
+                } else {
+                    throw new Error("Unreachable");
+                }
             }
         );
         const groupedMetaWindowsByApp = groupBy(
@@ -212,6 +242,20 @@ export class MsWindowManager extends MsManager {
         );
         const promises = [];
 
+        let logged = false;
+        const logInfoOnce = () => {
+            if (logged) return;
+            logged = true;
+            for (const windowActor of actors) {
+                Me.log(`Meta window: ${buildMetaWindowIdentifier(windowActor.metaWindow)} title='${windowActor.metaWindow.title}' dialog=${this.isMetaWindowDialog(windowActor.metaWindow)}`);
+            }
+            for (const msWindow of this.msWindowList) {
+                if (msWindow.lifecycleState.type === "app-placeholder") {
+                    Me.log(`MSWindow: ${JSON.stringify(msWindow.lifecycleState.matchingInfo)}`);
+                }
+            }
+        }
+
         for (const [
             groupKey,
             windowActorGroup,
@@ -219,56 +263,17 @@ export class MsWindowManager extends MsManager {
             const candidateMsWindows =
                 groupedMsWindowsByApp.get(groupKey) || [];
             const costMatrix: number[][] = [];
-            const INF_COST = 100000;
             for (const windowActor of windowActorGroup) {
-                const costs = [];
                 const metaWindow = windowActor.metaWindow;
-                const wmClass = metaWindow.get_wm_class_instance();
-                const pid = metaWindow.get_pid();
-                const stableSeq = metaWindow.get_stable_sequence();
-                const windowName = metaWindow.name;
-                const windowTitle = metaWindow.title;
-
-                const app = this.windowTracker.get_window_app(metaWindow);
-                const windowAppTitle = app.id;
-
-                for (const msWindow of candidateMsWindows) {
-                    assert(
-                        msWindow.lifecycleState.type === 'app-placeholder' &&
-                            msWindow.lifecycleState.matchingInfo !== undefined,
-                        'unreachable'
-                    );
-                    const matchingInfo = msWindow.lifecycleState.matchingInfo;
-                    let cost = 0;
-                    // The wmClass *must* match if specified
-                    cost += matchingCost(
-                        matchingInfo.wmClass,
-                        wmClass,
-                        INF_COST,
-                        1
-                    );
-                    cost += matchingCost(matchingInfo.pid, pid, 100, 1);
-                    cost += matchingCost(
-                        matchingInfo.title,
-                        windowTitle,
-                        50,
-                        1
-                    );
-                    cost += matchingCost(
-                        matchingInfo.stableSeq,
-                        stableSeq,
-                        10,
-                        1
-                    );
-
-                    // Prefer matching to MsWindows which are waiting for an app to open
-                    cost +=
-                        msWindow.lifecycleState.waitingForAppSince !== undefined
-                            ? 0
-                            : 1;
-
-                    costs.push(cost);
+                const windowInfo: MsWindowMatchingInfo = {
+                    appId: groupKey,
+                    wmClass: metaWindow.get_wm_class_instance(),
+                    pid: metaWindow.get_pid(),
+                    stableSeq: metaWindow.get_stable_sequence(),
+                    title: metaWindow.title,
                 }
+
+                const costs = candidateMsWindows.map(msWindow => windowMatchingCost(windowInfo, metaWindow, msWindow));
 
                 // Add N items representing potential new windows at the end.
                 // In case there are no existing MsWindows, we want to be able to create new ones
@@ -279,14 +284,49 @@ export class MsWindowManager extends MsManager {
             }
 
             const { cost, assignments } = weighted_matching(costMatrix);
+
+            // The meta window to be assigned to each MsWindow
+            const msWindowAssignments = new Array<Meta.Window | null>(candidateMsWindows.length).fill(null);
+            for (let i = 0; i < assignments.length; i++) {
+                const idx = assignments[i];
+                if (idx < candidateMsWindows.length) {
+                    // Found a good match
+                    msWindowAssignments[idx] = windowActorGroup[i].metaWindow;
+                }
+            }
+
+            for (let i = 0; i < candidateMsWindows.length; i++) {
+                const msWindow = candidateMsWindows[i];
+                if (msWindow.lifecycleState.type === "window" && msWindow.lifecycleState.metaWindow !== msWindowAssignments[i]) {
+                    // The contents of this MsWindow will be replaced.
+                    // This can happen if an application starts and opens multiple windows at the same time (e.g. VSCode restoring several workspaces)
+                    // initially these windows might be associated incorrectly, but once the workspaces have loaded and the window titles get updated
+                    // we can associate them more accurately. This might necessitate swapping some already associated MsWindows.
+                    // For all MsWindows which will need to be changed we first unassign their windows.
+                    logInfoOnce();
+                    // These dialogs will be re-assigned later in the assignDialogWindows function.
+                    msWindow.removeAllDialogs();
+                    msWindow.unsetWindow();
+                }
+            }
+
             for (let i = 0; i < assignments.length; i++) {
                 const idx = assignments[i];
                 const windowActor = windowActorGroup[i];
                 if (idx < candidateMsWindows.length) {
                     // Found a good match
                     const msWindow = candidateMsWindows[idx];
-                    promises.push(msWindow.setWindow(windowActor.metaWindow));
+
+                    // If it's still in the 'window' state that means the meta window was already associated correctly
+                    // and we can skip associating it again.
+                    if (msWindow.lifecycleState.type === "app-placeholder") {
+                        logInfoOnce();
+                        Me.log(`Associating ${buildMetaWindowIdentifier(windowActor.metaWindow)} with ${msWindow.windowIdentifier}`);
+                        promises.push(msWindow.setWindow(windowActor.metaWindow));
+                    }
                 } else {
+                    logInfoOnce();
+                    Me.log(`Creating a new window for ${buildMetaWindowIdentifier(windowActor.metaWindow)}`);
                     // Did not find a good match, create a new window instead
                     const { done } = this.createNewMsWindow(
                         windowActor.metaWindow,
@@ -307,7 +347,7 @@ export class MsWindowManager extends MsManager {
     }
 
     /** Assigns dialog windows to existing MsWindows, or creates new MsWindows for them.
-     * 
+     *
      * Returns a promise which resolves when the first frames of all assigned and newly created windows have been drawn.
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
@@ -321,8 +361,13 @@ export class MsWindowManager extends MsManager {
             if (!this.isMetaWindowDialog(windowActor.metaWindow)) continue;
 
             const metaWindow = windowActor.metaWindow;
-            let msWindowFound: MsWindow | null = null;
-            const app = this.windowTracker.get_window_app(metaWindow);
+            const app = this.windowTracker.get_window_app(metaWindow) as Shell.App | null;
+
+            if (app === null) {
+                // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
+                // This can for example happen with the "gnome-shell" pseudo-window which always seems to exist (but doesn't correspond to anything visible).
+                continue;
+            }
 
             // If window is dialog try to find its parent
             // The best way to find its parent is with the root ancestor.
@@ -336,7 +381,8 @@ export class MsWindowManager extends MsManager {
                 }
                 return true;
             });
-            msWindowFound = root?.msWindow ?? null;
+
+            let msWindowFound = root?.msWindow ?? null;
 
             if (msWindowFound == null && app) {
                 // But sometimes the we fail to find one.
@@ -437,7 +483,7 @@ export class MsWindowManager extends MsManager {
         });
 
         // Assign windows in the next GLib micro task
-        this.assignWindowsDebounce.schedule();
+        this.checkWindowsForAssignationsDebounce.schedule();
     }
 
     onMetaWindowUnManaged(metaWindow: MetaWindowWithMsProperties) {
@@ -449,7 +495,7 @@ export class MsWindowManager extends MsManager {
     }
 
     /** Creates a new MsWindow
-     * 
+     *
      * Returns both the created window and a promise.
      * The promise resolves when the first frame of the window has been drawn.
      */
@@ -464,7 +510,13 @@ export class MsWindowManager extends MsManager {
         initialAllocation?: Rectangular,
         matchingInfo?: MsWindowMatchingInfo
     ) {
-        const app: Shell.App = source instanceof Meta.Window ? this.windowTracker.get_window_app(source) : source;
+        // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
+        // This can for example happen with the "gnome-shell" pseudo-window which always seems to exist (but doesn't correspond to anything visible).
+        const app = source instanceof Meta.Window ? this.windowTracker.get_window_app(source) as Shell.App | null : source;
+        if (app === null) {
+            throw new Error("The meta window has no associated app. Cannot create window for an unknown app.");
+        }
+
         if (matchingInfo === undefined) {
             matchingInfo = {
                 appId: app.id,
@@ -514,7 +566,7 @@ export class MsWindowManager extends MsManager {
     }
 
     async checkWindowsForAssignations() {
-        this.assignWindowsDebounce.schedule();
+        await this.assignWindows();
 
         let anyWaiting = false;
         const now = new Date();
@@ -534,6 +586,10 @@ export class MsWindowManager extends MsManager {
                 } else {
                     anyWaiting = true;
                 }
+            }
+
+            if (msWindow.lifecycleState.type === "window" && now.getTime() - msWindow.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS) {
+                anyWaiting = true;
             }
         }
 
