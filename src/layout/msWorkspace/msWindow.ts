@@ -48,11 +48,11 @@ interface Dialog {
 export interface MsWindowMatchingInfo {
     appId: string;
     /** Window title */
-    title: string | undefined,
-    pid: number | undefined,
-    wmClass: string | undefined,
+    title: string | undefined;
+    pid: number | undefined;
+    wmClass: string | undefined;
     /** Meta windows have a unique integer associated with them, this can be used to differentiate otherwise identical windows */
-    stableSeq: number | undefined,
+    stableSeq: number | undefined;
 }
 export interface MsWindowState {
     appId: string;
