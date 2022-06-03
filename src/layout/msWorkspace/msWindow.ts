@@ -973,18 +973,16 @@ export class MsWindow extends Clutter.Actor {
         assert(state.type == "window", "Expected the MsWindow to be in the 'window' state");
 
         const isMainMetaWindow = metaWindow === state.metaWindow;
-        const dialog = state.dialogs.find(
+        const dialog = state.dialogs.some(
             (dialog) => dialog.metaWindow === metaWindow
         );
         // If it's neither the MainMetaWindow or a Dialog we ignore, but this shouldn't happen
-        if (!isMainMetaWindow && dialog === undefined) {
+        if (!isMainMetaWindow && !dialog) {
             Me.log("Cannot find the window which was unmanaged");
             return;
         }
         if (dialog) {
-            state.dialogs.splice(state.dialogs.indexOf(dialog), 1);
-            this.remove_child(dialog.clone);
-            dialog.clone.destroy();
+            this.removeDialog(metaWindow);
         }
         if (isMainMetaWindow) {
             state.metaWindow = null;
