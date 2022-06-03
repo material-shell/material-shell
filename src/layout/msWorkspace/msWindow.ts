@@ -906,6 +906,7 @@ export class MsWindow extends Clutter.Actor {
         const dialog = this.lifecycleState.dialogs[idx];
         this.lifecycleState.dialogs.splice(idx, 1);
         this.remove_child(dialog.clone);
+        dialog.clone.destroy();
         metaWindow.msWindow = undefined;
     }
 
