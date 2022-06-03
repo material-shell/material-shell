@@ -217,9 +217,7 @@ export class MsWorkspace extends WithSignals {
     }
 
     get msWindowList() {
-        return Me.msWindowManager.msWindowList.filter((msWindow) => {
-            return msWindow.msWorkspace && msWindow.msWorkspace === this;
-        });
+        return this.tileableList.filter(isMsWindow);
     }
 
     get containFullscreenWindow() {
