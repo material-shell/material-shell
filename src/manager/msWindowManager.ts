@@ -353,7 +353,9 @@ export class MsWindowManager extends MsManager {
             if (!this.isMetaWindowDialog(windowActor.metaWindow)) continue;
 
             const metaWindow = windowActor.metaWindow;
-            const app = this.windowTracker.get_window_app(metaWindow) as Shell.App | null;
+            const app = this.windowTracker.get_window_app(
+                metaWindow
+            ) as Shell.App | null;
 
             if (app === null) {
                 // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
@@ -417,31 +419,32 @@ export class MsWindowManager extends MsManager {
             }
 
             if (msWindowFound == null && app) {
-                // If we still haven't found a window we try to find a regular window with the same app
-                const sameAppMsWindowList: (MsWindow & {
-                    lifecycleState: { type: 'window ' };
-                })[] = this.msWindowList
-                    .filter((msWindow) => {
+                // If we still haven't found a window we try to find a window with the same app
+                const sameAppMsWindowList = this.msWindowList.filter(
+                    (msWindow) => {
                         return (
-                            msWindow.lifecycleState.type === 'window' &&
+                            (msWindow.lifecycleState.type === 'window' ||
+                                msWindow.lifecycleState.type ===
+                                    'app-placeholder') &&
                             msWindow.app.get_id() == app.get_id()
                         );
-                    })
-                    .map(
-                        (x) =>
-                            x as MsWindow & {
-                                lifecycleState: { type: 'window ' };
-                            }
-                    );
-                // We take the most recently focused msWindow
+                    }
+                );
+
+                // We take the most recently focused msWindow, prioritizing regular windows over app placeholders
+                let bestScore: [number, number] = [0, 0];
                 for (const msWindow of sameAppMsWindowList) {
+                    const score: [number, number] = [
+                        msWindow.lifecycleState.type === 'window' ? 1 : 0,
+                        msWindow.metaWindow!.get_user_time(),
+                    ];
                     if (
                         !msWindowFound ||
-                        (msWindow.metaWindow &&
-                            msWindowFound.metaWindow!.get_user_time() <
-                                msWindow.metaWindow.get_user_time())
+                        score[0] > bestScore[0] ||
+                        (score[0] == bestScore[0] && score[1] > bestScore[1])
                     ) {
                         msWindowFound = msWindow;
+                        bestScore = score;
                     }
                 }
             }
