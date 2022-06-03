@@ -1,5 +1,8 @@
 import * as GLib from 'glib';
 import { assert } from './assert';
+import { logAsyncException } from './log';
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export class Async {
     static timeoutIdList = [] as number[];
@@ -58,7 +61,8 @@ export class AsyncDebounce {
                 GLib.PRIORITY_DEFAULT,
                 this.delayMs,
                 () => {
-                    this.runInternal();
+                    // Note: need to manually catch exceptions in async functions, otherwise they will not be logged
+                    this.runInternal().catch(logAsyncException);
                     return GLib.SOURCE_REMOVE;
                 }
             );
