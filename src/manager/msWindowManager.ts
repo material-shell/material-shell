@@ -214,7 +214,6 @@ export class MsWindowManager extends MsManager {
         // Handle all non-dialog windows that haven't been associated with an MsWindow yet. Dialog windows are handled by assignDialogWindows
         const windowActors = actors.filter(
             (w) =>
-                !w.is_destroyed() &&
                 !handledMetaWindows.has(w.metaWindow) &&
                 !this.isMetaWindowDialog(w.metaWindow)
         );
