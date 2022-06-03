@@ -790,8 +790,8 @@ export class MsWindow extends Clutter.Actor {
                     this.updateWorkspaceAndMonitor(metaWindow);
                 }
             });
+            this.resizeMetaWindows();
         }
-        this.resizeMetaWindows();
     }
 
     async setWindow(metaWindow: MetaWindowWithMsProperties): Promise<void> {
