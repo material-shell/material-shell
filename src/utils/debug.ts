@@ -1,5 +1,14 @@
 /** Gnome libs imports */
 import * as GLib from 'glib';
+import { MsMain } from 'src/layout/main';
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { MsDndManager } from 'src/manager/msDndManager';
+import { MsFocusManager } from 'src/manager/msFocusManager';
+import { MsResizeManager } from 'src/manager/msResizeManager';
+import { MsThemeManager } from 'src/manager/msThemeManager';
+import { MsWindowManager } from 'src/manager/msWindowManager';
+import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -46,7 +55,7 @@ export function initDebug() {
 
     Me.logWithStackTrace = function (...args: any[]) {
         Me.log(...args, new Error().stack);
-    }
+    };
 
     Me.log = function (...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;
@@ -94,7 +103,7 @@ export function initDebug() {
         // In IDLE otherwise all the files are not yet enabled since this is called during the file inventory
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             const objects: any[] = [
-                /* MsWindowManager,
+                MsWindowManager,
                 MsWorkspaceManager,
                 MsThemeManager,
                 MsMain,
@@ -102,7 +111,7 @@ export function initDebug() {
                 MsDndManager,
                 MsResizeManager,
                 MsWindow,
-                MsFocusManager, */
+                MsFocusManager,
                 /* TaskBar,
                 TaskBarItem,
                 IconTaskBarItem,
