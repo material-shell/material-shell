@@ -1237,12 +1237,6 @@ export class MsWindowContent extends St.Widget {
         }
 
         if (this.placeholder.get_parent() === this) {
-            const height = box.get_height();
-            const width = box.get_width();
-            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                this.placeholder.set_size(width, height);
-                return GLib.SOURCE_REMOVE;
-            });
             Allocate(this.placeholder, box, flags);
         }
     }
