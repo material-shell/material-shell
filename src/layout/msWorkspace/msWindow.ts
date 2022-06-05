@@ -1051,11 +1051,15 @@ export class MsWindow extends Clutter.Actor {
                 if (this._persistent) {
                     // Persistent app placeholders cannot be closed
                 } else {
+                    // Note: This is here and not in _onDestroy because _onDestroy can sometimes be called when the workspace
+                    // has already been destroyed. TODO: This should be done in a better way.
+                    this.msWorkspace.removeMsWindow(this);
                     this.destroy();
                 }
                 break;
             }
             case "waiting-for-destroy":
+                this.msWorkspace.removeMsWindow(this);
                 this.destroy();
                 break;
             case "destroyed":
@@ -1118,7 +1122,6 @@ export class MsWindow extends Clutter.Actor {
 
     _onDestroy() {
         if (this.destroyId) this.disconnect(this.destroyId);
-        this.msWorkspace.removeMsWindow(this);
         this.unregisterOnMetaWindowSignals();
         this.lifecycleState = { type: "destroyed" };
     }
