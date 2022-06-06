@@ -5,12 +5,12 @@ module.exports = {
     env: {
         es6: true,
     },
+    parserOptions: { project: ['./tsconfig.json'] },
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:prettier/recommended',
         'prettier',
-        'prettier/@typescript-eslint',
     ],
     plugins: ['prettier', '@typescript-eslint'],
     rules: {
@@ -19,6 +19,16 @@ module.exports = {
             'off',
             {
                 properties: 'never',
+            },
+        ],
+        /* Allow unused variables starting with underscores */
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': [
+            'warn',
+            {
+                varsIgnorePattern: '^_',
+                argsIgnorePattern: '^_',
+                destructuredArrayIgnorePattern: '^_',
             },
         ],
     },
@@ -39,6 +49,6 @@ module.exports = {
         ngettext: false,
     },
     parserOptions: {
-        ecmaVersion: 2017,
+        ecmaVersion: 2020,
     },
 };
