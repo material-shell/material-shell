@@ -11,14 +11,14 @@ interface Setting {
     schema: string;
     key: string;
     value: boolean | string;
-    valueType: "string" | "boolean";
+    valueType: 'string' | 'boolean';
 }
 
 interface RestoreSetting {
     setting: Gio.Settings;
     key: string;
     value: boolean | string;
-    valueType: "string" | "boolean";
+    valueType: 'string' | 'boolean';
 }
 
 interface RestoreKey {
@@ -27,22 +27,31 @@ interface RestoreKey {
     shortcut: string[];
 }
 
-function getDynamic(settings: Gio.Settings, key: string, valueType: "string" | "boolean"): string | boolean {
+function getDynamic(
+    settings: Gio.Settings,
+    key: string,
+    valueType: 'string' | 'boolean'
+): string | boolean {
     switch (valueType) {
-        case "string":
+        case 'string':
             return settings.get_string(key);
-        case "boolean":
+        case 'boolean':
             return settings.get_boolean(key);
     }
 }
 
-function setDynamic(settings: Gio.Settings, key: string, valueType: "string" | "boolean", value: string | boolean) {
+function setDynamic(
+    settings: Gio.Settings,
+    key: string,
+    valueType: 'string' | 'boolean',
+    value: string | boolean
+) {
     switch (valueType) {
-        case "string":
-            assert(typeof value === "string", "invalid value");
+        case 'string':
+            assert(typeof value === 'string', 'invalid value');
             return settings.set_string(key, value);
-        case "boolean":
-            assert(typeof value === "boolean", "invalid value");
+        case 'boolean':
+            assert(typeof value === 'boolean', 'invalid value');
             return settings.set_boolean(key, value);
     }
 }
@@ -159,7 +168,7 @@ export class RequiredSettingsModule {
         setting: Gio.Settings,
         key: string,
         value: string | boolean,
-        valueType: "string" | "boolean"
+        valueType: 'string' | 'boolean'
     ) {
         const prevVal = getDynamic(setting, key, valueType);
         if (prevVal !== value) {

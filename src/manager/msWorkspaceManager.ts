@@ -226,8 +226,9 @@ export class MsWorkspaceManager extends MsManager {
 
     destroy() {
         super.destroy();
-        WorkspaceTracker.prototype._checkWorkspaces =
-            (WorkspaceTracker.prototype as any)._oldCheckWorkspaces;
+        WorkspaceTracker.prototype._checkWorkspaces = (
+            WorkspaceTracker.prototype as any
+        )._oldCheckWorkspaces;
         delete (WorkspaceTracker.prototype as any)._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
@@ -392,7 +393,9 @@ export class MsWorkspaceManager extends MsManager {
 
             // if there is not external msWorkspace available create one
             if (msWorkspace) {
-                const workspace = assertNotNull(this.getWorkspaceOfMsWorkspace(msWorkspace));
+                const workspace = assertNotNull(
+                    this.getWorkspaceOfMsWorkspace(msWorkspace)
+                );
                 msWorkspace.setMonitor(externalMonitor);
                 if (!Meta.prefs_get_dynamic_workspaces()) {
                     this.workspaceManager.remove_workspace(
@@ -413,7 +416,9 @@ export class MsWorkspaceManager extends MsManager {
             )
             .forEach((msWorkspace) => {
                 if (!msWorkspace.monitorIsExternal) {
-                    msWorkspace.setMonitor(assertNotNull(Main.layoutManager.primaryMonitor));
+                    msWorkspace.setMonitor(
+                        assertNotNull(Main.layoutManager.primaryMonitor)
+                    );
                 } else {
                     const monitorIsNowPrimary =
                         msWorkspace.monitor ===
@@ -798,7 +803,10 @@ export class MsWorkspaceManager extends MsManager {
         const backend = Clutter.get_default_backend();
         const seat = backend.get_default_seat();
         const [containerX, containerY] =
-            msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position() as [number, number];
+            msWorkspace.msWorkspaceActor.tileableContainer.get_transformed_position() as [
+                number,
+                number
+            ];
         seat.warp_pointer(
             containerX +
                 Math.floor(

@@ -48,7 +48,7 @@ export function initDebug() {
 
     Me.logWithStackTrace = function (...args: any[]) {
         Me.log(...args, new Error().stack);
-    }
+    };
 
     Me.log = function (...args: any[]) {
         if (!DEBUG || FOCUS_ONLY) return;

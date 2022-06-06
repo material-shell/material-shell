@@ -46,7 +46,7 @@ export class AppPlaceholder extends St.Widget {
         });
         this.app = app;
         const icon = this.app.create_icon_texture(248);
-        assert(icon instanceof St.Widget, "expected icon to be a widget");
+        assert(icon instanceof St.Widget, 'expected icon to be a widget');
         this.icon = icon;
         this.icon.set_style('padding:24px');
         this.spinnerContainer = new Clutter.Actor({});

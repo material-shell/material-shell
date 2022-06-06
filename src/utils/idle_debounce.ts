@@ -4,9 +4,9 @@ import { assertNotNull } from './assert';
 /** Helper to run a function with `GLib.idle_add`, but with automatic debouncing and a convenient cancel function */
 export class IdleDebounce<P extends any[]> {
     private scheduleInfo: {
-        signal: number,
-        args: P
-     } | null = null;
+        signal: number;
+        args: P;
+    } | null = null;
     private readonly f: (...args: P) => void;
 
     constructor(f: (...args: P) => void) {
@@ -23,17 +23,14 @@ export class IdleDebounce<P extends any[]> {
     schedule(...args: P) {
         if (this.scheduleInfo === null) {
             this.scheduleInfo = {
-                signal: GLib.idle_add(
-                    GLib.PRIORITY_DEFAULT_IDLE,
-                    () => {
-                        const info = assertNotNull(this.scheduleInfo);
-                        this.scheduleInfo = null;
-                        this.f(...info.args);
-                        return GLib.SOURCE_REMOVE;
-                    }
-                ),
-                args: args
-            }
+                signal: GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    const info = assertNotNull(this.scheduleInfo);
+                    this.scheduleInfo = null;
+                    this.f(...info.args);
+                    return GLib.SOURCE_REMOVE;
+                }),
+                args: args,
+            };
         } else {
             this.scheduleInfo.args = args;
         }

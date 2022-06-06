@@ -19,7 +19,7 @@ import { Portion } from '../portion';
 type SplitLayoutState = {
     key: 'split';
     nbOfColumns: number;
-}
+};
 
 @registerGObjectClass
 export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
@@ -32,7 +32,10 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     baseIndex: number;
     activeTileableList: Tileable[];
 
-    constructor(msWorkspace: MsWorkspace, state: Partial<SplitLayoutState & { mainPortion: Portion }>) {
+    constructor(
+        msWorkspace: MsWorkspace,
+        state: Partial<SplitLayoutState & { mainPortion: Portion }>
+    ) {
         super(msWorkspace, state);
         this.baseIndex = 0;
         this.activeTileableList = [];
@@ -75,9 +78,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         );
     }
 
-    onTileableListChanged(
-        newWindows: Tileable[]
-    ) {
+    onTileableListChanged(newWindows: Tileable[]) {
         super.onTileableListChanged(newWindows);
         this.updateActiveTileableListFromFocused();
         this.refreshVisibleActors();
@@ -190,8 +191,10 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         nextTileableList: Tileable[]
     ) {
         if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width = this.tileableContainer.allocation.get_width();
-            this.translationAnimator.height = this.tileableContainer.allocation.get_height();
+            this.translationAnimator.width =
+                this.tileableContainer.allocation.get_width();
+            this.translationAnimator.height =
+                this.tileableContainer.allocation.get_height();
             this.tileableContainer.add_child(this.translationAnimator);
         }
 

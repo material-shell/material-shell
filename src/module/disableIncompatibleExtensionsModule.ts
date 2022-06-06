@@ -21,7 +21,10 @@ let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction = ExtensionManager.prototype._callExtensionEnable;
-        ExtensionManager.prototype._callExtensionEnable = function (uuid: string, ...args: any[]) {
+        ExtensionManager.prototype._callExtensionEnable = function (
+            uuid: string,
+            ...args: any[]
+        ) {
             if (incompatibleExtensions.includes(uuid)) return;
             // eslint-disable-next-line prefer-rest-params
             originalFunction!.apply(this, arguments);
@@ -33,8 +36,14 @@ export class DisableIncompatibleExtensionsModule {
     disableExtensions() {
         for (const incompatibleExtension of incompatibleExtensions) {
             try {
-                if(Main.extensionManager.disableExtension(incompatibleExtension)) {
-                    Me.log(`Disabled gnome extension ${incompatibleExtension} because it is incompatible with Material Shell`);
+                if (
+                    Main.extensionManager.disableExtension(
+                        incompatibleExtension
+                    )
+                ) {
+                    Me.log(
+                        `Disabled gnome extension ${incompatibleExtension} because it is incompatible with Material Shell`
+                    );
                 }
             } catch (e) {
                 Me.logFocus('disable error', incompatibleExtension, e);

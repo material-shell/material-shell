@@ -51,7 +51,10 @@ export class MsMain extends St.Widget {
         Me.layout = this;
         this.panelsVisible = Me.stateManager.getState('panels-visible') ?? true;
 
-        Main.layoutManager.uiGroup.insert_child_above(this, global.window_group);
+        Main.layoutManager.uiGroup.insert_child_above(
+            this,
+            global.window_group
+        );
 
         this.monitorsContainer = [];
         this.aboveContainer = new Clutter.Actor();
@@ -98,8 +101,14 @@ export class MsMain extends St.Widget {
                 const [x, y] = event.get_coords();
 
                 // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
-                const [x1, y1] = this.panel.get_transformed_position() as [number, number];
-                const [width, height] = this.panel.get_transformed_size() as [number, number];
+                const [x1, y1] = this.panel.get_transformed_position() as [
+                    number,
+                    number
+                ];
+                const [width, height] = this.panel.get_transformed_size() as [
+                    number,
+                    number
+                ];
 
                 if (
                     !(x >= x1 && x <= x1 + width && y >= y1 && y <= y1 + height)
@@ -136,10 +145,10 @@ export class MsMain extends St.Widget {
             return;
         }
 
-        const effect = this.blurEffect = new Shell.BlurEffect({
+        const effect = (this.blurEffect = new Shell.BlurEffect({
             brightness: 0.55,
             sigma: 60 * themeContext.scale_factor,
-        });
+        }));
 
         this._scaleChangedId = SignalHandle.connect(
             themeContext,
@@ -197,7 +206,9 @@ export class MsMain extends St.Widget {
         this.signals.push({
             from: Main.layoutManager,
             id: Main.layoutManager.connect('monitors-changed', () => {
-                this.primaryMonitorContainer.setMonitor(assertNotNull(this.primaryMonitor));
+                this.primaryMonitorContainer.setMonitor(
+                    assertNotNull(this.primaryMonitor)
+                );
 
                 const externalMonitorsDiff =
                     Main.layoutManager.monitors.length -
@@ -528,7 +539,10 @@ export class PrimaryMonitorContainer extends MonitorContainer {
 
         this.translationAnimator = new TranslationAnimator(true);
         this.translationAnimator.connect('transition-completed', () => {
-            assert(this.msWorkspaceActor !== undefined, "expected a workspace actor to exist");
+            assert(
+                this.msWorkspaceActor !== undefined,
+                'expected a workspace actor to exist'
+            );
             reparentActor(this.msWorkspaceActor, this.workspaceContainer);
             this.workspaceContainer.remove_child(this.translationAnimator);
             this.msWorkspaceActor.updateUI();
@@ -557,8 +571,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     setTranslation(prevActor: Clutter.Actor, nextActor: Clutter.Actor) {
         if (!this.translationAnimator.get_parent()) {
             this.translationAnimator.width = this.width;
-            this.translationAnimator.height =
-                assertNotNull(Main.layoutManager.primaryMonitor).height;
+            this.translationAnimator.height = assertNotNull(
+                Main.layoutManager.primaryMonitor
+            ).height;
             this.workspaceContainer.add_child(this.translationAnimator);
         }
         const indexOfPrevActor =

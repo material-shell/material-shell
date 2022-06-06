@@ -95,7 +95,8 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
                 tileable.x = 0;
                 tileable.y = 0;
                 tileable.width = this.tileableContainer.allocation.get_width();
-                tileable.height = this.tileableContainer.allocation.get_height();
+                tileable.height =
+                    this.tileableContainer.allocation.get_height();
             }
             if (tileable instanceof MsWindow) {
                 tileable.mimicMetaWindowPositionAndSize();
@@ -105,9 +106,15 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
 
     windowsRestacked() {
         global.window_group.get_children().forEach((actor) => {
-            if (actor instanceof MsWindow && actor.metaWindow && actor.metaWindow.msWindow) {
+            if (
+                actor instanceof MsWindow &&
+                actor.metaWindow &&
+                actor.metaWindow.msWindow
+            ) {
                 if (
-                    this.msWorkspace.tileableList.includes(actor.metaWindow.msWindow)
+                    this.msWorkspace.tileableList.includes(
+                        actor.metaWindow.msWindow
+                    )
                 ) {
                     this.msWorkspace.msWorkspaceActor.tileableContainer.set_child_above_sibling(
                         actor.metaWindow.msWindow,

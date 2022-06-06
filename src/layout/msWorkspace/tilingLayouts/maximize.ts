@@ -20,7 +20,8 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     static state = { key: 'maximize' };
     static label = 'Maximize';
     translationAnimator: TranslationAnimator;
-    currentDisplayed: { tileable: Tileable, destroySignal: number } | null = null;
+    currentDisplayed: { tileable: Tileable; destroySignal: number } | null =
+        null;
 
     constructor(msWorkspace: MsWorkspace, state: MaximizeLayoutState) {
         super(msWorkspace, state);
@@ -43,7 +44,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                     .get_children()
                     .includes(this.currentDisplayed.tileable)
             ) {
-                this.tileableContainer.remove_child(this.currentDisplayed.tileable);
+                this.tileableContainer.remove_child(
+                    this.currentDisplayed.tileable
+                );
             }
 
             this.currentDisplayed.tileable.disconnect(
@@ -52,13 +55,10 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         }
         this.currentDisplayed = {
             tileable: actor,
-            destroySignal: actor.connect(
-                'destroy',
-                () => {
-                    this.currentDisplayed = null;
-                }
-            )
-        }
+            destroySignal: actor.connect('destroy', () => {
+                this.currentDisplayed = null;
+            }),
+        };
 
         reparentActor(actor, this.tileableContainer);
         actor.grab_key_focus();

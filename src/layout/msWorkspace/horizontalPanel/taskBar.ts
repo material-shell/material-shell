@@ -51,7 +51,10 @@ export class TaskBar extends St.Widget {
     windowFocused: null;
     menuManager: PopupMenu.PopupMenuManager;
 
-    constructor(msWorkspace: MsWorkspace, panelMenuManager: PopupMenu.PopupMenuManager) {
+    constructor(
+        msWorkspace: MsWorkspace,
+        panelMenuManager: PopupMenu.PopupMenuManager
+    ) {
         super({
             name: 'taskBar',
             x_expand: true,
@@ -142,10 +145,11 @@ export class TaskBar extends St.Widget {
     /**
      * Update the current list of taskBarItem with the least of widget manipulation possible
      */
-    onTileableListChange(
-        newTileableList: Tileable[],
-    ) {
-        let { added: tileableToAdd, removed: tileableToRemove } = diffLists(this.items.map(item => item.tileable), newTileableList);
+    onTileableListChange(newTileableList: Tileable[]) {
+        let { added: tileableToAdd, removed: tileableToRemove } = diffLists(
+            this.items.map((item) => item.tileable),
+            newTileableList
+        );
 
         for (let tileable of tileableToRemove) {
             let item = assertNotNull(this.getTaskBarItemOfTileable(tileable));
@@ -174,7 +178,10 @@ export class TaskBar extends St.Widget {
             return;
         }
 
-        const previousItem = oldTileableFocused !== null ? this.getTaskBarItemOfTileable(oldTileableFocused) : null;
+        const previousItem =
+            oldTileableFocused !== null
+                ? this.getTaskBarItemOfTileable(oldTileableFocused)
+                : null;
         const nextItem = this.getTaskBarItemOfTileable(tileableFocused);
 
         if (previousItem) {
@@ -232,7 +239,10 @@ export class TaskBar extends St.Widget {
         });
     }
 
-    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
@@ -344,7 +354,9 @@ export class TaskBarItem extends MatButton {
     override vfunc_parent_set() {
         const actor = this.get_parent() || this;
         if (actor.is_mapped()) {
-            this.monitor = assertNotNull(Main.layoutManager.findMonitorForActor(actor));
+            this.monitor = assertNotNull(
+                Main.layoutManager.findMonitorForActor(actor)
+            );
         }
     }
 
@@ -384,7 +396,7 @@ export class TileableItem extends TaskBarItem {
     persistentIcon: St.Icon;
     title: St.Label;
     signalManager: MsManager;
-    titleSignalKiller: (()=>void) | undefined;
+    titleSignalKiller: (() => void) | undefined;
     closeIcon: St.Icon;
     icon: St.Widget | undefined;
     lastHeight: number | undefined;
@@ -555,10 +567,10 @@ export class TileableItem extends TaskBarItem {
 
     buildIcon(height: number) {
         if (this.icon) this.icon.destroy();
-        assert(this.app !== null, "cannot build an icon without an app");
+        assert(this.app !== null, 'cannot build an icon without an app');
         this.lastHeight = height;
         const icon = this.app.create_icon_texture(height / 2);
-        assert(icon instanceof St.Widget, "expected icon to be a widget");
+        assert(icon instanceof St.Widget, 'expected icon to be a widget');
         this.icon = icon;
         this.icon.style_class = 'app-icon';
         this.icon.set_size(height / 2, height / 2);
@@ -577,8 +589,11 @@ export class TileableItem extends TaskBarItem {
     // Update the title and crop it if it's too long
     updateTitle() {
         assert(this.tileable !== undefined, 'item has no tileable');
-        if (this.tileable instanceof MsApplicationLauncher || this.app === null) {
-            this.title.text = "";
+        if (
+            this.tileable instanceof MsApplicationLauncher ||
+            this.app === null
+        ) {
+            this.title.text = '';
         } else {
             if (this.style == 'full') {
                 if (this.tileable.title.includes(this.app.get_name())) {

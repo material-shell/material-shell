@@ -169,9 +169,10 @@ export class WorkspaceList extends St.Widget {
                     this.msWorkspaceButtonMap.set(msWorkspace, workspaceButton);
                 } else {
                     const button = this.msWorkspaceButtonMap.get(msWorkspace);
-                    const index = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                        msWorkspace
-                    );
+                    const index =
+                        this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                            msWorkspace
+                        );
                     this.buttonList.set_child_at_index(button, index);
                 }
             }
@@ -618,7 +619,7 @@ export class WorkspaceButtonIcon extends St.Widget {
                 this.desaturateEffect
             );
         } else {
-            assert(this.desaturateEffect !== undefined, "true by construction");
+            assert(this.desaturateEffect !== undefined, 'true by construction');
             this.remove_effect(this.desaturateEffect);
             delete this.desaturateEffect;
         }

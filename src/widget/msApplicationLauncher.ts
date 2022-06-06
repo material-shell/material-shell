@@ -101,14 +101,11 @@ export class MsApplicationLauncher extends St.Widget {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
-                const { msWindow } = Me.msWindowManager.createNewMsWindow(
-                    app,
-                    {
-                        msWorkspace: this.msWorkspace,
-                        focus: true,
-                        insert: false,
-                    }
-                );
+                const { msWindow } = Me.msWindowManager.createNewMsWindow(app, {
+                    msWorkspace: this.msWorkspace,
+                    focus: true,
+                    insert: false,
+                });
                 Me.msWindowManager.openAppForMsWindow(msWindow);
                 this.appListContainer.reset();
             });
@@ -535,9 +532,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                 currentIndex += this.numberOfColumn;
             }
         }
-        const nextButton = this.filteredAppButtonList[
-            currentIndex - this.numberOfColumn
-        ];
+        const nextButton =
+            this.filteredAppButtonList[currentIndex - this.numberOfColumn];
         if (nextButton) {
             this.highlightButton(nextButton);
         }
@@ -554,9 +550,8 @@ export class MsApplicationButtonContainer extends St.Widget {
                 return;
             }
         }
-        const nextButton = this.filteredAppButtonList[
-            currentIndex + this.numberOfColumn
-        ];
+        const nextButton =
+            this.filteredAppButtonList[currentIndex + this.numberOfColumn];
 
         if (nextButton) {
             this.highlightButton(nextButton);

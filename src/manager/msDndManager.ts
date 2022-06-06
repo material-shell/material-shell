@@ -282,24 +282,32 @@ export class InputGrabber extends Clutter.Actor {
             const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
-                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
-                        KeyBindingAction.MOVE_WINDOW_LEFT
-                    ))();
+                    assertNotNull(
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_LEFT
+                        )
+                    )();
                     break;
                 case KeyBindingAction.NEXT_WINDOW:
-                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
-                        KeyBindingAction.MOVE_WINDOW_RIGHT
-                    ))();
+                    assertNotNull(
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_RIGHT
+                        )
+                    )();
                     break;
                 case KeyBindingAction.PREVIOUS_WORKSPACE:
-                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
-                        KeyBindingAction.MOVE_WINDOW_TOP
-                    ))();
+                    assertNotNull(
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_TOP
+                        )
+                    )();
                     break;
                 case KeyBindingAction.NEXT_WORKSPACE:
-                    assertNotNull(Me.hotKeysModule.actionNameToActionMap.get(
-                        KeyBindingAction.MOVE_WINDOW_BOTTOM
-                    ))();
+                    assertNotNull(
+                        Me.hotKeysModule.actionNameToActionMap.get(
+                            KeyBindingAction.MOVE_WINDOW_BOTTOM
+                        )
+                    )();
                     break;
             }
         }

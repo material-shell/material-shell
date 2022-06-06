@@ -21,7 +21,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const BORDER_WIDTH = 2;
 @registerGObjectClass
-export class BaseResizeableTilingLayout<S extends { key: string }> extends BaseTilingLayout<S> {
+export class BaseResizeableTilingLayout<
+    S extends { key: string }
+> extends BaseTilingLayout<S> {
     mainPortion: Portion;
     currentFocusEffect: number;
     borderContainer: Clutter.Actor | undefined;
@@ -427,7 +429,10 @@ export class PrimaryBorderEffect extends Clutter.Effect {
         this.color = new Cogl.Color();
     }
 
-    vfunc_paint_node(node: Clutter.PaintNode, paintContext: Clutter.PaintContext) {
+    vfunc_paint_node(
+        node: Clutter.PaintNode,
+        paintContext: Clutter.PaintContext
+    ) {
         const framebuffer = paintContext.get_framebuffer();
         const coglContext = framebuffer.get_context();
         const actor = this.get_actor();

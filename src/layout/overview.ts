@@ -5,7 +5,15 @@ import * as Shell from 'shell';
 import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-import { searchController, dash, appDisplay, layout, overviewControls, windowManager, swipeTracker } from 'ui';
+import {
+    searchController,
+    dash,
+    appDisplay,
+    layout,
+    overviewControls,
+    windowManager,
+    swipeTracker,
+} from 'ui';
 import { main as Main } from 'ui';
 import { overview } from 'ui';
 const ANIMATION_TIME = 250;
@@ -92,12 +100,15 @@ class MsControlsManager extends St.Widget {
         });
     }
 
-    animateToOverview(state: overviewControls.ControlsState, callback: ()=>void) {
+    animateToOverview(
+        state: overviewControls.ControlsState,
+        callback: () => void
+    ) {
         this._searchController.prepareToEnterOverview();
         callback();
     }
 
-    animateFromOverview(callback: ()=>void) {
+    animateFromOverview(callback: () => void) {
         callback();
     }
     _updateAppDisplayVisibility() {
@@ -141,7 +152,7 @@ class MsControlsManager extends St.Widget {
         this._stateAdjustment.gestureInProgress = false;
     } */
 
-    async runStartupAnimation(callback: ()=>void) {
+    async runStartupAnimation(callback: () => void) {
         this._searchController.prepareToEnterOverview();
 
         this.dash.showAppsButton.checked = false;
@@ -163,7 +174,10 @@ class MsControlsManager extends St.Widget {
 
         // Search bar falls from the ceiling
         const { primaryMonitor } = Main.layoutManager;
-        const [, y] = this._searchEntryBin.get_transformed_position() as [number, number];
+        const [, y] = this._searchEntryBin.get_transformed_position() as [
+            number,
+            number
+        ];
         const yOffset = y - assertNotNull(primaryMonitor).y;
 
         this._searchEntryBin.translation_y = -(
@@ -210,23 +224,24 @@ class OverviewActor extends St.BoxLayout {
             vertical: true,
         });
 
-        this.add_constraint(
-            new layout.MonitorConstraint({ primary: true })
-        );
+        this.add_constraint(new layout.MonitorConstraint({ primary: true }));
 
         this._controls = new MsControlsManager();
         this.add_child(this._controls);
     }
 
-    animateToOverview(state: overviewControls.ControlsState, callback: ()=>void) {
+    animateToOverview(
+        state: overviewControls.ControlsState,
+        callback: () => void
+    ) {
         this._controls.animateToOverview(state, callback);
     }
 
-    animateFromOverview(callback: ()=>void) {
+    animateFromOverview(callback: () => void) {
         this._controls.animateFromOverview(callback);
     }
 
-    runStartupAnimation(callback: ()=>void) {
+    runStartupAnimation(callback: () => void) {
         this._controls.runStartupAnimation(callback);
     }
 
