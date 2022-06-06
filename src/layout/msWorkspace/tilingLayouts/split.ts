@@ -180,8 +180,8 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         return -1;
     }
 
-    /*
-     * Animations
+    /** Start a transition from one slice of visible tileables to another slice.
+     * Note that it is expected that the sequences are slices of `this.msWorkspace.tileableList`.
      */
     startTransition(
         previousTileableList: Tileable[],
@@ -195,9 +195,15 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
             this.tileableContainer.add_child(this.translationAnimator);
         }
 
-        const direction = nextTileableList.includes(previousTileableList[0])
-            ? -1
-            : 1;
+        const prevBase =
+            previousTileableList.length > 0
+                ? this.msWorkspace.tileableList.indexOf(previousTileableList[0])
+                : -1;
+        const nextBase =
+            nextTileableList.length > 0
+                ? this.msWorkspace.tileableList.indexOf(nextTileableList[0])
+                : -1;
+        const direction = prevBase > nextBase ? -1 : 1;
         [...previousTileableList, ...nextTileableList].forEach((actor) => {
             const parent = actor.get_parent();
             if (parent && parent === this.tileableContainer) {
