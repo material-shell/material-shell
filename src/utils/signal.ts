@@ -1,5 +1,3 @@
-import { assert } from './assert';
-
 export interface CanSendSignal<F> extends CanDisconnect {
     connect(signal: string, callback: F): number;
 }

@@ -13,10 +13,9 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
 import * as St from 'st';
+import { main as Main, popupMenu } from 'ui';
 import { MsWorkspace } from '../msWorkspace/msWorkspace';
-import { popupMenu } from 'ui';
 const DND = imports.ui.dnd;
-import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

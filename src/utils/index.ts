@@ -1,9 +1,9 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
-import { Async } from './async';
 import { main as Main } from 'ui';
 import { assert } from './assert';
+import { Async } from './async';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

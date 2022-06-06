@@ -1,10 +1,10 @@
-import * as GObject from 'gobject';
 import * as GLib from 'glib';
+import * as GObject from 'gobject';
 import * as Meta from 'meta';
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { MatButton } from 'src/widget/material/button';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { MatButton } from 'src/widget/material/button';
 import { main as Main } from 'ui';
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
 export class MatPanelButton extends MatButton {

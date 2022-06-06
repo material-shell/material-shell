@@ -7,13 +7,9 @@ import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
-import {
-    gnomeVersionGreaterOrEqualTo,
-    gnomeVersionLessOrEqualTo,
-} from 'src/utils/shellVersionMatch';
+import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
-import { dateMenu, main as Main } from 'ui';
-import { panel } from 'ui';
+import { dateMenu, main as Main, panel } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

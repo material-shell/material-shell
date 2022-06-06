@@ -1,11 +1,9 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { Portion } from '../../portion';
 
 @registerGObjectClass
 export class GridLayout extends BaseResizeableTilingLayout<{ key: 'grid' }> {

@@ -2,10 +2,10 @@
 import * as Gio from 'gio';
 import { Signal } from 'src/manager/msManager';
 import { assert } from 'src/utils/assert';
+import { getSettings } from 'src/utils/settings';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { getSettings } from 'src/utils/settings';
 
 interface Setting {
     schema: string;

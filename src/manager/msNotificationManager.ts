@@ -6,8 +6,7 @@ import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
-import { messageTray } from 'ui';
-import { main as Main } from 'ui';
+import { main as Main, messageTray } from 'ui';
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 

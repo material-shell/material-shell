@@ -1,12 +1,10 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
-import { registerGObjectClass } from 'src/utils/gjs';
-
 /** Extension imports */
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class SimpleLayoutBase<

@@ -20,9 +20,9 @@ import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
 import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import * as St from 'st';
+import { main as Main } from 'ui';
 import { Async } from './utils/async';
 import { polyfillClutter } from './utils/compatibility';
-import { main as Main } from 'ui';
 
 const Signals = imports.signals;
 

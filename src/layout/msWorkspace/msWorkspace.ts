@@ -2,23 +2,22 @@
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
+import { App, AppSystem } from 'shell';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { layout } from 'ui';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
+import { layout, main as Main } from 'ui';
 import Monitor = layout.Monitor;
 const Signals = imports.signals;
-import { main as Main } from 'ui';
-import { App, AppSystem } from 'shell';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

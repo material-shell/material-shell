@@ -1,27 +1,26 @@
 /** Gnome libs imports */
-import { main as Main } from 'ui';
+import { Settings } from 'gio';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
-
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { getSettings } from 'src/utils/settings';
-import { MsManager } from 'src/manager/msManager';
+import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
-
-import { MaximizeLayout } from 'src/layout/msWorkspace/tilingLayouts/maximize';
-import { SplitLayout } from 'src/layout/msWorkspace/tilingLayouts/split';
-import { FloatLayout } from 'src/layout/msWorkspace/tilingLayouts/float';
+import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
 import { HalfLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/half';
 import { HalfHorizontalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/halfHorizontal';
 import { HalfVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/halfVertical';
+import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
 import { SimpleLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simple';
 import { SimpleHorizontalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simpleHorizontal';
 import { SimpleVerticalLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/simpleVertical';
-import { RatioLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/ratio';
-import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
-import { Settings } from 'gio';
+import { FloatLayout } from 'src/layout/msWorkspace/tilingLayouts/float';
+import { MaximizeLayout } from 'src/layout/msWorkspace/tilingLayouts/maximize';
+import { SplitLayout } from 'src/layout/msWorkspace/tilingLayouts/split';
+import { MsManager } from 'src/manager/msManager';
+import { getSettings } from 'src/utils/settings';
+import { main as Main } from 'ui';
+
+/** Extension imports */
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
 

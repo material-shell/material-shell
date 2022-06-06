@@ -1,13 +1,9 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
+import { HalfLayoutBase } from 'src/layout/msWorkspace/tilingLayouts/custom/half';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import {
-    HalfLayout,
-    HalfLayoutBase,
-} from 'src/layout/msWorkspace/tilingLayouts/custom/half';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class HalfVerticalLayout extends HalfLayoutBase<{

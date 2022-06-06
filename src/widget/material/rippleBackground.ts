@@ -1,8 +1,8 @@
 /** Gnome libs imports */
-import * as St from 'st';
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import { registerGObjectClass } from 'src/utils/gjs';
+import * as St from 'st';
 
 @registerGObjectClass
 export class RippleWave extends St.Widget {

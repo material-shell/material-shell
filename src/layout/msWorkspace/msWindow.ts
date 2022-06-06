@@ -32,7 +32,7 @@ import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
-export let isMsWindow = (obj: any): obj is MsWindow => {
+export const isMsWindow = (obj: any): obj is MsWindow => {
     return obj instanceof MsWindow;
 };
 
@@ -934,7 +934,7 @@ export class MsWindow extends Clutter.Actor {
     async onMetaWindowsChanged(): Promise<void> {
         if (this.lifecycleState.type == 'window') {
             this.reactive = false;
-            let metaWindow = assertNotNull(this.metaWindow);
+            const metaWindow = assertNotNull(this.metaWindow);
             await this.onMetaWindowActorExist(metaWindow);
             await this.onMetaWindowFirstFrameDrawn(metaWindow);
             WindowUtils.updateTitleBarVisibility(metaWindow);

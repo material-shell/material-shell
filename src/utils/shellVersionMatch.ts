@@ -1,4 +1,4 @@
-import { assert, logAssert } from './assert';
+import { logAssert } from './assert';
 const { PACKAGE_VERSION } = imports.misc.config;
 
 /// List of all (relevant) known gnome versions.
@@ -102,8 +102,8 @@ function parseVersion(s: string): number[] {
 /// Lhs and rhs may be of different lengths, missing components will be assumed to be zero.
 function compareVersions(lhs: number[], rhs: number[]) {
     for (let i = 0; i < Math.max(lhs.length, rhs.length); i++) {
-        let a = i < lhs.length ? lhs[i] : 0;
-        let b = i < rhs.length ? rhs[i] : 0;
+        const a = i < lhs.length ? lhs[i] : 0;
+        const b = i < rhs.length ? rhs[i] : 0;
         if (a != b) {
             return a < b ? -1 : 1;
         }
