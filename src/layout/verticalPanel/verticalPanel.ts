@@ -6,16 +6,15 @@ import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import { MsStatusArea } from 'src/layout/verticalPanel/statusArea';
 import { WorkspaceList } from 'src/layout/verticalPanel/workspaceList';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
+import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatDivider } from 'src/widget/material/divider';
 import * as St from 'st';
+import { main as Main, panel } from 'ui';
 import { SearchResultList } from './searchResultList';
 const Util = imports.misc.util;
 
 const SearchController = imports.ui.searchController;
-
-import { main as Main, panel } from 'ui';
-import { assert } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

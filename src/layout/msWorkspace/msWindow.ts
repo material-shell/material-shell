@@ -1,17 +1,19 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import { main as Main } from 'ui';
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
+import { App } from 'shell';
 import {
     MetaWindowActorWithMsProperties,
     MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
 import { Rectangular } from 'src/types/mod';
-import { Async, AsyncDebounce } from 'src/utils/async';
+import { throttle } from 'src/utils';
+import { assert, assertNotNull } from 'src/utils/assert';
+import { Async } from 'src/utils/async';
 /** Extension imports */
 import {
     Allocate,
@@ -19,20 +21,18 @@ import {
     SetAllocation,
 } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { logAsyncException } from 'src/utils/log';
+import { set_style_class } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import * as St from 'st';
+import { main as Main } from 'ui';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
-import { App } from 'shell';
-import { assert, assertNotNull } from 'src/utils/assert';
-import { set_style_class } from 'src/utils/styling_utils';
-import { throttle } from 'src/utils';
-import { logAsyncException } from 'src/utils/log';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
-export let isMsWindow = (obj: any): obj is MsWindow => {
+export const isMsWindow = (obj: any): obj is MsWindow => {
     return obj instanceof MsWindow;
 };
 
@@ -934,7 +934,7 @@ export class MsWindow extends Clutter.Actor {
     async onMetaWindowsChanged(): Promise<void> {
         if (this.lifecycleState.type == 'window') {
             this.reactive = false;
-            let metaWindow = assertNotNull(this.metaWindow);
+            const metaWindow = assertNotNull(this.metaWindow);
             await this.onMetaWindowActorExist(metaWindow);
             await this.onMetaWindowFirstFrameDrawn(metaWindow);
             WindowUtils.updateTitleBarVisibility(metaWindow);

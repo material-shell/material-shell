@@ -206,7 +206,7 @@ export class BaseTilingLayout<
     }
 
     onTileableListChanged(tileableList: Tileable[]) {
-        let { added: enteringTileableList, removed: leavingTileableList } =
+        const { added: enteringTileableList, removed: leavingTileableList } =
             diffLists(this.lastObservedTileableList, tileableList);
         this.lastObservedTileableList = [...tileableList];
 

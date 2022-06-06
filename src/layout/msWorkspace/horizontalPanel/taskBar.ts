@@ -8,34 +8,32 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import { diffLists } from 'src/utils/diff_list';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { MatButton } from 'src/widget/material/button';
+import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { ReorderableList } from 'src/widget/reorderableList';
 import * as St from 'st';
+import { layout, main as Main, popupMenu as PopupMenu } from 'ui';
 import { MsWorkspace, Tileable } from '../msWorkspace';
-import { popupMenu as PopupMenu } from 'ui';
 const DND = imports.ui.dnd;
-import { main as Main } from 'ui';
-import { layout } from 'ui';
 import Monitor = layout.Monitor;
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { diffLists } from 'src/utils/diff_list';
-import { IdleDebounce } from 'src/utils/idle_debounce';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-let isTileableItem = (obj: any): obj is TileableItem => {
+const isTileableItem = (obj: any): obj is TileableItem => {
     return obj instanceof TileableItem;
 };
 
-let isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
+const isIconTaskBarItem = (obj: any): obj is IconTaskBarItem => {
     return obj instanceof IconTaskBarItem;
 };
 
-let isTileableItemOrIconTaskBarItem = (
+const isTileableItemOrIconTaskBarItem = (
     obj: any
 ): obj is TileableItem | IconTaskBarItem => {
     return isTileableItem(obj) || isIconTaskBarItem(obj);
@@ -146,18 +144,18 @@ export class TaskBar extends St.Widget {
      * Update the current list of taskBarItem with the least of widget manipulation possible
      */
     onTileableListChange(newTileableList: Tileable[]) {
-        let { added: tileableToAdd, removed: tileableToRemove } = diffLists(
+        const { added: tileableToAdd, removed: tileableToRemove } = diffLists(
             this.items.map((item) => item.tileable),
             newTileableList
         );
 
-        for (let tileable of tileableToRemove) {
-            let item = assertNotNull(this.getTaskBarItemOfTileable(tileable));
+        for (const tileable of tileableToRemove) {
+            const item = assertNotNull(this.getTaskBarItemOfTileable(tileable));
             item.destroy();
         }
 
-        for (let tileable of tileableToAdd) {
-            let item = this.createNewItemForTileable(tileable);
+        for (const tileable of tileableToAdd) {
+            const item = this.createNewItemForTileable(tileable);
             this.taskButtonContainer.insert_child_at_index(
                 item,
                 newTileableList.indexOf(tileable)

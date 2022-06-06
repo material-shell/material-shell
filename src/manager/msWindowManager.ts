@@ -1,6 +1,4 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
 import {
@@ -14,10 +12,9 @@ import { MsFocusManager } from 'src/manager/msFocusManager';
 import { MsManager } from 'src/manager/msManager';
 import { MsResizeManager } from 'src/manager/msResizeManager';
 import { Rectangular } from 'src/types/mod';
-import { assert, assertNotNull } from 'src/utils/assert';
-import { Async, AsyncDebounce } from 'src/utils/async';
+import { assert } from 'src/utils/assert';
+import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
-import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
 const Signals = imports.signals;

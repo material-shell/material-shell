@@ -27,7 +27,7 @@ export class AppPlaceholder extends St.Widget {
     app: App;
     icon: St.Widget;
     pressed = false;
-    waitForReset: boolean = false;
+    waitForReset = false;
     clickableContainer: RippleBackground;
     box: St.BoxLayout;
     identityContainer: St.BoxLayout;

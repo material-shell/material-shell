@@ -1,13 +1,9 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
+import { SimpleLayoutBase } from 'src/layout/msWorkspace/tilingLayouts/custom/simple';
+import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import {
-    SimpleLayout,
-    SimpleLayoutBase,
-} from 'src/layout/msWorkspace/tilingLayouts/custom/simple';
-import { registerGObjectClass } from 'src/utils/gjs';
 
 @registerGObjectClass
 export class SimpleHorizontalLayout extends SimpleLayoutBase<{

@@ -134,9 +134,9 @@ export class SearchResultList extends St.BoxLayout {
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
-    startingSearch: boolean = false;
+    startingSearch = false;
     private results: Record<string, string[]> = {};
-    isSubSearch: boolean = false;
+    isSubSearch = false;
     cancellable = new Gio.Cancellable();
     clearIcon = new St.Icon({
         style_class: 'search-entry-icon',

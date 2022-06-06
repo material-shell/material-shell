@@ -36,9 +36,9 @@ export function weighted_matching(costs: number[][]): {
     const ans = new Int32Array(n - 1);
 
     // Temporary arrays per loop
-    let dist = new Int32Array(m);
-    let pre = new Int32Array(m);
-    let done = new Int32Array(m + 1); // Emulates a boolean array
+    const dist = new Int32Array(m);
+    const pre = new Int32Array(m);
+    const done = new Int32Array(m + 1); // Emulates a boolean array
 
     for (let i = 1; i < n; i++) {
         p[0] = i;
@@ -54,7 +54,7 @@ export function weighted_matching(costs: number[][]): {
                 delta = INT_MAX;
             for (let j = 1; j < m; j++) {
                 if (done[j] === 0) {
-                    let cur = costs[i0 - 1][j - 1] - u[i0] - v[j];
+                    const cur = costs[i0 - 1][j - 1] - u[i0] - v[j];
                     if (cur < dist[j]) {
                         dist[j] = cur;
                         pre[j] = j0;

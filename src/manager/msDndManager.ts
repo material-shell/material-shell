@@ -10,8 +10,8 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor, throttle } from 'src/utils/index';
-import { MsWindowManager } from './msWindowManager';
 import { main as Main } from 'ui';
+import { MsWindowManager } from './msWindowManager';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

@@ -17,7 +17,6 @@ import { StateManager } from 'src/manager/stateManager';
 import { TooltipManager } from 'src/manager/tooltipManager';
 import { HotKeysModule } from 'src/module/hotKeysModule';
 import { WithSignals } from 'src/utils/gjs';
-import * as St from 'st';
 export * as GObject from 'gobject';
 
 declare global {

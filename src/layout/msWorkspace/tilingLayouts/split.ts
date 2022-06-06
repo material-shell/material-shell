@@ -1,17 +1,14 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { registerGObjectClass } from 'src/utils/gjs';
+import { reparentActor } from 'src/utils/index';
+import { MatNumberPicker } from 'src/widget/material/numberPicker';
+import { TranslationAnimator } from 'src/widget/translationAnimator';
+import { MsWorkspace, Tileable } from '../msWorkspace';
+import { Portion } from '../portion';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
-import { MatNumberPicker } from 'src/widget/material/numberPicker';
-import { reparentActor } from 'src/utils/index';
-import { registerGObjectClass } from 'src/utils/gjs';
-import { MsWorkspace, Tileable } from '../msWorkspace';
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { MsWindow } from '../msWindow';
-import { Portion } from '../portion';
 
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;

@@ -1,5 +1,7 @@
+import * as Clutter from 'clutter';
 import { Actor } from 'clutter';
 import * as Gio from 'gio';
+import * as Meta from 'meta';
 import {
     KeyBindingAction,
     KeyBindingFlags,
@@ -9,13 +11,11 @@ import {
     WindowType,
     Workspace,
 } from 'meta';
-import * as Meta from 'meta';
 import { ActionMode } from 'shell';
-import { Widget } from 'st';
-import * as St from 'st';
-import { GObject } from './mod';
-import * as Clutter from 'clutter';
 import { IntroducedInGnome, RemovedInGnome } from 'src/utils/shellVersionMatch';
+import * as St from 'st';
+import { Widget } from 'st';
+import { GObject } from './mod';
 
 declare module 'meta' {
     // Expose some additional "private" fields of the Workspace class

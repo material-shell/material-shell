@@ -1,18 +1,13 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-import * as GObject from 'gobject';
 import * as Clutter from 'clutter';
-
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
-import { InfinityTo0 } from 'src/utils/index';
-import { reparentActor } from 'src/utils/index';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { InfinityTo0, reparentActor } from 'src/utils/index';
+import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
-import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { MsWindow } from '../msWindow';
 
 type MaximizeLayoutState = { key: 'maximize' };
 @registerGObjectClass

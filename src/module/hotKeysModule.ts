@@ -562,7 +562,7 @@ export class HotKeysModule {
     }
 
     destroy() {
-        for (let [_, value] of this.actionIdToNameMap) {
+        for (const [_, value] of this.actionIdToNameMap) {
             Main.wm.removeKeybinding(value);
         }
         this.actionIdToNameMap.clear();

@@ -9,12 +9,12 @@ import {
     LayoutType,
     TilingLayoutByKey,
 } from 'src/manager/layoutManager';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
+import { main as Main, popupMenu } from 'ui';
 import { MsWorkspace } from '../msWorkspace';
 const Animation = imports.ui.animation;
-import { main as Main, popupMenu } from 'ui';
-import { assert, assertNotNull } from 'src/utils/assert';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -188,7 +188,7 @@ export class LayoutSwitcher extends St.BoxLayout {
 @registerGObjectClass
 export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
-    editable: boolean = false;
+    editable = false;
 
     constructor(
         layoutConstructor: LayoutType,

@@ -36,8 +36,8 @@ export class AsyncDebounce {
     public delayMs: number;
 
     private timeoutId: number | undefined;
-    private running: boolean = false;
-    private runAgain: boolean = false;
+    private running = false;
+    private runAgain = false;
     private readonly f: () => Promise<void>;
 
     constructor(delayMs: number, f: () => Promise<void>) {

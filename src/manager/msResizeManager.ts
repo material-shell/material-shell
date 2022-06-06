@@ -10,7 +10,6 @@ import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { throttle } from 'src/utils/index';
 import { MsWindowManager } from './msWindowManager';
-import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();

@@ -6,16 +6,16 @@ import { assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import {
-    searchController,
-    dash,
     appDisplay,
+    dash,
     layout,
+    main as Main,
+    overview,
     overviewControls,
-    windowManager,
+    searchController,
     swipeTracker,
+    windowManager,
 } from 'ui';
-import { main as Main } from 'ui';
-import { overview } from 'ui';
 const ANIMATION_TIME = 250;
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 

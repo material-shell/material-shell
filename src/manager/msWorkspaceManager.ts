@@ -13,8 +13,8 @@ import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
+import { layout, main as Main, windowManager } from 'ui';
 import { MetaWindowWithMsProperties } from './msWindowManager';
-import { main as Main, windowManager, layout } from 'ui';
 import Monitor = layout.Monitor;
 
 /** Extension imports */

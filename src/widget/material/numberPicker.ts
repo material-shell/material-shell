@@ -1,12 +1,12 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as St from 'st';
 import * as Gio from 'gio';
+import * as GObject from 'gobject';
+import { registerGObjectClass } from 'src/utils/gjs';
+import * as St from 'st';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-import { registerGObjectClass } from 'src/utils/gjs';
 
 export interface NumberPickerParams {
     step: number;

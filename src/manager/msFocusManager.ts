@@ -6,11 +6,11 @@ import { ActionMode } from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
+import { main as Main } from 'ui';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
-import { main as Main } from 'ui';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -126,12 +126,12 @@ export class MsFocusManager extends MsManager {
         }
     ) {
         const currentFocus = global.stage.key_focus;
-        let grab = Main.pushModal(actor, options);
+        const grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);
     }
 
     popModal(actor: Actor) {
-        let grab = this.actorGrabMap.get(actor);
+        const grab = this.actorGrabMap.get(actor);
         if (grab != null) {
             Main.popModal(grab != true ? grab : actor);
             this.actorGrabMap.delete(actor);
