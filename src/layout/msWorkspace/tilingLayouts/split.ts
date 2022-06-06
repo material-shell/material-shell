@@ -101,48 +101,42 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     onFocusChanged(
         tileableFocused: Tileable,
-        oldTileableFocused: Tileable | null
+        _oldTileableFocused: Tileable | null
     ) {
-        if (this.activeTileableList.includes(tileableFocused)) {
-            this.activeTileableList.forEach((tileable) => {
-                this.setUnFocusEffect(
-                    tileable,
-                    this.currentFocusEffect,
-                    tileable === tileableFocused
-                );
-            });
-            return;
-        }
-
-        // TODO: What happens if newIndex=1 and oldIndex=2 and columns=3?
         const newIndex = this.msWorkspace.tileableList.indexOf(tileableFocused);
-        const oldIndex = this.msWorkspace.tileableList.indexOf(
-            oldTileableFocused as any
+        // Represents a slice from baseIndex to baseIndex + this._state.nbOfColumns (exclusive)
+        let baseIndex = this.baseIndex;
+        // Ensure the new tileable is visible
+        baseIndex = Math.max(baseIndex, newIndex - this._state.nbOfColumns + 1);
+        baseIndex = Math.min(baseIndex, newIndex);
+        // Ensure the slice does not go out of bounds
+        baseIndex = Math.min(
+            baseIndex,
+            this.msWorkspace.tileableList.length - this._state.nbOfColumns
         );
-        const oldTileableList = this.activeTileableList;
-        if (oldIndex < newIndex) {
-            this.activeTileableList = this.msWorkspace.tileableList.slice(
-                newIndex - this._state.nbOfColumns + 1,
-                newIndex + 1
-            );
-        } else {
-            this.activeTileableList = this.msWorkspace.tileableList.slice(
-                newIndex,
-                newIndex + this._state.nbOfColumns
-            );
-        }
-        this.baseIndex = this.msWorkspace.tileableList.indexOf(
-            this.activeTileableList[0]
-        );
+        baseIndex = Math.max(baseIndex, 0);
 
-        this.startTransition(oldTileableList, this.activeTileableList);
-        [...oldTileableList, ...this.activeTileableList].forEach((tileable) => {
+        const oldTileableList = this.activeTileableList;
+
+        if (baseIndex !== this.baseIndex) {
+            this.baseIndex = baseIndex;
+            this.activeTileableList = this.msWorkspace.tileableList.slice(
+                baseIndex,
+                baseIndex + this._state.nbOfColumns
+            );
+            this.startTransition(oldTileableList, this.activeTileableList);
+        }
+
+        for (const tileable of new Set([
+            ...oldTileableList,
+            ...this.activeTileableList,
+        ])) {
             this.setUnFocusEffect(
                 tileable,
                 this.currentFocusEffect,
                 tileable === tileableFocused
             );
-        });
+        }
     }
 
     showAppLauncher() {
