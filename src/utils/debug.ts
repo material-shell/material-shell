@@ -33,11 +33,13 @@ export function initDebug() {
                                 .join(',')})`
                         );
                         indent++;
-                        const result = value.apply(this, args); // use .apply() to call it
-                        // After
-
-                        indent--;
-                        return result;
+                        try {
+                            const result = value.apply(this, args); // use .apply() to call it
+                            // After
+                            return result;
+                        } finally {
+                            indent--;
+                        }
                     };
                 }
             }
