@@ -562,7 +562,10 @@ export class MsWindow extends Clutter.Actor {
                 !shouldBeMaximizedVertically && metaWindow.maximized_vertically;
 
             const callback = () => {
-                if (shouldMaximizeVertically && shouldUnMaximizeVertically) {
+                if (
+                    shouldUnMaximizeHorizontally &&
+                    shouldUnMaximizeVertically
+                ) {
                     metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
                 } else if (shouldUnMaximizeHorizontally) {
                     metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL);
