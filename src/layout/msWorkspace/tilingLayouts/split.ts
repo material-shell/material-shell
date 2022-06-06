@@ -82,17 +82,20 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     refreshVisibleActors() {
-        this.msWorkspace.tileableList.forEach((tileable) => {
-            const willBeDisplay = this.activeTileableList.includes(tileable);
-            if (
-                willBeDisplay &&
-                tileable.get_parent() !== this.tileableContainer
-            ) {
-                reparentActor(tileable, this.tileableContainer);
-            } else if (!willBeDisplay && tileable.get_parent()) {
-                this.tileableContainer.remove_child(tileable);
+        // refreshVisibleActors will be called when the animation finishes
+        if (this.translationAnimator.animationInProgress) return;
+
+        for (const tileable of this.msWorkspace.tileableList) {
+            if (this.shouldBeVisible(tileable)) {
+                if (tileable.get_parent() !== this.tileableContainer) {
+                    reparentActor(tileable, this.tileableContainer);
+                }
+            } else {
+                if (tileable.get_parent() === this.tileableContainer) {
+                    this.tileableContainer.remove_child(tileable);
+                }
             }
-        });
+        }
         this.msWorkspace.refreshFocus();
     }
 
