@@ -88,7 +88,8 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         this.msWorkspace.tileableList.forEach((tileable) => {
             const willBeDisplay = this.activeTileableList.includes(tileable);
             if (
-                willBeDisplay && tileable.get_parent() !== this.tileableContainer
+                willBeDisplay &&
+                tileable.get_parent() !== this.tileableContainer
             ) {
                 reparentActor(tileable, this.tileableContainer);
             } else if (!willBeDisplay && tileable.get_parent()) {
