@@ -424,18 +424,22 @@ export class MsWindow extends Clutter.Actor {
     }
 
     getRelativeMetaWindowPosition(metaWindow: Meta.Window) {
-        const x = this.x;
-        const y = this.y;
+        if (this.dragged) {
+            const currentFrameRect = metaWindow.get_frame_rect();
+            return {
+                x: currentFrameRect.x,
+                y: currentFrameRect.y,
+            };
+        } else {
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.msWorkspace.monitor.index
+            );
 
-        const currentFrameRect = metaWindow.get_frame_rect();
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.msWorkspace.monitor.index
-        );
-
-        return {
-            x: this.dragged ? currentFrameRect.x : workArea.x + x,
-            y: this.dragged ? currentFrameRect.y : workArea.y + y,
-        };
+            return {
+                x: workArea.x + this.x,
+                y: workArea.y + this.y,
+            };
+        }
     }
 
     /*
