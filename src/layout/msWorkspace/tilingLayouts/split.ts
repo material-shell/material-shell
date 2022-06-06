@@ -148,16 +148,18 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         // Never hide the Applauncher
     }
 
-    alterTileable(tileable: Tileable) {
-        super.alterTileable(tileable);
+    override shouldBeVisible(tileable: Tileable): boolean {
+        return this.activeTileableList.includes(tileable);
+    }
+
+    initializeTileable(tileable: Tileable) {
+        super.initializeTileable(tileable);
         tileable.visible = true;
-        if (tileable.get_parent()) {
-            this.tileableContainer.remove_child(tileable);
-        }
     }
 
     restoreTileable(tileable: Tileable) {
         super.restoreTileable(tileable);
+        this.translationAnimator.tryRemoveActor(tileable);
         if (!tileable.get_parent()) {
             this.tileableContainer.add_child(tileable);
         }
@@ -184,11 +186,11 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         previousTileableList: Tileable[],
         nextTileableList: Tileable[]
     ) {
+        const width = this.tileableContainer.allocation.get_width();
+        const height = this.tileableContainer.allocation.get_height();
         if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width =
-                this.tileableContainer.allocation.get_width();
-            this.translationAnimator.height =
-                this.tileableContainer.allocation.get_height();
+            this.translationAnimator.width = width;
+            this.translationAnimator.height = height;
             this.tileableContainer.add_child(this.translationAnimator);
         }
 
@@ -201,30 +203,26 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
                 ? this.msWorkspace.tileableList.indexOf(nextTileableList[0])
                 : -1;
         const direction = prevBase > nextBase ? -1 : 1;
-        [...previousTileableList, ...nextTileableList].forEach((actor) => {
-            const parent = actor.get_parent();
-            if (parent && parent === this.tileableContainer) {
-                parent.remove_child(actor);
-            }
-            if (this.vertical) {
-                actor.set_width(this.tileableContainer.allocation.get_width());
-                actor.set_height(
-                    this.tileableContainer.allocation.get_height() /
-                        this._state.nbOfColumns
-                );
-            } else {
-                actor.set_width(
-                    this.tileableContainer.allocation.get_width() /
-                        this._state.nbOfColumns
-                );
-                actor.set_height(
-                    this.tileableContainer.allocation.get_height()
-                );
-            }
-        });
+
+        const itemWidth = Math.round(
+            this.vertical ? width : width / this._state.nbOfColumns
+        );
+        const itemHeight = Math.round(
+            this.vertical ? height / this._state.nbOfColumns : height
+        );
+
+        for (const actor of new Set([
+            ...previousTileableList,
+            ...nextTileableList,
+        ])) {
+            actor.width = itemWidth;
+            actor.height = itemHeight;
+        }
+
         if (this.borderContainer) {
             this.borderContainer.hide();
         }
+
         this.translationAnimator.setTranslation(
             previousTileableList,
             nextTileableList,

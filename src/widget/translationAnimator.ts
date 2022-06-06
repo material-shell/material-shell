@@ -49,6 +49,12 @@ export class TranslationAnimator extends Clutter.Actor {
         this.add_actor(this.transitionContainer);
     }
 
+    tryRemoveActor(actor: Clutter.Actor) {
+        if (this.transitionContainer.get_children().includes(actor)) {
+            this.transitionContainer.remove_child(actor);
+        }
+    }
+
     /** Starts a transition.
      *
      * Note: The translation animator takes full control over the parenting of the actors until the animation is complete.

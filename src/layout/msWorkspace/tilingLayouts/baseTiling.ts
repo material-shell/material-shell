@@ -5,12 +5,11 @@ import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Signal } from 'src/manager/msManager';
 import { Allocate, AllocatePreferredSize } from 'src/utils/compatibility';
+import { diffLists } from 'src/utils/diff_list';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { InfinityTo0 } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsWorkspace, Tileable } from '../msWorkspace';
-import { main as Main } from 'ui';
-import { diffLists } from 'src/utils/diff_list';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -105,32 +104,38 @@ export class BaseTilingLayout<
         );
     }
 
-    alterTileable(tileable: Tileable) {
+    shouldBeVisible(_tileable: Tileable): boolean {
+        return true;
+    }
+
+    /** Called when a new tileable enters the workspace.
+     * When the layout is initialized this will be called for all tileables currently in the workspace.
+     */
+    initializeTileable(tileable: Tileable) {
         if (
             tileable === this.msWorkspace.appLauncher &&
             tileable !== this.msWorkspace.tileableFocused
         ) {
             this.msWorkspace.appLauncher.hide();
         }
-        if (!tileable.get_parent()) {
+        if (!tileable.get_parent() && this.shouldBeVisible(tileable)) {
             this.tileableContainer.add_child(tileable);
         }
-        /*
-         * Function called automatically at the layout init or when a new window enter
-         */
     }
 
-    restoreTileable(tileable: Tileable) {
-        /*
-         * Function called automatically at the layout destroy or when a window leave
-         */
-    }
+    /** Called when a tileable exits the workspace.
+     * Any modifications to the tileable should be restored.
+     *
+     * It should end up parented to the tileableContainer.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    restoreTileable(_tileable: Tileable) {}
 
     tileTileable(
-        tileable: Tileable,
-        box: Clutter.ActorBox,
-        index: number,
-        siblingLength: number
+        _tileable: Tileable,
+        _box: Clutter.ActorBox,
+        _index: number,
+        _siblingLength: number
     ) {
         /*
          * Function called automatically size of the container change
@@ -150,20 +155,20 @@ export class BaseTilingLayout<
     }
 
     tileAll(box?: Clutter.ActorBox) {
-        box = this.resolveBox(box);
+        const resolvedBox = this.resolveBox(box);
 
-        this.tileableListVisible.forEach((tileable) => {
+        for (const tileable of this.tileableListVisible) {
             if (tileable instanceof MsWindow && tileable.dragged) return;
             this.tileTileable(
                 tileable,
-                box || this.tileableContainer.allocation,
+                resolvedBox,
                 this.tileableListVisible.indexOf(tileable),
                 this.tileableListVisible.length
             );
             if (tileable instanceof MsWindow) {
                 tileable.updateMetaWindowPositionAndSize();
             }
-        });
+        }
     }
 
     showAppLauncher() {
@@ -211,7 +216,7 @@ export class BaseTilingLayout<
         this.lastObservedTileableList = [...tileableList];
 
         for (const tileable of enteringTileableList) {
-            this.alterTileable(tileable);
+            this.initializeTileable(tileable);
         }
 
         for (const tileable of leavingTileableList) {
@@ -237,11 +242,8 @@ export class BaseTilingLayout<
         this.layout_changed();
     }
 
-    onWorkAreasChanged() {
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(
-            this.monitor.index
-        );
-    }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onWorkAreasChanged() {}
 
     onFocusChanged(tileable: Tileable, oldTileable: Tileable | null) {
         if (tileable === this.msWorkspace.appLauncher) {
@@ -356,7 +358,7 @@ export class BaseTilingLayout<
     ) {
         this.tileAll(box);
         container.get_children().forEach((actor) => {
-            if (this.msWorkspace.tileableList.includes(actor as any)) {
+            if (this.msWorkspace.tileableList.includes(actor as Tileable)) {
                 AllocatePreferredSize(actor, flags);
             } else {
                 Allocate(actor, box, flags);

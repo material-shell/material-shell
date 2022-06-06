@@ -27,7 +27,7 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
         this.windowsRestacked();
     }
 
-    alterTileable(tileable: Tileable) {
+    initializeTileable(tileable: Tileable) {
         if (tileable instanceof MsWindow && tileable.metaWindow) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 // Need to check again because the metaWindow may have been removed here.
@@ -45,7 +45,7 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
                 null
             );
         }
-        super.alterTileable(tileable);
+        super.initializeTileable(tileable);
     }
 
     restoreTileable(tileable: Tileable) {
