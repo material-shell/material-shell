@@ -969,7 +969,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     /**
-     * Set focus to the most recent dialog but ONLY if Their are Meta.WindowType.DIALOG or Meta.WindowType.MODAL_DIALOG
+     * Set focus to the most recent dialog but ONLY if they are of type Meta.WindowType.DIALOG or Meta.WindowType.MODAL_DIALOG. Other dialogs are not necessarily in front of the main window and do not necessarily require the users attention.
      */
     focusDialogs(): boolean {
         let focused = false;
@@ -979,6 +979,7 @@ export class MsWindow extends Clutter.Actor {
         ) {
             [
                 ...this.lifecycleState.dialogs.filter((dialog) =>
+                    // Filter out Meta.WindowType.UTILITY Windows
                     [
                         Meta.WindowType.DIALOG,
                         Meta.WindowType.MODAL_DIALOG,
