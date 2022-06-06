@@ -460,7 +460,8 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include foreground-high-emphasis($theme);
     }
 }
-MsApplicationLauncher, MsPanel {
+MsApplicationLauncher,
+MsPanel {
     * .search-entry {
         @include foreground-medium-emphasis($theme);
         @include background($theme);

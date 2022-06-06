@@ -187,7 +187,11 @@ export class MsWorkspace extends WithSignals {
         this._state.msWindowList = this.tileableList
             .filter(isMsWindow)
             .filter((msWindow) => {
-                return !msWindow.app.is_window_backed() && (msWindow.lifecycleState.type === "app-placeholder" || msWindow.lifecycleState.type === "window");
+                return (
+                    !msWindow.app.is_window_backed() &&
+                    (msWindow.lifecycleState.type === 'app-placeholder' ||
+                        msWindow.lifecycleState.type === 'window')
+                );
             })
             .map((msWindow) => {
                 return msWindow.state;
@@ -310,7 +314,10 @@ export class MsWorkspace extends WithSignals {
         ) {
             this.focusedIndex--;
         }
-        this.focusedIndex = Math.max(0, Math.min(this.tileableList.length - 1, this.focusedIndex));
+        this.focusedIndex = Math.max(
+            0,
+            Math.min(this.tileableList.length - 1, this.focusedIndex)
+        );
 
         await this.emitTileableListChangedOnce();
         // If there's no more focused msWindow on this workspace focus the last one
@@ -329,10 +336,7 @@ export class MsWorkspace extends WithSignals {
                 (resolve) => {
                     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                         delete this.emitTileableChangedInProgress;
-                        this.emit(
-                            'tileableList-changed',
-                            this.tileableList
-                        );
+                        this.emit('tileableList-changed', this.tileableList);
                         resolve();
                         return GLib.SOURCE_REMOVE;
                     });
@@ -345,8 +349,8 @@ export class MsWorkspace extends WithSignals {
     swapTileable(firstTileable: Tileable, secondTileable: Tileable) {
         const firstIndex = this.tileableList.indexOf(firstTileable);
         const secondIndex = this.tileableList.indexOf(secondTileable);
-        assert(firstIndex !== -1, "Tileable did not exist in workspace");
-        assert(secondIndex !== -1, "Tileable did not exist in workspace");
+        assert(firstIndex !== -1, 'Tileable did not exist in workspace');
+        assert(secondIndex !== -1, 'Tileable did not exist in workspace');
         this.tileableList[firstIndex] = secondTileable;
         this.tileableList[secondIndex] = firstTileable;
         this.emit('tileableList-changed', this.tileableList);
@@ -499,9 +503,14 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        this.layout = Me.layoutManager.createLayout(this, assertNotNull(this.state.layoutStateList.find(
-            (layoutState) => layoutState.key === layoutKey
-        )));
+        this.layout = Me.layoutManager.createLayout(
+            this,
+            assertNotNull(
+                this.state.layoutStateList.find(
+                    (layoutState) => layoutState.key === layoutKey
+                )
+            )
+        );
         this.msWorkspaceActor.tileableContainer.set_layout_manager(this.layout);
         this.emit('tiling-layout-changed');
     }
@@ -597,13 +606,18 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.visible = !monitorInFullScreen;
     }
 
-    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         SetAllocation(this, box, flags);
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
         const panelPosition = Me.msThemeManager.horizontalPanelPosition;
-        const panelHeight = (this.panel.get_preferred_height(-1) as [number, number])[1];
+        const panelHeight = (
+            this.panel.get_preferred_height(-1) as [number, number]
+        )[1];
         const panelBox = new Clutter.ActorBox();
         panelBox.x1 = contentBox.x1;
         panelBox.x2 = contentBox.x2;

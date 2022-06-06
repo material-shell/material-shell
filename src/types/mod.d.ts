@@ -55,7 +55,10 @@ declare global {
              * @param timestamp the timestamp for the launch (or 0 for current time)
              * @param workspace a workspace index, or -1 to indicate the current one
              */
-            create_app_launch_context(timestep: number, workspace: number): AppLaunchContext;
+            create_app_launch_context(
+                timestep: number,
+                workspace: number
+            ): AppLaunchContext;
             /** Material shell */
             ms: Extension;
             display: Meta.Display;

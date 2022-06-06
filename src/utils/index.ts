@@ -51,7 +51,7 @@ export function throttle<T extends any[], R, C>(
     wait: number,
     options?: Partial<TrottleParams>
 ): (...args: T) => R {
-    let call: { context: C, args: T } | null;
+    let call: { context: C; args: T } | null;
     let result: R;
     let timeout: number | null = null;
     let previous = 0;
@@ -66,7 +66,7 @@ export function throttle<T extends any[], R, C>(
     const later = function () {
         previous = definedOptions.leading === false ? 0 : Date.now();
         timeout = null;
-        assert(call !== null, "unreachable");
+        assert(call !== null, 'unreachable');
         result = func.apply(call.context, call.args);
         if (!timeout) call = null;
         return false;

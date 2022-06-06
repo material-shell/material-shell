@@ -344,10 +344,7 @@ export class MsPanel extends St.BoxLayout {
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         const monitor = Main.layoutManager.primaryMonitor;
-        assert(monitor !== null, "found no primary monitor");
-        return [
-            monitor.height,
-            monitor.height,
-        ];
+        assert(monitor !== null, 'found no primary monitor');
+        return [monitor.height, monitor.height];
     }
 }

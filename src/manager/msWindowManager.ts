@@ -74,46 +74,33 @@ const MAX_WINDOW_REASSOCIATION_TIME_MS = 3000;
 function windowMatchingCost(
     windowInfo: MsWindowMatchingInfo,
     metaWindow: Meta.Window,
-    msWindow: MsWindow,
+    msWindow: MsWindow
 ) {
-    assert(msWindow.lifecycleState.type === "window" || msWindow.lifecycleState.type === "app-placeholder", "MsWindow has no matching info");
+    assert(
+        msWindow.lifecycleState.type === 'window' ||
+            msWindow.lifecycleState.type === 'app-placeholder',
+        'MsWindow has no matching info'
+    );
     const matchingInfo = msWindow.lifecycleState.matchingInfo;
 
     let cost = 0;
     // The wmClass *must* match if specified
-    cost += matchingCost(
-        matchingInfo.wmClass,
-        windowInfo.wmClass,
-        INF_COST,
-        1
-    );
+    cost += matchingCost(matchingInfo.wmClass, windowInfo.wmClass, INF_COST, 1);
     cost += matchingCost(matchingInfo.pid, windowInfo.pid, 100, 1);
-    cost += matchingCost(
-        matchingInfo.title,
-        windowInfo.title,
-        50,
-        1
-    );
-    cost += matchingCost(
-        matchingInfo.stableSeq,
-        windowInfo.stableSeq,
-        10,
-        1
-    );
+    cost += matchingCost(matchingInfo.title, windowInfo.title, 50, 1);
+    cost += matchingCost(matchingInfo.stableSeq, windowInfo.stableSeq, 10, 1);
 
-    if (msWindow.lifecycleState.type === "window") {
+    if (msWindow.lifecycleState.type === 'window') {
         // Prefer to keep existing matchings
         cost += msWindow.lifecycleState.metaWindow === metaWindow ? 0 : 5;
     } else {
         cost += 5;
     }
 
-    if (msWindow.lifecycleState.type === "app-placeholder") {
+    if (msWindow.lifecycleState.type === 'app-placeholder') {
         // Prefer matching to MsWindows which are waiting for an app to open
         cost +=
-            msWindow.lifecycleState.waitingForAppSince !== undefined
-                ? 0
-                : 1;
+            msWindow.lifecycleState.waitingForAppSince !== undefined ? 0 : 1;
     } else {
         cost += 2;
     }
@@ -180,7 +167,13 @@ export class MsWindowManager extends MsManager {
     private async assignWindows() {
         // We capture the list of all actors at the beginning and don't care about any new ones until the
         // next time we start assigning windows.
-        const actors = global.get_window_actors().filter(x => (x.metaWindow as MetaWindowWithMsProperties).handledByMaterialShell);
+        const actors = global
+            .get_window_actors()
+            .filter(
+                (x) =>
+                    (x.metaWindow as MetaWindowWithMsProperties)
+                        .handledByMaterialShell
+            );
         // Assign all non-dialog windows first
         const windowsDone = this.assignNonDialogWindows(actors);
         // Assign the dialog windows to previously existing MsWindows that fits them.
@@ -201,7 +194,9 @@ export class MsWindowManager extends MsManager {
      * Returns a promise which resolves when the first frames of all assigned and newly created windows have been drawn.
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
-    private assignNonDialogWindows(actors: Meta.WindowActor[]): Promise<void[]> {
+    private assignNonDialogWindows(
+        actors: Meta.WindowActor[]
+    ): Promise<void[]> {
         const assignedMetaWindows = new Set(this.managedMetaWindows);
 
         // We allow meta windows to be re-assigned for a short amount of time after they have first been assigned.
@@ -209,8 +204,13 @@ export class MsWindowManager extends MsManager {
         // Essentially this loop makes those already assigned windows available to be re-assigned.
         const now = new Date().getTime();
         for (const msWindow of this.msWindowList) {
-            if (msWindow.lifecycleState.type === "window" && now - msWindow.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS && msWindow.lifecycleState.metaWindow !== null) {
-                assignedMetaWindows.delete(msWindow.lifecycleState.metaWindow)
+            if (
+                msWindow.lifecycleState.type === 'window' &&
+                now - msWindow.lifecycleState.matchedAtTime.getTime() <
+                    MAX_WINDOW_REASSOCIATION_TIME_MS &&
+                msWindow.lifecycleState.metaWindow !== null
+            ) {
+                assignedMetaWindows.delete(msWindow.lifecycleState.metaWindow);
             }
         }
 
@@ -222,15 +222,20 @@ export class MsWindowManager extends MsManager {
         );
 
         const candidateMsWindows = this.msWindowList.filter(
-            (x) => x.lifecycleState.type === 'app-placeholder' || (x.lifecycleState.type === 'window' && now - x.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS)
+            (x) =>
+                x.lifecycleState.type === 'app-placeholder' ||
+                (x.lifecycleState.type === 'window' &&
+                    now - x.lifecycleState.matchedAtTime.getTime() <
+                        MAX_WINDOW_REASSOCIATION_TIME_MS)
         );
-        const groupedMsWindowsByApp = groupBy(
-            candidateMsWindows,
-            (window) => {
-                assert(window.lifecycleState.type === 'app-placeholder' || window.lifecycleState.type === 'window', "unreachable");
-                return window.lifecycleState.matchingInfo.appId;
-            }
-        );
+        const groupedMsWindowsByApp = groupBy(candidateMsWindows, (window) => {
+            assert(
+                window.lifecycleState.type === 'app-placeholder' ||
+                    window.lifecycleState.type === 'window',
+                'unreachable'
+            );
+            return window.lifecycleState.matchingInfo.appId;
+        });
         const groupedMetaWindowsByApp = groupBy(
             windowActors,
             (window) => this.windowTracker.get_window_app(window.metaWindow).id
@@ -242,14 +247,26 @@ export class MsWindowManager extends MsManager {
             if (logged) return;
             logged = true;
             for (const windowActor of actors) {
-                Me.log(`Meta window: ${buildMetaWindowIdentifier(windowActor.metaWindow)} title='${windowActor.metaWindow.title}' dialog=${this.isMetaWindowDialog(windowActor.metaWindow)}`);
+                Me.log(
+                    `Meta window: ${buildMetaWindowIdentifier(
+                        windowActor.metaWindow
+                    )} title='${
+                        windowActor.metaWindow.title
+                    }' dialog=${this.isMetaWindowDialog(
+                        windowActor.metaWindow
+                    )}`
+                );
             }
             for (const msWindow of this.msWindowList) {
-                if (msWindow.lifecycleState.type === "app-placeholder") {
-                    Me.log(`MSWindow: ${JSON.stringify(msWindow.lifecycleState.matchingInfo)}`);
+                if (msWindow.lifecycleState.type === 'app-placeholder') {
+                    Me.log(
+                        `MSWindow: ${JSON.stringify(
+                            msWindow.lifecycleState.matchingInfo
+                        )}`
+                    );
                 }
             }
-        }
+        };
 
         for (const [
             groupKey,
@@ -266,9 +283,11 @@ export class MsWindowManager extends MsManager {
                     pid: metaWindow.get_pid(),
                     stableSeq: metaWindow.get_stable_sequence(),
                     title: metaWindow.title,
-                }
+                };
 
-                const costs = candidateMsWindows.map(msWindow => windowMatchingCost(windowInfo, metaWindow, msWindow));
+                const costs = candidateMsWindows.map((msWindow) =>
+                    windowMatchingCost(windowInfo, metaWindow, msWindow)
+                );
 
                 // Add N items representing potential new windows at the end.
                 // In case there are no existing MsWindows, we want to be able to create new ones
@@ -281,7 +300,9 @@ export class MsWindowManager extends MsManager {
             const { cost, assignments } = weighted_matching(costMatrix);
 
             // The meta window to be assigned to each MsWindow
-            const msWindowAssignments = new Array<Meta.Window | null>(candidateMsWindows.length).fill(null);
+            const msWindowAssignments = new Array<Meta.Window | null>(
+                candidateMsWindows.length
+            ).fill(null);
             for (let i = 0; i < assignments.length; i++) {
                 const idx = assignments[i];
                 if (idx < candidateMsWindows.length) {
@@ -292,7 +313,11 @@ export class MsWindowManager extends MsManager {
 
             for (let i = 0; i < candidateMsWindows.length; i++) {
                 const msWindow = candidateMsWindows[i];
-                if (msWindow.lifecycleState.type === "window" && msWindow.lifecycleState.metaWindow !== msWindowAssignments[i]) {
+                if (
+                    msWindow.lifecycleState.type === 'window' &&
+                    msWindow.lifecycleState.metaWindow !==
+                        msWindowAssignments[i]
+                ) {
                     // The contents of this MsWindow will be replaced.
                     // This can happen if an application starts and opens multiple windows at the same time (e.g. VSCode restoring several workspaces)
                     // initially these windows might be associated incorrectly, but once the workspaces have loaded and the window titles get updated
@@ -314,21 +339,32 @@ export class MsWindowManager extends MsManager {
 
                     // If it's still in the 'window' state that means the meta window was already associated correctly
                     // and we can skip associating it again.
-                    if (msWindow.lifecycleState.type === "app-placeholder") {
+                    if (msWindow.lifecycleState.type === 'app-placeholder') {
                         logInfoOnce();
-                        Me.log(`Associating ${buildMetaWindowIdentifier(windowActor.metaWindow)} with ${msWindow.windowIdentifier}`);
-                        promises.push(msWindow.setWindow(windowActor.metaWindow));
+                        Me.log(
+                            `Associating ${buildMetaWindowIdentifier(
+                                windowActor.metaWindow
+                            )} with ${msWindow.windowIdentifier}`
+                        );
+                        promises.push(
+                            msWindow.setWindow(windowActor.metaWindow)
+                        );
                     }
                 } else {
                     logInfoOnce();
-                    Me.log(`Creating a new window for ${buildMetaWindowIdentifier(windowActor.metaWindow)}`);
+                    Me.log(
+                        `Creating a new window for ${buildMetaWindowIdentifier(
+                            windowActor.metaWindow
+                        )}`
+                    );
                     // Did not find a good match, create a new window instead
                     const { done } = this.createNewMsWindow(
                         windowActor.metaWindow,
                         {
-                            msWorkspace: Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                                windowActor.metaWindow
-                            ),
+                            msWorkspace:
+                                Me.msWorkspaceManager.determineAppropriateMsWorkspace(
+                                    windowActor.metaWindow
+                                ),
                             focus: true,
                             insert: true,
                         }
@@ -459,9 +495,10 @@ export class MsWindowManager extends MsManager {
                 const { done } = this.createNewMsWindow(
                     windowActor.metaWindow,
                     {
-                        msWorkspace: Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                            windowActor.metaWindow
-                        ),
+                        msWorkspace:
+                            Me.msWorkspaceManager.determineAppropriateMsWorkspace(
+                                windowActor.metaWindow
+                            ),
                         focus: true,
                         insert: true,
                     }
@@ -549,9 +586,16 @@ export class MsWindowManager extends MsManager {
     ) {
         // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
         // This can for example happen with the "gnome-shell" pseudo-window which always seems to exist (but doesn't correspond to anything visible).
-        const app = source instanceof Meta.Window ? this.windowTracker.get_window_app(source) as Shell.App | null : source;
+        const app =
+            source instanceof Meta.Window
+                ? (this.windowTracker.get_window_app(
+                      source
+                  ) as Shell.App | null)
+                : source;
         if (app === null) {
-            throw new Error("The meta window has no associated app. Cannot create window for an unknown app.");
+            throw new Error(
+                'The meta window has no associated app. Cannot create window for an unknown app.'
+            );
         }
 
         if (matchingInfo === undefined) {
@@ -598,7 +642,7 @@ export class MsWindowManager extends MsManager {
         this.emit('ms-window-created', msWindow);
         return {
             msWindow: msWindow,
-            done: donePromise
+            done: donePromise,
         };
     }
 
@@ -625,7 +669,12 @@ export class MsWindowManager extends MsManager {
                 }
             }
 
-            if (msWindow.lifecycleState.type === "window" && now.getTime() - msWindow.lifecycleState.matchedAtTime.getTime() < MAX_WINDOW_REASSOCIATION_TIME_MS) {
+            if (
+                msWindow.lifecycleState.type === 'window' &&
+                now.getTime() -
+                    msWindow.lifecycleState.matchedAtTime.getTime() <
+                    MAX_WINDOW_REASSOCIATION_TIME_MS
+            ) {
                 anyWaiting = true;
             }
         }

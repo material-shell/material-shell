@@ -1,8 +1,6 @@
 import * as GLib from 'glib';
 
-export function assertNotNull<T>(
-    value: T | null | undefined,
-): T {
+export function assertNotNull<T>(value: T | null | undefined): T {
     if (value === null || value === undefined) {
         throw Error(`Expected value, but found ${value}`);
     }

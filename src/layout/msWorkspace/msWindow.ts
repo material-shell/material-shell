@@ -56,7 +56,7 @@ export interface MsWindowMatchingInfo {
 }
 export interface MsWindowState {
     appId: string;
-    matchingInfo: MsWindowMatchingInfo | undefined,
+    matchingInfo: MsWindowMatchingInfo | undefined;
     metaWindowIdentifier: string | null;
     persistent: boolean | undefined;
     x: number;
@@ -70,44 +70,48 @@ export interface MsWindowConstructProps {
     persistent?: boolean;
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
-    lifecycleState: MsWindowLifecycleState,
+    lifecycleState: MsWindowLifecycleState;
 }
 
-type MsWindowLifecycleState = {
-    /** An MsWindow displaying an app with optional dialogs, or in rare cases only dialogs */
-    type: "window",
-    /** The main window. Note that this can be null if a dialog was opened and then the main window closed */
-    metaWindow: MetaWindowWithMsProperties | null,
-    metaWindowSignals: number[],
-    dialogs: Dialog[],
-    /** Original matching info from when the window was associated.
-     * This does not necessarily perfectly match the current window.
-     * It is used to allow swapping window association for a small duration after an application has started in case new information becomes available.
-     * For example window titles are often updated if the application loads a document, which it might do automatically on startup.
-     */
-    matchingInfo: MsWindowMatchingInfo,
-    /** Time when the meta window was associated with this MsWindow */
-    matchedAtTime: Date,
-} | {
-    /** An MsWindow showing a placeholder for a particular app */
-    type: "app-placeholder",
-    /** Desired properties of windows to be assigned to this MsWindow.
-     * This is in particular used when restoring from a persisted state.
-     * It allows meta windows to be associated with the correct MsWindows when restoring.
-     *
-     * These are not hard constraints, they only come into play if there are multiple alternatives
-     * for how meta windows could be associated with MsWindows.
-     */
-    matchingInfo: MsWindowMatchingInfo,
-    /** Set when an app has been launched and this window is expecting to be associated to that app */
-    waitingForAppSince: Date | undefined,
-} | {
-    /** An MsWindow which will be destroyed soon unless another window or dialog opens */
-    type: "waiting-for-destroy",
-} | {
-    /** A destroyed MsWindow. This cannot be used for anything anymore. */
-    type: "destroyed",
-}
+type MsWindowLifecycleState =
+    | {
+          /** An MsWindow displaying an app with optional dialogs, or in rare cases only dialogs */
+          type: 'window';
+          /** The main window. Note that this can be null if a dialog was opened and then the main window closed */
+          metaWindow: MetaWindowWithMsProperties | null;
+          metaWindowSignals: number[];
+          dialogs: Dialog[];
+          /** Original matching info from when the window was associated.
+           * This does not necessarily perfectly match the current window.
+           * It is used to allow swapping window association for a small duration after an application has started in case new information becomes available.
+           * For example window titles are often updated if the application loads a document, which it might do automatically on startup.
+           */
+          matchingInfo: MsWindowMatchingInfo;
+          /** Time when the meta window was associated with this MsWindow */
+          matchedAtTime: Date;
+      }
+    | {
+          /** An MsWindow showing a placeholder for a particular app */
+          type: 'app-placeholder';
+          /** Desired properties of windows to be assigned to this MsWindow.
+           * This is in particular used when restoring from a persisted state.
+           * It allows meta windows to be associated with the correct MsWindows when restoring.
+           *
+           * These are not hard constraints, they only come into play if there are multiple alternatives
+           * for how meta windows could be associated with MsWindows.
+           */
+          matchingInfo: MsWindowMatchingInfo;
+          /** Set when an app has been launched and this window is expecting to be associated to that app */
+          waitingForAppSince: Date | undefined;
+      }
+    | {
+          /** An MsWindow which will be destroyed soon unless another window or dialog opens */
+          type: 'waiting-for-destroy';
+      }
+    | {
+          /** A destroyed MsWindow. This cannot be used for anything anymore. */
+          type: 'destroyed';
+      };
 
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
@@ -129,7 +133,7 @@ export class MsWindow extends Clutter.Actor {
         },
     };
 
-    lifecycleState: MsWindowLifecycleState
+    lifecycleState: MsWindowLifecycleState;
 
     public app: App;
     _persistent: boolean | undefined;
@@ -142,14 +146,14 @@ export class MsWindow extends Clutter.Actor {
         dimmer?: Clutter.BrightnessContrastEffect;
         border?: PrimaryBorderEffect;
     };
-    updateMetaWindowPositionAndSizeThrottled: ()=>void;
+    updateMetaWindowPositionAndSizeThrottled: () => void;
 
     constructor({
         app,
         persistent,
         initialAllocation,
         msWorkspace,
-        lifecycleState
+        lifecycleState,
     }: MsWindowConstructProps) {
         super({
             reactive: true,
@@ -163,7 +167,10 @@ export class MsWindow extends Clutter.Actor {
         this.app = app;
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
-        this.updateMetaWindowPositionAndSizeThrottled = throttle(() => this.updateMetaWindowPositionAndSizeInternal(), 16);
+        this.updateMetaWindowPositionAndSizeThrottled = throttle(
+            () => this.updateMetaWindowPositionAndSizeInternal(),
+            16
+        );
 
         this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(this.app);
@@ -190,7 +197,7 @@ export class MsWindow extends Clutter.Actor {
     get state(): MsWindowState {
         const metaWindow = this.metaWindow;
         let matchingInfo: MsWindowMatchingInfo;
-        switch(this.lifecycleState.type) {
+        switch (this.lifecycleState.type) {
             case 'app-placeholder':
                 matchingInfo = this.lifecycleState.matchingInfo;
                 break;
@@ -199,9 +206,11 @@ export class MsWindow extends Clutter.Actor {
                     appId: this.app.id,
                     title: this.lifecycleState.metaWindow?.title,
                     pid: this.lifecycleState.metaWindow?.get_pid(),
-                    wmClass: this.lifecycleState.metaWindow?.get_wm_class_instance(),
-                    stableSeq: this.lifecycleState.metaWindow?.get_stable_sequence(),
-                }
+                    wmClass:
+                        this.lifecycleState.metaWindow?.get_wm_class_instance(),
+                    stableSeq:
+                        this.lifecycleState.metaWindow?.get_stable_sequence(),
+                };
                 break;
             default:
                 matchingInfo = {
@@ -210,14 +219,17 @@ export class MsWindow extends Clutter.Actor {
                     pid: undefined,
                     wmClass: undefined,
                     stableSeq: undefined,
-                }
+                };
         }
 
         return {
             appId: this.app.id,
             // For compatibility we save a meta window identifier string.
             // This is useful if the user decides to downgrade material-shell to a previous version.
-            metaWindowIdentifier: metaWindow !== null ? buildMetaWindowIdentifier(metaWindow) : null,
+            metaWindowIdentifier:
+                metaWindow !== null
+                    ? buildMetaWindowIdentifier(metaWindow)
+                    : null,
             matchingInfo: matchingInfo,
             persistent: this._persistent,
             x: this.x,
@@ -233,8 +245,9 @@ export class MsWindow extends Clutter.Actor {
 
         return (
             state.metaWindow ||
-            (state.dialogs &&
-                state.dialogs.length > 0 ? state.dialogs[state.dialogs.length - 1].metaWindow : null)
+            (state.dialogs && state.dialogs.length > 0
+                ? state.dialogs[state.dialogs.length - 1].metaWindow
+                : null)
         );
     }
 
@@ -246,7 +259,7 @@ export class MsWindow extends Clutter.Actor {
         const state = this.lifecycleState;
         if (state.type !== 'window') return [];
 
-        const windows = state.dialogs.map(d => d.metaWindow);
+        const windows = state.dialogs.map((d) => d.metaWindow);
         if (state.metaWindow !== null) windows.push(state.metaWindow);
         return windows;
     }
@@ -257,7 +270,7 @@ export class MsWindow extends Clutter.Actor {
     get windowIdentifier(): string {
         const metaWindow = this.metaWindow;
         if (metaWindow !== null) {
-            return buildMetaWindowIdentifier(metaWindow)
+            return buildMetaWindowIdentifier(metaWindow);
         } else {
             return `${this.app.id}-${this.lifecycleState.type}`;
         }
@@ -265,10 +278,8 @@ export class MsWindow extends Clutter.Actor {
 
     get title() {
         if (!this.app) return '';
-        const metaWindow = this.metaWindow
-        return metaWindow
-            ? metaWindow.get_title()
-            : this.app.get_name();
+        const metaWindow = this.metaWindow;
+        return metaWindow ? metaWindow.get_title() : this.app.get_name();
     }
 
     set persistent(boolean: boolean) {
@@ -279,8 +290,8 @@ export class MsWindow extends Clutter.Actor {
     delayGetMetaWindowActor(
         metaWindow: MetaWindowWithMsProperties,
         delayedCount: number,
-        resolve: (actor: Meta.WindowActor)=>void,
-        reject: ()=>void
+        resolve: (actor: Meta.WindowActor) => void,
+        reject: () => void
     ) {
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
@@ -351,7 +362,10 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
@@ -376,7 +390,7 @@ export class MsWindow extends Clutter.Actor {
         const offsetY = monitorInFullScreen
             ? this.msWorkspace.monitor.y
             : workArea.y;
-        if (this.lifecycleState.type === "window") {
+        if (this.lifecycleState.type === 'window') {
             // The dialogs are sorted because it affects their stacking order when displayed. We show the most recently interacted with window one on top.
             [...this.lifecycleState.dialogs]
                 .sort(
@@ -434,7 +448,7 @@ export class MsWindow extends Clutter.Actor {
 
     private updateMetaWindowPositionAndSizeInternal() {
         const state = this.lifecycleState;
-        if (state.type !== "window") return;
+        if (state.type !== 'window') return;
         const metaWindow = state.metaWindow;
         const windowActor =
             metaWindow &&
@@ -452,8 +466,7 @@ export class MsWindow extends Clutter.Actor {
             return;
         }
 
-        let shouldBeMaximizedHorizontally =
-            metaWindow.maximized_horizontally;
+        let shouldBeMaximizedHorizontally = metaWindow.maximized_horizontally;
         let shouldBeMaximizedVertically = metaWindow.maximized_vertically;
 
         // Check for maximized only if the msWindow is inside the tileableContainer
@@ -473,17 +486,15 @@ export class MsWindow extends Clutter.Actor {
         }
 
         const needToChangeMaximizeHorizontally =
-            shouldBeMaximizedHorizontally !==
-            metaWindow.maximized_horizontally;
+            shouldBeMaximizedHorizontally !== metaWindow.maximized_horizontally;
         const needToChangeMaximizeVertically =
-            shouldBeMaximizedVertically !==
-            metaWindow.maximized_vertically;
+            shouldBeMaximizedVertically !== metaWindow.maximized_vertically;
 
         let needToMove = false;
         let needToResize = false;
         let needToMoveOrResize = false;
-        let moveTo: { x: number, y: number } | undefined = undefined;
-        let resizeTo: { width: number, height: number } | undefined = undefined;
+        let moveTo: { x: number; y: number } | undefined = undefined;
+        let resizeTo: { width: number; height: number } | undefined = undefined;
 
         // check if the window need a changes only if we don't need to already maximize
         if (!shouldBeMaximizedHorizontally || !shouldBeMaximizedVertically) {
@@ -497,9 +508,8 @@ export class MsWindow extends Clutter.Actor {
                     height: this.height,
                 };
             } else {
-                const relativePosition = this.getRelativeMetaWindowPosition(
-                    metaWindow
-                );
+                const relativePosition =
+                    this.getRelativeMetaWindowPosition(metaWindow);
 
                 moveTo = {
                     x:
@@ -540,14 +550,12 @@ export class MsWindow extends Clutter.Actor {
                 shouldBeMaximizedHorizontally &&
                 !metaWindow.maximized_horizontally;
             const shouldMaximizeVertically =
-                shouldBeMaximizedVertically &&
-                !metaWindow.maximized_vertically;
+                shouldBeMaximizedVertically && !metaWindow.maximized_vertically;
             const shouldUnMaximizeHorizontally =
                 !shouldBeMaximizedHorizontally &&
                 metaWindow.maximized_horizontally;
             const shouldUnMaximizeVertically =
-                !shouldBeMaximizedVertically &&
-                metaWindow.maximized_vertically;
+                !shouldBeMaximizedVertically && metaWindow.maximized_vertically;
 
             const callback = () => {
                 if (shouldMaximizeVertically && shouldUnMaximizeVertically) {
@@ -577,7 +585,11 @@ export class MsWindow extends Clutter.Actor {
             }
         }
 
-        if (needToMoveOrResize && moveTo !== undefined && resizeTo !== undefined) {
+        if (
+            needToMoveOrResize &&
+            moveTo !== undefined &&
+            resizeTo !== undefined
+        ) {
             // Secure the futur metaWindow Position to ensure it's not outside the current monitor
             if (!this.dragged) {
                 moveTo.x = Math.max(
@@ -631,18 +643,13 @@ export class MsWindow extends Clutter.Actor {
                     // Enforce window positioning since Gnome Terminal don't always move when requested
                     const moveTo2 = moveTo;
                     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                        const currentFrameRect =
-                            metaWindow.get_frame_rect();
+                        const currentFrameRect = metaWindow.get_frame_rect();
 
                         if (
                             currentFrameRect.x !== moveTo2.x ||
                             currentFrameRect.y !== moveTo2.y
                         ) {
-                            metaWindow.move_frame(
-                                true,
-                                moveTo2.x,
-                                moveTo2.y
-                            );
+                            metaWindow.move_frame(true, moveTo2.x, moveTo2.y);
                         }
 
                         return GLib.SOURCE_REMOVE;
@@ -684,7 +691,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeDialogs() {
-        if (this.lifecycleState.type !== "window") return;
+        if (this.lifecycleState.type !== 'window') return;
         this.lifecycleState.dialogs.forEach((dialog) => {
             const { metaWindow } = dialog;
             const frame = metaWindow.get_frame_rect();
@@ -734,7 +741,10 @@ export class MsWindow extends Clutter.Actor {
     }
 
     resizeMetaWindows() {
-        if (this.lifecycleState.type == "window" && this.lifecycleState.metaWindow !== null) {
+        if (
+            this.lifecycleState.type == 'window' &&
+            this.lifecycleState.metaWindow !== null
+        ) {
             this.followMetaWindow
                 ? this.mimicMetaWindowPositionAndSize()
                 : this.updateMetaWindowPositionAndSize();
@@ -743,7 +753,9 @@ export class MsWindow extends Clutter.Actor {
         this.resizeDialogs();
     }
 
-    registerOnMetaWindowSignals(metaWindow: MetaWindowWithMsProperties): number[] {
+    registerOnMetaWindowSignals(
+        metaWindow: MetaWindowWithMsProperties
+    ): number[] {
         return [
             metaWindow.connect('notify::title', (_) => {
                 this.emit('title-changed', this.title);
@@ -762,14 +774,14 @@ export class MsWindow extends Clutter.Actor {
                 if (this.followMetaWindow) {
                     this.mimicMetaWindowPositionAndSize();
                 }
-            })
-        ]
+            }),
+        ];
     }
 
     unregisterOnMetaWindowSignals() {
         const state = this.lifecycleState;
-        if (state.type !== "window" || state.metaWindow === null) return;
-        for(const signalId of state.metaWindowSignals) {
+        if (state.type !== 'window' || state.metaWindow === null) return;
+        for (const signalId of state.metaWindowSignals) {
             state.metaWindow.disconnect(signalId);
         }
         state.metaWindowSignals = [];
@@ -777,9 +789,11 @@ export class MsWindow extends Clutter.Actor {
 
     setMsWorkspace(msWorkspace: MsWorkspace) {
         this.msWorkspace = msWorkspace;
-        if (this.lifecycleState.type === "window") {
+        if (this.lifecycleState.type === 'window') {
             [
-                ...this.lifecycleState.dialogs.map((dialog) => dialog.metaWindow),
+                ...this.lifecycleState.dialogs.map(
+                    (dialog) => dialog.metaWindow
+                ),
                 this.lifecycleState.metaWindow,
             ].forEach((metaWindow) => {
                 if (metaWindow) {
@@ -792,16 +806,19 @@ export class MsWindow extends Clutter.Actor {
     }
 
     async setWindow(metaWindow: MetaWindowWithMsProperties): Promise<void> {
-        assert(this.lifecycleState.type === "app-placeholder", "Can only set the window if the MsWindow is in the app-placeholder state.");
+        assert(
+            this.lifecycleState.type === 'app-placeholder',
+            'Can only set the window if the MsWindow is in the app-placeholder state.'
+        );
 
         this.lifecycleState = {
-            type: "window",
+            type: 'window',
             metaWindow: metaWindow,
             metaWindowSignals: this.registerOnMetaWindowSignals(metaWindow),
             dialogs: [],
             matchingInfo: this.lifecycleState.matchingInfo,
             matchedAtTime: new Date(),
-        }
+        };
         metaWindow.msWindow = this;
 
         await this.onMetaWindowActorExist(metaWindow);
@@ -814,7 +831,10 @@ export class MsWindow extends Clutter.Actor {
     }
 
     public unsetWindow() {
-        assert(this.lifecycleState.type === "window", "Can only unset the window when in the window state");
+        assert(
+            this.lifecycleState.type === 'window',
+            'Can only unset the window when in the window state'
+        );
         this.unregisterOnMetaWindowSignals();
         // Required when re-assigning windows.
         // Normally if a window is destroyed the source is implicitly cleared because the source window doesn't exist anymore.
@@ -847,20 +867,22 @@ export class MsWindow extends Clutter.Actor {
     }
 
     addDialog(metaWindow: MetaWindowWithMsProperties): void {
-        if (this.lifecycleState.type === "app-placeholder") {
+        if (this.lifecycleState.type === 'app-placeholder') {
             this.lifecycleState = {
-                type: "window",
+                type: 'window',
                 metaWindow: null,
                 metaWindowSignals: [],
                 dialogs: [],
                 matchingInfo: this.lifecycleState.matchingInfo,
                 matchedAtTime: new Date(),
-            }
+            };
         }
 
-        if (this.lifecycleState.type !== "window") {
-            throw new Error(`Cannot add dialog to an MsWindow in the ${this.lifecycleState.type} state`);
-        };
+        if (this.lifecycleState.type !== 'window') {
+            throw new Error(
+                `Cannot add dialog to an MsWindow in the ${this.lifecycleState.type} state`
+            );
+        }
 
         this.updateWorkspaceAndMonitor(metaWindow);
         const clone = new Clutter.Clone({
@@ -882,7 +904,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     removeAllDialogs() {
-        if (this.lifecycleState.type === "window") {
+        if (this.lifecycleState.type === 'window') {
             const d = [...this.lifecycleState.dialogs];
             for (const dialog of d) {
                 this.removeDialog(dialog.metaWindow);
@@ -891,13 +913,15 @@ export class MsWindow extends Clutter.Actor {
     }
 
     removeDialog(metaWindow: MetaWindowWithMsProperties) {
-        if (this.lifecycleState.type !== "window") {
-            throw new Error("Can only remove dialogs when in the window state");
+        if (this.lifecycleState.type !== 'window') {
+            throw new Error('Can only remove dialogs when in the window state');
         }
 
-        const idx = this.lifecycleState.dialogs.findIndex(x => x.metaWindow == metaWindow);
+        const idx = this.lifecycleState.dialogs.findIndex(
+            (x) => x.metaWindow == metaWindow
+        );
         if (idx === -1) {
-            throw new Error("Dialog is not added to window");
+            throw new Error('Dialog is not added to window');
         }
 
         const dialog = this.lifecycleState.dialogs[idx];
@@ -908,14 +932,18 @@ export class MsWindow extends Clutter.Actor {
     }
 
     async onMetaWindowsChanged(): Promise<void> {
-        if (this.lifecycleState.type == "window") {
+        if (this.lifecycleState.type == 'window') {
             this.reactive = false;
             let metaWindow = assertNotNull(this.metaWindow);
             await this.onMetaWindowActorExist(metaWindow);
             await this.onMetaWindowFirstFrameDrawn(metaWindow);
             WindowUtils.updateTitleBarVisibility(metaWindow);
             this.resizeMetaWindows();
-            set_style_class(this.msContent, 'surface-darker', this.lifecycleState.metaWindow === null);
+            set_style_class(
+                this.msContent,
+                'surface-darker',
+                this.lifecycleState.metaWindow === null
+            );
             if (this.placeholder.get_parent()) {
                 this.fadeOutPlaceholder();
             }
@@ -942,7 +970,10 @@ export class MsWindow extends Clutter.Actor {
 
     focusDialogs(): boolean {
         let focused = false;
-        if (this.lifecycleState.type === 'window' && this.lifecycleState.dialogs) {
+        if (
+            this.lifecycleState.type === 'window' &&
+            this.lifecycleState.dialogs
+        ) {
             [...this.lifecycleState.dialogs]
                 .sort((firstDialog, secondDialog) => {
                     return (
@@ -967,7 +998,10 @@ export class MsWindow extends Clutter.Actor {
      */
     metaWindowUnManaged(metaWindow: MetaWindowWithMsProperties): void {
         const state = this.lifecycleState;
-        assert(state.type == "window", "Expected the MsWindow to be in the 'window' state");
+        assert(
+            state.type == 'window',
+            "Expected the MsWindow to be in the 'window' state"
+        );
 
         const isMainMetaWindow = metaWindow === state.metaWindow;
         const dialog = state.dialogs.some(
@@ -975,7 +1009,7 @@ export class MsWindow extends Clutter.Actor {
         );
         // If it's neither the MainMetaWindow or a Dialog we ignore, but this shouldn't happen
         if (!isMainMetaWindow && !dialog) {
-            Me.log("Cannot find the window which was unmanaged");
+            Me.log('Cannot find the window which was unmanaged');
             return;
         }
         if (dialog) {
@@ -1010,7 +1044,7 @@ export class MsWindow extends Clutter.Actor {
         const state = this.lifecycleState;
 
         switch (state.type) {
-            case "window": {
+            case 'window': {
                 const dialogPromises = state.dialogs.map((dialog) => {
                     return new Promise<void>((resolve) => {
                         // TODO: When can this return false?
@@ -1047,7 +1081,7 @@ export class MsWindow extends Clutter.Actor {
                 // show 'Do you want to save this document' dialogs which allow the user to cancel closing the window.
                 break;
             }
-            case "app-placeholder": {
+            case 'app-placeholder': {
                 if (this._persistent) {
                     // Persistent app placeholders cannot be closed
                 } else {
@@ -1058,11 +1092,11 @@ export class MsWindow extends Clutter.Actor {
                 }
                 break;
             }
-            case "waiting-for-destroy":
+            case 'waiting-for-destroy':
                 this.msWorkspace.removeMsWindow(this);
                 this.destroy();
                 break;
-            case "destroyed":
+            case 'destroyed':
                 break;
         }
     }
@@ -1112,7 +1146,7 @@ export class MsWindow extends Clutter.Actor {
     toString() {
         // When MS function parameter logging is enabled, toString may be called on windows that have been destroyed.
         // So we need to guard against this. super.toString would otherwise try to access the destroyed C object.
-        if (this.lifecycleState.type === "destroyed") {
+        if (this.lifecycleState.type === 'destroyed') {
             return `[destroyed MsWindow - ${this.app.get_name()}]`;
         }
 
@@ -1123,7 +1157,7 @@ export class MsWindow extends Clutter.Actor {
     _onDestroy() {
         if (this.destroyId) this.disconnect(this.destroyId);
         this.unregisterOnMetaWindowSignals();
-        this.lifecycleState = { type: "destroyed" };
+        this.lifecycleState = { type: 'destroyed' };
     }
 }
 
@@ -1150,12 +1184,15 @@ export class MsWindowContent extends St.Widget {
         this.add_child(this.placeholder);
     }
 
-    override vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         const parent = this.get_parent();
-        assert(parent instanceof MsWindow, "expected parent to be an MsWindow");
+        assert(parent instanceof MsWindow, 'expected parent to be an MsWindow');
         const metaWindow = parent.metaWindow;
         if (metaWindow && metaWindow.firstFrameDrawn) {
             const windowFrameRect = metaWindow.get_frame_rect();

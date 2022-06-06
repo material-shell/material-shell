@@ -24,12 +24,12 @@ function log(...args: any[]) {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
 function init() {
-    log("INITIALIZING PREFERENCES");
+    log('INITIALIZING PREFERENCES');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function buildPrefsWidget() {
-    log("Prefs widget");
+    log('Prefs widget');
     return new PrefsWidget();
 }
 
@@ -132,7 +132,8 @@ class HotkeyListBox extends Gtk.ListBox {
         });
 
         this.settings = new Gio.Settings({
-            settings_schema: schemaSource.lookup(hotkeysSchemaName, false) || undefined,
+            settings_schema:
+                schemaSource.lookup(hotkeysSchemaName, false) || undefined,
         });
 
         this.settings
@@ -144,13 +145,20 @@ class HotkeyListBox extends Gtk.ListBox {
                         null
                     );
                 if (!ok) {
-                    Me.log(`Could not parse key for ${key}: ${this.settings.get_strv(key)[0]}`);
+                    Me.log(
+                        `Could not parse key for ${key}: ${
+                            this.settings.get_strv(key)[0]
+                        }`
+                    );
                 }
                 let accelName;
                 if (accelKey == 0) {
                     accelName = 'Disabled';
                 } else {
-                    assert(accelKey !== null && mods !== null, "parse should have succeeded");
+                    assert(
+                        accelKey !== null && mods !== null,
+                        'parse should have succeeded'
+                    );
                     accelName = Gtk.accelerator_get_label(accelKey, mods);
                 }
                 const summary = this.settings.settings_schema
@@ -325,7 +333,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.COMBO:
-                const combo = widget = new Gtk.ComboBoxText();
+                const combo = (widget = new Gtk.ComboBoxText());
                 const a = settingKey
                     .get_range()
                     .get_child_value(1)
@@ -342,7 +350,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.COLOR: {
-                const btn = widget = new Gtk.ColorButton();
+                const btn = (widget = new Gtk.ColorButton());
                 const rgba = new Gdk.RGBA();
                 rgba.parse(this.settings.get_string(key));
                 btn.set_rgba(rgba);
@@ -355,7 +363,11 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
             }
             case WidgetType.INT:
-                const spin = widget = Gtk.SpinButton.new_with_range(0, 1000, 1);
+                const spin = (widget = Gtk.SpinButton.new_with_range(
+                    0,
+                    1000,
+                    1
+                ));
                 this.settings.bind(
                     key,
                     spin.get_adjustment(),
@@ -365,7 +377,11 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
 
             case WidgetType.DECIMAL:
-                const spin2 = widget = Gtk.SpinButton.new_with_range(0, 1, 0.1);
+                const spin2 = (widget = Gtk.SpinButton.new_with_range(
+                    0,
+                    1,
+                    0.1
+                ));
                 this.settings.bind(
                     key,
                     spin2.get_adjustment(),
@@ -386,7 +402,7 @@ class SettingCategoryListBox extends Gtk.Box {
 
             case WidgetType.CUSTOM:
                 if (customWidget == undefined) {
-                    throw new Error("Supplied custom widget is undefined");
+                    throw new Error('Supplied custom widget is undefined');
                 }
                 widget = customWidget;
                 break;
@@ -501,7 +517,7 @@ function cssHexString(css: string) {
                 start = end;
             }
         }
-        assert(start !== undefined, "true by construction");
+        assert(start !== undefined, 'true by construction');
         xx = parseInt(css.slice(start, end)).toString(16);
         if (xx.length == 1) xx = `0${xx}`;
         rrggbb += xx;

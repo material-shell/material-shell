@@ -9,7 +9,9 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 
 @registerGObjectClass
-export class SimpleLayoutBase<S extends { key: string }> extends BaseResizeableTilingLayout<S> {
+export class SimpleLayoutBase<
+    S extends { key: string }
+> extends BaseResizeableTilingLayout<S> {
     isVerticalLayout(box: Clutter.ActorBox) {
         return box.get_width() < box.get_height();
     }

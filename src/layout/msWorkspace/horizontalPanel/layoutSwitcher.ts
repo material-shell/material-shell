@@ -4,7 +4,11 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
-import { LayoutState, LayoutType, TilingLayoutByKey } from 'src/manager/layoutManager';
+import {
+    LayoutState,
+    LayoutType,
+    TilingLayoutByKey,
+} from 'src/manager/layoutManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { MsWorkspace } from '../msWorkspace';
@@ -27,7 +31,10 @@ export class LayoutSwitcher extends St.BoxLayout {
     msWorkspace: MsWorkspace;
     menu: popupMenu.PopupMenu;
 
-    constructor(msWorkspace: MsWorkspace, panelMenuManager: popupMenu.PopupMenuManager) {
+    constructor(
+        msWorkspace: MsWorkspace,
+        panelMenuManager: popupMenu.PopupMenuManager
+    ) {
         super({});
         this.layoutQuickWidgetBin = new St.Bin({
             style_class: 'layout-quick-widget-bin',
@@ -132,7 +139,8 @@ export class LayoutSwitcher extends St.BoxLayout {
             return layoutKey === layout.state.key;
         });
         // Note: This cast is safe, typescript is just not good enough to figure that out
-        const newState = Me.layoutManager.getLayoutByKey(layoutKey).state as LayoutState;
+        const newState = Me.layoutManager.getLayoutByKey(layoutKey)
+            .state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
         } else {
@@ -182,7 +190,11 @@ export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
     editable: boolean = false;
 
-    constructor(layoutConstructor: LayoutType, active: boolean, params?: popupMenu.PopupBaseMenuItemParams) {
+    constructor(
+        layoutConstructor: LayoutType,
+        active: boolean,
+        params?: popupMenu.PopupBaseMenuItemParams
+    ) {
         super(layoutConstructor.label, active, params);
         this.layoutConstructor = layoutConstructor;
         this._icon = new St.Icon({
@@ -198,7 +210,10 @@ export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
 
     get layoutSwitcher(): LayoutSwitcher {
         const layoutSwitcher = assertNotNull(this._parent).sourceActor;
-        assert(layoutSwitcher instanceof LayoutSwitcher, "expected menu's source actor to be a LayoutSwitcher");
+        assert(
+            layoutSwitcher instanceof LayoutSwitcher,
+            "expected menu's source actor to be a LayoutSwitcher"
+        );
         return layoutSwitcher;
     }
 
@@ -286,7 +301,10 @@ export class LayoutsToggle extends popupMenu.PopupImageMenuItem {
     menu: popupMenu.PopupMenu;
     editable: boolean;
 
-    constructor(menu: popupMenu.PopupMenu, params?: popupMenu.PopupBaseMenuItemParams) {
+    constructor(
+        menu: popupMenu.PopupMenu,
+        params?: popupMenu.PopupBaseMenuItemParams
+    ) {
         const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/category/settings-symbolic.svg`

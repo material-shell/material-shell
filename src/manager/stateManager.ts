@@ -44,7 +44,7 @@ export class StateManager {
         }
         if (GLib.file_test(REGISTRY_PATH, FileTest.EXISTS)) {
             this.stateFile.load_contents_async(null, (obj, res) => {
-                const file = (obj as unknown) as Gio.File;
+                const file = obj as unknown as Gio.File;
                 const [success, contents] = file.load_contents_finish(res);
                 if (success) {
                     try {
@@ -69,10 +69,11 @@ export class StateManager {
             const workspacesState = state['workspaces-state'];
             if (workspacesState) {
                 // in old version the workspaces was split in 2 different array
-                workspacesState.msWorkspaceList = workspacesState.msWorkspaceList || [
-                    ...workspacesState.primaryWorkspaceList,
-                    ...workspacesState.externalWorkspaces,
-                ];
+                workspacesState.msWorkspaceList =
+                    workspacesState.msWorkspaceList || [
+                        ...workspacesState.primaryWorkspaceList,
+                        ...workspacesState.externalWorkspaces,
+                    ];
 
                 workspacesState.msWorkspaceList.map((msWorkspaceState: any) => {
                     msWorkspaceState.layoutKey =

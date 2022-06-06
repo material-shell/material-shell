@@ -26,13 +26,13 @@ export class MatDivider extends St.Widget {
     override vfunc_get_preferred_width(forHeight: number): [number, number] {
         return this.vertical
             ? [1, 1]
-            // Note: clutter typing is incorrect here
-            : super.vfunc_get_preferred_width(forHeight) as [number, number];
+            : // Note: clutter typing is incorrect here
+              (super.vfunc_get_preferred_width(forHeight) as [number, number]);
     }
     override vfunc_get_preferred_height(forWidth: number): [number, number] {
         return !this.vertical
             ? [1, 1]
-            // Note: clutter typing is incorrect here
-            : super.vfunc_get_preferred_height(forWidth) as [number, number];
+            : // Note: clutter typing is incorrect here
+              (super.vfunc_get_preferred_height(forWidth) as [number, number]);
     }
 }

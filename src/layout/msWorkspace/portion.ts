@@ -13,7 +13,7 @@ export type PortionState = {
     basis: number;
     vertical: boolean;
     children: PortionState[];
-}
+};
 
 export class Portion {
     vertical: boolean;
@@ -352,8 +352,8 @@ export class Portion {
             }
 
             const [position, size] = this.vertical
-                ? ['y', 'height'] as const
-                : ['x', 'width'] as const;
+                ? (['y', 'height'] as const)
+                : (['x', 'width'] as const);
 
             ratio[position] += ratio[size] * (basisSum / basisTotal);
             ratio[size] *= child.basis / basisTotal;

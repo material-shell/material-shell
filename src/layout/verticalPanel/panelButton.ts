@@ -60,7 +60,7 @@ export class MatPanelButton extends MatButton {
     /**
      * Just the panel height
      */
-     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
+    override vfunc_get_preferred_height(_forWidth: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(this.monitorIndex),
             Me.msThemeManager.getPanelSize(this.monitorIndex),

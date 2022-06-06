@@ -31,7 +31,7 @@ export function SetAllocation(
     flags?: Clutter.AllocationFlags
 ) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
-        const compat = (actor as unknown) as {
+        const compat = actor as unknown as {
             set_allocation: (
                 box: Clutter.ActorBox,
                 flags: Clutter.AllocationFlags
@@ -49,7 +49,7 @@ export function Allocate(
     flags?: Clutter.AllocationFlags
 ) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
-        const compat = (actor as unknown) as {
+        const compat = actor as unknown as {
             allocate: (
                 box: Clutter.ActorBox,
                 flags: Clutter.AllocationFlags
@@ -66,7 +66,7 @@ export function AllocatePreferredSize(
     flags?: Clutter.AllocationFlags
 ) {
     if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
-        const compat = (actor as unknown) as {
+        const compat = actor as unknown as {
             allocate_preferred_size: (flags: Clutter.AllocationFlags) => void;
         };
         compat.allocate_preferred_size(flags!);

@@ -67,9 +67,7 @@ export namespace gettext {
         msgid_plural: string,
         n: number
     ): string;
-    export function domain(
-        domainName: string
-    ): {
+    export function domain(domainName: string): {
         gettext: (msgid: string) => string;
         ngettext: (msgid: string, msgid_plural: string, n: number) => string;
         pgettext: (context: any, msgid: string) => any;

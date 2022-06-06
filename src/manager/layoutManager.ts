@@ -25,8 +25,8 @@ import { Settings } from 'gio';
 
 type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
 
-export type LayoutState = 
-    ExtractState<MaximizeLayout>
+export type LayoutState =
+    | ExtractState<MaximizeLayout>
     | ExtractState<SplitLayout>
     | ExtractState<GridLayout>
     | ExtractState<HalfLayout>
@@ -36,9 +36,10 @@ export type LayoutState =
     | ExtractState<SimpleLayout>
     | ExtractState<SimpleHorizontalLayout>
     | ExtractState<SimpleVerticalLayout>
-    | ExtractState<FloatLayout>
-    
-export type LayoutType = (typeof MaximizeLayout
+    | ExtractState<FloatLayout>;
+
+export type LayoutType =
+    | typeof MaximizeLayout
     | typeof SplitLayout
     | typeof GridLayout
     | typeof HalfLayout
@@ -48,7 +49,7 @@ export type LayoutType = (typeof MaximizeLayout
     | typeof SimpleLayout
     | typeof SimpleHorizontalLayout
     | typeof SimpleVerticalLayout
-    | typeof FloatLayout)
+    | typeof FloatLayout;
 
 const layouts: LayoutType[] = [
     MaximizeLayout,
@@ -69,7 +70,7 @@ export const TilingLayoutByKey: {
 } = layouts.reduce((layoutsByKey, layout) => {
     layoutsByKey[layout.state.key] = layout;
     return layoutsByKey;
-}, {} as { [key: string]: LayoutType; });
+}, {} as { [key: string]: LayoutType });
 
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
@@ -145,19 +146,33 @@ export class LayoutManager extends MsManager {
         });
     }
 
-    createLayout(workspace: MsWorkspace, state: LayoutState): InstanceType<LayoutType> {
-        switch(state.key) {
-            case "maximize": return new MaximizeLayout(workspace, state);
-            case "split": return new SplitLayout(workspace, state);
-            case "grid": return new GridLayout(workspace, state);
-            case "half": return new HalfLayout(workspace, state);
-            case "half-horizontal": return new HalfHorizontalLayout(workspace, state);
-            case "half-vertical": return new HalfVerticalLayout(workspace, state);
-            case "ratio": return new RatioLayout(workspace, state);
-            case "simple": return new SimpleLayout(workspace, state);
-            case "simple-horizontal": return new SimpleHorizontalLayout(workspace, state);
-            case "simple-vertical": return new SimpleVerticalLayout(workspace, state);
-            case "float": return new FloatLayout(workspace, state);
+    createLayout(
+        workspace: MsWorkspace,
+        state: LayoutState
+    ): InstanceType<LayoutType> {
+        switch (state.key) {
+            case 'maximize':
+                return new MaximizeLayout(workspace, state);
+            case 'split':
+                return new SplitLayout(workspace, state);
+            case 'grid':
+                return new GridLayout(workspace, state);
+            case 'half':
+                return new HalfLayout(workspace, state);
+            case 'half-horizontal':
+                return new HalfHorizontalLayout(workspace, state);
+            case 'half-vertical':
+                return new HalfVerticalLayout(workspace, state);
+            case 'ratio':
+                return new RatioLayout(workspace, state);
+            case 'simple':
+                return new SimpleLayout(workspace, state);
+            case 'simple-horizontal':
+                return new SimpleHorizontalLayout(workspace, state);
+            case 'simple-vertical':
+                return new SimpleVerticalLayout(workspace, state);
+            case 'float':
+                return new FloatLayout(workspace, state);
         }
     }
 
@@ -189,11 +204,13 @@ export class LayoutManager extends MsManager {
             for (const monitor of Main.layoutManager.monitors) {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
-                    msWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                    msWorkspace =
+                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 } else {
-                    msWorkspace = Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
-                        monitor.index
-                    )[0];
+                    msWorkspace =
+                        Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                            monitor.index
+                        )[0];
                 }
                 const layout = msWorkspace.layout;
 

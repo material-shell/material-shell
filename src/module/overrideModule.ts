@@ -18,13 +18,18 @@ export class OverrideModule {
 
     destroy() {
         this.restoreWindowManagersFunctions();
-        (Meta as any).prefs_get_workspaces_only_on_primary = this.orignalMetaWorkspaceOnPrimary;
+        (Meta as any).prefs_get_workspaces_only_on_primary =
+            this.orignalMetaWorkspaceOnPrimary;
     }
 
     overrideWindowManagerFunctions() {
         this.windowManagersFunctionToRestore = [];
-        const _shouldAnimate = windowManager.WindowManager.prototype._shouldAnimate;
-        windowManager.WindowManager.prototype._shouldAnimate = function (_actor, _types) {
+        const _shouldAnimate =
+            windowManager.WindowManager.prototype._shouldAnimate;
+        windowManager.WindowManager.prototype._shouldAnimate = function (
+            _actor,
+            _types
+        ) {
             return false;
         };
         this.windowManagersFunctionToRestore.push([

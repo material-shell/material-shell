@@ -7,7 +7,10 @@ import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
-import { gnomeVersionGreaterOrEqualTo, gnomeVersionLessOrEqualTo } from 'src/utils/shellVersionMatch';
+import {
+    gnomeVersionGreaterOrEqualTo,
+    gnomeVersionLessOrEqualTo,
+} from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { dateMenu, main as Main } from 'ui';
 import { panel } from 'ui';
@@ -27,9 +30,9 @@ export class MsStatusArea extends Clutter.Actor {
     originalDateMenuBox: any;
     msDateMenuBox?: MsDateMenuBox;
     signalIds: {
-        leftBoxActor: number,
-        centerBoxActor: number,
-        rightBoxActor: number,
+        leftBoxActor: number;
+        centerBoxActor: number;
+        rightBoxActor: number;
     } | null = null;
     centerBoxActors: Clutter.Actor[];
 
@@ -189,7 +192,9 @@ export class MsStatusArea extends Clutter.Actor {
     overridePanelMenuSide() {
         // For each menu override the opening side to match the vertical panel
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
-            const menu = gnomeVersionGreaterOrEqualTo(menuData, "42.0") ? menuData : menuData.menu;
+            const menu = gnomeVersionGreaterOrEqualTo(menuData, '42.0')
+                ? menuData
+                : menuData.menu;
 
             if (menu._boxPointer) {
                 (menu._boxPointer as any).oldArrowSideFunction =
@@ -206,11 +211,14 @@ export class MsStatusArea extends Clutter.Actor {
 
     restorePanelMenuSide() {
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
-            const menu = gnomeVersionGreaterOrEqualTo(menuData, "42.0") ? menuData : menuData.menu;
+            const menu = gnomeVersionGreaterOrEqualTo(menuData, '42.0')
+                ? menuData
+                : menuData.menu;
 
             if (menu._boxPointer) {
-                menu._boxPointer._calculateArrowSide =
-                    (menu._boxPointer as any).oldArrowSideFunction;
+                menu._boxPointer._calculateArrowSide = (
+                    menu._boxPointer as any
+                ).oldArrowSideFunction;
                 delete (menu._boxPointer as any).oldArrowSideFunction;
             }
         }

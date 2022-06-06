@@ -26,7 +26,9 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-type SearchProvider = appDisplay.AppSearchProvider | remoteSearch.RemoteSearchProvider;
+type SearchProvider =
+    | appDisplay.AppSearchProvider
+    | remoteSearch.RemoteSearchProvider;
 
 @registerGObjectClass
 export class SearchResultHeader extends St.Bin {
@@ -36,7 +38,8 @@ export class SearchResultHeader extends St.Bin {
     label: St.Label;
     constructor(text: string) {
         super({
-            style_class: 'subtitle-2 margin margin-top-x2 margin-bottom-x2 text-high-emphasis',
+            style_class:
+                'subtitle-2 margin margin-top-x2 margin-bottom-x2 text-high-emphasis',
         });
 
         this.label = new St.Label({
@@ -66,7 +69,12 @@ export class SearchResultEntry extends MatButton {
     });
     title: St.Label;
     description: St.Label | null;
-    constructor(icon: St.Icon | null, title: string, description?: string, withMenu?: boolean) {
+    constructor(
+        icon: St.Icon | null,
+        title: string,
+        description?: string,
+        withMenu?: boolean
+    ) {
         super({});
         if (icon) {
             this.icon = icon;
@@ -127,7 +135,7 @@ export class SearchResultList extends St.BoxLayout {
     terms: string[] = [];
     private searchTimeoutId = 0;
     startingSearch: boolean = false;
-    private results: Record<string,string[]> = {};
+    private results: Record<string, string[]> = {};
     isSubSearch: boolean = false;
     cancellable = new Gio.Cancellable();
     clearIcon = new St.Icon({
@@ -410,27 +418,32 @@ export class SearchResultList extends St.BoxLayout {
         }
 
         // Note: The remote search provider also provides a description field, but the app search does not
-        const onSearchMetas = (resMetas: { id: string, name: string, description?: string, createIcon: (size: number)=>St.Icon }[] ) => {
+        const onSearchMetas = (
+            resMetas: {
+                id: string;
+                name: string;
+                description?: string;
+                createIcon: (size: number) => St.Icon;
+            }[]
+        ) => {
             this.resMetas = resMetas;
             let moreEntry: SearchResultEntry | null = null;
             //
             const extraResults: SearchResultEntry[] = [];
             if (resMetas.length > 5) {
-                const more = moreEntry = new SearchResultEntry(
+                const more = (moreEntry = new SearchResultEntry(
                     new St.Icon({
                         icon_size: 32,
                         gicon: Gio.icon_new_for_string(
                             `${Me.path}/assets/icons/chevron-down-symbolic.svg`
                         ),
                     }),
-                    ngettext(
-                        '%d more',
-                        '%d more',
+                    ngettext('%d more', '%d more', resMetas.length - 5).format(
                         resMetas.length - 5
-                    ).format(resMetas.length - 5),
+                    ),
                     '',
                     provider.id === 'applications'
-                );
+                ));
 
                 more.connect('primary-action', () => {
                     extraResults.forEach((entry) => {
@@ -463,32 +476,24 @@ export class SearchResultList extends St.BoxLayout {
                     if (provider.isRemoteProvider) {
                         provider.activateResult(res.id, this.terms);
                     } else {
-                        const app =
-                            Shell.AppSystem.get_default().lookup_app(
-                                res.id
-                            );
+                        const app = Shell.AppSystem.get_default().lookup_app(
+                            res.id
+                        );
                         if (app) {
                             if (app.can_open_new_window()) {
                                 const { msWindow } =
-                                    Me.msWindowManager.createNewMsWindow(
-                                        app,
-                                        {
-                                            msWorkspace:
-                                                Me.msWorkspaceManager.getActiveMsWorkspace(),
-                                            focus: true,
-                                            insert: true,
-                                        }
-                                    );
-                                Me.msWindowManager.openAppForMsWindow(
-                                    msWindow
-                                );
+                                    Me.msWindowManager.createNewMsWindow(app, {
+                                        msWorkspace:
+                                            Me.msWorkspaceManager.getActiveMsWorkspace(),
+                                        focus: true,
+                                        insert: true,
+                                    });
+                                Me.msWindowManager.openAppForMsWindow(msWindow);
                             } else {
                                 app.activate();
                             }
                         } else {
-                            SystemActions.getDefault().activateAction(
-                                res.id
-                            );
+                            SystemActions.getDefault().activateAction(res.id);
                         }
                     }
 
@@ -506,16 +511,9 @@ export class SearchResultList extends St.BoxLayout {
         };
 
         if (provider.isRemoteProvider) {
-            provider.getResultMetas(
-                results,
-                onSearchMetas,
-                this.cancellable
-            );
+            provider.getResultMetas(results, onSearchMetas, this.cancellable);
         } else {
-            provider.getResultMetas(
-                results,
-                onSearchMetas
-            );
+            provider.getResultMetas(results, onSearchMetas);
         }
 
         /* display.updateSearch(results, terms, () => {
@@ -543,7 +541,10 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectNext() {
-        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
+        const currentIndex =
+            this.entrySelected !== null
+                ? this.resultEntryList.indexOf(this.entrySelected)
+                : -1;
         const nextEntry = this.resultEntryList[currentIndex + 1];
         if (nextEntry) {
             this.selectResult(nextEntry);
@@ -551,7 +552,10 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectPrevious() {
-        const currentIndex = this.entrySelected !== null ? this.resultEntryList.indexOf(this.entrySelected) : -1;
+        const currentIndex =
+            this.entrySelected !== null
+                ? this.resultEntryList.indexOf(this.entrySelected)
+                : -1;
         const previousEntry = this.resultEntryList[currentIndex - 1];
         if (previousEntry) {
             this.selectResult(previousEntry);

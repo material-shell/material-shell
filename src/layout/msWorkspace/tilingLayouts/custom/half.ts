@@ -7,7 +7,9 @@ import { registerGObjectClass } from 'src/utils/gjs';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
-export class HalfLayoutBase<S extends { key: string }> extends BaseResizeableTilingLayout<S> {
+export class HalfLayoutBase<
+    S extends { key: string }
+> extends BaseResizeableTilingLayout<S> {
     updateMainPortionLength(length: number) {
         while (this.mainPortion.portionLength > length) {
             this.mainPortion.pop();

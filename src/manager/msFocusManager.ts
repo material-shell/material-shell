@@ -117,7 +117,14 @@ export class MsFocusManager extends MsManager {
         );
     }
 
-    pushModal(actor: Actor, options?: { timestamp?: number, options?: ModalOptions, actionMode?: ActionMode }) {
+    pushModal(
+        actor: Actor,
+        options?: {
+            timestamp?: number;
+            options?: ModalOptions;
+            actionMode?: ActionMode;
+        }
+    ) {
         const currentFocus = global.stage.key_focus;
         let grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);

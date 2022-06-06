@@ -14,7 +14,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported HotKeysModule, KeyBindingAction */
 
-export const KeyBindingAction: Record<string,string> = {
+export const KeyBindingAction: Record<string, string> = {
     // window actions
     PREVIOUS_WINDOW: 'previous-window',
     NEXT_WINDOW: 'next-window',
@@ -50,7 +50,7 @@ export class HotKeysModule {
     workspaceManager: Meta.WorkspaceManager;
     settings: Gio.Settings;
     actionIdToNameMap: Map<number, string>;
-    actionNameToActionMap: Map<string, ()=>void>;
+    actionNameToActionMap: Map<string, () => void>;
     connectId: number;
     lastStash: number | null;
     nextStash: number | null;
@@ -101,7 +101,8 @@ export class HotKeysModule {
         });
 
         this.actionNameToActionMap.set(KeyBindingAction.LAST_WORKSPACE, () => {
-            const currentIndex = this.workspaceManager.get_active_workspace_index();
+            const currentIndex =
+                this.workspaceManager.get_active_workspace_index();
             const lastIndex = this.workspaceManager.n_workspaces - 1;
             if (currentIndex < lastIndex) {
                 Me.msWorkspaceManager.primaryMsWorkspaces[lastIndex].activate();
@@ -111,7 +112,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.KILL_FOCUSED_WINDOW,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 if (msWorkspace.tileableFocused instanceof MsWindow) {
                     msWorkspace.tileableFocused.kill();
@@ -122,7 +124,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_LEFT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
                     msWorkspace.swapTileableLeft(focused);
@@ -133,7 +136,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_RIGHT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
                     msWorkspace.swapTileableRight(focused);
@@ -142,7 +146,8 @@ export class HotKeysModule {
         );
 
         this.actionNameToActionMap.set(KeyBindingAction.MOVE_WINDOW_TOP, () => {
-            const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+            const activeMsWorkspace =
+                Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
             if (
                 activeMsWorkspace.tileableFocused instanceof
                     MsApplicationLauncher ||
@@ -182,9 +187,10 @@ export class HotKeysModule {
                 return;
             }
 
-            const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                activeMsWorkspace
-            );
+            const currentMsWorkspaceIndex =
+                Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                    activeMsWorkspace
+                );
 
             const nextMsWorkspace =
                 Me.msWorkspaceManager.primaryMsWorkspaces[
@@ -204,7 +210,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.MOVE_WINDOW_BOTTOM,
             () => {
-                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const activeMsWorkspace =
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
                 if (
                     activeMsWorkspace.tileableFocused instanceof
                         MsApplicationLauncher ||
@@ -253,9 +260,10 @@ export class HotKeysModule {
                     }
                 }
 
-                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                    activeMsWorkspace
-                );
+                const currentMsWorkspaceIndex =
+                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                        activeMsWorkspace
+                    );
 
                 const nextMsWorkspace =
                     Me.msWorkspaceManager.primaryMsWorkspaces[
@@ -277,7 +285,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.RESIZE_WINDOW_LEFT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
                     Me.msWindowManager.msResizeManager.resizeTileable(
@@ -292,7 +301,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.RESIZE_WINDOW_UP,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
@@ -308,7 +318,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.RESIZE_WINDOW_RIGHT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
@@ -324,7 +335,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.RESIZE_WINDOW_DOWN,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
 
                 const focused = msWorkspace.tileableFocused;
                 if (focused !== null) {
@@ -341,15 +353,18 @@ export class HotKeysModule {
             this.actionNameToActionMap.set(
                 KeyBindingAction[`FOCUS_MONITOR_${DIRECTION}`],
                 () => {
-                    const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
-                    const monitorIndex = global.display.get_monitor_neighbor_index(
-                        currentMsWorkspace.monitor.index,
-                        Meta.DisplayDirection[DIRECTION]
-                    );
-                    if (monitorIndex !== -1) {
-                        const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspaceOfMonitor(
-                            monitorIndex
+                    const currentMsWorkspace =
+                        Me.msWorkspaceManager.getActiveMsWorkspace();
+                    const monitorIndex =
+                        global.display.get_monitor_neighbor_index(
+                            currentMsWorkspace.monitor.index,
+                            Meta.DisplayDirection[DIRECTION]
                         );
+                    if (monitorIndex !== -1) {
+                        const msWorkspace =
+                            Me.msWorkspaceManager.getActiveMsWorkspaceOfMonitor(
+                                monitorIndex
+                            );
                         Me.msWorkspaceManager.focusMsWorkspace(msWorkspace);
                     }
                 }
@@ -358,7 +373,8 @@ export class HotKeysModule {
             this.actionNameToActionMap.set(
                 KeyBindingAction[`MOVE_WINDOW_MONITOR_${DIRECTION}`],
                 () => {
-                    const currentMsWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                    const currentMsWorkspace =
+                        Me.msWorkspaceManager.getActiveMsWorkspace();
                     const focused = currentMsWorkspace.tileableFocused;
                     if (
                         focused instanceof MsApplicationLauncher ||
@@ -367,10 +383,11 @@ export class HotKeysModule {
                         return;
                     }
 
-                    const monitorIndex = global.display.get_monitor_neighbor_index(
-                        currentMsWorkspace.monitor.index,
-                        Meta.DisplayDirection[DIRECTION]
-                    );
+                    const monitorIndex =
+                        global.display.get_monitor_neighbor_index(
+                            currentMsWorkspace.monitor.index,
+                            Meta.DisplayDirection[DIRECTION]
+                        );
 
                     if (monitorIndex !== -1) {
                         const msWorkspace =
@@ -406,10 +423,12 @@ export class HotKeysModule {
             }`;
 
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
-                const activeMsWorkspace = Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
-                const currentMsWorkspaceIndex = Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                    activeMsWorkspace
-                );
+                const activeMsWorkspace =
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                const currentMsWorkspaceIndex =
+                    Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+                        activeMsWorkspace
+                    );
 
                 const focused = activeMsWorkspace.tileableFocused;
                 if (
@@ -442,7 +461,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.CYCLE_TILING_LAYOUT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.nextLayout(1);
             }
         );
@@ -450,7 +470,8 @@ export class HotKeysModule {
         this.actionNameToActionMap.set(
             KeyBindingAction.REVERSE_CYCLE_TILING_LAYOUT,
             () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.nextLayout(-1);
             }
         );
@@ -467,7 +488,8 @@ export class HotKeysModule {
             KeyBindingAction[actionKey] = `use-${layoutKey}-layout`;
 
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
-                const msWorkspace = Me.msWorkspaceManager.getActiveMsWorkspace();
+                const msWorkspace =
+                    Me.msWorkspaceManager.getActiveMsWorkspace();
                 msWorkspace.setLayoutByKey(layoutKey);
             });
         });
@@ -481,7 +503,8 @@ export class HotKeysModule {
             this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
                 const currentNumOfWorkspaces =
                     Me.msWorkspaceManager.msWorkspaceList.length - 1;
-                const currentWorkspaceIndex = this.workspaceManager.get_active_workspace_index();
+                const currentWorkspaceIndex =
+                    this.workspaceManager.get_active_workspace_index();
                 let nextWorkspaceIndex = workspaceIndex;
 
                 if (
@@ -522,7 +545,9 @@ export class HotKeysModule {
     addKeybinding(name: string) {
         const actionCallback = this.actionNameToActionMap.get(name);
         if (actionCallback === undefined) {
-            Me.log("Error: Cannot add keybinding. No such action exists: " + name);
+            Me.log(
+                'Error: Cannot add keybinding. No such action exists: ' + name
+            );
             return;
         }
 
