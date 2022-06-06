@@ -39,8 +39,8 @@ export class AppPlaceholder extends St.Widget {
 
     constructor(app: App) {
         super({
-            x_align: Clutter.ActorAlign.CENTER,
-            y_align: Clutter.ActorAlign.CENTER,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.FILL,
             layout_manager: new Clutter.BinLayout(),
             reactive: true,
         });
@@ -77,6 +77,8 @@ export class AppPlaceholder extends St.Widget {
 
         this.box = new St.BoxLayout({
             vertical: false,
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
             style: 'padding:48px; border-radius:48px',
         });
 
