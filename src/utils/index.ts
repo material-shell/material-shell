@@ -92,19 +92,19 @@ export function throttle<T extends any[], R, C>(
 }
 
 export const isParentOfActor = (
-    parent: Clutter.Actor,
+    parent: Clutter.Actor | null,
     actor: Clutter.Actor
 ) => {
-    if (!parent || !actor) {
+    if (!parent) {
         return false;
     }
-    let isParent = false;
-    let parentOfActor = actor;
-    while (parentOfActor.get_parent() && !isParent) {
-        isParent = parentOfActor === parent;
+    let parentOfActor: Clutter.Actor | null = actor;
+
+    while (parentOfActor !== null) {
+        if (parentOfActor === parent) return true;
         parentOfActor = parentOfActor.get_parent();
     }
-    return isParent;
+    return false;
 };
 
 export const reparentActor = (
