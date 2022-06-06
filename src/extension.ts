@@ -100,7 +100,7 @@ function enable() {
                 Me.msWorkspaceManager.initState();
             }
             new MsMain();
-            Me.msWindowManager.handleExistingMetaWindow();
+            Me.msWindowManager.handleExistingMetaWindows();
             if (Main.layoutManager._startingUp) {
                 _startupPreparedId = Main.layoutManager.connect(
                     'startup-complete',

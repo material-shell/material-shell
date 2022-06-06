@@ -96,7 +96,7 @@ export class MsFocusManager extends MsManager {
         if (!windowFocus || !windowFocus.msWindow) return;
 
         const msWindow = windowFocus.msWindow;
-        msWindow.onFocus();
+        msWindow.focusDialogs();
         this.setFocusToMsWindow(msWindow);
     }
 

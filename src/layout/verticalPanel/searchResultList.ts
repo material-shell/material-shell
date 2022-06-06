@@ -469,11 +469,9 @@ export class SearchResultList extends St.BoxLayout {
                             );
                         if (app) {
                             if (app.can_open_new_window()) {
-                                const msWindow =
+                                const { msWindow } =
                                     Me.msWindowManager.createNewMsWindow(
-                                        app.id,
-                                        null,
-                                        null,
+                                        app,
                                         {
                                             msWorkspace:
                                                 Me.msWorkspaceManager.getActiveMsWorkspace(),
@@ -481,11 +479,9 @@ export class SearchResultList extends St.BoxLayout {
                                             insert: true,
                                         }
                                     );
-                                if (msWindow !== undefined) {
-                                    Me.msWindowManager.openAppForMsWindow(
-                                        msWindow
-                                    );
-                                }
+                                Me.msWindowManager.openAppForMsWindow(
+                                    msWindow
+                                );
                             } else {
                                 app.activate();
                             }
