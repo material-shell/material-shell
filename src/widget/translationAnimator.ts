@@ -49,25 +49,35 @@ export class TranslationAnimator extends Clutter.Actor {
         this.add_actor(this.transitionContainer);
     }
 
+    tryRemoveActor(actor: Clutter.Actor) {
+        if (this.transitionContainer.get_children().includes(actor)) {
+            this.transitionContainer.remove_child(actor);
+        }
+    }
+
+    /** Starts a transition.
+     *
+     * Note: The translation animator takes full control over the parenting of the actors until the animation is complete.
+     * When calling this function the actors may be parented in arbitrary ways, they will be reparented to the proper state.
+     */
     setTranslation(
-        initialActors: (Clutter.Actor | null)[],
+        initialActors: Clutter.Actor[],
         enteringActors: Clutter.Actor[],
         direction: number
     ): void {
+        let translationY = this.transitionContainer.translation_y;
+        let translationX = this.transitionContainer.translation_x;
+
         if (this.animationInProgress) {
             this.transitionContainer.remove_all_transitions();
             this.animationInProgress = false;
 
             // Remove all clones outside visible area
             const visibleArea = {
-                x1: Math.abs(this.transitionContainer.translation_x),
-                x2:
-                    Math.abs(this.transitionContainer.translation_x) +
-                    this.width,
-                y1: Math.abs(this.transitionContainer.translation_y),
-                y2:
-                    Math.abs(this.transitionContainer.translation_y) +
-                    this.height,
+                x1: Math.abs(translationX),
+                x2: Math.abs(translationX) + this.width,
+                y1: Math.abs(translationY),
+                y2: Math.abs(translationY) + this.height,
             };
 
             // Foreach child check if it's in visible bound
@@ -76,8 +86,8 @@ export class TranslationAnimator extends Clutter.Actor {
                 if (this.vertical) {
                     if (allocationBox.y2 < visibleArea.y1) {
                         this.transitionContainer.remove_actor(actor);
-                        this.transitionContainer.translation_y =
-                            this.transitionContainer.translation_y +
+                        translationY =
+                            translationY +
                             InfinityTo0(allocationBox.get_height());
                     }
                     if (allocationBox.y1 > visibleArea.y2) {
@@ -86,8 +96,8 @@ export class TranslationAnimator extends Clutter.Actor {
                 } else {
                     if (allocationBox.x2 < visibleArea.x1) {
                         this.transitionContainer.remove_actor(actor);
-                        this.transitionContainer.translation_x =
-                            this.transitionContainer.translation_x +
+                        translationX =
+                            translationX +
                             InfinityTo0(allocationBox.get_width());
                     }
                     if (allocationBox.x1 > visibleArea.x2) {
@@ -95,32 +105,39 @@ export class TranslationAnimator extends Clutter.Actor {
                     }
                 }
             });
-        } else if (initialActors) {
-            initialActors.forEach((actor) => {
+
+            for (const actor of initialActors) {
+                const p = actor.get_parent();
+                if (p !== this.transitionContainer) {
+                    p.remove_child(actor);
+                }
+            }
+        } else {
+            for (const actor of initialActors) {
                 reparentActor(actor, this.transitionContainer);
-            });
+            }
         }
 
+        const children = this.transitionContainer.get_children();
         enteringActors.forEach((actor, index) => {
             // check if the next actor are already in transition
-            const nextActorFound = this.transitionContainer
-                .get_children()
-                .find((existingActor) => {
-                    return existingActor === actor;
-                });
+            const nextActorFound = children.includes(actor);
             //insert nextActor Clone at the top pile if direction is positive or at the end if negative
             if (!nextActorFound) {
                 reparentActor(actor, this.transitionContainer);
                 if (direction < 0) {
                     this.transitionContainer.set_child_at_index(actor, index);
                     if (this.vertical) {
-                        this.transitionContainer.translation_y -= actor.height;
+                        translationY -= actor.height;
                     } else {
-                        this.transitionContainer.translation_x -= actor.width;
+                        translationX -= actor.width;
                     }
                 }
             }
         });
+        this.transitionContainer.translation_y = translationY;
+        this.transitionContainer.translation_x = translationX;
+
         //This seem uncessary but it's help to the this.width calculation when the next actor is a placeholder
         this.transitionContainer.set_child_at_index(
             this.transitionContainer.get_child_at_index(0),
@@ -141,6 +158,7 @@ export class TranslationAnimator extends Clutter.Actor {
                 ? this.transitionContainer.height - this.height
                 : this.transitionContainer.width - this.width;
         }
+
         if (this.vertical) {
             transitionConfig.translation_y = -target;
         } else {

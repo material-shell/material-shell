@@ -121,7 +121,7 @@ export class MatButton extends St.Widget {
     /**
      * Just the child width
      */
-    vfunc_get_preferred_width(forHeight: number) {
+    override vfunc_get_preferred_width(forHeight: number) {
         if (!this.child) return super.vfunc_get_preferred_width(forHeight);
         return this.child.vfunc_get_preferred_width(forHeight);
     }
@@ -129,12 +129,15 @@ export class MatButton extends St.Widget {
     /**
      * Just the child height
      */
-    vfunc_get_preferred_height(forWidth: number) {
+    override vfunc_get_preferred_height(forWidth: number) {
         if (!this.child) return super.vfunc_get_preferred_height(forWidth);
         return this.child.vfunc_get_preferred_height(forWidth);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    override vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ) {
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);

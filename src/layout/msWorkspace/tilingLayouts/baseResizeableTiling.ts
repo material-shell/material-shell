@@ -223,13 +223,13 @@ export class BaseResizeableTilingLayout<
         });
     }
 
-    alterTileable(tileable: Tileable) {
+    initializeTileable(tileable: Tileable) {
         this.addUnFocusEffect(
             tileable,
             this.currentFocusEffect,
             tileable === this.msWorkspace.tileableFocused
         );
-        super.alterTileable(tileable);
+        super.initializeTileable(tileable);
     }
 
     restoreTileable(tileable: Tileable) {
@@ -442,44 +442,39 @@ export class PrimaryBorderEffect extends Clutter.Effect {
             this._pipeline = new Cogl.Pipeline(coglContext);
         }
 
-        this.color.init_from_4ub(
-            parseInt(Me.msThemeManager.primary.substring(1, 3), 16),
-            parseInt(Me.msThemeManager.primary.substring(3, 5), 16),
-            parseInt(Me.msThemeManager.primary.substring(5, 7), 16),
-            this.opacity * 255
-        );
-        this.color.premultiply();
-        this._pipeline.set_color(this.color);
+        if (this.color !== Me.msThemeManager.primaryColor) {
+            this.color = Me.msThemeManager.primaryColor;
+            const c = this.color.copy();
+            c.set_alpha_float(this.opacity);
+            c.premultiply();
+            this._pipeline.set_color(c);
+        }
 
         const alloc = actor.get_allocation_box();
         const width = 2;
+        const allocWidth = alloc.get_width();
+        const allocHeight = alloc.get_height();
 
         // clockwise order
+        framebuffer.draw_rectangle(this._pipeline, 0, 0, allocWidth, width);
         framebuffer.draw_rectangle(
             this._pipeline,
-            0,
-            0,
-            alloc.get_width(),
-            width
-        );
-        framebuffer.draw_rectangle(
-            this._pipeline,
-            alloc.get_width() - width,
+            allocWidth - width,
             width,
-            alloc.get_width(),
-            alloc.get_height()
+            allocWidth,
+            allocHeight
         );
         framebuffer.draw_rectangle(
             this._pipeline,
             0,
-            alloc.get_height(),
-            alloc.get_width() - width,
-            alloc.get_height() - width
+            allocHeight,
+            allocWidth - width,
+            allocHeight - width
         );
         framebuffer.draw_rectangle(
             this._pipeline,
             0,
-            alloc.get_height() - width,
+            allocHeight - width,
             width,
             width
         );

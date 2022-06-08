@@ -4,8 +4,10 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 import * as Clutter from 'clutter';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
+import { logAssert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { InfinityTo0, reparentActor } from 'src/utils/index';
+import { isNonNull } from 'src/utils/predicates';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
@@ -35,9 +37,12 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     displayTileable(actor: Tileable) {
         if (this.currentDisplayed) {
             if (
-                this.tileableContainer
-                    .get_children()
-                    .includes(this.currentDisplayed.tileable)
+                logAssert(
+                    this.tileableContainer
+                        .get_children()
+                        .includes(this.currentDisplayed.tileable),
+                    'Expected the currently displayed tileable to be a child of the tileable container'
+                )
             ) {
                 this.tileableContainer.remove_child(
                     this.currentDisplayed.tileable
@@ -80,12 +85,13 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         }
     }
 
-    alterTileable(tileable: Tileable) {
-        super.alterTileable(tileable);
+    override shouldBeVisible(tileable: Tileable): boolean {
+        return tileable === this.currentDisplayed?.tileable;
+    }
+
+    initializeTileable(tileable: Tileable) {
+        super.initializeTileable(tileable);
         tileable.visible = true;
-        if (this.tileableContainer.get_children().includes(tileable)) {
-            this.tileableContainer.remove_child(tileable);
-        }
         if (tileable === this.msWorkspace.tileableFocused) {
             this.displayTileable(tileable);
         }
@@ -139,7 +145,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         });
 
         this.translationAnimator.setTranslation(
-            [prevActor],
+            [prevActor].filter(isNonNull),
             [nextActor],
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );

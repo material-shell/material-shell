@@ -82,64 +82,61 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     }
 
     refreshVisibleActors() {
-        this.msWorkspace.tileableList.forEach((tileable) => {
-            const willBeDisplay = this.activeTileableList.includes(tileable);
-            if (
-                willBeDisplay &&
-                tileable.get_parent() !== this.tileableContainer
-            ) {
-                reparentActor(tileable, this.tileableContainer);
-            } else if (!willBeDisplay && tileable.get_parent()) {
-                this.tileableContainer.remove_child(tileable);
+        // refreshVisibleActors will be called when the animation finishes
+        if (this.translationAnimator.animationInProgress) return;
+
+        for (const tileable of this.msWorkspace.tileableList) {
+            if (this.shouldBeVisible(tileable)) {
+                if (tileable.get_parent() !== this.tileableContainer) {
+                    reparentActor(tileable, this.tileableContainer);
+                }
+            } else {
+                if (tileable.get_parent() === this.tileableContainer) {
+                    this.tileableContainer.remove_child(tileable);
+                }
             }
-        });
+        }
         this.msWorkspace.refreshFocus();
     }
 
     onFocusChanged(
         tileableFocused: Tileable,
-        oldTileableFocused: Tileable | null
+        _oldTileableFocused: Tileable | null
     ) {
-        if (this.activeTileableList.includes(tileableFocused)) {
-            this.activeTileableList.forEach((tileable) => {
-                this.setUnFocusEffect(
-                    tileable,
-                    this.currentFocusEffect,
-                    tileable === tileableFocused
-                );
-            });
-            return;
-        }
-
-        // TODO: What happens if newIndex=1 and oldIndex=2 and columns=3?
         const newIndex = this.msWorkspace.tileableList.indexOf(tileableFocused);
-        const oldIndex = this.msWorkspace.tileableList.indexOf(
-            oldTileableFocused as any
+        // Represents a slice from baseIndex to baseIndex + this._state.nbOfColumns (exclusive)
+        let baseIndex = this.baseIndex;
+        // Ensure the new tileable is visible
+        baseIndex = Math.max(baseIndex, newIndex - this._state.nbOfColumns + 1);
+        baseIndex = Math.min(baseIndex, newIndex);
+        // Ensure the slice does not go out of bounds
+        baseIndex = Math.min(
+            baseIndex,
+            this.msWorkspace.tileableList.length - this._state.nbOfColumns
         );
-        const oldTileableList = this.activeTileableList;
-        if (oldIndex < newIndex) {
-            this.activeTileableList = this.msWorkspace.tileableList.slice(
-                newIndex - this._state.nbOfColumns + 1,
-                newIndex + 1
-            );
-        } else {
-            this.activeTileableList = this.msWorkspace.tileableList.slice(
-                newIndex,
-                newIndex + this._state.nbOfColumns
-            );
-        }
-        this.baseIndex = this.msWorkspace.tileableList.indexOf(
-            this.activeTileableList[0]
-        );
+        baseIndex = Math.max(baseIndex, 0);
 
-        this.startTransition(oldTileableList, this.activeTileableList);
-        [...oldTileableList, ...this.activeTileableList].forEach((tileable) => {
+        const oldTileableList = this.activeTileableList;
+
+        if (baseIndex !== this.baseIndex) {
+            this.baseIndex = baseIndex;
+            this.activeTileableList = this.msWorkspace.tileableList.slice(
+                baseIndex,
+                baseIndex + this._state.nbOfColumns
+            );
+            this.startTransition(oldTileableList, this.activeTileableList);
+        }
+
+        for (const tileable of new Set([
+            ...oldTileableList,
+            ...this.activeTileableList,
+        ])) {
             this.setUnFocusEffect(
                 tileable,
                 this.currentFocusEffect,
                 tileable === tileableFocused
             );
-        });
+        }
     }
 
     showAppLauncher() {
@@ -151,16 +148,18 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         // Never hide the Applauncher
     }
 
-    alterTileable(tileable: Tileable) {
-        super.alterTileable(tileable);
+    override shouldBeVisible(tileable: Tileable): boolean {
+        return this.activeTileableList.includes(tileable);
+    }
+
+    initializeTileable(tileable: Tileable) {
+        super.initializeTileable(tileable);
         tileable.visible = true;
-        if (tileable.get_parent()) {
-            this.tileableContainer.remove_child(tileable);
-        }
     }
 
     restoreTileable(tileable: Tileable) {
         super.restoreTileable(tileable);
+        this.translationAnimator.tryRemoveActor(tileable);
         if (!tileable.get_parent()) {
             this.tileableContainer.add_child(tileable);
         }
@@ -187,11 +186,11 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         previousTileableList: Tileable[],
         nextTileableList: Tileable[]
     ) {
+        const width = this.tileableContainer.allocation.get_width();
+        const height = this.tileableContainer.allocation.get_height();
         if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width =
-                this.tileableContainer.allocation.get_width();
-            this.translationAnimator.height =
-                this.tileableContainer.allocation.get_height();
+            this.translationAnimator.width = width;
+            this.translationAnimator.height = height;
             this.tileableContainer.add_child(this.translationAnimator);
         }
 
@@ -204,30 +203,26 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
                 ? this.msWorkspace.tileableList.indexOf(nextTileableList[0])
                 : -1;
         const direction = prevBase > nextBase ? -1 : 1;
-        [...previousTileableList, ...nextTileableList].forEach((actor) => {
-            const parent = actor.get_parent();
-            if (parent && parent === this.tileableContainer) {
-                parent.remove_child(actor);
-            }
-            if (this.vertical) {
-                actor.set_width(this.tileableContainer.allocation.get_width());
-                actor.set_height(
-                    this.tileableContainer.allocation.get_height() /
-                        this._state.nbOfColumns
-                );
-            } else {
-                actor.set_width(
-                    this.tileableContainer.allocation.get_width() /
-                        this._state.nbOfColumns
-                );
-                actor.set_height(
-                    this.tileableContainer.allocation.get_height()
-                );
-            }
-        });
+
+        const itemWidth = Math.round(
+            this.vertical ? width : width / this._state.nbOfColumns
+        );
+        const itemHeight = Math.round(
+            this.vertical ? height / this._state.nbOfColumns : height
+        );
+
+        for (const actor of new Set([
+            ...previousTileableList,
+            ...nextTileableList,
+        ])) {
+            actor.width = itemWidth;
+            actor.height = itemHeight;
+        }
+
         if (this.borderContainer) {
             this.borderContainer.hide();
         }
+
         this.translationAnimator.setTranslation(
             previousTileableList,
             nextTileableList,

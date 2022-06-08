@@ -1,4 +1,5 @@
 /** Gnome libs imports */
+import { Color } from 'cogl';
 import * as Gio from 'gio';
 import { byteArray } from 'gjs';
 import * as GLib from 'glib';
@@ -35,13 +36,26 @@ export const FocusEffectEnum = {
     BORDER: 2,
 };
 
+function parseCoglColor(color: string): Color {
+    const c = new Color();
+    c.init_from_4ub(
+        parseInt(color.substring(1, 3), 16),
+        parseInt(color.substring(3, 5), 16),
+        parseInt(color.substring(5, 7), 16),
+        255
+    );
+    return c;
+}
+
 export class MsThemeManager extends MsManager {
-    themeContext: any;
+    themeContext: St.ThemeContext;
     theme: any;
     themeSettings: Gio.Settings;
     themeFile: Gio.FilePrototype;
     themeValue: string;
     primary: string;
+    primaryColor: Color;
+
     constructor() {
         super();
         this.themeContext = St.ThemeContext.get_for_stage(global.stage);
@@ -52,6 +66,7 @@ export class MsThemeManager extends MsManager {
         );
         this.themeValue = this.themeSettings.get_string('theme');
         this.primary = this.themeSettings.get_string('primary-color');
+        this.primaryColor = parseCoglColor(this.primary);
 
         this.observe(this.themeContext, 'changed', () => {
             Me.log('theme changed');
@@ -70,6 +85,7 @@ export class MsThemeManager extends MsManager {
         });
         this.observe(this.themeSettings, 'changed::primary-color', (schema) => {
             this.primary = schema.get_string('primary-color');
+            this.primaryColor = parseCoglColor(this.primary);
             this.regenerateStylesheet();
         });
         this.observe(
