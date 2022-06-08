@@ -6,6 +6,7 @@ import * as Clutter from 'clutter';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { InfinityTo0, reparentActor } from 'src/utils/index';
+import { isNonNull } from 'src/utils/predicates';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
@@ -139,7 +140,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         });
 
         this.translationAnimator.setTranslation(
-            [prevActor],
+            [prevActor].filter(isNonNull),
             [nextActor],
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );
