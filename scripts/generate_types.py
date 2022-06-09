@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
+import pathlib
+import re
 from glob import glob
 from subprocess import call
-import re
-import pathlib
 
 dir = pathlib.Path(__file__).parent.absolute().parent
 
 call(["../gi.ts/packages/cli/bin/run", "generate"], cwd=dir)
 
-for file in dir.glob("types/*.d.ts"):
+for file in dir.glob("@gi-types/**/*.d.ts"):
     with open(file) as f:
         text = f.read()
         text = re.sub(r"(import \* as \w+ from \")(\w+\")", r"\1./\2", text)
@@ -22,5 +22,8 @@ for file in dir.glob("types/*.d.ts"):
                             )
         text = text.replace("child_type?: VariantType<C> | null,",
                             "child_type: VariantType<C>,")
+
+        # Clutter typedefs are incorrect, parents can definitely be null
+        text = text.replace("get_parent(): Actor;", "get_parent(): Actor | null;")
     with open(file, "w") as f:
         f.write(text)
