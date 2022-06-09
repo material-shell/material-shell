@@ -108,7 +108,7 @@ export class TranslationAnimator extends Clutter.Actor {
 
             for (const actor of initialActors) {
                 const p = actor.get_parent();
-                if (p !== this.transitionContainer) {
+                if (p !== null && p !== this.transitionContainer) {
                     p.remove_child(actor);
                 }
             }
