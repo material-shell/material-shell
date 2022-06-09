@@ -1224,12 +1224,6 @@ export class MsWindowContent extends St.Widget {
                     x2 = x1 + windowBufferRect.width;
                     y2 = y1 + windowBufferRect.height;
                 } else {
-                    // Always parented to an MsWindow
-                    const parent = this.get_parent();
-                    assert(
-                        parent instanceof MsWindow,
-                        'Expected to be parented to an MsWindow'
-                    );
                     const monitor = parent.msWorkspace.monitor;
                     const workArea = Main.layoutManager.getWorkAreaForMonitor(
                         monitor.index
