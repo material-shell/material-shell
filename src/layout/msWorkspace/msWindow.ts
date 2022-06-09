@@ -8,7 +8,7 @@ import * as Meta from 'meta';
 import { App } from 'shell';
 import {
     MetaWindowActorWithMsProperties,
-    MetaWindowWithMsProperties
+    MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
 import { Rectangular } from 'src/types/mod';
 import { throttle } from 'src/utils';
@@ -18,7 +18,7 @@ import { Async } from 'src/utils/async';
 import {
     Allocate,
     AllocatePreferredSize,
-    SetAllocation
+    SetAllocation,
 } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
