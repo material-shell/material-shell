@@ -71,17 +71,13 @@ export class MsFocusManager extends MsManager {
 
         this.lastKeyFocus = keyFocus;
 
-        if (keyFocus instanceof MsWindow) {
-            return this.setFocusToMsWindow(keyFocus);
-        }
-
-        let actor = keyFocus;
-        while (actor.get_parent()) {
-            actor = actor.get_parent();
+        let actor: Actor | null = keyFocus;
+        while (actor !== null) {
             if (actor instanceof MsWindow) {
                 this.setFocusToMsWindow(actor);
                 return;
             }
+            actor = actor.get_parent();
         }
 
         if (keyFocus != Main.layoutManager.uiGroup) {

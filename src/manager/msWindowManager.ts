@@ -537,8 +537,9 @@ export class MsWindowManager extends MsManager {
             /* return Me.layout.setActorAbove(metaWindow.get_compositor_private<
                     Meta.WindowActor
                 >()); */
-            if (actor.get_parent() != global.top_window_group) {
-                actor.get_parent().remove_child(actor);
+            const parent = actor.get_parent();
+            if (parent != global.top_window_group) {
+                if (parent !== null) parent.remove_child(actor);
                 global.top_window_group.add_child(actor);
             }
 
