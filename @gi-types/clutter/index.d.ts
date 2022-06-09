@@ -4032,7 +4032,7 @@ export class Actor<A = LayoutManager, B = Content>
     get_paint_visibility(): boolean;
     get_paint_volume(): PaintVolume;
     get_pango_context(): Pango.Context;
-    get_parent(): Actor;
+    get_parent(): Actor | null;
     get_pivot_point(): [number | null, number | null];
     get_pivot_point_z(): number;
     get_position(): [number | null, number | null];
