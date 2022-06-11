@@ -597,10 +597,8 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
             this.msWorkspace.monitor.index
         );
-        if (this.panel) {
-            this.panel.visible =
-                this.msWorkspace.shouldPanelBeVisible() && !monitorInFullScreen;
-        }
+        this.panel.visible =
+            this.msWorkspace.shouldPanelBeVisible() && !monitorInFullScreen;
         this.visible = !monitorInFullScreen;
     }
 
@@ -627,7 +625,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         panelBox.y2 = panelBox.y1 + panelHeight;
         Allocate(this.panel, panelBox, flags);
         const containerBox = contentBox.copy();
-        if (this.panel && this.panel.visible) {
+        if (this.panel.visible) {
             if (panelPosition === HorizontalPanelPositionEnum.TOP) {
                 containerBox.y1 = containerBox.y1 + panelHeight;
             } else {
