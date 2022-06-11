@@ -42,8 +42,7 @@ export class MsMain extends St.Widget {
     panel: MsPanel;
     blurEffect: Shell.BlurEffect | undefined;
     private _scaleChangedId: SignalHandle | undefined;
-    // Definitely assigned because we call registerToSignals
-    signals!: Signal[];
+    signals: Signal[] = [];
     overviewShown = false;
 
     constructor() {
@@ -61,9 +60,6 @@ export class MsMain extends St.Widget {
         this.add_child(this.aboveContainer);
         this.backgroundGroup = new Meta.BackgroundGroup({});
         this.setBlurBackground(Me.msThemeManager.blurBackground);
-        Me.msThemeManager.connect('blur-background-changed', () => {
-            this.setBlurBackground(Me.msThemeManager.blurBackground);
-        });
         this.add_child(this.backgroundGroup);
 
         this.primaryMonitorContainer = new PrimaryMonitorContainer(
@@ -89,36 +85,6 @@ export class MsMain extends St.Widget {
             this.monitorsContainer.push(container);
             this.add_child(container);
         }
-
-        global.display.connect('overlay-key', () => {
-            this.toggleOverview();
-        });
-
-        global.stage.connect('captured-event', (_, event: Clutter.Event) => {
-            if (!this.overviewShown) return;
-            if (event.type() === Clutter.EventType.BUTTON_PRESS) {
-                const source = event.get_source();
-                const [x, y] = event.get_coords();
-
-                // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
-                const [x1, y1] = this.panel.get_transformed_position() as [
-                    number,
-                    number
-                ];
-                const [width, height] = this.panel.get_transformed_size() as [
-                    number,
-                    number
-                ];
-
-                if (
-                    !(x >= x1 && x <= x1 + width && y >= y1 && y <= y1 + height)
-                ) {
-                    this.toggleOverview();
-                }
-            }
-
-            return Clutter.EVENT_PROPAGATE;
-        });
 
         this.registerToSignals();
         this.onMsWorkspacesChanged();
@@ -162,7 +128,58 @@ export class MsMain extends St.Widget {
     }
 
     registerToSignals() {
-        this.signals = [];
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect('overlay-key', () => {
+                this.toggleOverview();
+            }),
+        });
+
+        this.signals.push({
+            from: global.stage,
+            id: global.stage.connect(
+                'captured-event',
+                (_, event: Clutter.Event) => {
+                    if (!this.overviewShown) return;
+                    if (event.type() === Clutter.EventType.BUTTON_PRESS) {
+                        const source = event.get_source();
+                        const [x, y] = event.get_coords();
+
+                        // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
+                        const [x1, y1] =
+                            this.panel.get_transformed_position() as [
+                                number,
+                                number
+                            ];
+                        const [width, height] =
+                            this.panel.get_transformed_size() as [
+                                number,
+                                number
+                            ];
+
+                        if (
+                            !(
+                                x >= x1 &&
+                                x <= x1 + width &&
+                                y >= y1 &&
+                                y <= y1 + height
+                            )
+                        ) {
+                            this.toggleOverview();
+                        }
+                    }
+
+                    return Clutter.EVENT_PROPAGATE;
+                }
+            ),
+        });
+
+        this.signals.push({
+            from: Me.msThemeManager,
+            id: Me.msThemeManager.connect('blur-background-changed', () => {
+                this.setBlurBackground(Me.msThemeManager.blurBackground);
+            }),
+        });
 
         this.signals.push({
             from: Me.msWorkspaceManager,

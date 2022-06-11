@@ -75,16 +75,25 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea = new MsStatusArea();
         this.add_child(this.statusArea);
 
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.buttonIcon.set_icon_size(
-                Me.msThemeManager.getPanelSizeNotScaled() / 2
-            );
-            this.searchButton.height = Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            );
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.buttonIcon.set_icon_size(
+                    Me.msThemeManager.getPanelSizeNotScaled() / 2
+                );
+                this.searchButton.height = Math.max(
+                    48,
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    )
+                );
 
-            this.queue_relayout();
+                this.queue_relayout();
+            }
+        );
+
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
 
         this.setIcon('search');
@@ -185,12 +194,21 @@ export class SearchContent extends St.BoxLayout {
         });
         this.scrollView.add_actor(this.searchResultList);
 
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.searchEntryBin.height = Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            );
-            this.queue_relayout();
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.searchEntryBin.height = Math.max(
+                    48,
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    )
+                );
+                this.queue_relayout();
+            }
+        );
+
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
 
         this.add_child(this.scrollView);
@@ -235,8 +253,15 @@ export class MsPanel extends St.BoxLayout {
             this.disable();
         });
 
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.queue_relayout();
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.queue_relayout();
+            }
+        );
+
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
 
         this.panelContent.connect('toggle', () => {

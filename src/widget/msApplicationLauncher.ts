@@ -192,31 +192,33 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.maxIndex = 1;
 
         if (Me.msThemeManager.clockAppLauncher) {
-            this.clockLabel = new St.Label({
+            const clockLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis margin-right-x2',
                 y_align: Clutter.ActorAlign.CENTER,
             });
-            this.dateLabel = new St.Label({
+            this.clockLabel = clockLabel;
+            const dateLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis',
                 y_align: Clutter.ActorAlign.CENTER,
             });
+            this.dateLabel = dateLabel;
             this.clockBin = new St.BoxLayout({
                 x_align: Clutter.ActorAlign.CENTER,
             });
-            this.clockBin.add_child(this.clockLabel);
+            this.clockBin.add_child(clockLabel);
             this.clockBin.add_child(this.dateLabel);
             this._wallClock = new GnomeDesktop.WallClock({
                 time_only: true,
             });
             const updateClock = () => {
-                if (this.clockLabel!.mapped) {
-                    this.clockLabel!.text = this._wallClock.clock;
+                if (clockLabel.mapped) {
+                    clockLabel.text = this._wallClock.clock;
                     const date = new Date();
                     const dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
                     );
                     // TODO: toLocaleFormat is deprecated
-                    this.dateLabel!.text = date.toLocaleFormat(dateFormat);
+                    dateLabel.text = date.toLocaleFormat(dateFormat);
                 }
             };
 
@@ -226,13 +228,13 @@ export class MsApplicationButtonContainer extends St.Widget {
             );
 
             // There was a bug when updating the clock while the clock was not in the stage which didn't update the time correct
-            this.clockLabel.connect('notify::mapped', () => {
-                if (this.clockLabel!.mapped) {
+            clockLabel.connect('notify::mapped', () => {
+                if (clockLabel.mapped) {
                     updateClock();
-                    this.clockLabel!.queue_relayout();
+                    clockLabel.queue_relayout();
                 }
             });
-            this.clockLabel.connect('destroy', () => {
+            clockLabel.connect('destroy', () => {
                 this._wallClock.disconnect(this.signalClock);
                 delete this._wallClock;
             });

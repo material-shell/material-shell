@@ -2,13 +2,11 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
 import * as GLib from 'glib';
-import * as GObject from 'gobject';
-
+import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
-import * as WindowUtils from 'src/utils/windows';
-import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { registerGObjectClass } from 'src/utils/gjs';
+import * as WindowUtils from 'src/utils/windows';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 type FloatLayoutState = { key: 'float' };
@@ -23,8 +21,18 @@ export class FloatLayout extends BaseTilingLayout<FloatLayoutState> {
 
     constructor(msWorkspace: MsWorkspace, state: FloatLayoutState) {
         super(msWorkspace, state);
-        global.display.connect('restacked', this.windowsRestacked.bind(this));
         this.windowsRestacked();
+    }
+
+    override registerToSignals(): void {
+        super.registerToSignals();
+        this.signals.push({
+            from: global.display,
+            id: global.display.connect(
+                'restacked',
+                this.windowsRestacked.bind(this)
+            ),
+        });
     }
 
     initializeTileable(tileable: Tileable) {

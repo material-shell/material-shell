@@ -243,6 +243,7 @@ declare module 'ui' {
         class PopupSubMenuMenuItem extends PopupBaseMenuItem {
             constructor(text: string, wantIcon?: boolean);
             menu: PopupSubMenu;
+            label: St.Label;
         }
 
         class PopupSwitchMenuItem extends PopupBaseMenuItem {
@@ -290,6 +291,7 @@ declare module 'ui' {
             );
             menu: PopupMenu | undefined;
             _boxPointer: boxPointer.BoxPointer;
+            close(): void;
         }
     }
 
