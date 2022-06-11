@@ -192,8 +192,8 @@ export class WorkspaceList extends St.Widget {
                     msWorkspace
                 )
             ) {
-                this.menuManager.removeMenu(button.menu.menu);
-                button.menu.menu.destroy();
+                // Note: We don't have to remove the menu from the menu manager manually as
+                // this is, and should, be done during the menu's destroy signal.
                 button.destroy();
                 this.msWorkspaceButtonMap.delete(msWorkspace);
             }
@@ -396,6 +396,7 @@ export class WorkspaceButton extends MatButton {
         });
 
         this.connect('destroy', () => {
+            this.menu.menu.destroy();
             this.menu.disconnectSignals();
             Me.msThemeManager.disconnect(panelSizeSignal);
         });
