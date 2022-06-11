@@ -118,7 +118,7 @@ export class HorizontalPanel extends St.BoxLayout {
         taskBarBox.y2 = contentBox.y2;
         Allocate(this.taskBar, taskBarBox, flags);
 
-        if (this.clockBin && this.get_children().includes(this.clockBin)) {
+        if (this.clockBin) {
             const clockBox = new Clutter.ActorBox();
             clockBox.x1 = taskBarBox.x2;
             clockBox.x2 = contentBox.x2 - this.layoutSwitcher.width;
