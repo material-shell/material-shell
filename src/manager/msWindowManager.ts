@@ -661,6 +661,9 @@ export class MsWindowManager extends MsManager {
                 ) {
                     // This window has been waiting too long for the app to launch. Possibly the window opened and closed very quickly or the app crashed.
                     msWindow.lifecycleState.waitingForAppSince = undefined;
+                    // Stop the placeholder spinnner
+                    msWindow.placeholder.reset();
+                    // Close the window, unless it is pinned
                     msWindow.kill();
                 } else {
                     anyWaiting = true;
