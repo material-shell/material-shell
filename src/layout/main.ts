@@ -655,14 +655,14 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         const panelBox = new Clutter.ActorBox();
         const panelPosition = Me.msThemeManager.verticalPanelPosition;
         if (this.panel) {
-            const panelWidth = this.panel.get_preferred_width(-1)[1]!;
+            const panelWidth = this.panel.get_preferred_width(-1)[1];
             panelBox.x1 =
                 panelPosition === VerticalPanelPositionEnum.LEFT
                     ? box.x1
                     : box.x2 - panelWidth;
             panelBox.x2 = panelBox.x1 + panelWidth;
             panelBox.y1 = box.y1;
-            panelBox.y2 = this.panel.get_preferred_height(-1)[1]!;
+            panelBox.y2 = this.panel.get_preferred_height(-1)[1];
         }
 
         const msWorkspaceActorBox = new Clutter.ActorBox();

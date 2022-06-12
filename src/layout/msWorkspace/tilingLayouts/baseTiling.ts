@@ -27,7 +27,11 @@ export class BaseTilingLayout<
 
     constructor(msWorkspace: MsWorkspace, state: Partial<S> = {}) {
         super();
-        this._state = Object.assign({}, (this.constructor as any).state, state);
+        this._state = Object.assign(
+            {},
+            (this.constructor as unknown as { state: S }).state,
+            state
+        );
         this.icon = Gio.icon_new_for_string(
             `${Me.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
         );

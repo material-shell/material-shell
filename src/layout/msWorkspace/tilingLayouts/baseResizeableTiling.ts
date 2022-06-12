@@ -283,23 +283,25 @@ export class BaseResizeableTilingLayout<
     addUnFocusEffect(tileable: Tileable, effect: number, focused: boolean) {
         if (!tileable || tileable.focusEffects) return;
         if (effect === FocusEffectEnum.DEFAULT) {
+            const dimmer = new Clutter.BrightnessContrastEffect({
+                name: 'dimmer',
+                brightness: focused
+                    ? Clutter.Color.new(127, 127, 127, 255)
+                    : Clutter.Color.new(100, 100, 100, 255),
+            });
             tileable.focusEffects = {
-                dimmer: new Clutter.BrightnessContrastEffect({
-                    name: 'dimmer',
-                    brightness: focused
-                        ? Clutter.Color.new(127, 127, 127, 255)
-                        : Clutter.Color.new(100, 100, 100, 255),
-                }),
+                dimmer,
             };
-            tileable.add_effect(tileable.focusEffects.dimmer!);
+            tileable.add_effect(dimmer);
         } else if (effect === FocusEffectEnum.BORDER) {
+            const border = new PrimaryBorderEffect({
+                name: 'border',
+                opacity: focused ? 1.0 : 0.0,
+            });
             tileable.focusEffects = {
-                border: new PrimaryBorderEffect({
-                    name: 'border',
-                    opacity: focused ? 1.0 : 0.0,
-                }),
+                border,
             };
-            tileable.add_effect(tileable.focusEffects.border!);
+            tileable.add_effect(border);
         }
     }
 

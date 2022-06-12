@@ -72,7 +72,7 @@ type PartitionedTuple<
 
 export type NeverRemoved = 'never';
 
-/// Use this to indicate that a type was introduced in a specific version of gnome
+/// Use this to indicate that a type was removed in a specific version of gnome
 /// Needs to be used together with `IntroducedInGnome`.
 /// You can use `RemovedInGnome<"never">` if the type is used in the latest version of gnome.
 export type RemovedInGnome<V extends VERSIONS[number] | NeverRemoved> = {

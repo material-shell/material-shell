@@ -1,5 +1,3 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 /** Extension imports */

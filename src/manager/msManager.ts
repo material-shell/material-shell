@@ -1,12 +1,12 @@
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /** Gnome libs imports */
-const Signals = imports.signals;
 import * as Clutter from 'clutter';
+import { GObject } from 'src/types/mod';
 import { WithSignals } from 'src/utils/gjs';
 
 export interface Signal {
-    from: any;
+    from: WithSignals | GObject.Object;
     id: number;
 }
 
@@ -19,8 +19,9 @@ export class MsManager extends WithSignals {
     }
 
     observe(
-        subject: any,
+        subject: WithSignals | GObject.Object,
         property: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: (...args: any[]) => void
     ) {
         const signal = {

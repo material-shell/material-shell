@@ -10,9 +10,6 @@ import { getSettings } from 'src/utils/settings';
 const FileTest = GLib.FileTest;
 
 const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
-const REGISTRY_NEXT_PATH = `${GLib.get_user_cache_dir()}/${
-    Me.uuid
-}-state-next.json`;
 
 type StateDict = { [Key: string]: any };
 

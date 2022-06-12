@@ -32,10 +32,6 @@ import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
-export const isMsWindow = (obj: any): obj is MsWindow => {
-    return obj instanceof MsWindow;
-};
-
 export function buildMetaWindowIdentifier(metaWindow: Meta.Window) {
     return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
 }

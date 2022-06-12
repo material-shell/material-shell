@@ -8,9 +8,6 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { main as Main } from 'ui';
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 export class TooltipManager extends MsManager {
     constructor() {
         super();
@@ -155,36 +152,39 @@ export class MatTooltip extends St.Label {
     }
     vfunc_allocate(...args: [Clutter.ActorBox]) {
         const relativeActor = this.params.relativeActor || this.sourceActor;
-        const [stageX, stageY] = relativeActor.get_transformed_position();
+        const [stageX, stageY] = relativeActor.get_transformed_position() as [
+            number,
+            number
+        ];
         let x: number, y: number;
         switch (this.params.side) {
             case TooltipSide.LEFT:
-                x = stageX! - this.get_width();
+                x = stageX - this.get_width();
                 y =
-                    stageY! +
+                    stageY +
                     relativeActor.get_height() / 2 -
                     this.get_height() / 2;
                 break;
             case TooltipSide.TOP:
                 x =
-                    stageX! +
+                    stageX +
                     relativeActor.get_width() / 2 -
                     this.get_width() / 2;
-                y = stageY! - this.get_height();
+                y = stageY - this.get_height();
                 break;
             case TooltipSide.RIGHT:
-                x = stageX! + relativeActor.get_width();
+                x = stageX + relativeActor.get_width();
                 y =
-                    stageY! +
+                    stageY +
                     relativeActor.get_height() / 2 -
                     this.get_height() / 2;
                 break;
             case TooltipSide.BOTTOM:
                 x =
-                    stageX! +
+                    stageX +
                     relativeActor.get_width() / 2 -
                     this.get_width() / 2;
-                y = stageY! + relativeActor.get_height();
+                y = stageY + relativeActor.get_height();
                 break;
         }
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {

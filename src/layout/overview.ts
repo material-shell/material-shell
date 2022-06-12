@@ -19,8 +19,6 @@ import {
 const ANIMATION_TIME = 250;
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 @registerGObjectClass
 class MsControlsManager extends St.Widget {
     _searchEntry: St.Entry;
@@ -213,7 +211,7 @@ class MsControlsManager extends St.Widget {
 @registerGObjectClass
 class OverviewActor extends St.BoxLayout {
     _controls: MsControlsManager;
-    _delegate: any;
+    _delegate: MsOverview | undefined = undefined;
 
     constructor() {
         super({

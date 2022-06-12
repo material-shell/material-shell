@@ -23,8 +23,10 @@ export class MsStatusArea extends Clutter.Actor {
     leftBoxActors: Clutter.Actor[];
     rightBoxActors: Clutter.Actor[];
     dateMenu: dateMenu.DateMenuButton;
-    originalDateMenuBox: any;
-    msDateMenuBox?: MsDateMenuBox;
+    msDateMenuBox?: {
+        box: MsDateMenuBox;
+        originalDateMenuBox: Clutter.Actor;
+    };
     signalIds: {
         leftBoxActor: number;
         centerBoxActor: number;
@@ -58,10 +60,15 @@ export class MsStatusArea extends Clutter.Actor {
             this.msDateMenuBox === undefined,
             'date menu button has alreayd been verticalized'
         );
-        this.originalDateMenuBox = this.dateMenu._clockDisplay.get_parent();
-        this.dateMenu.remove_child(this.originalDateMenuBox);
-        this.msDateMenuBox = new MsDateMenuBox(this.dateMenu);
-        this.dateMenu.add_child(this.msDateMenuBox);
+        const originalDateMenuBox = assertNotNull(
+            this.dateMenu._clockDisplay.get_parent()
+        );
+        this.dateMenu.remove_child(originalDateMenuBox);
+        this.msDateMenuBox = {
+            box: new MsDateMenuBox(this.dateMenu),
+            originalDateMenuBox,
+        };
+        this.dateMenu.add_child(this.msDateMenuBox.box);
     }
 
     unVerticaliseDateMenuButton() {
@@ -69,9 +76,9 @@ export class MsStatusArea extends Clutter.Actor {
             this.msDateMenuBox !== undefined,
             "date menu button hasn't been verticalized"
         );
-        this.msDateMenuBox.destroy();
+        this.msDateMenuBox.box.destroy();
+        this.dateMenu.add_child(this.msDateMenuBox.originalDateMenuBox);
         delete this.msDateMenuBox;
-        this.dateMenu.add_child(this.originalDateMenuBox);
     }
 
     stealPanelActors() {

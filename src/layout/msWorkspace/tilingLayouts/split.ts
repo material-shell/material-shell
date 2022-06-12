@@ -7,9 +7,6 @@ import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 import { Portion } from '../portion';
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 // TODO: Make this configurable
 // const WINDOW_SLIDE_TWEEN_TIME = 250;
 

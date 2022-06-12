@@ -39,10 +39,10 @@ export class MatPanelButton extends MatButton {
     }
 
     findMonitor() {
-        const [x, y] = this.get_transformed_position();
+        const [x, y] = this.get_transformed_position() as [number, number];
         return (
             global.display.get_monitor_index_for_rect(
-                new Meta.Rectangle({ x: x!, y: y!, width: 0, height: 0 })
+                new Meta.Rectangle({ x, y, width: 0, height: 0 })
             ) || global.display.get_current_monitor()
         );
     }

@@ -297,7 +297,7 @@ export class MsWindowManager extends MsManager {
                 costMatrix.push(costs);
             }
 
-            const { cost, assignments } = weighted_matching(costMatrix);
+            const { cost: _, assignments } = weighted_matching(costMatrix);
 
             // The meta window to be assigned to each MsWindow
             const msWindowAssignments = new Array<Meta.Window | null>(
@@ -445,14 +445,14 @@ export class MsWindowManager extends MsManager {
                 );
 
                 // We take the most recently focused msWindow
+                let bestTime = null;
                 for (const msWindow of samePidMsWindowList) {
-                    if (
-                        !msWindowFound ||
-                        (msWindow.metaWindow &&
-                            msWindowFound.metaWindow!.get_user_time() <
-                                msWindow.metaWindow.get_user_time())
-                    ) {
-                        msWindowFound = msWindow;
+                    if (msWindow.metaWindow) {
+                        const userTime = msWindow.metaWindow.get_user_time();
+                        if (bestTime == null || userTime > bestTime) {
+                            bestTime = userTime;
+                            msWindowFound = msWindow;
+                        }
                     }
                 }
             }
@@ -475,7 +475,7 @@ export class MsWindowManager extends MsManager {
                 for (const msWindow of sameAppMsWindowList) {
                     const score: [number, number] = [
                         msWindow.lifecycleState.type === 'window' ? 1 : 0,
-                        msWindow.metaWindow!.get_user_time(),
+                        msWindow.metaWindow?.get_user_time() ?? 0,
                     ];
                     if (
                         !msWindowFound ||

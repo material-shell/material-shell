@@ -25,6 +25,14 @@ declare module 'meta' {
     }
 }
 
+declare module 'clutter' {
+    // Seems to be part of gnome's version of clutter, but I can't find it in the offical docs or in the gir files.
+    class Grab {
+        // Necessary to disallow weird assignments. If this is not here typescript allows assigning e.g. booleans to fields of type 'Grab', which is weird.
+        private _grab: 'symbol';
+    }
+}
+
 declare module 'ui' {
     export namespace messageTray {
         interface NotificationParams {
@@ -123,6 +131,12 @@ declare module 'ui' {
         }
     }
 
+    type popModalPre42 = (actor: Clutter.Actor, timestamp?: number) => void;
+    type popModalPost42 = (grab: Clutter.Grab, timestamp?: number) => void;
+
+    type findModalPre42 = (actor: Actor) => number;
+    type findModalPost42 = (grab: Clutter.Grab) => number;
+
     export const main: {
         layoutManager: layout.LayoutManager;
         wm: windowManager.WindowManager;
@@ -139,9 +153,25 @@ declare module 'ui' {
                 options?: ModalOptions;
                 actionMode?: ActionMode;
             }
-        ): void;
-        popModal(actor: Actor): void;
-        _findModal(grab: any): number;
+        ):
+            | (Clutter.Grab &
+                  IntroducedInGnome<'42.0'> &
+                  RemovedInGnome<'never'>)
+            | (boolean & IntroducedInGnome<'ancient'> & RemovedInGnome<'42.0'>);
+        popModal:
+            | (popModalPost42 &
+                  IntroducedInGnome<'42.0'> &
+                  RemovedInGnome<'never'>)
+            | (popModalPre42 &
+                  IntroducedInGnome<'ancient'> &
+                  RemovedInGnome<'42.0'>);
+        _findModal:
+            | (findModalPost42 &
+                  IntroducedInGnome<'42.0'> &
+                  RemovedInGnome<'never'>)
+            | (findModalPre42 &
+                  IntroducedInGnome<'ancient'> &
+                  RemovedInGnome<'42.0'>);
         loadTheme(): void;
         reloadThemeResource(): void;
     };
