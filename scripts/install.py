@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-import subprocess
+import getpass
+import json
 import os
+import re
 import shutil
+import subprocess
 from shutil import which
 from subprocess import check_output
-import re
-
 
 # Ansi escape codes to get colors in terminals
 RED = "\33[31m"
@@ -14,11 +15,15 @@ YELLOW = "\33[33m"
 RESET = "\33[0m"
 
 ''' Prints some text with a color '''
+
+
 def printc(color: str, text: str):
     print(f"{color}{text}{RESET}")
 
 # Tries to invoke a command line tool
 # Returns false if the program exited with a non-zero error code or if the program failed to be executed.
+
+
 def try_call(params):
     try:
         subprocess.check_call(params)
@@ -26,6 +31,21 @@ def try_call(params):
     except Exception as e:
         print(e)
         return False
+
+
+def window_manager() -> str:
+    sessions = json.loads(subprocess.check_output(["loginctl", "--output=json"]).decode('utf-8'))
+    username = getpass.getuser()
+    sessionIds = [r["session"] for r in sessions if r["user"] == username]
+    window_manager = "unknown"
+    for sessionId in sessionIds:
+        if subprocess.check_output(["loginctl", "show-session", str(sessionId), "-p", "Active", "--value"]).decode('utf-8').strip() == "yes":
+            # Found the active session, get the window manager name from it
+            window_manager = subprocess.check_output(
+                ["loginctl", "show-session", str(sessionId), "-p", "Type", "--value"]).decode('utf-8').strip()
+
+    return window_manager
+
 
 def install():
     package_dir = os.path.join(os.path.dirname(__file__), "..")
@@ -53,7 +73,7 @@ def install():
         printc(RED, "node could not be found. You need to install node to build material-shell. See https://nodejs.org/en/")
         exit(1)
 
-    #if which("gnome-shell") is None:
+    # if which("gnome-shell") is None:
     #    printc(RED, "gnome-shell could not be found. Are you sure you are running gnome-shell?")
     #    exit(1)
 
@@ -136,10 +156,7 @@ def install():
         exit(1)
 
     # Determine if we are using x11 or wayland
-    window_manager = subprocess.check_output(
-        ["bash", "-c", "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"]).decode('utf-8').strip()
-
-    if window_manager == "Type=x11":
+    if window_manager() == "x11":
         printc(GREEN, "Installation succeeded, restarting gnome-shell...")
 
         # Restart gnome shell
