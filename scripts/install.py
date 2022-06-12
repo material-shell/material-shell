@@ -19,11 +19,12 @@ def printc(color: str, text: str):
     ''' Prints some text with a color '''
     print(f"{color}{text}{RESET}")
 
-# Tries to invoke a command line tool
-# Returns false if the program exited with a non-zero error code or if the program failed to be executed.
-
 
 def try_call(params):
+    '''
+    Tries to invoke a command line tool
+    Returns false if the program exited with a non-zero error code or if the program failed to be executed.
+    '''
     try:
         subprocess.check_call(params)
         return True
