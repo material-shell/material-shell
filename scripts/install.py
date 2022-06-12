@@ -14,10 +14,9 @@ GREEN = "\33[32m"
 YELLOW = "\33[33m"
 RESET = "\33[0m"
 
-''' Prints some text with a color '''
-
 
 def printc(color: str, text: str):
+    ''' Prints some text with a color '''
     print(f"{color}{text}{RESET}")
 
 # Tries to invoke a command line tool
