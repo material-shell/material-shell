@@ -5,13 +5,7 @@ module.exports = {
     env: {
         es6: true,
     },
-    parserOptions: { project: ['./tsconfig.json'] },
-    extends: [
-        'eslint:recommended',
-        'plugin:@typescript-eslint/recommended',
-        'plugin:prettier/recommended',
-        'prettier',
-    ],
+    extends: ['eslint:recommended', 'plugin:prettier/recommended', 'prettier'],
     plugins: ['prettier', '@typescript-eslint'],
     rules: {
         'prettier/prettier': 'error',
@@ -32,6 +26,22 @@ module.exports = {
             },
         ],
     },
+    overrides: [
+        {
+            files: ['*.ts', '*.tsx'],
+
+            extends: [
+                'plugin:@typescript-eslint/recommended',
+                // 'plugin:@typescript-eslint/strict',
+                // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
+            ],
+
+            parserOptions: {
+                project: ['./tsconfig.json'],
+                ecmaVersion: 2020,
+            },
+        },
+    ],
     globals: {
         ARGV: false,
         Debugger: false,
@@ -47,8 +57,5 @@ module.exports = {
         C_: false,
         N_: false,
         ngettext: false,
-    },
-    parserOptions: {
-        ecmaVersion: 2020,
     },
 };
