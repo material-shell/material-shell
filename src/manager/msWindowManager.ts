@@ -73,34 +73,31 @@ function windowMatchingCost(
     metaWindow: Meta.Window,
     msWindow: MsWindow
 ) {
+    const state = msWindow.lifecycleState;
     assert(
-        msWindow.lifecycleState.type === 'window' ||
-            msWindow.lifecycleState.type === 'app-placeholder',
+        state.type === 'window' || state.type === 'app-placeholder',
         'MsWindow has no matching info'
     );
-    const matchingInfo = msWindow.lifecycleState.matchingInfo;
+    const matchingInfo = state.matchingInfo;
 
     let cost = 0;
     // The wmClass *must* match if specified
     cost += matchingCost(matchingInfo.wmClass, windowInfo.wmClass, INF_COST, 1);
     cost += matchingCost(matchingInfo.pid, windowInfo.pid, 100, 1);
     cost += matchingCost(matchingInfo.title, windowInfo.title, 50, 1);
-    cost += matchingCost(matchingInfo.stableSeq, windowInfo.stableSeq, 10, 1);
+    cost += matchingCost(matchingInfo.stableSeq, windowInfo.stableSeq, 1, 1);
 
-    if (msWindow.lifecycleState.type === 'window') {
-        // Prefer to keep existing matchings
-        cost += msWindow.lifecycleState.metaWindow === metaWindow ? 0 : 5;
-    } else {
-        cost += 5;
-    }
+    const msWindowMeta =
+        state.type === 'window' ? state.metaWindow ?? undefined : undefined;
+    // Prefer to keep existing matchings
+    cost += msWindowMeta === metaWindow ? 0 : 5;
 
-    if (msWindow.lifecycleState.type === 'app-placeholder') {
-        // Prefer matching to MsWindows which are waiting for an app to open
-        cost +=
-            msWindow.lifecycleState.waitingForAppSince !== undefined ? 0 : 1;
-    } else {
-        cost += 2;
-    }
+    const waiting =
+        state.type === 'app-placeholder'
+            ? state.waitingForAppSince !== undefined
+            : state.matchedWhileWaiting;
+    // Prefer matching to MsWindows which are waiting for an app to open
+    cost += waiting ? 0 : 200;
 
     return cost;
 }
@@ -254,14 +251,20 @@ export class MsWindowManager extends MsManager {
                     )}`
                 );
             }
-            for (const msWindow of this.msWindowList) {
-                if (msWindow.lifecycleState.type === 'app-placeholder') {
-                    Me.log(
-                        `MSWindow: ${JSON.stringify(
-                            msWindow.lifecycleState.matchingInfo
-                        )}`
-                    );
-                }
+            for (const msWindow of candidateMsWindows) {
+                assert(
+                    msWindow.lifecycleState.type === 'window' ||
+                        msWindow.lifecycleState.type === 'app-placeholder',
+                    'MsWindow has no matching info'
+                );
+                Me.log(
+                    `MSWindow: ${JSON.stringify(
+                        msWindow.lifecycleState.matchingInfo
+                    )} waiting=${
+                        msWindow.lifecycleState.type == 'app-placeholder' &&
+                        msWindow.lifecycleState.waitingForAppSince !== undefined
+                    } workspace=${msWindow.msWorkspace.monitor.index}`
+                );
             }
         };
 
