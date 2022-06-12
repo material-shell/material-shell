@@ -4036,14 +4036,14 @@ export class Actor<A = LayoutManager, B = Content>
     get_pivot_point(): [number | null, number | null];
     get_pivot_point_z(): number;
     get_position(): [number | null, number | null];
-    get_preferred_height(for_width: number): [number | null, number | null];
+    get_preferred_height(for_width: number): [number, number];
     get_preferred_size(): [
         number | null,
         number | null,
         number | null,
         number | null
     ];
-    get_preferred_width(for_height: number): [number | null, number | null];
+    get_preferred_width(for_height: number): [number, number];
     get_previous_sibling(): Actor;
     get_reactive(): boolean;
     get_request_mode(): RequestMode;

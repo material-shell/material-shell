@@ -23,6 +23,12 @@ for file in dir.glob("@gi-types/**/*.d.ts"):
         text = text.replace("child_type?: VariantType<C> | null,",
                             "child_type: VariantType<C>,")
 
+        # The return values can never be null, this is a bug in the gir file parsing
+        text = text.replace(
+            "get_preferred_width(for_height: number): [number | null, number | null];", "get_preferred_width(for_height: number): [number, number];")
+        text = text.replace(
+            "get_preferred_height(for_width: number): [number | null, number | null];", "get_preferred_height(for_width: number): [number, number];")
+
         # Clutter typedefs are incorrect, parents can definitely be null
         text = text.replace("get_parent(): Actor;", "get_parent(): Actor | null;")
     with open(file, "w") as f:
