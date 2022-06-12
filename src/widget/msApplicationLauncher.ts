@@ -112,7 +112,7 @@ export class MsApplicationLauncher extends St.Widget {
                     'Expected newly created window to be an app placeholder'
                 );
                 // This will cause an app to launch
-                msWindow.placeholder.activate(0);
+                msWindow.placeholder.activate();
                 this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);
