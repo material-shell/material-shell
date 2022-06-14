@@ -346,11 +346,9 @@ export class MsMain extends St.Widget {
             Me.msWindowManager.msFocusManager.popModal(this);
         } else {
             this.overviewShown = true;
-            if (Main._findModal(this) === -1) {
-                Me.msWindowManager.msFocusManager.pushModal(this, {
-                    actionMode: Shell.ActionMode.OVERVIEW,
-                });
-            }
+            Me.msWindowManager.msFocusManager.pushModal(this, {
+                actionMode: Shell.ActionMode.OVERVIEW,
+            });
 
             const dimmerEffect = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
