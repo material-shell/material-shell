@@ -298,16 +298,19 @@ export class MsDateMenuBox extends St.Widget {
             this.add_child(this.clockLabel);
         }
 
-        Me.msThemeManager.connect('clock-horizontal-changed', () => {
-            if (Me.msThemeManager.clockHorizontal) {
-                this.remove_child(this.clockLabel);
-                this.add_child(this.iconDisplay);
-            } else {
-                this.remove_child(this.iconDisplay);
-                this.add_child(this.clockLabel);
+        const clockHorizontalSignal = Me.msThemeManager.connect(
+            'clock-horizontal-changed',
+            () => {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.remove_child(this.clockLabel);
+                    this.add_child(this.iconDisplay);
+                } else {
+                    this.remove_child(this.iconDisplay);
+                    this.add_child(this.clockLabel);
+                }
+                this.updateVisibility();
             }
-            this.updateVisibility();
-        });
+        );
 
         this.updateVisibility();
         this.updateClock();
@@ -322,6 +325,7 @@ export class MsDateMenuBox extends St.Widget {
         );
 
         this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(clockHorizontalSignal);
             this.indicatorActor.disconnect(this.indicatorSignal);
             this._wallClock.disconnect(this.dateMenuSignal);
             delete this._wallClock;

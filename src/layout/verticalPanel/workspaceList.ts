@@ -7,7 +7,7 @@ import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
@@ -23,7 +23,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
     private _delegate: this;
-    msWorkspaceButtonMap: Map<any, any>;
+    msWorkspaceButtonMap: Map<MsWorkspace, WorkspaceButton>;
     msWorkspaceManager: MsWorkspaceManager;
     menuManager: popupMenu.PopupMenuManager;
     buttonList: ReorderableList;
@@ -58,12 +58,17 @@ export class WorkspaceList extends St.Widget {
             ),
         });
 
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.workspaceActiveIndicator.set_height(
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            );
-            this.queue_relayout();
-        });
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.workspaceActiveIndicator.set_height(
+                    Me.msThemeManager.getPanelSize(
+                        Main.layoutManager.primaryIndex
+                    )
+                );
+                this.queue_relayout();
+            }
+        );
 
         this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
@@ -100,17 +105,22 @@ export class WorkspaceList extends St.Widget {
                     break;
             }
         });
+
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(panelSizeSignal);
+        });
     }
 
     buildButtons() {
         this.msWorkspaceManager.primaryMsWorkspaces.forEach(
             (msWorkspace, index) => {
-                if (!this.msWorkspaceButtonMap.has(msWorkspace)) {
+                const button = this.msWorkspaceButtonMap.get(msWorkspace);
+                if (button === undefined) {
                     const workspaceButton = new WorkspaceButton(
                         this.msWorkspaceManager,
                         msWorkspace
                     );
-                    this.menuManager.addMenu(workspaceButton.menu);
+                    this.menuManager.addMenu(workspaceButton.menu.menu);
                     /* workspaceButton._draggable.connect('drag-begin', () => {
                         let workspaceButtonIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                             msWorkspace
@@ -167,7 +177,6 @@ export class WorkspaceList extends St.Widget {
                     );
                     this.msWorkspaceButtonMap.set(msWorkspace, workspaceButton);
                 } else {
-                    const button = this.msWorkspaceButtonMap.get(msWorkspace);
                     const index =
                         this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                             msWorkspace
@@ -183,8 +192,8 @@ export class WorkspaceList extends St.Widget {
                     msWorkspace
                 )
             ) {
-                this.menuManager.removeMenu(button.menu);
-                button.menu.destroy();
+                // Note: We don't have to remove the menu from the menu manager manually as
+                // this is, and should, be done during the menu's destroy signal.
                 button.destroy();
                 this.msWorkspaceButtonMap.delete(msWorkspace);
             }
@@ -312,6 +321,15 @@ export class WorkspaceList extends St.Widget {
     }
 }
 
+interface StyleMenu {
+    menu: popupMenu.PopupMenu;
+    panelIconStyleHybridRadio: popupMenu.PopupBaseMenuItem;
+    panelIconStyleCategoryRadio: popupMenu.PopupBaseMenuItem;
+    panelIconStyleApplicationRadio: popupMenu.PopupBaseMenuItem;
+    subMenu: popupMenu.PopupSubMenuMenuItem;
+
+    disconnectSignals(): void;
+}
 @registerGObjectClass
 export class WorkspaceButton extends MatButton {
     static metaInfo: GObject.MetaInfo = {
@@ -328,17 +346,13 @@ export class WorkspaceButton extends MatButton {
     msWorkspaceManager: MsWorkspaceManager;
     workspaceButtonIcon: WorkspaceButtonIcon;
     private _delegate: this;
-    menu: any;
+    menu: StyleMenu;
     mouseData: {
         pressed: boolean;
         dragged: boolean;
         originalCoords: null;
         originalSequence: null;
     };
-    panelIconStyleHybridRadio: any;
-    panelIconStyleCategoryRadio: any;
-    panelIconStyleApplicationRadio: any;
-    subMenu: any;
     _draggable: any;
 
     constructor(
@@ -354,17 +368,20 @@ export class WorkspaceButton extends MatButton {
         this.workspaceButtonIcon = workspaceButtonIcon;
         this._delegate = this;
 
-        this.buildMenu();
+        this.menu = this.buildMenu();
 
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.queue_relayout();
-        });
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => {
+                this.queue_relayout();
+            }
+        );
 
         this.connect('primary-action', () => {
             this.msWorkspace.activate();
         });
         this.connect('secondary-action', () => {
-            this.menu.toggle();
+            this.menu.menu.toggle();
         });
         this.connect('clicked', (actor, button) => {
             if (button === Clutter.BUTTON_MIDDLE) {
@@ -376,6 +393,12 @@ export class WorkspaceButton extends MatButton {
                 )
                     msWorkspace.close();
             }
+        });
+
+        this.connect('destroy', () => {
+            this.menu.menu.destroy();
+            this.menu.disconnectSignals();
+            Me.msThemeManager.disconnect(panelSizeSignal);
         });
 
         this.mouseData = {
@@ -395,13 +418,14 @@ export class WorkspaceButton extends MatButton {
         );
     }
 
-    buildMenu() {
-        this.menu = new popupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
-        this.menu.actor.add_style_class_name('panel-menu');
-        this.menu.addMenuItem(
+    buildMenu(): StyleMenu {
+        const rootMenu = new popupMenu.PopupMenu(this, 0.5, St.Side.LEFT);
+        rootMenu.actor.add_style_class_name('panel-menu');
+        rootMenu.addMenuItem(
             new popupMenu.PopupSeparatorMenuItem(_('Panel icons style'))
         );
-        this.panelIconStyleHybridRadio = this.menu.addAction(
+
+        const panelIconStyleHybridRadio = rootMenu.addAction(
             _('Hybrid'),
             () => {
                 Me.msThemeManager.panelIconStyle = PanelIconStyleEnum.HYBRID;
@@ -415,7 +439,7 @@ export class WorkspaceButton extends MatButton {
                 }-symbolic.svg`
             )
         );
-        this.panelIconStyleCategoryRadio = this.menu.addAction(
+        const panelIconStyleCategoryRadio = rootMenu.addAction(
             _('Categories only'),
             () => {
                 Me.msThemeManager.panelIconStyle = PanelIconStyleEnum.CATEGORY;
@@ -429,7 +453,7 @@ export class WorkspaceButton extends MatButton {
                 }-symbolic.svg`
             )
         );
-        this.panelIconStyleApplicationRadio = this.menu.addAction(
+        const panelIconStyleApplicationRadio = rootMenu.addAction(
             _('Applications preview'),
             () => {
                 Me.msThemeManager.panelIconStyle =
@@ -445,56 +469,59 @@ export class WorkspaceButton extends MatButton {
             )
         );
 
-        Me.msThemeManager.connect('panel-icon-style-changed', () => {
-            this.panelIconStyleHybridRadio._icon.set_gicon(
-                Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${
-                        Me.msThemeManager.panelIconStyle ===
-                        PanelIconStyleEnum.HYBRID
-                            ? 'marked'
-                            : 'blank'
-                    }-symbolic.svg`
-                )
-            );
-            this.panelIconStyleCategoryRadio._icon.set_gicon(
-                Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${
-                        Me.msThemeManager.panelIconStyle ===
-                        PanelIconStyleEnum.CATEGORY
-                            ? 'marked'
-                            : 'blank'
-                    }-symbolic.svg`
-                )
-            );
-            this.panelIconStyleApplicationRadio._icon.set_gicon(
-                Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/radiobox-${
-                        Me.msThemeManager.panelIconStyle ===
-                        PanelIconStyleEnum.APPLICATION
-                            ? 'marked'
-                            : 'blank'
-                    }-symbolic.svg`
-                )
-            );
-        });
+        const iconStyleSignal = Me.msThemeManager.connect(
+            'panel-icon-style-changed',
+            () => {
+                assertNotNull(panelIconStyleHybridRadio._icon).set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.HYBRID
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+                assertNotNull(panelIconStyleCategoryRadio._icon).set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.CATEGORY
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+                assertNotNull(panelIconStyleApplicationRadio._icon).set_gicon(
+                    Gio.icon_new_for_string(
+                        `${Me.path}/assets/icons/radiobox-${
+                            Me.msThemeManager.panelIconStyle ===
+                            PanelIconStyleEnum.APPLICATION
+                                ? 'marked'
+                                : 'blank'
+                        }-symbolic.svg`
+                    )
+                );
+            }
+        );
 
-        this.menu.addMenuItem(
+        rootMenu.addMenuItem(
             new popupMenu.PopupSeparatorMenuItem(_('Override category'))
         );
         const autoSentence = _('Determined automatically');
-        this.subMenu = new popupMenu.PopupSubMenuMenuItem(
+        const subMenu = new popupMenu.PopupSubMenuMenuItem(
             this.msWorkspace.msWorkspaceCategory.forcedCategory || autoSentence
         );
         const setCategory = (category?: string) => {
             this.msWorkspace.msWorkspaceCategory.forceCategory(category);
             this.workspaceButtonIcon.buildIcons();
-            this.subMenu.label.text = category || autoSentence;
+            subMenu.label.text = category || autoSentence;
         };
-        this.subMenu.menu.addAction(autoSentence, () => {
+        subMenu.menu.addAction(autoSentence, () => {
             setCategory();
         });
         MainCategories.forEach((key) => {
-            this.subMenu.menu.addAction(
+            subMenu.menu.addAction(
                 key,
                 () => {
                     setCategory(key);
@@ -507,9 +534,20 @@ export class WorkspaceButton extends MatButton {
             );
         });
 
-        this.menu.addMenuItem(this.subMenu);
-        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
-        this.menu.close();
+        rootMenu.addMenuItem(subMenu);
+        Main.layoutManager.uiGroup.add_actor(rootMenu.actor);
+        rootMenu.close();
+
+        return {
+            menu: rootMenu,
+            panelIconStyleHybridRadio,
+            panelIconStyleCategoryRadio,
+            panelIconStyleApplicationRadio,
+            subMenu,
+            disconnectSignals: () => {
+                Me.msThemeManager.disconnect(iconStyleSignal);
+            },
+        };
     }
 
     initDrag() {
@@ -594,14 +632,19 @@ export class WorkspaceButtonIcon extends St.Widget {
         this.msWorkspace.connect('tileableList-changed', (_) => {
             this.buildIcons();
         });
-        Me.msThemeManager.connect('panel-icon-style-changed', () => {
-            this.buildIcons();
-        });
-        Me.msThemeManager.connect('panel-icon-color-changed', () => {
-            this.desaturateIcons();
-        });
-        Me.msThemeManager.connect('panel-size-changed', () => {
-            this.buildIcons();
+        const themeSignals = [
+            Me.msThemeManager.connect('panel-icon-style-changed', () => {
+                this.buildIcons();
+            }),
+            Me.msThemeManager.connect('panel-icon-color-changed', () => {
+                this.desaturateIcons();
+            }),
+            Me.msThemeManager.connect('panel-size-changed', () => {
+                this.buildIcons();
+            }),
+        ];
+        this.connect('destroy', () => {
+            for (const s of themeSignals) Me.msThemeManager.disconnect(s);
         });
     }
 

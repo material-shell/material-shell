@@ -22,7 +22,6 @@ export class HorizontalPanel extends St.BoxLayout {
     clockLabel: St.Label | undefined;
     clockBin: St.BoxLayout | null | undefined;
     private _wallClock: any;
-    signalClock: number | undefined;
     msWorkspace: MsWorkspace;
 
     constructor(msWorkspace: MsWorkspace) {
@@ -38,13 +37,20 @@ export class HorizontalPanel extends St.BoxLayout {
 
         this.add_child(this.taskBar);
         this.add_child(this.layoutSwitcher);
-        Me.msThemeManager.connect('clock-horizontal-changed', () => {
-            if (Me.msThemeManager.clockHorizontal) {
-                this.createClock();
-            } else {
-                this.removeClock();
+        const horizontalChangedSignal = Me.msThemeManager.connect(
+            'clock-horizontal-changed',
+            () => {
+                if (Me.msThemeManager.clockHorizontal) {
+                    this.createClock();
+                } else {
+                    this.removeClock();
+                }
             }
+        );
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(horizontalChangedSignal);
         });
+
         if (Me.msThemeManager.clockHorizontal) {
             this.createClock();
         }
@@ -64,7 +70,7 @@ export class HorizontalPanel extends St.BoxLayout {
         const updateClock = () => {
             clockLabel.text = this._wallClock.clock;
         };
-        this.signalClock = this._wallClock.connect(
+        const signalClock = this._wallClock.connect(
             'notify::clock',
             updateClock
         );
@@ -77,7 +83,7 @@ export class HorizontalPanel extends St.BoxLayout {
         });
         this.insert_child_at_index(this.clockBin, 1);
         clockLabel.connect('destroy', () => {
-            this._wallClock.disconnect(this.signalClock);
+            this._wallClock.disconnect(signalClock);
             delete this._wallClock;
         });
     }

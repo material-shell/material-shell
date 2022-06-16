@@ -41,12 +41,27 @@ export class BaseResizeableTilingLayout<
 
             delete state.mainPortion;
         }
-        Me.layoutManager.connect('gap-changed', this.onGapChange.bind(this));
         this.currentFocusEffect = Me.msThemeManager.focusEffect;
         this.onGapChange();
-        Me.msThemeManager.connect(
-            'focus-effect-changed',
-            this.onFocusEffectChanged.bind(this)
+    }
+
+    override registerToSignals() {
+        super.registerToSignals();
+        this.signals.push(
+            {
+                from: Me.layoutManager,
+                id: Me.layoutManager.connect(
+                    'gap-changed',
+                    this.onGapChange.bind(this)
+                ),
+            },
+            {
+                from: Me.msThemeManager,
+                id: Me.msThemeManager.connect(
+                    'focus-effect-changed',
+                    this.onFocusEffectChanged.bind(this)
+                ),
+            }
         );
     }
 
