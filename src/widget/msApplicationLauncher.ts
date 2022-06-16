@@ -6,6 +6,7 @@ import * as Shell from 'shell';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { AppsManager } from 'src/manager/appsManager';
+import { assert } from 'src/utils/assert';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
@@ -106,7 +107,12 @@ export class MsApplicationLauncher extends St.Widget {
                     focus: true,
                     insert: false,
                 });
-                Me.msWindowManager.openAppForMsWindow(msWindow);
+                assert(
+                    msWindow.lifecycleState.type === 'app-placeholder',
+                    'Expected newly created window to be an app placeholder'
+                );
+                // This will cause an app to launch
+                msWindow.placeholder.activate();
                 this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);

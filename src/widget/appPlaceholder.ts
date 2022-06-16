@@ -33,7 +33,7 @@ export class AppPlaceholder extends St.Widget {
     identityContainer: St.BoxLayout;
     appTitle: St.Label;
     callToAction: St.Label;
-    spinnerContainer: any;
+    spinnerContainer: Clutter.Actor;
     vertical = true;
     private _spinner: any;
 
@@ -157,7 +157,7 @@ export class AppPlaceholder extends St.Widget {
         super.vfunc_allocate(...args);
     }
 
-    activate(button: number) {
+    activate(button = 0) {
         if (this.waitForReset) return;
         this.waitForReset = true;
         this.clickableContainer.reactive = false;
