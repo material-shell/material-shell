@@ -1,5 +1,3 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 /** Gnome libs imports */
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';

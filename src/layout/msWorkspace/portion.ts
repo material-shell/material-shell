@@ -1,8 +1,5 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 /** Gnome libs imports */
 import { Rectangular } from 'src/types/mod';
-const Signals = imports.signals;
 
 const MIN_BASIS_RATIO = 0.1;
 

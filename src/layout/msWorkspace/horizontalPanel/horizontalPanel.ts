@@ -8,7 +8,6 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { popupMenu as PopupMenu } from 'ui';
 import { MsWorkspace } from '../msWorkspace';
-const DND = imports.ui.dnd;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -107,7 +106,7 @@ export class HorizontalPanel extends St.BoxLayout {
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const clockWidth = this.clockBin
-            ? this.clockBin.get_preferred_width(-1)[1]!
+            ? this.clockBin.get_preferred_width(-1)[1]
             : 0;
         const taskBarBox = new Clutter.ActorBox();
         taskBarBox.x1 = contentBox.x1;

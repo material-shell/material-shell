@@ -11,7 +11,6 @@ import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
 import { appDisplay, remoteSearch } from 'ui';
 
-const DND = imports.ui.dnd;
 const ShellEntry = imports.ui.shellEntry;
 const ParentalControlsManager = imports.misc.parentalControlsManager;
 const SystemActions = imports.misc.systemActions;
@@ -73,7 +72,7 @@ export class SearchResultEntry extends MatButton {
         icon: St.Icon | null,
         title: string,
         description?: string,
-        withMenu?: boolean
+        _withMenu?: boolean
     ) {
         super({});
         if (icon) {
@@ -143,7 +142,6 @@ export class SearchResultList extends St.BoxLayout {
         icon_name: 'edit-clear-symbolic',
     });
     iconClickedId = 0;
-    resMetas: any;
     entrySelected: SearchResultEntry | null = null;
     constructor(searchEntry: St.Entry) {
         super({
@@ -157,8 +155,8 @@ export class SearchResultList extends St.BoxLayout {
         this.text.connect('text-changed', this.onTextChanged.bind(this));
         // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
         this.text.connect('key-press-event', this.onKeyPress.bind(this));
-        this.text.connect('key-focus-in', () => {});
-        this.text.connect('key-focus-out', () => {});
+        // this.text.connect('key-focus-in', () => {});
+        // this.text.connect('key-focus-out', () => {});
         this.searchEntry.connect('popup-menu', () => {
             /* if (!this._searchActive) return;
 
@@ -279,8 +277,6 @@ export class SearchResultList extends St.BoxLayout {
 
             return Clutter.EVENT_STOP;
         } else {
-            let arrowNext, nextDirection;
-
             if (symbol === Clutter.KEY_Tab) {
                 this.selectNext();
                 return Clutter.EVENT_STOP;
@@ -396,10 +392,6 @@ export class SearchResultList extends St.BoxLayout {
                 this.onSearchTimeout.bind(this)
             );
 
-        const escapedTerms = this.terms.map((term) =>
-            Shell.util_regex_escape(term)
-        );
-
         //this.emit('terms-changed');
     }
 
@@ -426,7 +418,6 @@ export class SearchResultList extends St.BoxLayout {
                 createIcon: (size: number) => St.Icon;
             }[]
         ) => {
-            this.resMetas = resMetas;
             let moreEntry: SearchResultEntry | null = null;
             //
             const extraResults: SearchResultEntry[] = [];

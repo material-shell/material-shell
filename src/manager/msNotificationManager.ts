@@ -45,8 +45,8 @@ export class MsNotificationManager extends MsManager {
             let notifications: NotificationResponseItem[] = [];
             try {
                 notifications = JSON.parse(message.response_body.data);
-            } catch (e: any) {
-                global.log(`error unpack notification error ${e.toString()}`);
+            } catch (e: unknown) {
+                global.log(`error unpack notification error ${e}`);
                 return;
             }
             const source = new MsNotificationSource();

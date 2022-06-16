@@ -17,14 +17,13 @@ import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { layout, main as Main } from 'ui';
 import Monitor = layout.Monitor;
-const Signals = imports.signals;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export type Tileable = MsWindow | MsApplicationLauncher;
 
-function isMsWindow(argument: any): argument is MsWindow {
+function isMsWindow(argument: unknown): argument is MsWindow {
     return argument instanceof MsWindow;
 }
 

@@ -1,11 +1,13 @@
 /** Gnome libs imports */
-import { Actor } from 'clutter';
+import { Actor, Grab } from 'clutter';
 import * as GLib from 'glib';
 import { ModalOptions } from 'meta';
 import { ActionMode } from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
+import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
+import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
 import { main as Main } from 'ui';
 import {
     MetaWindowWithMsProperties,
@@ -21,7 +23,7 @@ export class MsFocusManager extends MsManager {
     lastMsWindowFocused: MsWindow | null = null;
     lastKeyFocus: Actor | null = null;
     focusProtected?: boolean;
-    actorGrabMap: Map<Actor, any> = new Map();
+    actorGrabMap: Map<Actor, boolean | Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
@@ -121,15 +123,22 @@ export class MsFocusManager extends MsManager {
             actionMode?: ActionMode;
         }
     ) {
-        const currentFocus = global.stage.key_focus;
         const grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);
     }
 
     popModal(actor: Actor) {
         const grab = this.actorGrabMap.get(actor);
-        if (grab != null) {
-            Main.popModal(grab != true ? grab : actor);
+        if (grab !== undefined) {
+            if (gnomeVersionGreaterOrEqualTo(Main.popModal, '42.0')) {
+                assert(
+                    typeof grab !== 'boolean',
+                    'Expected grab to be a grab object'
+                );
+                Main.popModal(grab);
+            } else {
+                Main.popModal(actor);
+            }
             this.actorGrabMap.delete(actor);
         }
     }

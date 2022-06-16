@@ -19,15 +19,15 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 interface CurrentDrag {
     msWindow: MsWindow;
     originPointerAnchor: [number, number];
-    originalParent: any;
+    originalParent: Clutter.Actor;
 }
 
 export class MsDndManager extends MsManager {
     msWindowManager: MsWindowManager;
-    signalMap: Map<any, any>;
+    signalMap: Map<MsWindow, number>;
     dragInProgress: CurrentDrag | null;
     inputGrabber: InputGrabber;
-    throttledCheckUnderPointer: (this: any) => any;
+    throttledCheckUnderPointer: (this: MsDndManager) => void;
 
     constructor(msWindowManager: MsWindowManager) {
         super();
@@ -142,7 +142,7 @@ export class MsDndManager extends MsManager {
 
     startDrag(msWindow: MsWindow) {
         global.stage.add_child(this.inputGrabber);
-        const originalParent = msWindow.get_parent();
+        const originalParent = assertNotNull(msWindow.get_parent());
         msWindow.freezeAllocation();
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();

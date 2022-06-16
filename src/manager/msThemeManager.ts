@@ -4,6 +4,7 @@ import * as Gio from 'gio';
 import { byteArray } from 'gjs';
 import * as GLib from 'glib';
 import { MsManager } from 'src/manager/msManager';
+import { assertNotNull } from 'src/utils/assert';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
@@ -49,7 +50,7 @@ function parseCoglColor(color: string): Color {
 
 export class MsThemeManager extends MsManager {
     themeContext: St.ThemeContext;
-    theme: any;
+    theme: St.Theme;
     themeSettings: Gio.Settings;
     themeFile: Gio.FilePrototype;
     themeValue: string;
@@ -214,7 +215,8 @@ export class MsThemeManager extends MsManager {
     async readFileContent(file: Gio.File) {
         return new Promise<string>((resolve, reject) => {
             file.load_contents_async(null, (obj, res) => {
-                const [success, contents] = obj!.load_contents_finish(res);
+                const [success, contents] =
+                    assertNotNull(obj).load_contents_finish(res);
                 if (success) {
                     //Read the binay content as string
                     const content = byteArray.toString(contents);
@@ -236,16 +238,16 @@ export class MsThemeManager extends MsManager {
                 GLib.PRIORITY_DEFAULT,
                 null,
                 (file, res) => {
-                    const stream = file!.replace_finish(res);
+                    const stream = assertNotNull(file).replace_finish(res);
 
                     stream.write_bytes_async(
                         contentBytes,
                         GLib.PRIORITY_DEFAULT,
                         null,
                         (ioStream, wRes) => {
-                            ioStream!.write_bytes_finish(wRes);
+                            assertNotNull(ioStream).write_bytes_finish(wRes);
                             stream.close(null);
-                            resolve(file!);
+                            resolve(assertNotNull(file));
                         }
                     );
                 }

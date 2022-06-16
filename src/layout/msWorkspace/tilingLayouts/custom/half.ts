@@ -3,9 +3,6 @@ import * as Clutter from 'clutter';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 @registerGObjectClass
 export class HalfLayoutBase<
     S extends { key: string }

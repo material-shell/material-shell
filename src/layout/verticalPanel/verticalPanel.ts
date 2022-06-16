@@ -14,8 +14,6 @@ import { main as Main, panel } from 'ui';
 import { SearchResultList } from './searchResultList';
 const Util = imports.misc.util;
 
-const SearchController = imports.ui.searchController;
-
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 

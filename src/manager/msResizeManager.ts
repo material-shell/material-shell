@@ -41,7 +41,6 @@ interface CurrentResize {
 
 export class MsResizeManager extends MsManager {
     msWindowManager: MsWindowManager;
-    signalMap: Map<any, any>;
     inputResizer: InputResizer;
     msWorkspace: MsWorkspace | undefined;
     resizeInProgress: CurrentResize | null;
@@ -51,7 +50,6 @@ export class MsResizeManager extends MsManager {
         super();
 
         this.msWindowManager = msWindowManager;
-        this.signalMap = new Map();
         this.resizeInProgress = null;
         this.inputResizer = new InputResizer();
 
@@ -139,9 +137,12 @@ export class MsResizeManager extends MsManager {
         const { msWorkspaceActor } = this.resizeInProgress.msWorkspace;
 
         const [containerX, containerY] =
-            msWorkspaceActor.tileableContainer.get_transformed_position();
+            msWorkspaceActor.tileableContainer.get_transformed_position() as [
+                number,
+                number
+            ];
         const [globalX, globalY] = global.get_pointer();
-        return [globalX - containerX!, globalY - containerY!];
+        return [globalX - containerX, globalY - containerY];
     }
 
     getFirstPortionPositionAndSize(): Rectangular {

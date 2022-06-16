@@ -14,7 +14,6 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { main as Main, popupMenu } from 'ui';
 import { MsWorkspace } from '../msWorkspace';
-const Animation = imports.ui.animation;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
