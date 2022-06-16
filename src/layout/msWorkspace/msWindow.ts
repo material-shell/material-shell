@@ -89,6 +89,19 @@ type MsWindowLifecycleState =
           matchingInfo: MsWindowMatchingInfo;
           /** Time when the meta window was associated with this MsWindow */
           matchedAtTime: Date;
+          /** True if the meta window was associated with this MsWindow while it was waiting for an app to launch.
+           * See also waitingForAppSince.
+           *
+           * This is important because of window association swapping. When launching an app in a specific MsWindow we definitely want to
+           * assign the newly opened app to that window. However, once it is open we might find that there is another MsWindow that is a better
+           * match (maybe it had the right window title). We do *not* want to swap the window associations in this case because the user
+           * explicitly opened the app in this MsWindow.
+           *
+           * There are still cases were we may want to swap window associations. For example when opening VSCode in an MsWindow it may
+           * open multiple restored windows. We may want to swap which windows are associated with which MsWindows (see #matchingInfo),
+           * but we always want this window to be *one of* the associated windows since the user explicitly opened the app here.
+           */
+          matchedWhileWaiting: boolean;
       }
     | {
           /** An MsWindow showing a placeholder for a particular app */
@@ -825,6 +838,8 @@ export class MsWindow extends Clutter.Actor {
             dialogs: [],
             matchingInfo: this.lifecycleState.matchingInfo,
             matchedAtTime: new Date(),
+            matchedWhileWaiting:
+                this.lifecycleState.waitingForAppSince !== undefined,
         };
         metaWindow.msWindow = this;
 
@@ -882,6 +897,8 @@ export class MsWindow extends Clutter.Actor {
                 dialogs: [],
                 matchingInfo: this.lifecycleState.matchingInfo,
                 matchedAtTime: new Date(),
+                matchedWhileWaiting:
+                    this.lifecycleState.waitingForAppSince !== undefined,
             };
         }
 
