@@ -434,6 +434,9 @@ export class MonitorContainer extends St.Widget {
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(panelSizeSignal);
             Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
+            if (this.bgManager) {
+                this.bgManager.destroy();
+            }
         });
     }
 
