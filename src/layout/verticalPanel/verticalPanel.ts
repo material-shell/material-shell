@@ -105,11 +105,11 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea.disable();
     }
 
-    override vfunc_get_preferred_width(_forHeight: number): [number, number] {
-        return [
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
-        ];
+    override vfunc_get_preferred_width(_for_height: number): [number, number] {
+        const panelSize = Me.msThemeManager.getPanelSize(
+            Main.layoutManager.primaryIndex
+        );
+        return [panelSize, panelSize];
     }
 
     setIcon(icon: 'search' | 'close') {
@@ -277,6 +277,13 @@ export class MsPanel extends St.BoxLayout {
         this.panelContent.disable();
     }
 
+    override vfunc_get_preferred_width(_for_height: number): [number, number] {
+        const panelSize = Me.msThemeManager.getPanelSize(
+            Main.layoutManager.primaryIndex
+        );
+        return [panelSize, panelSize];
+    }
+
     toggle() {
         if (!this.isExpanded) {
             if (!Me.layout.panelsVisible) {
@@ -351,9 +358,7 @@ export class MsPanel extends St.BoxLayout {
                 onComplete: () => {
                     this.remove_child(this.searchContent);
                     this.remove_child(this.divider);
-                    this.width = Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    );
+                    this.width = -1;
                     this.translation_x = 0;
                     if (!Me.layout.panelsVisible) {
                         this.hide();
