@@ -14,8 +14,6 @@ import { dateMenu, main as Main, panel } from 'ui';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-type AppIndicatorsIconActor = St.Widget & { set_icon_size(size: number): void };
-
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
@@ -82,9 +80,7 @@ export class MsStatusArea extends Clutter.Actor {
                 this.originalAppIndicatorIconSize =
                     appIndicatorSettings.get_int('icon-size');
             }
-            const iconSize = Math.round(
-                Me.msThemeManager.getPanelSizeNotScaled() * 0.5
-            );
+            const iconSize = this.iconSize();
             appIndicatorSettings.set_int('icon-size', iconSize);
 
             // Ubuntu app indicators reads this property.
@@ -237,6 +233,12 @@ export class MsStatusArea extends Clutter.Actor {
         });
     }
 
+    iconSize() {
+        return Math.round(
+            Me.msThemeManager.getPanelSizeNotScaled() * (20.0 / 48.0)
+        );
+    }
+
     recursivelySetProperties(
         actor: Clutter.Actor & {
             has_style_class_name?: (name: string) => boolean;
@@ -255,14 +257,12 @@ export class MsStatusArea extends Clutter.Actor {
         }
         if (actor instanceof St.Icon) {
             if (controlledByMS) {
-                const iconSize = Math.round(
-                    Me.msThemeManager.getPanelSizeNotScaled() * 0.5
-                );
+                const iconSize = this.iconSize();
                 // Scale the icon to the panel size and ensure the spacing is also scaled appropriately
                 // Can't use actor.marginTop/... because they seem to be reset somehow.
                 actor.set_style(
-                    `margin-top: ${iconSize * 0.5}px;
-                    margin-bottom: ${iconSize * 0.5}px;
+                    `margin-top: ${Math.round(iconSize * 0.5)}px;
+                    margin-bottom: ${Math.round(iconSize * 0.5)}px;
                     icon-size: ${iconSize}px;
                     `
                 );
@@ -273,12 +273,10 @@ export class MsStatusArea extends Clutter.Actor {
         }
         if (actor instanceof Shell.TrayIcon) {
             if (controlledByMS) {
-                const iconSize = Math.round(
-                    Me.msThemeManager.getPanelSizeNotScaled() * 0.5
-                );
+                const iconSize = this.iconSize();
                 // Scale the icon to the panel size and ensure the spacing is also scaled appropriately
-                actor.marginTop = iconSize * 0.5;
-                actor.marginBottom = iconSize * 0.5;
+                actor.marginTop = Math.round(iconSize * 0.5);
+                actor.marginBottom = Math.round(iconSize * 0.5);
                 actor.width = iconSize;
                 actor.height = iconSize;
             } else {
