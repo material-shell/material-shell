@@ -190,11 +190,15 @@ export class MsStatusArea extends Clutter.Actor {
         };
     }
 
+    /** Returns a comparable index indicating where the actor should be shown in the icon list.
+     * The desired sorting order is clock/notification -> system menu -> extensions icons.
+     */
     determineSortingOrder(actor: Clutter.Actor) {
         // All icons actors should have a single child.
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
             if (mainChild instanceof panel.AggregateMenu) {
+                // This is the main system menu
                 return 1;
             } else if (mainChild instanceof dateMenu.DateMenuButton) {
                 return 2;
