@@ -178,9 +178,16 @@ declare module 'ui' {
 
     export namespace extensionSystem {
         class ExtensionManager {
-            lookup(
-                uuid: string
-            ): { uuid: string; stateObj: extension.Extension } | undefined;
+            lookup(uuid: string):
+                | {
+                      uuid: string;
+                      stateObj: extension.Extension;
+                      path: string;
+                      metadata: {
+                          'settings-schema': string;
+                      };
+                  }
+                | undefined;
             disableExtension(uuid: string): boolean;
         }
     }

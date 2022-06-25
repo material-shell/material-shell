@@ -6,6 +6,7 @@ import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
+import { getExtensionSettings } from 'src/utils/extension_utils';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
@@ -70,26 +71,24 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     overrideAppIndicatorSettings() {
-        try {
-            // Ubuntu app indicators forces the icon size to whatever is specified in their settings.
-            // So we need to override its icon size.
-            const appIndicatorSettings = new Gio.Settings({
-                schema_id: 'org.gnome.shell.extensions.appindicator',
-            });
+        // Ubuntu app indicators forces the icon size to whatever is specified in their settings.
+        // So we need to override its icon size.
+        const iconSize = this.iconSize();
+        const appIndicatorSettings =
+            getExtensionSettings('ubuntu-appindicators@ubuntu.com') ||
+            getExtensionSettings('appindicatorsupport@rgcjonas.gmail.com');
+        if (appIndicatorSettings) {
             if (this.originalAppIndicatorIconSize === undefined) {
                 this.originalAppIndicatorIconSize =
                     appIndicatorSettings.get_int('icon-size');
             }
-            const iconSize = this.iconSize();
             appIndicatorSettings.set_int('icon-size', iconSize);
-
-            // Ubuntu app indicators reads this property.
-            // Sadly it only does that on startup, so we can't quite
-            // get things to work properly if the panel size setting changes.
-            panel.PANEL_ICON_SIZE = iconSize;
-        } catch {
-            // If the app indicator extension is not installed, we don't care.
         }
+
+        // Ubuntu app indicators reads this property.
+        // Sadly it only does that on startup, so we can't quite
+        // get things to work properly if the panel size setting changes.
+        panel.PANEL_ICON_SIZE = iconSize;
     }
 
     restoreAppIndicatorSettings() {
@@ -98,18 +97,17 @@ export class MsStatusArea extends Clutter.Actor {
         // Since we don't get a proper signal when shutting down gnome-shell (when logging out, or gnome-shell crashes, etc.)
         // we can't reliably restore the settings. But it might still be useful if a user tries material shell for a few minutes
         // and realizes its not for them. Then we can properly restore the settings.
-        try {
-            const appIndicatorSettings = new Gio.Settings({
-                schema_id: 'org.gnome.shell.extensions.appindicator',
-            });
-
+        const appIndicatorSettings =
+            getExtensionSettings('ubuntu-appindicators@ubuntu.com') ||
+            getExtensionSettings('appindicatorsupport@rgcjonas.gmail.com');
+        if (appIndicatorSettings) {
             appIndicatorSettings.set_int(
                 'icon-size',
                 this.originalAppIndicatorIconSize
             );
-        } catch {
-            // If the app indicator extension is not installed, we don't care.
         }
+        // Reset to the default value (based on gnome source code)
+        panel.PANEL_ICON_SIZE = 16;
     }
 
     enable() {
