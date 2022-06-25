@@ -287,17 +287,10 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         min-height: 20px;
     }
     .system-status-icon {
-        height: 20px;
-        icon-size: 1.09em;
-        margin-top: 4px;
-        margin-bottom: 4px;
+        padding: 0px;
     }
     MsDateMenuBox {
         StIcon {
-            padding-top: 14px;
-            padding-bottom: 14px;
-            height: 20px;
-            width: 20px;
             .primary {
                 color: $color-primary;
             }

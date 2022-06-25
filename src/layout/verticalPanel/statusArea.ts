@@ -3,6 +3,7 @@ import * as Clutter from 'clutter';
 import * as Gio from 'gio';
 import * as GnomeDesktop from 'gnomedesktop';
 import * as GObject from 'gobject';
+import * as Shell from 'shell';
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
@@ -10,9 +11,10 @@ import { reparentActor } from 'src/utils/index';
 import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { dateMenu, main as Main, panel } from 'ui';
-
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+type AppIndicatorsIconActor = St.Widget & { set_icon_size(size: number): void };
 
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
@@ -33,6 +35,7 @@ export class MsStatusArea extends Clutter.Actor {
         rightBoxActor: number;
     } | null = null;
     centerBoxActors: Clutter.Actor[];
+    originalAppIndicatorIconSize: number | undefined = undefined;
 
     constructor() {
         super({
@@ -47,6 +50,70 @@ export class MsStatusArea extends Clutter.Actor {
         this.rightBoxActors = [];
         this.dateMenu = this.gnomeShellPanel.statusArea.dateMenu;
         this.enable();
+
+        const panelSizeSignal = Me.msThemeManager.connect(
+            'panel-size-changed',
+            () => this.onPanelSizeChanged()
+        );
+
+        this.connect('destroy', () => {
+            Me.msThemeManager.disconnect(panelSizeSignal);
+            this.restoreAppIndicatorSettings();
+        });
+
+        this.onPanelSizeChanged();
+    }
+
+    onPanelSizeChanged() {
+        for (const child of this.get_children()) {
+            this.recursivelySetProperties(child, true);
+        }
+        this.overrideAppIndicatorSettings();
+    }
+
+    overrideAppIndicatorSettings() {
+        try {
+            // Ubuntu app indicators forces the icon size to whatever is specified in their settings.
+            // So we need to override its icon size.
+            const appIndicatorSettings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.appindicator',
+            });
+            if (this.originalAppIndicatorIconSize === undefined) {
+                this.originalAppIndicatorIconSize =
+                    appIndicatorSettings.get_int('icon-size');
+            }
+            const iconSize = Math.round(
+                Me.msThemeManager.getPanelSizeNotScaled() * 0.5
+            );
+            appIndicatorSettings.set_int('icon-size', iconSize);
+
+            // Ubuntu app indicators reads this property.
+            // Sadly it only does that on startup, so we can't quite
+            // get things to work properly if the panel size setting changes.
+            panel.PANEL_ICON_SIZE = iconSize;
+        } catch {
+            // If the app indicator extension is not installed, we don't care.
+        }
+    }
+
+    restoreAppIndicatorSettings() {
+        if (this.originalAppIndicatorIconSize === undefined) return;
+        // Restoring the settings won't actually work most of the time.
+        // Since we don't get a proper signal when shutting down gnome-shell (when logging out, or gnome-shell crashes, etc.)
+        // we can't reliably restore the settings. But it might still be useful if a user tries material shell for a few minutes
+        // and realizes its not for them. Then we can properly restore the settings.
+        try {
+            const appIndicatorSettings = new Gio.Settings({
+                schema_id: 'org.gnome.shell.extensions.appindicator',
+            });
+
+            appIndicatorSettings.set_int(
+                'icon-size',
+                this.originalAppIndicatorIconSize
+            );
+        } catch {
+            // If the app indicator extension is not installed, we don't care.
+        }
     }
 
     enable() {
@@ -136,8 +203,15 @@ export class MsStatusArea extends Clutter.Actor {
         });
         actor.y_expand = false;
         actor.x_expand = true;
-        this.recursivelySetVertical(actor, true);
-        reparentActor(actor, this, true);
+        this.recursivelySetProperties(actor, true);
+        actor.get_parent()?.remove_child(actor);
+        const index = [
+            ...this.leftBoxActors,
+            ...this.rightBoxActors,
+            ...this.centerBoxActors,
+        ].indexOf(actor);
+        assert(index !== -1, 'Expected actor to be in one of the containers');
+        this.insert_child_at_index(actor, index);
     }
 
     restorePanelActors() {
@@ -148,47 +222,84 @@ export class MsStatusArea extends Clutter.Actor {
 
         this.leftBoxActors.forEach((actor) => {
             if (!actor) return;
-            this.recursivelySetVertical(actor, false);
+            this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._leftBox);
         });
         this.centerBoxActors.forEach((actor) => {
             if (!actor) return;
-            this.recursivelySetVertical(actor, false);
+            this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._centerBox);
         });
         this.rightBoxActors.reverse().forEach((actor) => {
             if (!actor) return;
-            this.recursivelySetVertical(actor, false);
+            this.recursivelySetProperties(actor, false);
             reparentActor(actor, this.gnomeShellPanel._rightBox);
         });
     }
 
-    recursivelySetVertical(
+    recursivelySetProperties(
         actor: Clutter.Actor & {
             has_style_class_name?: (name: string) => boolean;
         },
-        value: boolean
+        controlledByMS: boolean
     ) {
         if (actor instanceof St.BoxLayout) {
-            actor.vertical = value;
+            actor.vertical = controlledByMS;
             actor.set_x_align(Clutter.ActorAlign.CENTER);
         }
         if (
             actor instanceof St.Icon &&
             actor.has_style_class_name('popup-menu-arrow')
         ) {
-            actor.visible = !value;
+            actor.visible = !controlledByMS;
         }
+        if (actor instanceof St.Icon) {
+            if (controlledByMS) {
+                const iconSize = Math.round(
+                    Me.msThemeManager.getPanelSizeNotScaled() * 0.5
+                );
+                // Scale the icon to the panel size and ensure the spacing is also scaled appropriately
+                // Can't use actor.marginTop/... because they seem to be reset somehow.
+                actor.set_style(
+                    `margin-top: ${iconSize * 0.5}px;
+                    margin-bottom: ${iconSize * 0.5}px;
+                    icon-size: ${iconSize}px;
+                    `
+                );
+            } else {
+                // Unset all values. The gnome theme will take care of sizing them now.
+                actor.set_style(null);
+            }
+        }
+        if (actor instanceof Shell.TrayIcon) {
+            if (controlledByMS) {
+                const iconSize = Math.round(
+                    Me.msThemeManager.getPanelSizeNotScaled() * 0.5
+                );
+                // Scale the icon to the panel size and ensure the spacing is also scaled appropriately
+                actor.marginTop = iconSize * 0.5;
+                actor.marginBottom = iconSize * 0.5;
+                actor.width = iconSize;
+                actor.height = iconSize;
+            } else {
+                // Unset all values. The gnome theme will take care of sizing them now.
+                actor.marginTop = -1;
+                actor.marginBottom = -1;
+                actor.width = -1;
+                actor.height = -1;
+            }
+        }
+
         // TODO: Is `actor instanceof St.Button` enough?
         if (
             actor.has_style_class_name &&
             actor.has_style_class_name('panel-button')
         ) {
-            actor.y_expand = !value;
+            actor.y_expand = !controlledByMS;
         }
 
         actor.get_children().forEach((child) => {
-            this.recursivelySetVertical(child, value);
+            this.recursivelySetProperties(child, controlledByMS);
         });
     }
 
@@ -231,6 +342,7 @@ export class MsStatusArea extends Clutter.Actor {
         this.unVerticaliseDateMenuButton();
         this.restorePanelMenuSide();
         this.restorePanelActors();
+        this.restoreAppIndicatorSettings();
         this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
     }
 }
