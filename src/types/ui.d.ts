@@ -202,6 +202,8 @@ declare module 'ui' {
     export namespace panel {
         let PANEL_ICON_SIZE: number;
 
+        class AggregateMenu {}
+
         class Panel extends St.Widget {
             _leftBox: St.BoxLayout;
             _centerBox: St.BoxLayout;

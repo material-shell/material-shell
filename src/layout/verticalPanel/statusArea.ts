@@ -190,6 +190,19 @@ export class MsStatusArea extends Clutter.Actor {
         };
     }
 
+    determineSortingOrder(actor: Clutter.Actor) {
+        // All icons actors should have a single child.
+        const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
+        if (mainChild !== undefined) {
+            if (mainChild instanceof panel.AggregateMenu) {
+                return 1;
+            } else if (mainChild instanceof dateMenu.DateMenuButton) {
+                return 2;
+            }
+        }
+        return 0;
+    }
+
     stealActor(actor: Clutter.Actor, container: Clutter.Actor[]) {
         container.push(actor);
         actor.connect('destroy', () => {
@@ -199,11 +212,14 @@ export class MsStatusArea extends Clutter.Actor {
         actor.x_expand = true;
         this.recursivelySetProperties(actor, true);
         actor.get_parent()?.remove_child(actor);
-        const index = [
-            ...this.leftBoxActors,
-            ...this.rightBoxActors,
-            ...this.centerBoxActors,
-        ].indexOf(actor);
+        const index = [actor, ...this.get_children()]
+            .sort((a, b) => {
+                return (
+                    this.determineSortingOrder(a) -
+                    this.determineSortingOrder(b)
+                );
+            })
+            .indexOf(actor);
         assert(index !== -1, 'Expected actor to be in one of the containers');
         this.insert_child_at_index(actor, index);
     }
