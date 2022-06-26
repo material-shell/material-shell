@@ -101,21 +101,7 @@ export class MsApplicationLauncher extends St.Widget {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
-<<<<<<< Updated upstream
-                const { msWindow } = Me.msWindowManager.createNewMsWindow(app, {
-                    msWorkspace: this.msWorkspace,
-                    focus: true,
-                    insert: false,
-                });
-                assert(
-                    msWindow.lifecycleState.type === 'app-placeholder',
-                    'Expected newly created window to be an app placeholder'
-                );
-                // This will cause an app to launch
-                msWindow.placeholder.activate();
-=======
                 Me.msWindowManager.openApp(app, this.msWorkspace);
->>>>>>> Stashed changes
                 this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);
