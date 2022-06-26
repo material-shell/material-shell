@@ -303,6 +303,7 @@ export class MsWorkspace extends WithSignals {
 
         if (this.msWindowList.indexOf(msWindow) === -1) return;
         const tileableIsFocused = msWindow === this.tileableFocused;
+        const appLauncherFocused = this.appLauncher === this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         this.tileableList.splice(tileableIndex, 1);
         // Update the focusedIndex
@@ -316,6 +317,14 @@ export class MsWorkspace extends WithSignals {
             0,
             Math.min(this.tileableList.length - 1, this.focusedIndex)
         );
+        if (
+            !appLauncherFocused &&
+            this.focusedIndex === this.tileableList.length - 1 &&
+            this.tileableList.length > 1
+        ) {
+            // If the app launcher was not focused, try to avoid making it focused if a window closes unless absolutely necessary.
+            this.focusedIndex--;
+        }
 
         await this.emitTileableListChangedOnce();
         // If there's no more focused msWindow on this workspace focus the last one
