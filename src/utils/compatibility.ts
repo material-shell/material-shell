@@ -2,6 +2,10 @@
 import * as Clutter from 'clutter';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
+const GNOME_3_34 = ShellVersionMatch('3.34');
+const GNOME_3_36 = ShellVersionMatch('3.36');
+const GNOME_3_34_TO_36 = GNOME_3_34 || GNOME_3_36;
+
 /* exported polyfillClutter, SetAllocation, Allocate, AllocatePreferredSize */
 export function polyfillClutter() {
     const OldClutter = Clutter as any;
@@ -30,13 +34,14 @@ export function SetAllocation(
     box: Clutter.ActorBox,
     flags?: Clutter.AllocationFlags
 ) {
-    if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
+    if (GNOME_3_34_TO_36) {
         const compat = actor as unknown as {
             set_allocation: (
                 box: Clutter.ActorBox,
                 flags: Clutter.AllocationFlags
             ) => void;
         };
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         compat.set_allocation(box, flags!);
     } else {
         actor.set_allocation(box);
@@ -48,13 +53,14 @@ export function Allocate(
     box: Clutter.ActorBox,
     flags?: Clutter.AllocationFlags
 ) {
-    if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
+    if (GNOME_3_34_TO_36) {
         const compat = actor as unknown as {
             allocate: (
                 box: Clutter.ActorBox,
                 flags: Clutter.AllocationFlags
             ) => void;
         };
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         compat.allocate(box, flags!);
     } else {
         actor.allocate(box);
@@ -65,10 +71,11 @@ export function AllocatePreferredSize(
     actor: Clutter.Actor,
     flags?: Clutter.AllocationFlags
 ) {
-    if (ShellVersionMatch('3.34') || ShellVersionMatch('3.36')) {
+    if (GNOME_3_34_TO_36) {
         const compat = actor as unknown as {
             allocate_preferred_size: (flags: Clutter.AllocationFlags) => void;
         };
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         compat.allocate_preferred_size(flags!);
     } else {
         actor.allocate_preferred_size(actor.x, actor.y);

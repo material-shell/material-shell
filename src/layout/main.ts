@@ -666,11 +666,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             panelBox.y2 = this.panel.get_preferred_height(-1)[1];
         }
 
-        const msWorkspaceActorBox = new Clutter.ActorBox();
-        msWorkspaceActorBox.x1 = box.x1;
-        msWorkspaceActorBox.x2 = box.x2;
-        msWorkspaceActorBox.y1 = box.y1;
-        msWorkspaceActorBox.y2 = box.y2;
+        const msWorkspaceActorBox = box.copy();
         if (this.panel && this.panel.visible && Me.layout.panelsVisible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
@@ -686,17 +682,17 @@ export class PrimaryMonitorContainer extends MonitorContainer {
                     );
             }
         }
-        this.get_children().forEach((child) => {
+
+        for (const child of this.get_children()) {
             if (child === this.panel) {
-                return Allocate(child, panelBox, flags);
+                Allocate(child, panelBox, flags);
+            } else if (child === this.horizontalPanelSpacer) {
+                this.allocateHorizontalPanelSpacer(box, flags);
+            } else if (child === this.verticalPanelSpacer) {
+                AllocatePreferredSize(this.verticalPanelSpacer, flags);
+            } else {
+                Allocate(child, msWorkspaceActorBox, flags);
             }
-            if (child === this.horizontalPanelSpacer) {
-                return this.allocateHorizontalPanelSpacer(box, flags);
-            }
-            if (child === this.verticalPanelSpacer) {
-                return AllocatePreferredSize(this.verticalPanelSpacer, flags);
-            }
-            Allocate(child, msWorkspaceActorBox, flags);
-        });
+        }
     }
 }

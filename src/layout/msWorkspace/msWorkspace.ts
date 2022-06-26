@@ -597,10 +597,8 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const monitorInFullScreen = global.display.get_monitor_in_fullscreen(
             this.msWorkspace.monitor.index
         );
-        if (this.panel) {
-            this.panel.visible =
-                this.msWorkspace.shouldPanelBeVisible() && !monitorInFullScreen;
-        }
+        this.panel.visible =
+            this.msWorkspace.shouldPanelBeVisible() && !monitorInFullScreen;
         this.visible = !monitorInFullScreen;
     }
 
@@ -626,12 +624,8 @@ export class MsWorkspaceActor extends Clutter.Actor {
                 : contentBox.y2 - panelHeight;
         panelBox.y2 = panelBox.y1 + panelHeight;
         Allocate(this.panel, panelBox, flags);
-        const containerBox = new Clutter.ActorBox();
-        containerBox.x1 = contentBox.x1;
-        containerBox.x2 = contentBox.x2;
-        containerBox.y1 = contentBox.y1;
-        containerBox.y2 = contentBox.y2;
-        if (this.panel && this.panel.visible) {
+        const containerBox = contentBox.copy();
+        if (this.panel.visible) {
             if (panelPosition === HorizontalPanelPositionEnum.TOP) {
                 containerBox.y1 = containerBox.y1 + panelHeight;
             } else {
@@ -639,13 +633,10 @@ export class MsWorkspaceActor extends Clutter.Actor {
             }
         }
         Allocate(this.tileableContainer, containerBox, flags);
-        this.get_children()
-            .filter(
-                (actor) =>
-                    [this.panel, this.tileableContainer].indexOf(actor) === -1
-            )
-            .forEach((actor) => {
+        for (const actor of this.get_children()) {
+            if (actor !== this.panel && actor !== this.tileableContainer) {
                 Allocate(actor, containerBox, flags);
-            });
+            }
+        }
     }
 }

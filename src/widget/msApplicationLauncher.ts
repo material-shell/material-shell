@@ -700,33 +700,24 @@ export class MsApplicationButtonContainer extends St.Widget {
             this.filteredAppButtonList[i].visible = false;
         }
 
-        //hide other buttons
-        this.appButtonList
-            .filter((button) => {
-                return !this.filteredAppButtonList.includes(button);
-            })
-            .forEach((button) => {
-                this.hideButton(button, contentBox, flags);
-            });
-
-        // Reset focused button to position zero if hidden
-        if (this.currentButtonFocused) {
-            this.getCurrentIndex();
-        }
-    }
-
-    hideButton(
-        button: MsApplicationButton,
-        contentBox: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
+        // Hide other buttons
+        const buttonSet = new Set(this.filteredAppButtonList);
         const hiddenBox = new Clutter.ActorBox();
         hiddenBox.x1 = contentBox.x1;
         hiddenBox.x2 = contentBox.x1;
         hiddenBox.y1 = contentBox.x1;
         hiddenBox.y2 = contentBox.x1;
-        Allocate(button, hiddenBox, flags);
-        button.visible = false;
+        for (const button of this.appButtonList) {
+            if (!buttonSet.has(button)) {
+                Allocate(button, hiddenBox, flags);
+                button.visible = false;
+            }
+        }
+
+        // Reset focused button to position zero if hidden
+        if (this.currentButtonFocused) {
+            this.getCurrentIndex();
+        }
     }
 }
 
