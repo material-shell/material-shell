@@ -471,25 +471,10 @@ export class SearchResultList extends St.BoxLayout {
                             res.id
                         );
                         if (app) {
-<<<<<<< Updated upstream
-                            if (app.can_open_new_window()) {
-                                const { msWindow } =
-                                    Me.msWindowManager.createNewMsWindow(app, {
-                                        msWorkspace:
-                                            Me.msWorkspaceManager.getActiveMsWorkspace(),
-                                        focus: true,
-                                        insert: true,
-                                    });
-                                Me.msWindowManager.openAppForMsWindow(msWindow);
-                            } else {
-                                app.activate();
-                            }
-=======
                             Me.msWindowManager.openApp(
                                 app,
                                 Me.msWorkspaceManager.getActiveMsWorkspace()
                             );
->>>>>>> Stashed changes
                         } else {
                             SystemActions.getDefault().activateAction(res.id);
                         }
