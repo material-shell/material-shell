@@ -647,6 +647,24 @@ export class MsWindowManager extends MsManager {
         };
     }
 
+    openApp(app: Shell.App, msWorkspace: MsWorkspace, insert = false) {
+        if (app.can_open_new_window()) {
+            const { msWindow } = Me.msWindowManager.createNewMsWindow(app, {
+                msWorkspace: msWorkspace,
+                focus: true,
+                insert: insert,
+            });
+            assert(
+                msWindow.lifecycleState.type === 'app-placeholder',
+                'Expected newly created window to be an app placeholder'
+            );
+            // This will cause an app to launch
+            msWindow.placeholder.activate();
+        } else {
+            app.activate();
+        }
+    }
+
     async checkWindowsForAssignations() {
         await this.assignWindows();
 
