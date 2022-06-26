@@ -3,7 +3,7 @@ import * as Clutter from 'clutter';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
 const GNOME_3_34 = ShellVersionMatch('3.34');
-const GNOME_3_36 = ShellVersionMatch('3.34');
+const GNOME_3_36 = ShellVersionMatch('3.36');
 const GNOME_3_34_TO_36 = GNOME_3_34 || GNOME_3_36;
 
 /* exported polyfillClutter, SetAllocation, Allocate, AllocatePreferredSize */
