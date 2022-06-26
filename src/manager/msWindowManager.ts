@@ -772,8 +772,14 @@ export class MsWindowManager extends MsManager {
             metaWindow.maximized_vertically;
         return (
             dialogTypes.includes(metaWindow.window_type) ||
-            (metaWindow.get_transient_for() != null &&
-                metaWindow.skip_taskbar) ||
+            // Any window which is transient_for another window should be considered a dialog.
+            // This is because mutter has special logic for transient windows.
+            // For example, if the main window is minimized, the transient windows will also
+            // be minimized. This makes it very hard to treat the transient windows independently.
+            // Most transient_for windows are proper dialogs, but some might be considered edge cases:
+            // not truly their own windows, and not truly dialogs. But we treat them all as dialogs
+            // for now.
+            metaWindow.get_transient_for() != null ||
             !metaWindow.resizeable ||
             (isFrozen && !isMaximizedAny)
         );
