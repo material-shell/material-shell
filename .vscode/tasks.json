@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "compile",
+            "type": "shell",
+            "group": "build",
+            "command": "toolbox run make compile",
+            "problemMatcher": []
+        },
+        {
+            "label": "Watch all",
+            "dependsOn": ["Watch package 'core'", "Watch package 'ui'"],
+            "dependsOrder": "parallel",
+            "group": "build",
+            "problemMatcher": ["$tsc-watch"],
+            "isBackground": true
+        },
+        {
+            "label": "Watch and build TS + Rollup",
+            "type": "npm",
+            "script": "dev",
+            "isBackground": true,
+            "group": "build"
+        }
+    ]
+}
