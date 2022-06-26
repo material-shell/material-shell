@@ -122,8 +122,14 @@ export class BaseTilingLayout<
         ) {
             this.msWorkspace.appLauncher.hide();
         }
-        if (!tileable.get_parent() && this.shouldBeVisible(tileable)) {
-            this.tileableContainer.add_child(tileable);
+        if (this.shouldBeVisible(tileable)) {
+            if (!tileable.get_parent()) {
+                this.tileableContainer.add_child(tileable);
+            }
+        } else {
+            if (tileable.get_parent() === this.tileableContainer) {
+                this.tileableContainer.remove_child(tileable);
+            }
         }
     }
 

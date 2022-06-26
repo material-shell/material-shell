@@ -365,7 +365,7 @@ export class BaseResizeableTilingLayout<
         }
     }
 
-    onDestroy() {
+    override onDestroy() {
         if (this.borderContainer) {
             this.borderContainer.destroy();
         }
