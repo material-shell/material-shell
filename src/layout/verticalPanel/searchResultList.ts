@@ -464,6 +464,11 @@ export class SearchResultList extends St.BoxLayout {
                     provider.id === 'applications'
                 );
                 entry.connect('primary-action', () => {
+                    // It's important that we do this first because it will remove the focus grab that we use.
+                    // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
+                    // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
+                    this.resetAndClose();
+
                     if (provider.isRemoteProvider) {
                         provider.activateResult(res.id, this.terms);
                     } else {
@@ -479,8 +484,6 @@ export class SearchResultList extends St.BoxLayout {
                             SystemActions.getDefault().activateAction(res.id);
                         }
                     }
-
-                    this.resetAndClose();
                 });
                 if (numberOfRes <= 5) {
                     this.addResult(entry);
