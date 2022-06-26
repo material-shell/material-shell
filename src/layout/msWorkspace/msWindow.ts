@@ -137,7 +137,6 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
     if (actor.get_children().some((a) => a instanceof dialog.Dialog)) {
         // The window has an open dialog, but it hasn't drawn its first frame yet.
         // The dialog is probably important. It can for example be a "this application is not responding" dialog.
-        // Assume the first frame has been drawn in that case.
         return true;
     }
 
