@@ -15,7 +15,7 @@ import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
-import { logAsyncException, mslog } from 'src/utils/log';
+import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
 const Signals = imports.signals;
@@ -633,7 +633,7 @@ export class MsWindowManager extends MsManager {
 
     openApp(app: Shell.App, msWorkspace: MsWorkspace, insert = false) {
         if (app.can_open_new_window()) {
-            const { msWindow } = Me.msWindowManager.createNewMsWindow(app, {
+            const msWindow = Me.msWindowManager.createNewMsWindow(app, {
                 msWorkspace: msWorkspace,
                 focus: true,
                 insert: insert,
