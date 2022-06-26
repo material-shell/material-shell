@@ -32,32 +32,50 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         );
     }
 
-    displayTileable(actor: Tileable) {
+    override onDestroy() {
+        super.onDestroy();
         if (this.currentDisplayed) {
-            if (
-                logAssert(
-                    this.tileableContainer
-                        .get_children()
-                        .includes(this.currentDisplayed.tileable),
-                    'Expected the currently displayed tileable to be a child of the tileable container'
-                )
-            ) {
-                this.tileableContainer.remove_child(
-                    this.currentDisplayed.tileable
-                );
-            }
-
             this.currentDisplayed.tileable.disconnect(
                 this.currentDisplayed.destroySignal
             );
+            this.currentDisplayed = null;
         }
-        this.currentDisplayed = {
-            tileable: actor,
-            destroySignal: actor.connect('destroy', () => {
-                this.currentDisplayed = null;
-            }),
-        };
+    }
 
+    displayTileable(actor: Tileable) {
+        if (
+            !this.currentDisplayed ||
+            this.currentDisplayed.tileable !== actor
+        ) {
+            if (this.currentDisplayed) {
+                if (
+                    logAssert(
+                        this.tileableContainer
+                            .get_children()
+                            .includes(this.currentDisplayed.tileable),
+                        'Expected the currently displayed tileable to be a child of the tileable container'
+                    )
+                ) {
+                    this.tileableContainer.remove_child(
+                        this.currentDisplayed.tileable
+                    );
+                }
+
+                this.currentDisplayed.tileable.disconnect(
+                    this.currentDisplayed.destroySignal
+                );
+            }
+            this.currentDisplayed = {
+                tileable: actor,
+                destroySignal: actor.connect('destroy', () => {
+                    this.currentDisplayed = null;
+                }),
+            };
+        }
+
+        // Make sure the tileable is parented correctly.
+        // Even if this was the currently displayed actor,
+        // the parent might be incorrect if we were just in an animation.
         reparentActor(actor, this.tileableContainer);
         actor.grab_key_focus();
     }
