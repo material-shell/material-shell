@@ -136,42 +136,35 @@ export class MsMain extends St.Widget {
         });
 
         this.signals.push({
-            from: global.stage,
-            id: global.stage.connect(
-                'captured-event',
-                (_, event: Clutter.Event) => {
-                    if (!this.overviewShown) return;
-                    if (event.type() === Clutter.EventType.BUTTON_PRESS) {
-                        const source = event.get_source();
-                        const [x, y] = event.get_coords();
+            from: this,
+            id: this.connect('captured-event', (_, event: Clutter.Event) => {
+                if (!this.overviewShown) return;
+                if (event.type() === Clutter.EventType.BUTTON_PRESS) {
+                    const source = event.get_source();
+                    const [x, y] = event.get_coords();
 
-                        // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
-                        const [x1, y1] =
-                            this.panel.get_transformed_position() as [
-                                number,
-                                number
-                            ];
-                        const [width, height] =
-                            this.panel.get_transformed_size() as [
-                                number,
-                                number
-                            ];
+                    // Note: The Clutter typing is incorrect. See https://gitlab.gnome.org/ewlsh/gi.ts/-/issues/2
+                    const [x1, y1] = this.panel.get_transformed_position() as [
+                        number,
+                        number
+                    ];
+                    const [width, height] =
+                        this.panel.get_transformed_size() as [number, number];
 
-                        if (
-                            !(
-                                x >= x1 &&
-                                x <= x1 + width &&
-                                y >= y1 &&
-                                y <= y1 + height
-                            )
-                        ) {
-                            this.toggleOverview();
-                        }
+                    if (
+                        !(
+                            x >= x1 &&
+                            x <= x1 + width &&
+                            y >= y1 &&
+                            y <= y1 + height
+                        )
+                    ) {
+                        this.toggleOverview();
                     }
-
-                    return Clutter.EVENT_PROPAGATE;
                 }
-            ),
+
+                return Clutter.EVENT_PROPAGATE;
+            }),
         });
 
         this.signals.push({
