@@ -145,7 +145,7 @@ class HotkeyListBox extends Gtk.ListBox {
                         null
                     );
                 if (!ok) {
-                    Me.log(
+                    log(
                         `Could not parse key for ${key}: ${
                             this.settings.get_strv(key)[0]
                         }`
