@@ -8,7 +8,6 @@ import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseRe
 import { AppsManager } from 'src/manager/appsManager';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
@@ -97,7 +96,7 @@ export class MsApplicationLauncher extends St.Widget {
                 app,
                 buttonSize: this.appListContainer.buttonSize,
             });
-            button.connect('notify::hover', () => {
+            button.connect('enter-event', () => {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
@@ -259,90 +258,47 @@ export class MsApplicationButtonContainer extends St.Widget {
         });
         this._text.connect('key-press-event', (entry, event) => {
             const symbol = event.get_key_symbol();
-            if (ShellVersionMatch('3.34')) {
-                switch (symbol) {
-                    case Clutter.KEY_Escape:
-                        this.reset(); // Reset both
-                        this.removeHighlightButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Tab:
+
+            switch (symbol) {
+                case Clutter.KEY_Escape:
+                    this.reset(); // Reset both
+                    this.removeHighlightButton();
+                    return Clutter.EVENT_STOP;
+                case Clutter.KEY_Tab:
+                    this.highlightNextButton();
+                    return Clutter.EVENT_STOP;
+                case Clutter.KEY_ISO_Left_Tab:
+                    this.highlightPreviousButton();
+                    return Clutter.EVENT_STOP;
+                case Clutter.KEY_Down:
+                    this.highlightButtonBelow();
+                    return Clutter.EVENT_STOP;
+                case Clutter.KEY_Up:
+                    this.highlightButtonAbove();
+                    return Clutter.EVENT_STOP;
+                case Clutter.KEY_Right:
+                    if (this._text.cursor_position === -1) {
                         this.highlightNextButton();
                         return Clutter.EVENT_STOP;
-                    case Clutter.KEY_ISO_Left_Tab:
+                    } else {
+                        return Clutter.EVENT_PROPAGATE;
+                    }
+                case Clutter.KEY_Left:
+                    if (
+                        this.currentButtonFocused !=
+                            this.filteredAppButtonListBuffer[0] &&
+                        this.getCurrentIndex() > -1
+                    ) {
                         this.highlightPreviousButton();
                         return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Down:
-                        this.highlightButtonBelow();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Up:
-                        this.highlightButtonAbove();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Right:
-                        if (this._text.cursor_position === -1) {
-                            this.highlightNextButton();
-                            return Clutter.EVENT_STOP;
-                        } else {
-                            return Clutter.EVENT_PROPAGATE;
-                        }
-                    case Clutter.KEY_Left:
-                        if (
-                            this.filteredAppButtonList.length > 0 &&
-                            this.currentButtonFocused !=
-                                this.filteredAppButtonList[0]
-                        ) {
-                            this.highlightPreviousButton();
-                            return Clutter.EVENT_STOP;
-                        } else {
-                            return Clutter.EVENT_PROPAGATE;
-                        }
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        if (this.currentButtonFocused)
-                            this.currentButtonFocused.emit('clicked', 0);
-                        return Clutter.EVENT_STOP;
-                }
-            } else {
-                switch (symbol) {
-                    case Clutter.KEY_Escape:
-                        this.reset(); // Reset both
-                        this.removeHighlightButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Tab:
-                        this.highlightNextButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_ISO_Left_Tab:
-                        this.highlightPreviousButton();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Down:
-                        this.highlightButtonBelow();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Up:
-                        this.highlightButtonAbove();
-                        return Clutter.EVENT_STOP;
-                    case Clutter.KEY_Right:
-                        if (this._text.cursor_position === -1) {
-                            this.highlightNextButton();
-                            return Clutter.EVENT_STOP;
-                        } else {
-                            return Clutter.EVENT_PROPAGATE;
-                        }
-                    case Clutter.KEY_Left:
-                        if (
-                            this.currentButtonFocused !=
-                                this.filteredAppButtonListBuffer[0] &&
-                            this.getCurrentIndex() > -1
-                        ) {
-                            this.highlightPreviousButton();
-                            return Clutter.EVENT_STOP;
-                        } else {
-                            return Clutter.EVENT_PROPAGATE;
-                        }
-                    case Clutter.KEY_Return:
-                    case Clutter.KEY_KP_Enter:
-                        if (this.currentButtonFocused)
-                            this.currentButtonFocused.emit('clicked', 0);
-                        return Clutter.EVENT_STOP;
-                }
+                    } else {
+                        return Clutter.EVENT_PROPAGATE;
+                    }
+                case Clutter.KEY_Return:
+                case Clutter.KEY_KP_Enter:
+                    if (this.currentButtonFocused)
+                        this.currentButtonFocused.emit('clicked', 0);
+                    return Clutter.EVENT_STOP;
             }
 
             return Clutter.EVENT_PROPAGATE;
@@ -556,15 +512,12 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     highlightButton(button: MsApplicationButton) {
-        if (button) {
-            if (this.currentButtonFocused) {
-                this.currentButtonFocused.remove_style_class_name(
-                    'highlighted'
-                );
-            }
-            this.currentButtonFocused = button;
-            this.currentButtonFocused.add_style_class_name('highlighted');
+        if (button == this.currentButtonFocused) return;
+        if (this.currentButtonFocused) {
+            this.currentButtonFocused.remove_style_class_name('highlighted');
         }
+        this.currentButtonFocused = button;
+        this.currentButtonFocused.add_style_class_name('highlighted');
     }
 
     // Set starting button as focused
