@@ -174,7 +174,7 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        global.display.set_cursor(Meta.Cursor.DND_IN_DRAG);
+        Me.msThemeManager.setCursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
@@ -189,7 +189,7 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        global.display.set_cursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {

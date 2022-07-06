@@ -3,7 +3,9 @@ import { Color } from 'cogl';
 import * as Gio from 'gio';
 import { byteArray } from 'gjs';
 import * as GLib from 'glib';
+import * as Meta from 'meta';
 import { MsManager } from 'src/manager/msManager';
+import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
 import { getSettings } from 'src/utils/settings';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
@@ -56,6 +58,8 @@ export class MsThemeManager extends MsManager {
     themeValue: string;
     primary: string;
     primaryColor: Color;
+    metaCursor: Meta.Cursor;
+    throttledDisplaySetCursor: () => void;
 
     constructor() {
         super();
@@ -68,7 +72,17 @@ export class MsThemeManager extends MsManager {
         this.themeValue = this.themeSettings.get_string('theme');
         this.primary = this.themeSettings.get_string('primary-color');
         this.primaryColor = parseCoglColor(this.primary);
-
+        this.metaCursor = Meta.Cursor.DEFAULT;
+        var displayedCursor: Meta.Cursor = this.metaCursor;
+        this.throttledDisplaySetCursor = throttle(
+            () => {
+                if (displayedCursor == this.metaCursor) return;
+                displayedCursor = this.metaCursor;
+                return global.display.set_cursor(this.metaCursor);
+            },
+            16,
+            { leading: false }
+        );
         this.observe(this.themeContext, 'changed', () => {
             Me.log('theme changed');
             this.theme = this.themeContext.get_theme();
@@ -210,6 +224,11 @@ export class MsThemeManager extends MsManager {
             0.7152 * linearColors[1] +
             0.0722 * linearColors[2];
         return luminance < 0.179;
+    }
+
+    setCursor(cursor: Meta.Cursor) {
+        this.metaCursor = cursor;
+        this.throttledDisplaySetCursor();
     }
 
     async readFileContent(file: Gio.File) {
