@@ -403,12 +403,12 @@ export class ResizableBorderActor extends St.Widget {
                     break;
                 }
                 case Clutter.EventType.ENTER:
-                    global.display.set_cursor(
+                    Me.msThemeManager.setCursor(
                         Meta.Cursor.MOVE_OR_RESIZE_WINDOW
                     );
                     break;
                 case Clutter.EventType.LEAVE:
-                    global.display.set_cursor(Meta.Cursor.DEFAULT);
+                    Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
                     break;
             }
         });

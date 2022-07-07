@@ -76,10 +76,10 @@ export class MatButton extends St.Widget {
         this.add_action(clickAction);
 
         this.connect('enter-event', () => {
-            global.display.set_cursor(Meta.Cursor.POINTING_HAND);
+            Me.msThemeManager.setCursor(Meta.Cursor.POINTING_HAND);
         });
         this.connect('leave-event', () => {
-            global.display.set_cursor(Meta.Cursor.DEFAULT);
+            Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
         });
     }
 
