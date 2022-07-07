@@ -15,6 +15,7 @@ import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
+import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
 const Signals = imports.signals;
@@ -158,7 +159,7 @@ export class MsWindowManager extends MsManager {
         );
     }
 
-    private async assignWindows() {
+    private assignWindows() {
         // We capture the list of all actors at the beginning and don't care about any new ones until the
         // next time we start assigning windows.
         const actors = global
@@ -169,10 +170,9 @@ export class MsWindowManager extends MsManager {
                         .handledByMaterialShell
             );
         // Assign all non-dialog windows first
-        const windowsDone = this.assignNonDialogWindows(actors);
+        this.assignNonDialogWindows(actors);
         // Assign the dialog windows to previously existing MsWindows that fits them.
-        const dialogsDone = this.assignDialogWindows(actors);
-        await Promise.all([windowsDone, dialogsDone]);
+        this.assignDialogWindows(actors);
     }
 
     /** Assign non-dialog windows to either existing empty MsWindows or determine that new MsWindows should be created for them.
@@ -188,9 +188,7 @@ export class MsWindowManager extends MsManager {
      * Returns a promise which resolves when the first frames of all assigned and newly created windows have been drawn.
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
-    private assignNonDialogWindows(
-        actors: Meta.WindowActor[]
-    ): Promise<void[]> {
+    private assignNonDialogWindows(actors: Meta.WindowActor[]) {
         const assignedMetaWindows = new Set(this.managedMetaWindows);
 
         // We allow meta windows to be re-assigned for a short amount of time after they have first been assigned.
@@ -234,7 +232,6 @@ export class MsWindowManager extends MsManager {
             windowActors,
             (window) => this.windowTracker.get_window_app(window.metaWindow).id
         );
-        const promises = [];
 
         let logged = false;
         const logInfoOnce = () => {
@@ -346,9 +343,12 @@ export class MsWindowManager extends MsManager {
                                 windowActor.metaWindow
                             )} with ${msWindow.windowIdentifier}`
                         );
-                        promises.push(
-                            msWindow.setWindow(windowActor.metaWindow)
-                        );
+
+                        // Associate the meta window with the ms window.
+                        // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
+                        void msWindow
+                            .setWindow(windowActor.metaWindow)
+                            .catch(logAsyncException);
                     }
                 } else {
                     logInfoOnce();
@@ -358,23 +358,17 @@ export class MsWindowManager extends MsManager {
                         )}`
                     );
                     // Did not find a good match, create a new window instead
-                    const { done } = this.createNewMsWindow(
-                        windowActor.metaWindow,
-                        {
-                            msWorkspace:
-                                Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                                    windowActor.metaWindow
-                                ),
-                            focus: true,
-                            insert: true,
-                        }
-                    );
-                    promises.push(done);
+                    this.createNewMsWindow(windowActor.metaWindow, {
+                        msWorkspace:
+                            Me.msWorkspaceManager.determineAppropriateMsWorkspace(
+                                windowActor.metaWindow
+                            ),
+                        focus: true,
+                        insert: true,
+                    });
                 }
             }
         }
-
-        return Promise.all(promises);
     }
 
     /** Assigns dialog windows to existing MsWindows, or creates new MsWindows for them.
@@ -382,9 +376,8 @@ export class MsWindowManager extends MsManager {
      * Returns a promise which resolves when the first frames of all assigned and newly created windows have been drawn.
      * Before this, it is not safe to try to reassign windows because some async functions are still in progress.
      */
-    private assignDialogWindows(actors: Meta.WindowActor[]): Promise<void[]> {
+    private assignDialogWindows(actors: Meta.WindowActor[]) {
         const assignedMetaWindows = new Set(this.managedMetaWindows);
-        const promises = [];
 
         for (const windowActor of actors) {
             if (windowActor.is_destroyed()) continue;
@@ -492,22 +485,16 @@ export class MsWindowManager extends MsManager {
                 msWindowFound.addDialog(metaWindow);
             } else {
                 // No good existing MsWindow was found, instead we create a new MsWindow just for this dialog.
-                const { done } = this.createNewMsWindow(
-                    windowActor.metaWindow,
-                    {
-                        msWorkspace:
-                            Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                                windowActor.metaWindow
-                            ),
-                        focus: true,
-                        insert: true,
-                    }
-                );
-                promises.push(done);
+                this.createNewMsWindow(windowActor.metaWindow, {
+                    msWorkspace:
+                        Me.msWorkspaceManager.determineAppropriateMsWorkspace(
+                            windowActor.metaWindow
+                        ),
+                    focus: true,
+                    insert: true,
+                });
             }
         }
-
-        return Promise.all(promises);
     }
 
     handleExistingMetaWindows() {
@@ -622,11 +609,11 @@ export class MsWindowManager extends MsManager {
                 waitingForAppSince: undefined,
             },
         });
-        let donePromise;
+
         if (source instanceof Meta.Window) {
-            donePromise = msWindow.setWindow(source);
-        } else {
-            donePromise = Promise.resolve();
+            // Associate the meta window with the ms window.
+            // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
+            void msWindow.setWindow(source).catch(logAsyncException);
         }
         msWorkspace.msWorkspace.addMsWindowUnchecked(
             msWindow,
@@ -641,15 +628,12 @@ export class MsWindowManager extends MsManager {
         });
         this.msWindowList.push(msWindow);
         this.emit('ms-window-created', msWindow);
-        return {
-            msWindow: msWindow,
-            done: donePromise,
-        };
+        return msWindow;
     }
 
     openApp(app: Shell.App, msWorkspace: MsWorkspace, insert = false) {
         if (app.can_open_new_window()) {
-            const { msWindow } = Me.msWindowManager.createNewMsWindow(app, {
+            const msWindow = Me.msWindowManager.createNewMsWindow(app, {
                 msWorkspace: msWorkspace,
                 focus: true,
                 insert: insert,
@@ -666,7 +650,7 @@ export class MsWindowManager extends MsManager {
     }
 
     async checkWindowsForAssignations() {
-        await this.assignWindows();
+        this.assignWindows();
 
         let anyWaiting = false;
         const now = new Date();

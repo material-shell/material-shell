@@ -3,6 +3,12 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
+import {
+    PRIORITY_DEFAULT,
+    SOURCE_CONTINUE,
+    SOURCE_REMOVE,
+    timeout_add,
+} from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
 import { App } from 'shell';
@@ -15,18 +21,14 @@ import { throttle } from 'src/utils';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 /** Extension imports */
-import {
-    Allocate,
-    AllocatePreferredSize,
-    SetAllocation,
-} from 'src/utils/compatibility';
+import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { logAsyncException } from 'src/utils/log';
+import { centerInBox } from 'src/utils/layout';
 import { set_style_class } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
 import * as St from 'st';
-import { main as Main } from 'ui';
+import { dialog, main as Main } from 'ui';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
@@ -121,6 +123,25 @@ type MsWindowLifecycleState =
           /** A destroyed MsWindow. This cannot be used for anything anymore. */
           type: 'destroyed';
       };
+
+/** True if the window has enough interesting content that we want to show it.
+ * This is if the window has drawn its first frame, or there is a gnome-shell dialog on the window.
+ */
+function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
+    const actor = metaWindow.get_compositor_private<Meta.WindowActor>();
+    assert(actor !== null, "Expected the metaWindow's actor to exist");
+    if (metaWindow.firstFrameDrawn) {
+        return true;
+    }
+
+    if (actor.get_children().some((a) => a instanceof dialog.Dialog)) {
+        // The window has an open dialog, but it hasn't drawn its first frame yet.
+        // The dialog is probably important. It can for example be a "this application is not responding" dialog.
+        return true;
+    }
+
+    return SOURCE_CONTINUE;
+}
 
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
@@ -355,19 +376,19 @@ export class MsWindow extends Clutter.Actor {
     }
 
     async onMetaWindowFirstFrameDrawn(metaWindow: MetaWindowWithMsProperties) {
-        return new Promise<void>((resolve) => {
-            if (!metaWindow) {
-                return resolve();
-            }
-            if (metaWindow.firstFrameDrawn) {
-                resolve();
-            } else {
-                metaWindow
-                    .get_compositor_private<Meta.WindowActor>()
-                    .connect('first-frame', () => {
-                        resolve();
-                    });
-            }
+        return new Promise<Meta.WindowActor | void>((resolve, _reject) => {
+            const check = () => {
+                if (isWindowContentInteresting(metaWindow)) {
+                    resolve();
+                    return SOURCE_REMOVE;
+                }
+
+                return SOURCE_CONTINUE;
+            };
+            timeout_add(PRIORITY_DEFAULT, 50, check);
+
+            // Not strictly necessary, but has slightly lower latency than the repeated check
+            metaWindow.firstFrameDrawnPromise?.then(resolve);
         });
     }
 
@@ -472,10 +493,30 @@ export class MsWindow extends Clutter.Actor {
             !this.mapped ||
             this.width === 0 ||
             this.height === 0 ||
-            !metaWindow.firstFrameDrawn ||
             this.followMetaWindow ||
             metaWindow.minimized
         ) {
+            return;
+        }
+
+        if (!metaWindow.firstFrameDrawn) {
+            // Before the window is drawn we generally don't have to touch the meta window that much.
+            // However, if the application is frozen and has a dialog ("This Application is not responding")
+            // then we may still need to position that on the screen.
+            // Since the dialog in gnome-shell is purely a clutter dialog we only need to position the window actor,
+            // not the meta window itself. In fact, attempting to move the meta window doesn't seem to have any effect.
+            // This code needs to be synced with the corresponding code in the MsContent.allocate function.
+            const contentBox = this.msContent.allocation;
+            const centeredBox = centerInBox(
+                contentBox,
+                windowActor.width,
+                windowActor.height
+            );
+            const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                this.msWorkspace.monitor.index
+            );
+            windowActor.x = workArea.x + this.x + centeredBox.x1;
+            windowActor.y = workArea.y + this.y + centeredBox.y1;
             return;
         }
 
@@ -827,7 +868,7 @@ export class MsWindow extends Clutter.Actor {
             'Can only set the window if the MsWindow is in the app-placeholder state.'
         );
 
-        this.lifecycleState = {
+        const state = (this.lifecycleState = {
             type: 'window',
             metaWindow: metaWindow,
             metaWindowSignals: this.registerOnMetaWindowSignals(metaWindow),
@@ -836,16 +877,33 @@ export class MsWindow extends Clutter.Actor {
             matchedAtTime: new Date(),
             matchedWhileWaiting:
                 this.lifecycleState.waitingForAppSince !== undefined,
-        };
+        });
         metaWindow.msWindow = this;
+        this.windowClone.set_source(null);
 
         await this.onMetaWindowActorExist(metaWindow);
+        // Check if this method needs to be cancelled.
+        // This can happen if another window is assigned to this MsWindow while this
+        // function is still running. It is also possible that the window is unmanaged.
+        // This *needs* to be done after every await.
+        if (
+            this.lifecycleState !== state ||
+            this.lifecycleState.metaWindow !== metaWindow
+        )
+            return;
+
         await this.onMetaWindowFirstFrameDrawn(metaWindow);
+        if (
+            this.lifecycleState !== state ||
+            this.lifecycleState.metaWindow !== metaWindow
+        )
+            return;
+
         this.updateWorkspaceAndMonitor(metaWindow);
         this.windowClone.set_source(
             metaWindow.get_compositor_private<Meta.WindowActor>()
         );
-        await this.onMetaWindowsChanged();
+        this.onMetaWindowsChanged();
     }
 
     public unsetWindow() {
@@ -863,7 +921,7 @@ export class MsWindow extends Clutter.Actor {
             matchingInfo: this.lifecycleState.matchingInfo,
             waitingForAppSince: undefined,
         };
-        this.onMetaWindowsChanged().catch(logAsyncException);
+        this.onMetaWindowsChanged();
     }
 
     updateWorkspaceAndMonitor(metaWindow: Meta.Window) {
@@ -951,18 +1009,23 @@ export class MsWindow extends Clutter.Actor {
         metaWindow.msWindow = undefined;
     }
 
-    async onMetaWindowsChanged(): Promise<void> {
+    onMetaWindowsChanged() {
         if (this.lifecycleState.type == 'window') {
             this.reactive = false;
             const metaWindow = assertNotNull(this.metaWindow);
-            await this.onMetaWindowActorExist(metaWindow);
-            await this.onMetaWindowFirstFrameDrawn(metaWindow);
-            WindowUtils.updateTitleBarVisibility(metaWindow);
-            this.resizeMetaWindows();
+            if (isWindowContentInteresting(metaWindow)) {
+                WindowUtils.updateTitleBarVisibility(metaWindow);
+                this.resizeMetaWindows();
+            } else {
+                // If the window is not drawn yet, the setWindow function must still be running.
+                // Most likely a dialog was added before the window was drawn.
+                // If the window eventually gets drawn, the setWindow function will call onMetaWindowsChanged again.
+            }
             set_style_class(
                 this.msContent,
                 'surface-darker',
-                this.lifecycleState.metaWindow === null
+                this.lifecycleState.metaWindow === null ||
+                    !this.lifecycleState.metaWindow.firstFrameDrawn
             );
             if (this.placeholder.get_parent()) {
                 this.fadeOutPlaceholder();
@@ -1225,35 +1288,44 @@ export class MsWindowContent extends St.Widget {
         const parent = this.get_parent();
         assert(parent instanceof MsWindow, 'expected parent to be an MsWindow');
         const metaWindow = parent.metaWindow;
-        if (metaWindow && metaWindow.firstFrameDrawn) {
+        if (
+            metaWindow &&
+            metaWindow.firstFrameDrawn &&
+            metaWindow.get_compositor_private<Meta.WindowActor>()
+        ) {
             const windowFrameRect = metaWindow.get_frame_rect();
             const windowBufferRect = metaWindow.get_buffer_rect();
             //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
-            if (metaWindow.get_compositor_private<Meta.WindowActor>()) {
-                let x1: number, x2: number, y1: number, y2: number;
-                if (metaWindow.resizeable || metaWindow.fullscreen) {
-                    x1 = windowBufferRect.x - windowFrameRect.x;
-                    y1 = windowBufferRect.y - windowFrameRect.y;
-                    x2 = x1 + windowBufferRect.width;
-                    y2 = y1 + windowBufferRect.height;
-                } else {
-                    const monitor = parent.msWorkspace.monitor;
-                    const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                        monitor.index
-                    );
-                    x1 = windowBufferRect.x - workArea.x - parent.x;
-                    y1 = windowBufferRect.y - workArea.y - parent.y;
-                    x2 = x1 + windowBufferRect.width;
-                    y2 = y1 + windowBufferRect.height;
-                }
-                const cloneBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-
-                Allocate(this.clone, cloneBox, flags);
+            let x1: number, x2: number, y1: number, y2: number;
+            if (metaWindow.resizeable || metaWindow.fullscreen) {
+                x1 = windowBufferRect.x - windowFrameRect.x;
+                y1 = windowBufferRect.y - windowFrameRect.y;
+                x2 = x1 + windowBufferRect.width;
+                y2 = y1 + windowBufferRect.height;
             } else {
-                AllocatePreferredSize(this.clone, flags);
+                const monitor = parent.msWorkspace.monitor;
+                const workArea = Main.layoutManager.getWorkAreaForMonitor(
+                    monitor.index
+                );
+                x1 = windowBufferRect.x - workArea.x - parent.x;
+                y1 = windowBufferRect.y - workArea.y - parent.y;
+                x2 = x1 + windowBufferRect.width;
+                y2 = y1 + windowBufferRect.height;
             }
+            const cloneBox = Clutter.ActorBox.new(x1, y1, x2, y2);
+
+            Allocate(this.clone, cloneBox, flags);
         } else {
-            AllocatePreferredSize(this.clone, flags);
+            // Before the first frame of the window is drawn, the window likely doesn't have the correct size.
+            // But we may still want to display things there. For example if a "The application is not responding" dialog is shown.
+            // So to make things pretty we ensure to center the clone actor.
+            const [_mw, _mh, w, h] = this.clone.get_preferred_size() as [
+                number,
+                number,
+                number,
+                number
+            ];
+            Allocate(this.clone, centerInBox(box, w, h), flags);
         }
 
         if (this.placeholder.get_parent() === this) {

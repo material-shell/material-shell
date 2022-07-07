@@ -238,6 +238,10 @@ declare module 'ui' {
         class Button extends ButtonBox {}
     }
 
+    export namespace dialog {
+        class Dialog extends St.Widget {}
+    }
+
     export namespace popupMenu {
         class PopupMenuManager {
             constructor(owner: any, params?: any);

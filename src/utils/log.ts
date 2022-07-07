@@ -15,3 +15,7 @@ export function logAsyncException(e: any) {
         );
     }
 }
+
+export function mslog(...args: unknown[]) {
+    Me.log(...args);
+}
