@@ -77,7 +77,12 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         // Even if this was the currently displayed actor,
         // the parent might be incorrect if we were just in an animation.
         reparentActor(actor, this.tileableContainer);
-        actor.grab_key_focus();
+
+        // Make sure the actor has focus, but only if this
+        // workspace is actually visible.
+        if (this.msWorkspace.isDisplayed()) {
+            actor.grab_key_focus();
+        }
     }
 
     showAppLauncher() {
