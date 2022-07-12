@@ -773,6 +773,8 @@ export class MsWindowManager extends MsManager {
         super.destroy();
         this.msDndManager.destroy();
         this.msResizeManager.destroy();
+        this.msFocusManager.destroy();
+        this.checkWindowsForAssignationsDebounce.cancel();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow =
                 windowActor.metaWindow as MetaWindowWithMsProperties;
