@@ -45,6 +45,14 @@ export class AsyncDebounce {
         this.f = f;
     }
 
+    /** Cancels any pending invocation.
+     * If `f` is currently running, it cannot be cancelled.
+     */
+    cancel() {
+        if (this.timeoutId !== undefined) GLib.source_remove(this.timeoutId);
+        this.runAgain = false;
+    }
+
     /** Call `f` in about `delayMs` milliseconds.
      * If this function is called multiple times before `f` runs, `f` will still only be called once.
      *
