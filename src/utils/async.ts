@@ -65,7 +65,7 @@ export class AsyncDebounce {
         if (this.running) {
             this.runAgain = true;
         } else if (this.timeoutId === undefined) {
-            this.timeoutId = GLib.timeout_add(
+            this.timeoutId = Async.addTimeout(
                 GLib.PRIORITY_DEFAULT,
                 this.delayMs,
                 () => {

@@ -3,12 +3,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
-import {
-    PRIORITY_DEFAULT,
-    SOURCE_CONTINUE,
-    SOURCE_REMOVE,
-    timeout_add,
-} from 'glib';
+import { PRIORITY_DEFAULT, SOURCE_CONTINUE, SOURCE_REMOVE } from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
 import { App } from 'shell';
@@ -385,7 +380,7 @@ export class MsWindow extends Clutter.Actor {
 
                 return SOURCE_CONTINUE;
             };
-            timeout_add(PRIORITY_DEFAULT, 50, check);
+            Async.addTimeout(PRIORITY_DEFAULT, 50, check);
 
             // Not strictly necessary, but has slightly lower latency than the repeated check
             metaWindow.firstFrameDrawnPromise?.then(resolve);
