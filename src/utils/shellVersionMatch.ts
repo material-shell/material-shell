@@ -90,8 +90,17 @@ export type IntroducedInGnome<V extends VERSIONS[number] | never> = {
 };
 
 /// Parses a version like "30.20.2" to [30,20,2]
+///
+/// 'alpha', 'beta' and 'rc' components will be parsed to negative values
+/// which ensures that sorting works correctly.
+/// E.g. "43.alpha" will be parsed to [43,-3]
 function parseVersion(s: string): number[] {
-    const components = s.split('.').map(Number);
+    const components = s.split('.').map((x) => {
+        if (x === 'alpha') return -3;
+        if (x === 'beta') return -2;
+        if (x === 'rc') return -1;
+        return Number(x);
+    });
     if (!components.every((x) => isFinite(x))) {
         throw new Error(`Could not parse version number: ${s}`);
     }
