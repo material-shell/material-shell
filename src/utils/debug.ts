@@ -14,6 +14,8 @@ import {
 } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
+import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
+import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { MsDndManager } from 'src/manager/msDndManager';
 import { MsFocusManager } from 'src/manager/msFocusManager';
 import { MsResizeManager } from 'src/manager/msResizeManager';
@@ -134,6 +136,8 @@ export function initDebug() {
                 LayoutSwitcher,
                 TilingLayoutMenuItem,
                 ReorderableList,
+                BaseTilingLayout,
+                BaseResizeableTilingLayout,
             ];
             objects
                 .filter((object) => object)
