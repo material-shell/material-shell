@@ -204,3 +204,11 @@ if you miss the minimize and maximize button on windows titlebar you can restore
 # History
 The project is based on my earlier work on [Material Awesome](https://github.com/PapyElGringo/material-awesome).
 
+# Crypto Funding
+If you interested in funding the project throught crypto feel free to use:
+
+**Bitcoin** `395nVybx6h6CC4sWgGGcvCDxwLvGMFhfiA`
+
+**Ethereum** `0x14aaf57e59cbbc9fb6c5f09fb9cc0a10bdf366bb`
+
+**Monero** `82YGUymQLZ3cWPw2kEfjTphjUJLCN3M2eX3dPxRhrBeKSoUUoj4TEHAGToPoZA8AfhSGEKa9FdZjmGKAMSBxcrgHQMRZu3v`
