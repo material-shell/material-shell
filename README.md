@@ -22,7 +22,8 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
   <a href="#hotkeys">Hotkeys</a> •
   <a href="#installation">Installation</a> •
   <a href="#uninstallation-">Uninstallation</a> •
-  <a href="#history">History</a>
+  <a href="#history">History</a> •
+  <a href="#crypto-funding">Support</a>
 </p>
 
 ---
