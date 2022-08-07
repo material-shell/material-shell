@@ -643,7 +643,10 @@ export class MsWindowManager extends MsManager {
                 'Expected newly created window to be an app placeholder'
             );
             // This will cause an app to launch
-            msWindow.placeholder.activate();
+            try{msWindow.placeholder.activate();}
+            catch(e){
+             // result = (e as Error).message;
+            }
         } else {
             app.activate();
         }

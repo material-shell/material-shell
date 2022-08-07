@@ -1,5 +1,6 @@
 /** Groups the given items into a map by their keys */
 export function groupBy<T, K>(items: T[], key: (item: T) => K): Map<K, T[]> {
+try{
     const map = new Map<K, T[]>();
     for (const item of items) {
         const k = key(item);
@@ -10,5 +11,5 @@ export function groupBy<T, K>(items: T[], key: (item: T) => K): Map<K, T[]> {
         }
         ls.push(item);
     }
-    return map;
+    return map;} finally {}
 }

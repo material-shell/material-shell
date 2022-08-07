@@ -17,12 +17,14 @@ export class OverrideModule {
     }
 
     destroy() {
+    try{
         this.restoreWindowManagersFunctions();
         (Meta as any).prefs_get_workspaces_only_on_primary =
-            this.orignalMetaWorkspaceOnPrimary;
+            this.orignalMetaWorkspaceOnPrimary;} finally {}
     }
 
     overrideWindowManagerFunctions() {
+    try{
         this.windowManagersFunctionToRestore = [];
         const _shouldAnimate =
             windowManager.WindowManager.prototype._shouldAnimate;
@@ -35,12 +37,12 @@ export class OverrideModule {
         this.windowManagersFunctionToRestore.push([
             windowManager.WindowManager.prototype._shouldAnimate,
             _shouldAnimate,
-        ]);
+        ]);} finally {}
     }
 
-    restoreWindowManagersFunctions() {
+    restoreWindowManagersFunctions() {try{
         this.windowManagersFunctionToRestore.forEach((functions) => {
             functions[0] = functions[1];
-        });
+        });} finally {}
     }
 }

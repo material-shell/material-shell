@@ -10,7 +10,9 @@ export class IdleDebounce<P extends any[]> {
     private readonly f: (...args: P) => void;
 
     constructor(f: (...args: P) => void) {
+    try{
         this.f = f;
+        } finally {}
     }
 
     /** Run the function `f` as soon as possible when there are no other high priority tasks.
@@ -21,6 +23,7 @@ export class IdleDebounce<P extends any[]> {
      * See https://docs.gtk.org/glib/main-loop.html
      */
     schedule(...args: P) {
+    try{
         if (this.scheduleInfo === null) {
             this.scheduleInfo = {
                 signal: GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
@@ -33,14 +36,14 @@ export class IdleDebounce<P extends any[]> {
             };
         } else {
             this.scheduleInfo.args = args;
-        }
+        }} finally {}
     }
 
     /** Cancel running the function if it has been scheduled */
-    cancel() {
+    cancel() {try{
         if (this.scheduleInfo !== null) {
             GLib.Source.remove(this.scheduleInfo.signal);
             this.scheduleInfo = null;
-        }
+        }} finally {}
     }
 }

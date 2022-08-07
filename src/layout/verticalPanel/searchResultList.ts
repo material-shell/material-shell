@@ -386,6 +386,8 @@ export class SearchResultList extends St.BoxLayout {
         //this._updateSearchProgress();
 
         if (this.searchTimeoutId == 0)
+             
+        
             this.searchTimeoutId = Async.addTimeout(
                 GLib.PRIORITY_DEFAULT,
                 150,

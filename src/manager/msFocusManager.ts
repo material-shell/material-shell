@@ -25,7 +25,9 @@ export class MsFocusManager extends MsManager {
     focusProtected?: boolean;
     actorGrabMap: Map<Actor, boolean | Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
+ 
         super();
+        try{
         this.msWindowManager = msWindowManager;
         this.observe(
             global.stage,
@@ -49,10 +51,11 @@ export class MsFocusManager extends MsManager {
                     delete this.focusProtected;
                 });
             }
-        );
+        );} finally {}
     }
 
     onKeyFocus(): void {
+    try{
         const keyFocus = global.stage.key_focus;
         if (!keyFocus) {
             if (
@@ -84,10 +87,11 @@ export class MsFocusManager extends MsManager {
 
         if (keyFocus != Main.layoutManager.uiGroup) {
             this.lastMsWindowFocused = null;
-        }
+        }} finally {}
     }
 
     onWindowFocus(): void {
+    try{
         const windowFocus =
             global.display.get_focus_window() as MetaWindowWithMsProperties;
 
@@ -95,13 +99,14 @@ export class MsFocusManager extends MsManager {
 
         const msWindow = windowFocus.msWindow;
         msWindow.focusDialogs();
-        this.setFocusToMsWindow(msWindow);
+        this.setFocusToMsWindow(msWindow);} finally {}
     }
 
     setFocusToMsWindow(msWindow: MsWindow): void {
+    try{
         if (msWindow === this.lastMsWindowFocused) return;
         this.lastMsWindowFocused = msWindow;
-        this.emit('focus-changed', msWindow);
+        this.emit('focus-changed', msWindow);} finally {}
     }
 
     /**
@@ -109,10 +114,11 @@ export class MsFocusManager extends MsManager {
      * @param {MsWindow} msWindow
      */
     requestFocus(msWindow: MsWindow): boolean {
+    try{
         return (
             msWindow !== this.lastMsWindowFocused &&
             !this.msWindowManager.msDndManager.dragInProgress
-        );
+        );} finally {}
     }
 
     pushModal(
@@ -122,12 +128,13 @@ export class MsFocusManager extends MsManager {
             options?: ModalOptions;
             actionMode?: ActionMode;
         }
-    ) {
+    ) {try{
         const grab = Main.pushModal(actor, options);
-        this.actorGrabMap.set(actor, grab);
+        this.actorGrabMap.set(actor, grab);} finally {}
     }
 
     popModal(actor: Actor) {
+    try {
         const grab = this.actorGrabMap.get(actor);
         if (grab !== undefined) {
             if (gnomeVersionGreaterOrEqualTo(Main.popModal, '42.0')) {
@@ -140,6 +147,6 @@ export class MsFocusManager extends MsManager {
                 Main.popModal(actor);
             }
             this.actorGrabMap.delete(actor);
-        }
+        }} finally {}
     }
 }

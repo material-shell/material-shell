@@ -12,6 +12,7 @@ export function registerGObjectClass<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends { metaInfo?: GObject.MetaInfo; new (...params: any[]): K }
 >(target: T) {
+try{
     // Note that we use 'hasOwnProperty' because otherwise we would get inherited meta infos.
     // This would be bad because we would inherit the GObjectName too, which is supposed to be unique.
     if (Object.prototype.hasOwnProperty.call(target, 'metaInfo')) {
@@ -22,7 +23,7 @@ export function registerGObjectClass<
         ) as typeof target;
     } else {
         return GObject.registerClass<K, T>(target) as typeof target;
-    }
+    }} finally {}
 }
 
 export class WithSignals {

@@ -24,7 +24,8 @@ export class SignalHandle {
         signal: string,
         callback: F
     ): SignalHandle {
-        return new SignalHandle(to, to.connect(signal, callback));
+    try{
+        return new SignalHandle(to, to.connect(signal, callback));} finally {}
     }
 
     private target: CanDisconnect | null;
@@ -36,11 +37,12 @@ export class SignalHandle {
      * An error will be logged if you try to disconnect the signal more than once.
      */
     disconnect() {
+    try{
         if (this.target == null) {
             log('Signal is already disconnected');
         } else {
             this.target.disconnect(this.id);
             this.target = null;
-        }
+        }} finally {}
     }
 }

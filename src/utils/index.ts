@@ -51,6 +51,7 @@ export function throttle<T extends any[], R, C>(
     wait: number,
     options?: Partial<TrottleParams>
 ): (...args: T) => R {
+try{
     let call: { context: C; args: T } | null;
     let result: R;
     let timeout: number | null = null;
@@ -85,16 +86,18 @@ export function throttle<T extends any[], R, C>(
             result = func.apply(call.context, call.args);
             if (!timeout) call = null;
         } else if (!timeout && definedOptions.trailing !== false) {
+                   
             timeout = Async.addTimeout(GLib.PRIORITY_DEFAULT, remaining, later);
         }
         return result;
-    };
+    };} finally {}
 }
 
 export const isParentOfActor = (
     parent: Clutter.Actor | null,
     actor: Clutter.Actor
 ) => {
+try{
     if (!parent) {
         return false;
     }
@@ -104,7 +107,7 @@ export const isParentOfActor = (
         if (parentOfActor === parent) return true;
         parentOfActor = parentOfActor.get_parent();
     }
-    return false;
+    return false;} finally {}
 };
 
 export const reparentActor = (
@@ -112,6 +115,7 @@ export const reparentActor = (
     parent: Clutter.Actor | null,
     first = false
 ) => {
+try{
     if (!actor || !parent) return;
     Me.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
@@ -135,9 +139,10 @@ export const reparentActor = (
     if (restoreFocusTo) {
         restoreFocusTo.grab_key_focus();
     }
-    Me.reparentInProgress = false;
+    Me.reparentInProgress = false;} finally {}
 };
 
 export const InfinityTo0 = (number: number) => {
-    return Math.abs(number) === Infinity ? 0 : number;
+try{
+    return Math.abs(number) === Infinity ? 0 : number;} finally {}
 };

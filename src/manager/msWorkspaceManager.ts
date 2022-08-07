@@ -41,6 +41,7 @@ export class MsWorkspaceManager extends MsManager {
     stateChangedTriggered: any;
 
     constructor(state = {}) {
+    try{
         super();
         this.workspaceManager = global.workspace_manager;
         this._state = Object.assign(
@@ -217,14 +218,16 @@ export class MsWorkspaceManager extends MsManager {
                     this.stateChanged();
                 }
             }
-        );
+        );} finally {}
     }
 
     init() {
-        this.refreshMsWorkspaceUI();
+    try{
+        this.refreshMsWorkspaceUI();} finally {}
     }
 
     destroy() {
+    try{
         super.destroy();
         WorkspaceTracker.prototype._checkWorkspaces = (
             WorkspaceTracker.prototype as any
@@ -239,18 +242,20 @@ export class MsWorkspaceManager extends MsManager {
         }
         for (const msWorkspace of this.msWorkspaceList) {
             msWorkspace.destroy();
-        }
+        }} finally {}
     }
 
     get updatingMonitors() {
+    try{
         return (
             this._updatingMonitors ||
             global.display.get_n_monitors() !== this.numOfMonitors ||
             this.primaryIndex !== global.display.get_primary_monitor()
-        );
+        );} finally {}
     }
 
     initState() {
+    try{
         Main.layoutManager.monitors
             .filter((monitor) => monitor != Main.layoutManager.primaryMonitor)
             .forEach((monitor) => {
@@ -263,10 +268,11 @@ export class MsWorkspaceManager extends MsManager {
                 assert(workspace !== null, 'Workspace does not exist');
                 this.setupNewWorkspace(workspace);
             }
-        }
+        }} finally {}
     }
 
     restorePreviousState(): void {
+    try{
         this.restoringState = true;
         this.removeEmptyWorkspaces();
 
@@ -337,10 +343,11 @@ export class MsWorkspaceManager extends MsManager {
                 workspace.activate(global.get_current_time());
             }
         }
-        delete this.restoringState;
+        delete this.restoringState;} finally {}
     }
 
     removeEmptyWorkspaces(): void {
+    try{
         const emptyWorkspacesSlots: boolean[] = [];
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             emptyWorkspacesSlots[i] = true;
@@ -370,7 +377,7 @@ export class MsWorkspaceManager extends MsManager {
                 workspace,
                 global.get_current_time()
             );
-        });
+        });} finally {}
     }
 
     onMonitorsChanged(): void {

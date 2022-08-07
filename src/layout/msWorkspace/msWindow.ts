@@ -30,7 +30,8 @@ import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
 export function buildMetaWindowIdentifier(metaWindow: Meta.Window) {
-    return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
+try{
+    return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;} finally {}
 }
 
 interface Dialog {
@@ -123,6 +124,7 @@ type MsWindowLifecycleState =
  * This is if the window has drawn its first frame, or there is a gnome-shell dialog on the window.
  */
 function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
+try{
     const actor = metaWindow.get_compositor_private<Meta.WindowActor>();
     assert(actor !== null, "Expected the metaWindow's actor to exist");
     if (metaWindow.firstFrameDrawn) {
@@ -135,7 +137,7 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
         return true;
     }
 
-    return SOURCE_CONTINUE;
+    return SOURCE_CONTINUE;} finally {}
 }
 
 @registerGObjectClass
@@ -180,6 +182,7 @@ export class MsWindow extends Clutter.Actor {
         msWorkspace,
         lifecycleState,
     }: MsWindowConstructProps) {
+    try{
         super({
             reactive: true,
             x: initialAllocation ? initialAllocation.x || 0 : 0,
@@ -217,9 +220,13 @@ export class MsWindow extends Clutter.Actor {
         this.add_child(this.msContent);
 
         this.setMsWorkspace(msWorkspace);
+        }
+         finally {
+       }
     }
 
     get state(): MsWindowState {
+    try{
         const metaWindow = this.metaWindow;
         let matchingInfo: MsWindowMatchingInfo;
         switch (this.lifecycleState.type) {
@@ -262,9 +269,13 @@ export class MsWindow extends Clutter.Actor {
             width: this.width,
             height: this.height,
         };
+        }
+       finally {
+       }
     }
 
     get metaWindow(): MetaWindowWithMsProperties | null {
+    try{
         const state = this.lifecycleState;
         if (state.type !== 'window') return null;
 
@@ -274,6 +285,10 @@ export class MsWindow extends Clutter.Actor {
                 ? state.dialogs[state.dialogs.length - 1].metaWindow
                 : null)
         );
+        }
+        finally{}
+        
+        
     }
 
     /** All meta windows represented by this MSWindow.
@@ -281,30 +296,41 @@ export class MsWindow extends Clutter.Actor {
      * This may be more than one window if dialogs are present, or it may be no windows if no app is launched for example.
      */
     get metaWindows(): MetaWindowWithMsProperties[] {
+    try{
         const state = this.lifecycleState;
         if (state.type !== 'window') return [];
 
         const windows = state.dialogs.map((d) => d.metaWindow);
         if (state.metaWindow !== null) windows.push(state.metaWindow);
         return windows;
+        }
+        finally{}
+        
     }
 
     /** A human-readable identifier for this window.
      * This is not intended for anything other than debugging.
      */
     get windowIdentifier(): string {
+    try{
         const metaWindow = this.metaWindow;
         if (metaWindow !== null) {
             return buildMetaWindowIdentifier(metaWindow);
         } else {
             return `${this.app.id}-${this.lifecycleState.type}`;
         }
+        }
+        finally{}
+        
+        
     }
 
     get title() {
+    try{
         if (!this.app) return '';
         const metaWindow = this.metaWindow;
         return metaWindow ? metaWindow.get_title() : this.app.get_name();
+   } finally{}
     }
 
     set persistent(boolean: boolean) {
@@ -318,8 +344,14 @@ export class MsWindow extends Clutter.Actor {
         resolve: (actor: Meta.WindowActor) => void,
         reject: () => void
     ) {
+    
+    try{
         if (delayedCount < 20) {
             // If we don't have actor we hope to get it in the next loop
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                   setTimeout(resolve,350);
+                   return GLib.SOURCE_REMOVE;
+                });
             Async.addTimeout(GLib.PRIORITY_DEFAULT, 50, () => {
                 const actor =
                     metaWindow.get_compositor_private<Meta.WindowActor>();
@@ -337,26 +369,33 @@ export class MsWindow extends Clutter.Actor {
         } else {
             reject();
         }
+   } finally {}
+   
     }
 
     get dragged() {
+    try{
         return (
             Me.msWindowManager.msDndManager.dragInProgress?.msWindow === this
         );
+        } finally {}
     }
 
     get followMetaWindow() {
+    try{
         if (!this.msWorkspace) return false;
         return (
             (this.msWorkspace &&
                 this.msWorkspace.layout.state.key === 'float') ||
             (this.metaWindow && this.metaWindow.fullscreen)
         );
+        } finally {}
     }
 
     async onMetaWindowActorExist(
         metaWindow: MetaWindowWithMsProperties
     ): Promise<Meta.WindowActor | void> {
+    try{
         return new Promise<Meta.WindowActor | void>((resolve, reject) => {
             if (!metaWindow) {
                 return resolve();
@@ -367,10 +406,11 @@ export class MsWindow extends Clutter.Actor {
             } else {
                 this.delayGetMetaWindowActor(metaWindow, 0, resolve, reject);
             }
-        });
+        }); } finally {}
     }
 
     async onMetaWindowFirstFrameDrawn(metaWindow: MetaWindowWithMsProperties) {
+    try{
         return new Promise<Meta.WindowActor | void>((resolve, _reject) => {
             const check = () => {
                 if (isWindowContentInteresting(metaWindow)) {
@@ -380,17 +420,23 @@ export class MsWindow extends Clutter.Actor {
 
                 return SOURCE_CONTINUE;
             };
-            Async.addTimeout(PRIORITY_DEFAULT, 50, check);
-
+         
+            Async.addTimeout(PRIORITY_DEFAULT, 550, check);
+            
+        
+            
+          //  GLib.idle_add(0,this.onMetaWindowFirstFrameDrawn(metaWindow));
+			//idle_add(onMetaWindowFirstFrameDrawn,metaWindow);
             // Not strictly necessary, but has slightly lower latency than the repeated check
             metaWindow.firstFrameDrawnPromise?.then(resolve);
-        });
+        });} finally {}
     }
 
     override vfunc_allocate(
         box: Clutter.ActorBox,
         flags?: Clutter.AllocationFlags
     ) {
+    try{
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
@@ -433,22 +479,27 @@ export class MsWindow extends Clutter.Actor {
                     const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
                     Allocate(dialog.clone, dialogBox, flags);
                 });
-        }
+        }} finally {}
     }
 
     // eslint-disable-next-line camelcase
     override set_position(x: number, y: number) {
+    try{
         if (this.followMetaWindow) return;
         super.set_position(x, y);
+        } finally {}
     }
 
     // eslint-disable-next-line camelcase
     override set_size(width: number, height: number) {
+    try{
         if (this.followMetaWindow) return;
         super.set_size(width, height);
+        } finally {}
     }
 
     getRelativeMetaWindowPosition(metaWindow: Meta.Window) {
+    try{
         if (this.dragged) {
             const currentFrameRect = metaWindow.get_frame_rect();
             return {
@@ -464,18 +515,20 @@ export class MsWindow extends Clutter.Actor {
                 x: workArea.x + this.x,
                 y: workArea.y + this.y,
             };
-        }
+        }} finally {}
     }
 
     /*
      * This function is called every time the position or the size of the actor change and is meant to update the metaWindow accordingly
      */
     updateMetaWindowPositionAndSize() {
+    try{
         // This will call updateMetaWindowPositionAndSizeInternal immediately, or in a little while if it has been throttled
-        this.updateMetaWindowPositionAndSizeThrottled();
+        this.updateMetaWindowPositionAndSizeThrottled();} finally {}
     }
 
     private updateMetaWindowPositionAndSizeInternal() {
+    try {
         const state = this.lifecycleState;
         if (state.type !== 'window') return;
         const metaWindow = state.metaWindow;
@@ -710,10 +763,11 @@ export class MsWindow extends Clutter.Actor {
                     metaWindow.move_frame(true, moveTo.x, moveTo.y);
                 }
             }
-        }
+        }} finally {}
     }
 
     mimicMetaWindowPositionAndSize() {
+    try {
         const metaWindow = this.metaWindow;
         if (!metaWindow || this.dragged) return;
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
@@ -739,10 +793,11 @@ export class MsWindow extends Clutter.Actor {
             height: currentFrameRect.height + this.msContent.y * 2,
         };
         super.set_position(newPosition.x, newPosition.y);
-        super.set_size(newSize.width, newSize.height);
+        super.set_size(newSize.width, newSize.height);} finally {}
     }
 
-    resizeDialogs() {
+    resizeDialogs() { 
+    try{
         if (this.lifecycleState.type !== 'window') return;
         this.lifecycleState.dialogs.forEach((dialog) => {
             const { metaWindow } = dialog;
@@ -789,10 +844,11 @@ export class MsWindow extends Clutter.Actor {
                     offsetY + this.y + (this.height - frame.height) / 2
                 );
             }
-        });
+        });} finally {}
     }
 
     resizeMetaWindows() {
+    try{
         if (
             this.lifecycleState.type == 'window' &&
             this.lifecycleState.metaWindow !== null
@@ -802,12 +858,13 @@ export class MsWindow extends Clutter.Actor {
                 : this.updateMetaWindowPositionAndSize();
         }
 
-        this.resizeDialogs();
+        this.resizeDialogs(); } finally {}
     }
 
     registerOnMetaWindowSignals(
         metaWindow: MetaWindowWithMsProperties
     ): number[] {
+    try{
         return [
             metaWindow.connect('notify::title', (_) => {
                 this.emit('title-changed', this.title);
@@ -827,19 +884,21 @@ export class MsWindow extends Clutter.Actor {
                     this.mimicMetaWindowPositionAndSize();
                 }
             }),
-        ];
+        ];} finally {}
     }
 
     unregisterOnMetaWindowSignals() {
+    try{
         const state = this.lifecycleState;
         if (state.type !== 'window' || state.metaWindow === null) return;
         for (const signalId of state.metaWindowSignals) {
             state.metaWindow.disconnect(signalId);
         }
-        state.metaWindowSignals = [];
+        state.metaWindowSignals = []; } finally {}
     }
 
     setMsWorkspace(msWorkspace: MsWorkspace) {
+    try{
         this.msWorkspace = msWorkspace;
         if (this.lifecycleState.type === 'window') {
             [
@@ -854,10 +913,11 @@ export class MsWindow extends Clutter.Actor {
                 }
             });
             this.resizeMetaWindows();
-        }
+        } } finally {}
     }
 
     async setWindow(metaWindow: MetaWindowWithMsProperties): Promise<void> {
+    try{
         assert(
             this.lifecycleState.type === 'app-placeholder',
             'Can only set the window if the MsWindow is in the app-placeholder state.'
@@ -898,10 +958,11 @@ export class MsWindow extends Clutter.Actor {
         this.windowClone.set_source(
             metaWindow.get_compositor_private<Meta.WindowActor>()
         );
-        this.onMetaWindowsChanged();
+        this.onMetaWindowsChanged();} finally {}
     }
 
     public unsetWindow() {
+    try{
         assert(
             this.lifecycleState.type === 'window',
             'Can only unset the window when in the window state'
@@ -916,10 +977,11 @@ export class MsWindow extends Clutter.Actor {
             matchingInfo: this.lifecycleState.matchingInfo,
             waitingForAppSince: undefined,
         };
-        this.onMetaWindowsChanged();
+        this.onMetaWindowsChanged(); } finally {}
     }
 
     updateWorkspaceAndMonitor(metaWindow: Meta.Window) {
+    try{
         if (metaWindow && this.msWorkspace) {
             // We need to move the window before changing the workspace, because
             // the move itself could cause a workspace change if the window enters
@@ -934,10 +996,11 @@ export class MsWindow extends Clutter.Actor {
             if (workspace && metaWindow.get_workspace() != workspace) {
                 metaWindow.change_workspace(workspace);
             }
-        }
+        }} finally {}
     }
 
     addDialog(metaWindow: MetaWindowWithMsProperties): void {
+    try{
         if (this.lifecycleState.type === 'app-placeholder') {
             this.lifecycleState = {
                 type: 'window',
@@ -973,19 +1036,21 @@ export class MsWindow extends Clutter.Actor {
         this.onMetaWindowsChanged();
         if (this.msWorkspace.tileableFocused === this) {
             this.grab_key_focus();
-        }
+        }} finally {}
     }
 
     removeAllDialogs() {
+    try{
         if (this.lifecycleState.type === 'window') {
             const d = [...this.lifecycleState.dialogs];
             for (const dialog of d) {
                 this.removeDialog(dialog.metaWindow);
             }
-        }
+        }} finally {}
     }
 
     removeDialog(metaWindow: MetaWindowWithMsProperties) {
+    try{
         if (this.lifecycleState.type !== 'window') {
             throw new Error('Can only remove dialogs when in the window state');
         }
@@ -1001,10 +1066,11 @@ export class MsWindow extends Clutter.Actor {
         this.lifecycleState.dialogs.splice(idx, 1);
         this.remove_child(dialog.clone);
         dialog.clone.destroy();
-        metaWindow.msWindow = undefined;
+        metaWindow.msWindow = undefined;} finally {}
     }
 
     onMetaWindowsChanged() {
+    try{
         if (this.lifecycleState.type == 'window') {
             this.reactive = false;
             const metaWindow = assertNotNull(this.metaWindow);
@@ -1032,10 +1098,11 @@ export class MsWindow extends Clutter.Actor {
                 this.msContent.add_child(this.placeholder);
             }
         }
-        this.emit('title-changed', this.title);
+        this.emit('title-changed', this.title);} finally {}
     }
 
     grab_key_focus(): void {
+    try{
         // TODO: Seems a bit redundant to first focus the dialogs and then change focus to the main window (is that even desired?)
         this.focusDialogs();
         if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
@@ -1043,13 +1110,14 @@ export class MsWindow extends Clutter.Actor {
             this.metaWindow.activate(global.get_current_time());
         } else {
             this.placeholder.grab_key_focus();
-        }
+        }} finally {}
     }
 
     /**
      * Set focus to the most recent dialog but ONLY if they are of type Meta.WindowType.DIALOG or Meta.WindowType.MODAL_DIALOG. Other dialogs are not necessarily in front of the main window and do not necessarily require the users attention.
      */
     focusDialogs(): boolean {
+    try{
         let focused = false;
         if (
             this.lifecycleState.type === 'window' &&
@@ -1078,7 +1146,7 @@ export class MsWindow extends Clutter.Actor {
                     }
                 });
         }
-        return focused;
+        return focused;} finally {}
     }
 
     /**
@@ -1086,6 +1154,7 @@ export class MsWindow extends Clutter.Actor {
      * @param {MetaWindow} metaWindow the MetaWindow currently unManaged
      */
     metaWindowUnManaged(metaWindow: MetaWindowWithMsProperties): void {
+    try{
         const state = this.lifecycleState;
         assert(
             state.type == 'window',
@@ -1126,10 +1195,11 @@ export class MsWindow extends Clutter.Actor {
                     return GLib.SOURCE_REMOVE;
                 });
             }
-        }
+        }} finally {}
     }
 
     async kill() {
+    try{
         const state = this.lifecycleState;
 
         switch (state.type) {
@@ -1187,10 +1257,11 @@ export class MsWindow extends Clutter.Actor {
                 break;
             case 'destroyed':
                 break;
-        }
+        }} finally {}
     }
 
     fadeOutPlaceholder() {
+    try{
         const onComplete = () => {
             this.placeholder.set_opacity(255);
             if (this.metaWindow) {
@@ -1204,20 +1275,21 @@ export class MsWindow extends Clutter.Actor {
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
             onComplete,
-        });
+        });} finally {}
     }
 
-    freezeAllocation() {
+    freezeAllocation() {try{
         this.set_width(this.allocation.get_width());
-        this.set_height(this.allocation.get_height());
+        this.set_height(this.allocation.get_height());} finally {}
     }
 
-    unFreezeAllocation() {
+    unFreezeAllocation() {try{
         this.set_width(-1);
-        this.set_height(-1);
+        this.set_height(-1);} finally {}
     }
 
     updateMetaWindowVisibility() {
+    try{
         const metaWindow = this.metaWindow;
         if (metaWindow) {
             const shouldBeHidden =
@@ -1229,10 +1301,11 @@ export class MsWindow extends Clutter.Actor {
             } else if (!shouldBeHidden && metaWindow.minimized) {
                 metaWindow.unminimize();
             }
-        }
+        }} finally {}
     }
 
     toString() {
+    try{
         // When MS function parameter logging is enabled, toString may be called on windows that have been destroyed.
         // So we need to guard against this. super.toString would otherwise try to access the destroyed C object.
         if (this.lifecycleState.type === 'destroyed') {
@@ -1240,13 +1313,14 @@ export class MsWindow extends Clutter.Actor {
         }
 
         const string = super.toString();
-        return `${string.slice(0, string.length - 1)} ${this.app.get_name()}]`;
+        return `${string.slice(0, string.length - 1)} ${this.app.get_name()}]`;} finally {}
     }
 
     _onDestroy() {
+    try{
         if (this.destroyId) this.disconnect(this.destroyId);
         this.unregisterOnMetaWindowSignals();
-        this.lifecycleState = { type: 'destroyed' };
+        this.lifecycleState = { type: 'destroyed' };} finally {}
     }
 }
 
@@ -1266,17 +1340,19 @@ export class MsWindowContent extends St.Widget {
         placeholder: Clutter.Actor;
         clone: Clutter.Clone;
     }) {
+    try{
         super({ clip_to_allocation: true });
         this.placeholder = placeholder;
         this.clone = clone;
         this.add_child(this.clone);
         this.add_child(this.placeholder);
+        } finally {}
     }
 
     override vfunc_allocate(
         box: Clutter.ActorBox,
         flags?: Clutter.AllocationFlags
-    ) {
+    ) {try{
         SetAllocation(this, box, flags);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
@@ -1325,6 +1401,6 @@ export class MsWindowContent extends St.Widget {
 
         if (this.placeholder.get_parent() === this) {
             Allocate(this.placeholder, box, flags);
-        }
+        }} finally {}
     }
 }

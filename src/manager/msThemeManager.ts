@@ -40,6 +40,7 @@ export const FocusEffectEnum = {
 };
 
 function parseCoglColor(color: string): Color {
+try{
     const c = new Color();
     c.init_from_4ub(
         parseInt(color.substring(1, 3), 16),
@@ -47,7 +48,7 @@ function parseCoglColor(color: string): Color {
         parseInt(color.substring(5, 7), 16),
         255
     );
-    return c;
+    return c;} finally {}
 }
 
 export class MsThemeManager extends MsManager {
@@ -63,6 +64,7 @@ export class MsThemeManager extends MsManager {
 
     constructor() {
         super();
+        try{
         this.themeContext = St.ThemeContext.get_for_stage(global.stage);
         this.theme = this.themeContext.get_theme();
         this.themeSettings = getSettings('theme');
@@ -143,65 +145,78 @@ export class MsThemeManager extends MsManager {
         });
         this.observe(this.themeSettings, 'changed::focus-effect', () => {
             this.emit('focus-effect-changed');
-        });
+        });} finally {}
     }
 
     get verticalPanelPosition() {
-        return this.themeSettings.get_enum('vertical-panel-position');
+    try{
+        return this.themeSettings.get_enum('vertical-panel-position');} finally {}
     }
 
     get horizontalPanelPosition() {
-        return this.themeSettings.get_enum('horizontal-panel-position');
+    try{
+        return this.themeSettings.get_enum('horizontal-panel-position');} finally {}
     }
 
     get panelOpacity() {
-        return this.themeSettings.get_int('panel-opacity');
+    try{
+        return this.themeSettings.get_int('panel-opacity');} finally {}
     }
 
     get panelIconStyle() {
-        return this.themeSettings.get_enum('panel-icon-style');
+    try{
+        return this.themeSettings.get_enum('panel-icon-style');} finally {}
     }
 
     set panelIconStyle(value) {
-        this.themeSettings.set_enum('panel-icon-style', value);
+    try{
+        this.themeSettings.set_enum('panel-icon-style', value);} finally {}
     }
 
     get panelIconColor() {
-        return this.themeSettings.get_boolean('panel-icon-color');
+    try{
+        return this.themeSettings.get_boolean('panel-icon-color');} finally {}
     }
 
     get surfaceOpacity() {
-        return this.themeSettings.get_int('surface-opacity');
+    try{
+        return this.themeSettings.get_int('surface-opacity');} finally {}
     }
 
     get blurBackground() {
-        return this.themeSettings.get_boolean('blur-background');
+    try{
+        return this.themeSettings.get_boolean('blur-background');} finally {}
     }
 
     get clockHorizontal() {
-        return this.themeSettings.get_boolean('clock-horizontal');
+    try{
+        return this.themeSettings.get_boolean('clock-horizontal');} finally {}
     }
 
     get clockAppLauncher() {
-        return this.themeSettings.get_boolean('clock-app-launcher');
+    try{
+        return this.themeSettings.get_boolean('clock-app-launcher');} finally {}
     }
 
     getPanelSize(monitorIndex: number) {
+    try{
         return (
             this.themeSettings.get_int('panel-size') *
             global.display.get_monitor_scale(monitorIndex)
-        );
+        );} finally {}
     }
 
-    getPanelSizeNotScaled() {
-        return this.themeSettings.get_int('panel-size');
+    getPanelSizeNotScaled() {try{
+        return this.themeSettings.get_int('panel-size');} finally {}
     }
 
     get focusEffect() {
-        return this.themeSettings.get_enum('focus-effect');
+    try{
+        return this.themeSettings.get_enum('focus-effect');} finally {}
     }
 
     isColorDark(color: string) {
+    try{
         color = color.replace('#', '');
         const r = parseInt(color.substring(0, 2), 16);
         const g = parseInt(color.substring(2, 4), 16);
@@ -223,15 +238,15 @@ export class MsThemeManager extends MsManager {
             0.2126 * linearColors[0] +
             0.7152 * linearColors[1] +
             0.0722 * linearColors[2];
-        return luminance < 0.179;
+        return luminance < 0.179;} finally {}
     }
 
-    setCursor(cursor: Meta.Cursor) {
+    setCursor(cursor: Meta.Cursor) {try{
         this.metaCursor = cursor;
-        this.throttledDisplaySetCursor();
+        this.throttledDisplaySetCursor();} finally {}
     }
 
-    async readFileContent(file: Gio.File) {
+    async readFileContent(file: Gio.File) {try{
         return new Promise<string>((resolve, reject) => {
             file.load_contents_async(null, (obj, res) => {
                 const [success, contents] =
@@ -244,10 +259,10 @@ export class MsThemeManager extends MsManager {
                     reject(success);
                 }
             });
-        });
+        });} finally {}
     }
 
-    async writeContentToFile(content: string, file: Gio.File) {
+    async writeContentToFile(content: string, file: Gio.File) {try{
         return new Promise<Gio.File>((resolve, _) => {
             const contentBytes = new GLib.Bytes(byteArray.fromString(content));
             file.replace_async(
@@ -271,10 +286,10 @@ export class MsThemeManager extends MsManager {
                     );
                 }
             );
-        });
+        });} finally {}
     }
 
-    async buildThemeStylesheetToFile(file: Gio.FilePrototype) {
+    async buildThemeStylesheetToFile(file: Gio.FilePrototype) {try{
         const originThemeFile = Gio.file_new_for_path(
             `${Me.path}/style-${this.themeValue}-theme.css`
         );
@@ -282,10 +297,10 @@ export class MsThemeManager extends MsManager {
         content = content.replace(/#3f51b5/g, this.primary); // color-primary
         content = content.replace(/0.876/g, `${this.panelOpacity / 100}`); // panel-opacity
         content = content.replace(/0.987/g, `${this.surfaceOpacity / 100}`); // surface-opacity
-        await this.writeContentToFile(content, file);
+        await this.writeContentToFile(content, file);} finally {}
     }
 
-    async regenerateStylesheet() {
+    async regenerateStylesheet() {try{
         this.unloadStylesheet();
         if (!this.theme.application_stylesheet) {
             Main.layoutManager.uiGroup.add_style_class_name('no-theme');
@@ -302,21 +317,21 @@ export class MsThemeManager extends MsManager {
             Main.reloadThemeResource();
             Main.loadTheme();
             return GLib.SOURCE_REMOVE;
-        });
+        });} finally {}
     }
 
-    unloadStylesheet() {
+    unloadStylesheet() {try{
         if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
             Main.layoutManager.uiGroup.remove_style_class_name('no-theme');
         }
-        this.theme.unload_stylesheet(this.themeFile);
+        this.theme.unload_stylesheet(this.themeFile);} finally {}
     }
 
-    destroy() {
+    destroy() {try{
         super.destroy();
         // Do not remove the stylesheet in during locking disable
         if (!Me.locked) {
             this.unloadStylesheet();
-        }
+        }} finally {}
     }
 }

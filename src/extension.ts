@@ -51,6 +51,7 @@ function init() {
 
 // eslint-disable-next-line no-unused-vars
 function enable() {
+try{
     log('----------------');
     log('ENABLE EXTENSION');
     log('----------------');
@@ -111,7 +112,7 @@ function enable() {
             }
         });
         return GLib.SOURCE_REMOVE;
-    });
+    }); } finally {}
 }
 
 function loaded(disconnect: boolean) {
@@ -132,6 +133,7 @@ function loaded(disconnect: boolean) {
             Async.clearTimeoutId(_splashscreenTimeoutId);
             _splashscreenTimeoutId = 0;
         }
+       
         Async.addTimeout(GLib.PRIORITY_DEFAULT, 1000, hideSplashScreens);
     }
     log('--------------------');
@@ -197,6 +199,7 @@ function showSplashScreens() {
         Main.layoutManager.addChrome(splashscreen);
         splashScreens.push(splashscreen);
     });
+
     _splashscreenTimeoutId = Async.addTimeout(
         GLib.PRIORITY_DEFAULT,
         5000,

@@ -47,6 +47,7 @@ export class MsResizeManager extends MsManager {
     throttledCheckPointerPosition: () => void;
 
     constructor(msWindowManager: MsWindowManager) {
+    try{
         super();
 
         this.msWindowManager = msWindowManager;
@@ -117,22 +118,23 @@ export class MsResizeManager extends MsManager {
             this.checkPointerPosition,
             CHECK_TIMEOUT_MS,
             { trailing: false }
-        );
+        );} finally {}
     }
 
-    checkPointerPosition() {
+    checkPointerPosition() {try{
         if (this.resizeInProgress !== null) {
             this.updateResize();
-        }
+        }} finally {}
     }
 
-    endPointerChecker() {
+    endPointerChecker() {try{
         if (this.resizeInProgress !== null) {
             this.endResize();
-        }
+        }} finally {}
     }
 
     getPointerPositionRelativeToWorkspace(): [number, number] {
+    try{
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const { msWorkspaceActor } = this.resizeInProgress.msWorkspace;
 
@@ -142,10 +144,11 @@ export class MsResizeManager extends MsManager {
                 number
             ];
         const [globalX, globalY] = global.get_pointer();
-        return [globalX - containerX, globalY - containerY];
+        return [globalX - containerX, globalY - containerY];} finally {}
     }
 
     getFirstPortionPositionAndSize(): Rectangular {
+    try{
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const { layout } = this.resizeInProgress.msWorkspace;
         assert(
@@ -156,10 +159,11 @@ export class MsResizeManager extends MsManager {
             this.resizeInProgress.border.firstPortion
         );
 
-        return layout.applyBoxRatio(layout.resolveBox(), ratio);
+        return layout.applyBoxRatio(layout.resolveBox(), ratio);} finally {}
     }
 
     startResize(border: PortionBorder) {
+    try{
         assert(this.resizeInProgress === null, 'Resize already in progress');
         this.resizeInProgress = {
             border: border,
@@ -169,10 +173,10 @@ export class MsResizeManager extends MsManager {
         global.stage.add_child(this.inputResizer);
         this.msWindowManager.msFocusManager.pushModal(this.inputResizer);
 
-        Me.msThemeManager.setCursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
+        Me.msThemeManager.setCursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);} finally {}
     }
 
-    updateResize() {
+    updateResize() {try{
         assert(this.resizeInProgress !== null, 'No resize in progress');
         const [pointerX, pointerY] =
             this.getPointerPositionRelativeToWorkspace();
@@ -187,10 +191,10 @@ export class MsResizeManager extends MsManager {
         }
 
         this.resizeInProgress.border.updateBasis(basisRatio);
-        this.resizeInProgress.msWorkspace.layout.tileAll();
+        this.resizeInProgress.msWorkspace.layout.tileAll();} finally {}
     }
 
-    endResize() {
+    endResize() {try{
         assert(this.resizeInProgress !== null, 'No resize in progress');
         this.resizeInProgress = null;
 
@@ -198,14 +202,14 @@ export class MsResizeManager extends MsManager {
         Me.stateManager.stateChanged();
 
         global.stage.remove_child(this.inputResizer);
-        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);} finally {}
     }
 
     resizeTileable(
         tileable: Tileable,
         directionOp: Meta.GrabOp,
         percent: number
-    ) {
+    ) {try{
         const { layout } = tileable.msWorkspace;
 
         if (!(layout instanceof BaseResizeableTilingLayout)) {
@@ -217,13 +221,14 @@ export class MsResizeManager extends MsManager {
         if (border) {
             border.updateBasis((100 + percent * (after ? -1 : 1)) / 100);
             layout.tileAll();
-        }
+        }} finally {}
     }
 }
 
 @registerGObjectClass
 export class InputResizer extends Clutter.Actor {
     constructor() {
+    try {
         super({
             name: 'InputResizer',
             reactive: true,
@@ -233,6 +238,6 @@ export class InputResizer extends Clutter.Actor {
                 source: global.stage,
                 coordinate: Clutter.BindCoordinate.ALL,
             })
-        );
+        );} finally {}
     }
 }

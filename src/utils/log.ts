@@ -5,6 +5,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
  * ensure any errors are logged.
  */
 export function logAsyncException(e: any) {
+try{
     if (e instanceof Error) {
         Me.log(
             `\nException when running asynchronous function:\n${e}\n${e.stack}\n`
@@ -13,9 +14,10 @@ export function logAsyncException(e: any) {
         Me.logWithStackTrace(
             `\nException when running asynchronous function: ${e}\n`
         );
-    }
+    }} finally {}
 }
 
 export function mslog(...args: unknown[]) {
-    Me.log(...args);
+try{
+    Me.log(...args);} finally {}
 }

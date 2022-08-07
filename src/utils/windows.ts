@@ -8,7 +8,7 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
-) {
+) {try{
     const msWorkspaceIsInFloatLayout =
         metaWindow.msWindow?.msWorkspace.layout.state.key === 'float' ?? false;
     const shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
@@ -17,13 +17,14 @@ export const updateTitleBarVisibility = function (
         metaWindow.titleBarVisible !== shouldTitleBarBeVisible
     ) {
         setTitleBarVisibility(metaWindow, shouldTitleBarBeVisible);
-    }
+    }} finally {}
 };
 
 export const setTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties,
     visible: boolean
 ) {
+try{
     const windowXID = getWindowXID(metaWindow);
     if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
         return;
@@ -43,12 +44,13 @@ export const setTitleBarVisibility = function (
         Me.logFocus('xprop', e);
     }
 
-    metaWindow.titleBarVisible = visible;
+    metaWindow.titleBarVisible = visible;} finally {}
 };
 
 export const getWindowXID = function (win: Meta.Window): string | null {
+try{
     const desc = win.get_description() || '';
     const match = desc.match(/0x[0-9a-f]+/);
 
-    return match !== null ? match[0] : null;
+    return match !== null ? match[0] : null;} finally {}
 };

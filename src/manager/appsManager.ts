@@ -3,6 +3,7 @@ import * as Shell from 'shell';
 
 export class AppsManager {
     static getApps() {
+    try{
         const usage = Shell.AppUsage.get_default();
         const appSystem = Shell.AppSystem.get_default();
         const appsInstalled = appSystem.get_installed().filter((appInfo) => {
@@ -20,6 +21,6 @@ export class AppsManager {
             })
             .map((appInfo) => {
                 return appSystem.lookup_app(appInfo.get_id());
-            });
+            });} finally {}
     }
 }

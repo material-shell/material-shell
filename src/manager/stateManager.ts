@@ -19,10 +19,12 @@ export class StateManager {
     stateChangedTriggered: boolean | undefined;
 
     constructor() {
+    try{
         this.state = {};
-        this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);
+        this.stateFile = Gio.file_new_for_path(REGISTRY_PATH);} finally {}
     }
     loadRegistry(callback: (state: StateDict) => void) {
+    try{
         if (typeof callback !== 'function')
             throw TypeError('`callback` must be a function');
         const serializedState = global.get_persistent_state(
@@ -58,10 +60,10 @@ export class StateManager {
         } else {
             this.state = {};
             callback(this.state);
-        }
+        }} finally {}
     }
 
-    updateState(state: StateDict) {
+    updateState(state: StateDict) {try{
         if (state) {
             const workspacesState = state['workspaces-state'];
             if (workspacesState) {
@@ -81,29 +83,31 @@ export class StateManager {
                 });
             }
         }
-        return state;
+        return state;} finally {}
     }
 
-    saveRegistry() {
+    saveRegistry() {try{
         const json = JSON.stringify(this.state);
         global.set_persistent_state(
             'material-shell-state',
             GLib.Variant.new_string(json)
-        );
+        );} finally {}
     }
     getState(key: string) {
-        return this.state[key];
+    try{
+        return this.state[key];} finally {}
     }
     setState(key: string, value: any) {
+    try{
         if (value === undefined) {
             delete this.state[key];
         } else {
             this.state[key] = value;
         }
-        this.saveRegistry();
+        this.saveRegistry();} finally {}
     }
 
-    stateChanged() {
+    stateChanged() {try{
         if (
             !Me.loaded ||
             Me.msWorkspaceManager.updatingMonitors ||
@@ -117,16 +121,17 @@ export class StateManager {
             this.saveCurrentState();
             this.stateChangedTriggered = false;
             return GLib.SOURCE_REMOVE;
-        });
+        });} finally {}
     }
 
     saveCurrentState() {
+    try{
         // Avoid unnecessary work
         if (!Me.loaded || Me.disableInProgress) return;
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
             this.setState('workspaces-state', Me.msWorkspaceManager.state);
-        }
+        }} finally {}
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function

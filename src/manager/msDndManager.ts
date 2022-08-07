@@ -31,6 +31,7 @@ export class MsDndManager extends MsManager {
 
     constructor(msWindowManager: MsWindowManager) {
         super();
+        try{
         this.msWindowManager = msWindowManager;
         this.signalMap = new Map();
         this.dragInProgress = null;
@@ -116,13 +117,13 @@ export class MsDndManager extends MsManager {
             this.checkUnderThePointer,
             50,
             { trailing: false }
-        );
+        );} finally {}
     }
 
     /**
      * Handle drag and drop for placeholders
      */
-    listenForMsWindowsSignal() {
+    listenForMsWindowsSignal() {try{
         this.msWindowManager.msWindowList.forEach((msWindow) => {
             if (!this.signalMap.has(msWindow)) {
                 const id = msWindow.connect('event', (_, event) => {
@@ -137,10 +138,11 @@ export class MsDndManager extends MsManager {
                 });
                 this.signalMap.set(msWindow, id);
             }
-        });
+        });} finally {}
     }
 
     startDrag(msWindow: MsWindow) {
+    try{
         global.stage.add_child(this.inputGrabber);
         const originalParent = assertNotNull(msWindow.get_parent());
         msWindow.freezeAllocation();
@@ -174,10 +176,11 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        Me.msThemeManager.setCursor(Meta.Cursor.DND_IN_DRAG);
+        Me.msThemeManager.setCursor(Meta.Cursor.DND_IN_DRAG);} finally {}
     }
 
     endDrag() {
+    try{
         assert(this.dragInProgress !== null, 'No drag in progress');
         const { msWindow, originalParent } = this.dragInProgress;
         this.dragInProgress = null;
@@ -189,19 +192,21 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);} finally {}
     }
 
-    checkUnderThePointerRoutine() {
+    checkUnderThePointerRoutine() {try{
         if (this.dragInProgress === null) return;
         this.throttledCheckUnderPointer();
+  
         Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();
-        });
+        });} finally {}
     }
 
     /**  */
     checkUnderThePointer() {
+    try{
         assert(this.dragInProgress !== null, 'No drag in progress');
 
         const [x, y] = global.get_pointer();
@@ -254,7 +259,7 @@ export class MsDndManager extends MsManager {
                 ) {
                     msWorkspace.swapTileable(msWindowDragged, tileable);
                 }
-            });
+            });} finally {}
     }
 }
 
@@ -266,14 +271,16 @@ export class InputGrabber extends Clutter.Actor {
             reactive: true,
             //backgroundColor: Clutter.Color.new(255, 0, 0, 100),
         });
+        try{
         this.add_constraint(
             new Clutter.BindConstraint({
                 source: global.stage,
                 coordinate: Clutter.BindCoordinate.ALL,
             })
-        );
+        );} finally {}
     }
     override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+    try{
         const actionId = global.display.get_keybinding_action(
             keyEvent.hardware_keycode,
             keyEvent.modifier_state
@@ -311,6 +318,6 @@ export class InputGrabber extends Clutter.Actor {
                     break;
             }
         }
-        return false;
+        return false;} finally {}
     }
 }

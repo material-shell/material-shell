@@ -19,7 +19,7 @@ import { assert } from './assert';
 export function weighted_matching(costs: number[][]): {
     cost: number;
     assignments: Int32Array;
-} {
+} {try{
     const INT_MAX = 2147483647;
 
     if (costs.length == 0) return { cost: 0, assignments: new Int32Array() };
@@ -88,6 +88,7 @@ export function weighted_matching(costs: number[][]): {
         }
     }
     return { cost: -v[0], assignments: ans }; // min cost
+    } finally {}
 }
 
 export function test_hungarian() {

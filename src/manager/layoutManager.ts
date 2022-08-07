@@ -85,6 +85,7 @@ export class LayoutManager extends MsManager {
 
     constructor() {
         super();
+        try{
         this.workspaceManager = global.workspace_manager;
         this.layoutList = layouts;
         this.layoutsSettings = getSettings('layouts');
@@ -122,33 +123,36 @@ export class LayoutManager extends MsManager {
         this.gap = this.layoutsSettings.get_int('gap');
         this.useScreenGap = this.layoutsSettings.get_boolean('use-screen-gap');
         this.screenGap = this.layoutsSettings.get_int('screen-gap');
-        this.tweenTime = this.layoutsSettings.get_double('tween-time');
+        this.tweenTime = this.layoutsSettings.get_double('tween-time');} finally {}
     }
 
     get someGap() {
-        return this.gap != 0 || (this.useScreenGap && this.screenGap != 0);
+    try{
+        return this.gap != 0 || (this.useScreenGap && this.screenGap != 0);} finally {}
     }
 
     get defaultLayoutKeyList() {
+    try{
         return layouts
             .map((layout) => layout.state.key)
-            .filter((layoutKey) => this.layoutsSettings.get_boolean(layoutKey));
+            .filter((layoutKey) => this.layoutsSettings.get_boolean(layoutKey));} finally {}
     }
 
-    get defaultLayoutKey() {
-        return this.layoutsSettings.get_string('default-layout');
+    get defaultLayoutKey() {try{
+        return this.layoutsSettings.get_string('default-layout');} finally {}
     }
 
-    getLayoutListFromKeys(layoutKeys: string[]) {
+    getLayoutListFromKeys(layoutKeys: string[]) {try{
         return layoutKeys.map((layoutKey) => {
             return TilingLayoutByKey[layoutKey];
-        });
+        });} finally {}
     }
 
     createLayout(
         workspace: MsWorkspace,
         state: LayoutState
     ): InstanceType<LayoutType> {
+    try{
         switch (state.key) {
             case 'maximize':
                 return new MaximizeLayout(workspace, state);
@@ -172,11 +176,12 @@ export class LayoutManager extends MsManager {
                 return new SimpleVerticalLayout(workspace, state);
             case 'float':
                 return new FloatLayout(workspace, state);
-        }
+        }} finally {}
     }
 
     getLayoutByKey(key: string): LayoutType {
-        return TilingLayoutByKey[key];
+    try {
+        return TilingLayoutByKey[key];} finally {}
     }
 
     // getNextLayout(currentLayout, direction: string): string {
@@ -196,6 +201,7 @@ export class LayoutManager extends MsManager {
     // }
 
     tileWindows() {
+    try{
         if (this.tilingInProgress) return;
 
         this.tilingInProgress = true;
@@ -219,6 +225,6 @@ export class LayoutManager extends MsManager {
 
             this.tilingInProgress = false;
             return GLib.SOURCE_REMOVE;
-        });
+        });} finally {}
     }
 }

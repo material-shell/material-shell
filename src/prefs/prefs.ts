@@ -17,10 +17,11 @@ const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
 const hotkeysSchemaName = 'org.gnome.shell.extensions.materialshell.bindings';
 
 function log(...args: any[]) {
+try{
     const fields = { MESSAGE: `${args.join(', ')}` };
     const domain = 'Material Shell';
 
-    GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
+    GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields); } finally{}
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
 function init() {
@@ -111,9 +112,10 @@ class HotkeyRowData extends GObject.Object {
 
     constructor(key: string, summary: string, accelName: string) {
         super();
+        try{
         this.key = key;
         this.summary = summary;
-        this.accelName = accelName;
+        this.accelName = accelName; } finally{}
     }
 }
 
@@ -127,6 +129,7 @@ class HotkeyListBox extends Gtk.ListBox {
 
     constructor() {
         super();
+        try{
         this.connect('row-activated', (_, row: HotkeyListBoxRow) => {
             row.openDialog();
         });
@@ -187,7 +190,7 @@ class HotkeyListBox extends Gtk.ListBox {
                     this.settings.set_strv(modelEntry.key, [value]);
                 });
                 this.append(row);
-            });
+            }); } finally{}
     }
 
     createHotkeyRow(obj: GObject.Object): Gtk.Widget {
@@ -218,18 +221,20 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
     key: string;
     constructor(key: string, hotkeyName: string, accel: string) {
         super();
+        try{
         this.key = key;
         this._accel_label.set_text(accel);
         this._hotkey_label.set_text(hotkeyName);
-        this.connect('activate', () => this.openDialog());
+        this.connect('activate', () => this.openDialog()); } finally{}
     }
 
     openDialog() {
+    try{
         this._dialog.transient_for = this.get_root() as Gtk.Window;
         this._dialog.present();
         (
             assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
-        ).inhibit_system_shortcuts(null);
+        ).inhibit_system_shortcuts(null); } finally{}
     }
 
     onKeyPressed(
@@ -237,7 +242,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         keyval: number,
         keycode: number,
         state: Gdk.ModifierType
-    ) {
+    ) {try{
         let mask = state & Gtk.accelerator_get_default_mod_mask();
         mask &= ~Gdk.ModifierType.LOCK_MASK;
 
@@ -265,14 +270,14 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
         this.emit('accel-changed', accel);
         /* this.keybinding =  */
         this.closeDialog();
-        return Gdk.EVENT_STOP;
+        return Gdk.EVENT_STOP; } finally{}
     }
 
-    closeDialog() {
+    closeDialog() {try{
         (
             assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
         ).restore_system_shortcuts();
-        this._dialog.close();
+        this._dialog.close(); } finally{}
     }
 }
 @registerGObjectClass
