@@ -54,7 +54,8 @@ def install():
     os.chdir(package_dir)
 
     # Where gnome-shell extensions live
-    install_directory = os.path.expanduser("~/.local/share/gnome-shell/extensions")
+    data_home = os.environ.get('XDG_DATA_HOME') or "~/.local/share"
+    install_directory = os.path.expanduser(data_home + "/gnome-shell/extensions")
     # Under what name we want to install the extension as
     install_name = "material-shell@papyelgringo"
     install_path = os.path.join(install_directory, install_name)
