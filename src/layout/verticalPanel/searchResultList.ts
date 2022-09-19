@@ -91,7 +91,7 @@ export class SearchResultEntry extends MatButton {
         if (description) {
             this.description = new St.Label({
                 text: description,
-                styleClass: 'caption',
+                styleClass: 'caption text-medium-emphasis',
                 style: 'margin-top:2px',
             });
             this.textLayout.add_child(this.description);
@@ -124,6 +124,7 @@ export class SearchResultList extends St.BoxLayout {
                 param_types: [SearchResultEntry.$gtype],
                 accumulator: 0,
             },
+            'result-changed': {},
         },
     };
     searchEntry: St.Entry;
@@ -508,6 +509,7 @@ export class SearchResultList extends St.BoxLayout {
             this._maybeSetInitialSelection();
             this._updateSearchProgress();
         }); */
+        this.emit('result-changed');
     }
 
     addResult(resultEntry: SearchResultEntry): void {
@@ -556,6 +558,7 @@ export class SearchResultList extends St.BoxLayout {
         this.remove_all_children();
         this.clearSearchTimeout();
         this.startingSearch = false;
+        this.emit('result-changed');
     }
 
     resetAndClose() {
