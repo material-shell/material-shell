@@ -97,7 +97,9 @@ export class ExtendedPanelContent extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
-        const desiredWidth = 448 - Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex);
+        const desiredWidth =
+            448 -
+            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex);
         return [desiredWidth, desiredWidth];
     }
 }
