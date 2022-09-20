@@ -1,6 +1,5 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import { Text } from 'clutter';
 import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
@@ -22,8 +21,7 @@ export class AllApplicationList extends St.BoxLayout {
             },
         },
     };
-    searchEntry: St.Entry;
-    text: Text;
+    disconnectList: Function[] = [];
     parentalControlsManager;
     entrySelected: SearchResultEntry | null = null;
     constructor(searchEntry: St.Entry) {
@@ -31,14 +29,25 @@ export class AllApplicationList extends St.BoxLayout {
             style_class: 'search-result-list',
             vertical: true,
         });
-        this.searchEntry = searchEntry;
-        this.text = this.searchEntry.clutter_text;
         // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
-        this.text.connect('key-press-event', this.onKeyPress.bind(this));
+        const keyId = searchEntry.clutter_text.connect(
+            'key-press-event',
+            this.onKeyPress.bind(this)
+        );
+        this.disconnectList.push(() => searchEntry.disconnect(keyId));
         this.parentalControlsManager = ParentalControlsManager.getDefault();
-        this.parentalControlsManager.connect(
+        const parentalId = this.parentalControlsManager.connect(
             'app-filter-changed',
             this.updateResults.bind(this)
+        );
+        this.disconnectList.push(() =>
+            this.parentalControlsManager.disconnect(parentalId)
+        );
+
+        this.connect('destroy', () =>
+            this.disconnectList.forEach((disconnectFunction) =>
+                disconnectFunction()
+            )
         );
 
         const appSystem = Shell.AppSystem.get_default();
