@@ -163,10 +163,11 @@ export class AllApplicationList extends St.BoxLayout {
     }
 
     selectNext() {
-        const currentIndex =
-            this.entrySelected !== null
-                ? this.resultEntryList.indexOf(this.entrySelected)
-                : -1;
+        if (this.entrySelected == null) {
+            this.entrySelected = this.resultEntryList[0];
+            return this.selectResult(this.entrySelected);
+        }
+        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
         const nextEntry = this.resultEntryList[currentIndex + 1];
         if (nextEntry) {
             this.selectResult(nextEntry);
@@ -174,10 +175,11 @@ export class AllApplicationList extends St.BoxLayout {
     }
 
     selectPrevious() {
-        const currentIndex =
-            this.entrySelected !== null
-                ? this.resultEntryList.indexOf(this.entrySelected)
-                : -1;
+        if (this.entrySelected == null) {
+            this.entrySelected = this.resultEntryList[0];
+            return this.selectResult(this.entrySelected);
+        }
+        const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
         const previousEntry = this.resultEntryList[currentIndex - 1];
         if (previousEntry) {
             this.selectResult(previousEntry);
