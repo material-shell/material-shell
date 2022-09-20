@@ -1,6 +1,6 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
-import * as Gio from 'gio';
+import { Text } from 'clutter';
 import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
@@ -22,20 +22,19 @@ export class AllApplicationList extends St.BoxLayout {
             },
         },
     };
+    searchEntry: St.Entry;
+    text: Text;
     parentalControlsManager;
-    terms: string[] = [];
-    private searchTimeoutId = 0;
-    startingSearch = false;
-    private results: Record<string, string[]> = {};
-    isSubSearch = false;
-    cancellable = new Gio.Cancellable();
-    iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
-    constructor() {
+    constructor(searchEntry: St.Entry) {
         super({
             style_class: 'search-result-list',
             vertical: true,
         });
+        this.searchEntry = searchEntry;
+        this.text = this.searchEntry.clutter_text;
+        // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
+        this.text.connect('key-press-event', this.onKeyPress.bind(this));
         this.parentalControlsManager = ParentalControlsManager.getDefault();
         this.parentalControlsManager.connect(
             'app-filter-changed',
@@ -176,18 +175,7 @@ export class AllApplicationList extends St.BoxLayout {
         }
     }
 
-    /* reset() {
-        this.searchEntry.text = '';
-        this.terms = [];
-        this.results = {};
-        this.entrySelected = null;
-        this.remove_all_children();
-        this.clearSearchTimeout();
-        this.startingSearch = false;
-    } */
-
     resetAndClose() {
-        //this.reset();
         Me.layout.toggleOverview();
     }
 }

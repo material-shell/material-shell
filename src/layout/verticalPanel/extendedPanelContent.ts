@@ -55,7 +55,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
 
         this.add_child(this.searchEntryBin);
 
-        let allApplicationList = new AllApplicationList();
+        let allApplicationList = new AllApplicationList(this.searchEntry);
 
         this.searchResultList = new SearchResultList(this.searchEntry);
         this.searchResultList.connect('result-selected-changed', (_, res) => {
