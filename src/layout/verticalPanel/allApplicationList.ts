@@ -165,7 +165,8 @@ export class AllApplicationList extends St.BoxLayout {
     selectNext() {
         if (this.entrySelected == null) {
             this.entrySelected = this.resultEntryList[0];
-            return this.selectResult(this.entrySelected);
+            this.selectResult(this.entrySelected);
+            return;
         }
         const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
         const nextEntry = this.resultEntryList[currentIndex + 1];
@@ -177,7 +178,8 @@ export class AllApplicationList extends St.BoxLayout {
     selectPrevious() {
         if (this.entrySelected == null) {
             this.entrySelected = this.resultEntryList[0];
-            return this.selectResult(this.entrySelected);
+            this.selectResult(this.entrySelected);
+            return;
         }
         const currentIndex = this.resultEntryList.indexOf(this.entrySelected);
         const previousEntry = this.resultEntryList[currentIndex - 1];
