@@ -10,13 +10,13 @@ schemas:
 sass: dist/style-dark-theme.css dist/style-light-theme.css dist/style-primary-theme.css
 
 dist/style-dark-theme.css: dist src/styles/dark-theme.scss
-	npx node-sass src/styles/dark-theme.scss dist/style-dark-theme.css
+	npx sass --no-source-map src/styles/dark-theme.scss dist/style-dark-theme.css
 
 dist/style-light-theme.css: dist src/styles/light-theme.scss
-	npx node-sass src/styles/light-theme.scss dist/style-light-theme.css
+	npx sass --no-source-map src/styles/light-theme.scss dist/style-light-theme.css
 
 dist/style-primary-theme.css: dist src/styles/primary-theme.scss
-	npx node-sass src/styles/primary-theme.scss dist/style-primary-theme.css
+	npx sass --no-source-map src/styles/primary-theme.scss dist/style-primary-theme.css
 
 dist:
 	mkdir dist
