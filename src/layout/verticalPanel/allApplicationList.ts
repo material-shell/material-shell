@@ -63,28 +63,23 @@ export class AllApplicationList extends St.BoxLayout {
 
     onKeyPress(entry: Clutter.Actor, event: Clutter.Event) {
         const symbol = event.get_key_symbol();
-        if (symbol === Clutter.KEY_Escape) {
+        switch (symbol) {
+            case Clutter.KEY_Escape: {
             this.resetAndClose();
-
             return Clutter.EVENT_STOP;
-        } else {
-            if (symbol === Clutter.KEY_Tab) {
+            }
+            case Clutter.KEY_Tab:
+            case Clutter.KEY_Down: {
                 this.selectNext();
                 return Clutter.EVENT_STOP;
-            } else if (symbol === Clutter.KEY_ISO_Left_Tab) {
-                this.selectPrevious();
-
-                return Clutter.EVENT_STOP;
-            } else if (symbol === Clutter.KEY_Down) {
-                this.selectNext();
-                return Clutter.EVENT_STOP;
-            } else if (symbol === Clutter.KEY_Up) {
+            }
+            case Clutter.KEY_ISO_Left_Tab:
+            case Clutter.KEY_Up: {
                 this.selectPrevious();
                 return Clutter.EVENT_STOP;
-            } else if (
-                symbol === Clutter.KEY_Return ||
-                symbol === Clutter.KEY_KP_Enter
-            ) {
+            }
+            case Clutter.KEY_Return:
+            case Clutter.KEY_KP_Enter: {
                 if (this.entrySelected !== null) {
                     this.entrySelected.emit('primary-action');
                 }
