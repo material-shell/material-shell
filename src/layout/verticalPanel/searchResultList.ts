@@ -7,11 +7,11 @@ import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { SignalObserver } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
 import { appDisplay, remoteSearch } from 'ui';
 
-const ShellEntry = imports.ui.shellEntry;
 const ParentalControlsManager = imports.misc.parentalControlsManager;
 const SystemActions = imports.misc.systemActions;
 
@@ -124,9 +124,9 @@ export class SearchResultList extends St.BoxLayout {
                 param_types: [SearchResultEntry.$gtype],
                 accumulator: 0,
             },
-            'result-changed': {},
         },
     };
+    signalObserver: SignalObserver = new SignalObserver();
     searchEntry: St.Entry;
     text: Text;
     parentalControlsManager;
@@ -144,26 +144,34 @@ export class SearchResultList extends St.BoxLayout {
     });
     iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
+    allApplicationList: SearchResultEntry[] = [];
     constructor(searchEntry: St.Entry) {
         super({
             style_class: 'search-result-list',
             vertical: true,
         });
         this.searchEntry = searchEntry;
-        ShellEntry.addContextMenu(this.searchEntry);
 
         this.text = this.searchEntry.clutter_text;
-        this.text.connect('text-changed', this.onTextChanged.bind(this));
-        // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
-        this.text.connect('key-press-event', this.onKeyPress.bind(this));
-        // this.text.connect('key-focus-in', () => {});
-        // this.text.connect('key-focus-out', () => {});
-        this.searchEntry.connect('popup-menu', () => {
-            /* if (!this._searchActive) return;
 
-            this._entry.menu.close();
-            this._searchResults.popupMenuDefault(); */
-        });
+        this.signalObserver.observe(
+            this.searchEntry,
+            'secondary-icon-clicked',
+            () => {
+                this.searchEntry.text = '';
+            }
+        );
+        this.signalObserver.observe(
+            this.text,
+            'text-changed',
+            this.onTextChanged.bind(this)
+        );
+        // Note: Clutter typedefs seem to be incorrect. According to the docs `ev` should be a Clutter.KeyEvent, but it actually seems to be a Clutter.Event.
+        this.signalObserver.observe<typeof this.onKeyPress>(
+            this.text,
+            'key-press-event',
+            this.onKeyPress.bind(this)
+        );
 
         this.parentalControlsManager = ParentalControlsManager.getDefault();
         this.parentalControlsManager.connect(
@@ -171,22 +179,36 @@ export class SearchResultList extends St.BoxLayout {
             this.reloadRemoteProviders.bind(this)
         );
 
+        this.signalObserver.observe(
+            Shell.AppSystem.get_default(),
+            'installed-changed',
+            () => {
+                if (!Object.keys(this.results).length) {
+                    this.updateAllApplicationResults();
+                }
+            }
+        );
+
         this.searchSettings = new Gio.Settings({
             schema_id: SEARCH_PROVIDERS_SCHEMA,
         });
-        this.searchSettings.connect(
+        this.signalObserver.observe(
+            this.searchSettings,
             'changed::disabled',
             this.reloadRemoteProviders.bind(this)
         );
-        this.searchSettings.connect(
+        this.signalObserver.observe(
+            this.searchSettings,
             'changed::enabled',
             this.reloadRemoteProviders.bind(this)
         );
-        this.searchSettings.connect(
+        this.signalObserver.observe(
+            this.searchSettings,
             'changed::disable-external',
             this.reloadRemoteProviders.bind(this)
         );
-        this.searchSettings.connect(
+        this.signalObserver.observe(
+            this.searchSettings,
             'changed::sort-order',
             this.reloadRemoteProviders.bind(this)
         );
@@ -194,11 +216,17 @@ export class SearchResultList extends St.BoxLayout {
         this.registerProvider(new appDisplay.AppSearchProvider());
 
         const appSystem = Shell.AppSystem.get_default();
-        appSystem.connect(
+        this.signalObserver.observe(
+            appSystem,
             'installed-changed',
             this.reloadRemoteProviders.bind(this)
         );
         this.reloadRemoteProviders();
+
+        this.connect('destroy', () => {
+            this.signalObserver.clear();
+        });
+        this.updateAllApplicationResults();
     }
 
     get resultEntryList() {
@@ -245,38 +273,26 @@ export class SearchResultList extends St.BoxLayout {
 
     onTextChanged(): void {
         const terms = getTermsForSearchString(this.searchEntry.get_text());
-
+        if (terms == this.terms) return;
         const searchActive = terms.length > 0;
         this.setTerms(terms);
 
         if (searchActive) {
             this.searchEntry.set_secondary_icon(this.clearIcon);
-
-            if (this.iconClickedId === 0) {
-                this.iconClickedId = this.searchEntry.connect(
-                    'secondary-icon-clicked',
-                    () => {
-                        this.reset();
-                    }
-                );
-            }
         } else {
-            if (this.iconClickedId > 0) {
-                this.searchEntry.disconnect(this.iconClickedId);
-                this.iconClickedId = 0;
-            }
-
             this.searchEntry.set_secondary_icon(null);
             this.searchCancelled();
         }
     }
 
     onKeyPress(entry: Clutter.Actor, event: Clutter.Event) {
+        if (!this.mapped) return Clutter.EVENT_PROPAGATE;
+
         const symbol = event.get_key_symbol();
         switch (symbol) {
             case Clutter.KEY_Escape: {
-            this.resetAndClose();
-            return Clutter.EVENT_STOP;
+                this.resetAndClose();
+                return Clutter.EVENT_STOP;
             }
             case Clutter.KEY_Tab:
             case Clutter.KEY_Down: {
@@ -329,6 +345,10 @@ export class SearchResultList extends St.BoxLayout {
                 );
             }
         });
+
+        if (!Object.keys(this.results).length) {
+            this.updateAllApplicationResults();
+        }
 
         this.clearSearchTimeout();
     }
@@ -482,35 +502,84 @@ export class SearchResultList extends St.BoxLayout {
                     }
                 });
                 if (numberOfRes <= 5) {
-                    this.addResult(entry);
+                    this.add_child(entry);
                 } else {
                     extraResults.push(entry);
                 }
             }
             if (moreEntry) {
-                this.addResult(moreEntry);
+                this.add_child(moreEntry);
             }
         };
+
+        const resultEntryList = this.resultEntryList;
+
+        if (resultEntryList.length > 0) {
+            this.selectResult(resultEntryList[0]);
+        }
 
         if (provider.isRemoteProvider) {
             provider.getResultMetas(results, onSearchMetas, this.cancellable);
         } else {
             provider.getResultMetas(results, onSearchMetas);
         }
-
-        /* display.updateSearch(results, terms, () => {
-            provider.searchInProgress = false;
-
-            this._maybeSetInitialSelection();
-            this._updateSearchProgress();
-        }); */
-        this.emit('result-changed');
     }
 
-    addResult(resultEntry: SearchResultEntry): void {
-        this.add_child(resultEntry);
-        if (this.resultEntryList.length === 1) {
-            this.selectResult(resultEntry);
+    updateAllApplicationResults() {
+        const appSystem = Shell.AppSystem.get_default();
+        const appsInstalled = appSystem
+            .get_installed()
+            .filter((appInfo) => {
+                try {
+                    const _ = appInfo.get_id(); // catch invalid file encodings
+                } catch (e) {
+                    return false;
+                }
+                return (
+                    appInfo.should_show() &&
+                    this.parentalControlsManager.shouldShowApp(appInfo)
+                );
+            })
+            .sort((a, b) =>
+                a.get_display_name().localeCompare(b.get_display_name())
+            );
+
+        for (const appInfo of appsInstalled) {
+            const icon = new St.Icon({
+                icon_size: 32,
+                gicon: appInfo.get_icon(),
+            });
+
+            const entry = new SearchResultEntry(
+                icon,
+                appInfo.get_display_name(),
+                // The remote search provider also provides a description field, but the app search does not
+                appInfo.get_description(),
+                true
+            );
+            entry.connect('primary-action', () => {
+                // It's important that we do this first because it will remove the focus grab that we use.
+                // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
+                // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
+                this.resetAndClose();
+
+                const app = Shell.AppSystem.get_default().lookup_app(
+                    appInfo.get_id()
+                );
+                if (app) {
+                    Me.msWindowManager.openApp(
+                        app,
+                        Me.msWorkspaceManager.getActiveMsWorkspace()
+                    );
+                }
+            });
+            this.add_child(entry);
+        }
+
+        const resultEntryList = this.resultEntryList;
+
+        if (resultEntryList.length > 0) {
+            this.selectResult(resultEntryList[0]);
         }
     }
 
@@ -524,36 +593,41 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectNext() {
-        const currentIndex =
-            this.entrySelected !== null
-                ? this.resultEntryList.indexOf(this.entrySelected)
-                : -1;
-        const nextEntry = this.resultEntryList[currentIndex + 1];
+        const entryList = this.resultEntryList;
+        if (this.entrySelected == null || entryList.length == 0) {
+            return;
+        }
+        const currentIndex = entryList.indexOf(this.entrySelected);
+        const nextEntry = entryList[currentIndex + 1];
         if (nextEntry) {
             this.selectResult(nextEntry);
         }
     }
 
     selectPrevious() {
-        const currentIndex =
-            this.entrySelected !== null
-                ? this.resultEntryList.indexOf(this.entrySelected)
-                : -1;
-        const previousEntry = this.resultEntryList[currentIndex - 1];
+        const entryList = this.resultEntryList;
+        if (this.entrySelected == null || entryList.length == 0) {
+            return;
+        }
+        const currentIndex = entryList.indexOf(this.entrySelected);
+        const previousEntry = entryList[currentIndex - 1];
         if (previousEntry) {
             this.selectResult(previousEntry);
         }
     }
 
     reset() {
+        // We need to reset terms before searchEntry text in order to prevent calling reset twice and causing crash
         this.searchEntry.text = '';
         this.terms = [];
+
         this.results = {};
         this.entrySelected = null;
         this.remove_all_children();
         this.clearSearchTimeout();
         this.startingSearch = false;
-        this.emit('result-changed');
+        this.updateAllApplicationResults();
+        Me.logFocus('after this.updateAllApplicationResults();');
     }
 
     resetAndClose() {

@@ -3,9 +3,9 @@ import * as Clutter from 'clutter';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
 import { main as Main } from 'ui';
-import { AllApplicationList } from './allApplicationList';
 import { SearchResultList } from './searchResultList';
 const Util = imports.misc.util;
+const ShellEntry = imports.ui.shellEntry;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -42,6 +42,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
         this.searchEntry.set_offscreen_redirect(
             Clutter.OffscreenRedirect.ALWAYS
         );
+        ShellEntry.addContextMenu(this.searchEntry);
 
         this.searchEntryBin = new St.Bin({
             child: this.searchEntry,
@@ -55,26 +56,11 @@ export class ExtendedPanelContent extends St.BoxLayout {
 
         this.add_child(this.searchEntryBin);
 
-        let allApplicationList = new AllApplicationList(this.searchEntry);
-
         this.searchResultList = new SearchResultList(this.searchEntry);
         this.searchResultList.connect('result-selected-changed', (_, res) => {
             Util.ensureActorVisibleInScrollView(this.scrollView, res);
         });
-        this.searchResultList.connect('result-changed', (_) => {
-            if (this.searchResultList.get_children().length > 0) {
-                if (allApplicationList.get_parent() == this.scrollView) {
-                    this.scrollView.remove_actor(allApplicationList);
-                    this.scrollView.add_actor(this.searchResultList);
-                }
-            } else {
-                if (allApplicationList.get_parent() != this.scrollView) {
-                    this.scrollView.remove_actor(this.searchResultList);
-                    this.scrollView.add_actor(allApplicationList);
-                }
-            }
-        });
-        this.scrollView.add_actor(allApplicationList);
+        this.scrollView.add_actor(this.searchResultList);
 
         const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
@@ -88,10 +74,6 @@ export class ExtendedPanelContent extends St.BoxLayout {
                 this.queue_relayout();
             }
         );
-
-        this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(panelSizeSignal);
-        });
 
         this.add_child(this.scrollView);
     }

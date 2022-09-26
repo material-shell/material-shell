@@ -1,3 +1,5 @@
+import * as Clutter from 'clutter';
+
 export interface CanSendSignal<F> extends CanDisconnect {
     connect(signal: string, callback: F): number;
 }
@@ -15,6 +17,11 @@ export interface CanDisconnect {
 export class SignalHandle {
     private constructor(target: CanDisconnect, id: number) {
         this.target = target;
+        if (target instanceof Clutter.Actor) {
+            target.connect('destroy', () => {
+                this.disconnect();
+            });
+        }
         this.id = id;
     }
 
@@ -41,6 +48,31 @@ export class SignalHandle {
         } else {
             this.target.disconnect(this.id);
             this.target = null;
+        }
+    }
+}
+
+export class SignalObserver {
+    signalObservedList: SignalHandle[];
+
+    constructor() {
+        this.signalObservedList = [];
+    }
+
+    observe<F>(
+        subject: CanSendSignal<F>,
+        signalKey: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        callback: F
+    ) {
+        const signalHandle = SignalHandle.connect(subject, signalKey, callback);
+        this.signalObservedList.push(signalHandle);
+
+        return signalHandle;
+    }
+    clear() {
+        for (const handler of this.signalObservedList) {
+            handler.disconnect();
         }
     }
 }
