@@ -64,11 +64,11 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
 }
 
 @function getDarkerColor($color) {
-    @return hsl(hue($color), saturation($color), lightness($color) * 0.85);
+    @return scale-color($color, $lightness: -10%);
 }
 
 @function getLighterColor($color) {
-    @return hsl(hue($color), saturation($color), lightness($color) * 1.3);
+    @return scale-color($color, $lightness: 10%);
 }
 
 @mixin background($theme) {
