@@ -9,7 +9,7 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { getExtensionSettings } from 'src/utils/extension_utils';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
-import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
+import { gnomeVersionGreaterOrEqualTo, compareVersions, parseVersion, gnomeVersionNumber } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { dateMenu, main as Main, panel } from 'ui';
 /** Extension imports */
@@ -197,7 +197,7 @@ export class MsStatusArea extends Clutter.Actor {
         // All icons actors should have a single child.
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
-            if (mainChild instanceof panel.AggregateMenu) {
+            if (mainChild instanceof (compareVersions(gnomeVersionNumber, parseVersion('43.0')) >= 0 ? panel.QuickSettings : panel.AggregateMenu)) {
                 // This is the main system menu
                 return 1;
             } else if (mainChild instanceof dateMenu.DateMenuButton) {
