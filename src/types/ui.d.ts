@@ -202,7 +202,9 @@ declare module 'ui' {
     export namespace panel {
         let PANEL_ICON_SIZE: number;
 
+        // QuickSettings replaces AggregateMenu starting with Gnome 43
         class AggregateMenu {}
+        class QuickSettings {}
 
         class Panel extends St.Widget {
             _leftBox: St.BoxLayout;

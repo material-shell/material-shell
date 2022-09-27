@@ -94,7 +94,7 @@ export type IntroducedInGnome<V extends VERSIONS[number] | never> = {
 /// 'alpha', 'beta' and 'rc' components will be parsed to negative values
 /// which ensures that sorting works correctly.
 /// E.g. "43.alpha" will be parsed to [43,-3]
-function parseVersion(s: string): number[] {
+export function parseVersion(s: string): number[] {
     const components = s.split('.').map((x) => {
         if (x === 'alpha') return -3;
         if (x === 'beta') return -2;
@@ -109,7 +109,7 @@ function parseVersion(s: string): number[] {
 
 /// Compares to versions, returns -1 if lhs < rhs, 1 if lhs > rhs and 0 if lhs == rhs
 /// Lhs and rhs may be of different lengths, missing components will be assumed to be zero.
-function compareVersions(lhs: number[], rhs: number[]) {
+export function compareVersions(lhs: number[], rhs: number[]) {
     for (let i = 0; i < Math.max(lhs.length, rhs.length); i++) {
         const a = i < lhs.length ? lhs[i] : 0;
         const b = i < rhs.length ? rhs[i] : 0;
@@ -120,7 +120,7 @@ function compareVersions(lhs: number[], rhs: number[]) {
     return 0;
 }
 
-const gnomeVersionNumber = parseVersion(PACKAGE_VERSION);
+export const gnomeVersionNumber = parseVersion(PACKAGE_VERSION);
 
 /* exported ShellVersionMatch*/
 export function ShellVersionMatch(version: string) {
