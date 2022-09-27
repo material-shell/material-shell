@@ -1,5 +1,5 @@
 extension = material-shell@papyelgringo
-extension_tool = gnome-shell-extension-tool
+extension_tool = gnome-extensions
 
 .PHONY: schemas compile build_prod build_tasks update_git update install disable enable
 
@@ -22,10 +22,10 @@ dist:
 	mkdir dist
 
 disable:
-	$(extension_tool) -d $(extension)
+	$(extension_tool) disable $(extension)
 
 enable:
-	$(extension_tool) -e $(extension)
+	$(extension_tool) enable $(extension)
 
 npm_dependencies:
 	npm install
