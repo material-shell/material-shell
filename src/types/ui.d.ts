@@ -215,6 +215,7 @@ declare module 'ui' {
                 // TODO: Make all optional?
                 activities: any; // ActivitiesButton,
                 aggregateMenu: any; // AggregateMenu,
+                quickSettings: any; // QuickSettings,
                 appMenu: any; // AppMenuButton,
                 dateMenu: dateMenu.DateMenuButton;
                 a11y: any; // imports.ui.status.accessibility.ATIndicator,
