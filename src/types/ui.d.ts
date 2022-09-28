@@ -242,6 +242,7 @@ declare module 'ui' {
 
     export namespace dialog {
         class Dialog extends St.Widget {}
+        class ModalDialog extends St.Widget {}
     }
 
     export namespace popupMenu {

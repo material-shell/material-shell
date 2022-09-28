@@ -1,11 +1,16 @@
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 import * as Gio from 'gio';
+import * as GLib from 'glib';
 import * as Soup from 'soup';
 import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
-import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
+import {
+    compareVersions,
+    gnomeVersionNumber,
+    parseVersion,
+} from 'src/utils/shellVersionMatch';
 import { main as Main, messageTray } from 'ui';
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
@@ -27,46 +32,71 @@ export class MsNotificationManager extends MsManager {
             ? new Date(Me.stateManager.getState('notification-check'))
             : new Date();
 
-        const message = new Soup.Message({
-            method: 'GET',
-            uri: new Soup.URI(
-                `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}`
-            ),
-        });
+        const message = Soup.Message.new(
+            'GET',
+            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}`
+        );
+
         // send the HTTP request and wait for response
-        this.httpSession.queue_message(message, () => {
-            if (message.status_code != Soup.KnownStatusCode.OK) {
-                global.log(
-                    `error fetching notification ${message.status_code.toString()}`
-                );
-                return;
-            }
+        // Before gnome 43 we use Soup 2.4 API
+        if (compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0) {
+            this.httpSession.queue_message(message, () => {
+                if (message.status_code != Soup.KnownStatusCode.OK) {
+                    global.log(
+                        `error fetching notification ${message.status_code.toString()}`
+                    );
+                    return;
+                }
 
-            let notifications: NotificationResponseItem[] = [];
-            try {
-                notifications = JSON.parse(message.response_body.data);
-            } catch (e: unknown) {
-                global.log(`error unpack notification error ${e}`);
-                return;
-            }
-            const source = new MsNotificationSource();
-            notifications.forEach((notificationData) => {
-                Main.messageTray.add(source);
-                const notification = new MsNotification(
-                    source,
-                    notificationData.title,
-                    notificationData.content,
-                    notificationData.icon,
-                    notificationData.action
-                );
-
-                source.showNotification(notification);
+                let notifications: NotificationResponseItem[] = [];
+                try {
+                    notifications = JSON.parse(message.response_body.data);
+                } catch (e: unknown) {
+                    global.log(`error unpack notification error ${e}`);
+                    return;
+                }
+                this.showNotifications(notifications);
             });
-        });
+        } else {
+            this.httpSession.send_and_read_async(
+                message,
+                GLib.PRIORITY_DEFAULT,
+                new Gio.Cancellable(),
+                (session, result) => {
+                    if (session && message.status_code === Soup.Status.OK) {
+                        const bytes = session.send_and_read_finish(
+                            result
+                        ) as GLib.Bytes;
+                        const decoder = new TextDecoder('utf-8');
+                        const response = decoder.decode(
+                            bytes.get_data() as ArrayBuffer
+                        );
+                        this.showNotifications(
+                            JSON.parse(response) as NotificationResponseItem[]
+                        );
+                    }
+                }
+            );
+        }
         Me.stateManager.setState(
             'notification-check',
             new Date().toISOString()
         );
+    }
+    showNotifications(notifications: NotificationResponseItem[]) {
+        const source = new MsNotificationSource();
+        notifications.forEach((notificationData) => {
+            Main.messageTray.add(source);
+            const notification = new MsNotification(
+                source,
+                notificationData.title,
+                notificationData.content,
+                notificationData.icon,
+                notificationData.action
+            );
+
+            source.showNotification(notification);
+        });
     }
 }
 
@@ -77,113 +107,49 @@ interface NotificationResponseItem {
     action: any;
 }
 
-interface IMsNotification {
-    action: any;
+@registerGObjectClass
+class MsNotificationSource extends messageTray.Source {
+    constructor() {
+        super('Material Shell');
+    }
+
+    getIcon() {
+        return Gio.icon_new_for_string(
+            `${Me.path}/assets/icons/on-dark-small.svg`
+        );
+    }
 }
 
-let MsNotificationSource: { new (): messageTray.Source };
-let MsNotification: {
-    new (
+@registerGObjectClass
+class MsNotification extends messageTray.Notification {
+    action: any;
+    constructor(
         source: messageTray.Source,
         title: string,
         text: string,
         icon: string,
         action: any
-    ): messageTray.Notification & IMsNotification;
-};
-
-if (ShellVersionMatch('3.34')) {
-    MsNotificationSource = class MsNotificationSource extends (
-        messageTray.Source
     ) {
-        constructor() {
-            super('Material Shell');
-        }
-
-        getIcon() {
-            return Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/on-dark-small.svg`
+        const params: messageTray.NotificationParams = {};
+        if (icon) {
+            params.gicon = Gio.icon_new_for_string(
+                `${Me.path}/assets/icons/${icon}.svg`
             );
         }
-    };
-    MsNotification = class MsNotification extends messageTray.Notification {
-        action: any;
-
-        constructor(
-            source: messageTray.Source,
-            title: string,
-            text: string,
-            icon: string,
-            action: any
-        ) {
-            const params: messageTray.NotificationParams = {};
-            if (icon) {
-                params.gicon = Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/${icon}.svg`
-                );
-            }
-            super(source, title, text, params);
-            this.action = action;
-            this.bannerBodyMarkup = true;
-        }
-
-        activate() {
-            super.activate();
-            const dialog = new MsNotificationDialog(
-                this.title,
-                this.bannerBodyText,
-                this.action
-            );
-            dialog.open(global.get_current_time());
-        }
-    };
-} else {
-    @registerGObjectClass
-    class MsNotificationSourceClass extends messageTray.Source {
-        constructor() {
-            super('Material Shell');
-        }
-
-        getIcon() {
-            return Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/on-dark-small.svg`
-            );
-        }
+        super(source, title, text, params);
+        this.action = action;
+        this.bannerBodyMarkup = true;
     }
-    MsNotificationSource = MsNotificationSourceClass;
 
-    @registerGObjectClass
-    class MsNotificationClass extends messageTray.Notification {
-        action: any;
-        constructor(
-            source: messageTray.Source,
-            title: string,
-            text: string,
-            icon: string,
-            action: any
-        ) {
-            const params: messageTray.NotificationParams = {};
-            if (icon) {
-                params.gicon = Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/${icon}.svg`
-                );
-            }
-            super(source, title, text, params);
-            this.action = action;
-            this.bannerBodyMarkup = true;
-        }
-
-        activate() {
-            super.activate();
-            const dialog = new MsNotificationDialog(
-                this.title,
-                this.bannerBodyText,
-                this.action
-            );
-            dialog.open(global.get_current_time());
-        }
+    activate() {
+        super.activate();
+        const dialog = new MsNotificationDialog(
+            this.title,
+            this.bannerBodyText,
+            this.action
+        );
+        dialog.open(global.get_current_time());
     }
-    MsNotification = MsNotificationClass;
 }
 
 interface Action {
