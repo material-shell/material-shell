@@ -286,8 +286,6 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     onKeyPress(entry: Clutter.Actor, event: Clutter.Event) {
-        if (!this.mapped) return Clutter.EVENT_PROPAGATE;
-
         const symbol = event.get_key_symbol();
         switch (symbol) {
             case Clutter.KEY_Escape: {
@@ -627,7 +625,6 @@ export class SearchResultList extends St.BoxLayout {
         this.clearSearchTimeout();
         this.startingSearch = false;
         this.updateAllApplicationResults();
-        Me.logFocus('after this.updateAllApplicationResults();');
     }
 
     resetAndClose() {

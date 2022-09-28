@@ -59,12 +59,7 @@ export class SignalObserver {
         this.signalObservedList = [];
     }
 
-    observe<F>(
-        subject: CanSendSignal<F>,
-        signalKey: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        callback: F
-    ) {
+    observe<F>(subject: CanSendSignal<F>, signalKey: string, callback: F) {
         const signalHandle = SignalHandle.connect(subject, signalKey, callback);
         this.signalObservedList.push(signalHandle);
 
@@ -74,5 +69,6 @@ export class SignalObserver {
         for (const handler of this.signalObservedList) {
             handler.disconnect();
         }
+        this.signalObservedList = [];
     }
 }
