@@ -728,6 +728,17 @@ export class MsWindowManager extends MsManager {
         ) {
             return false;
         }
+        if (
+            metaWindow.get_role() !== '' &&
+            getSettings('layouts')
+                .get_string('role-excluded')
+                .split(',')
+                .map((item) => item.trim())
+                .indexOf(metaWindow.get_role()) > -1
+        ) {
+            return false;
+        }
+    
         if (metaWindow.above) {
             metaWindow.stick();
             return false;
