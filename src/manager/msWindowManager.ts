@@ -731,7 +731,7 @@ export class MsWindowManager extends MsManager {
         if (
             metaWindow.get_role() !== '' &&
             getSettings('layouts')
-                .get_string('role-excluded')
+                .get_string('roles-excluded')
                 .split(',')
                 .map((item) => item.trim())
                 .indexOf(metaWindow.get_role()) > -1
