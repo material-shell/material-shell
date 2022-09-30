@@ -93,7 +93,7 @@
     <key name="roles-excluded" type="s">
       <default>''</default>
       <summary>Excluded window roles</summary>
-      <description>Comma separated list of window roles that will be ignored by Material shell. In order to get the class name for an active application: Press Alt + F2, type "lg" and click on the window tab.</description>
+      <description>Comma separated list of window roles that will be ignored by Material shell.</description>
     </key>
   </schema>
 </schemalist>
