@@ -56,10 +56,6 @@ export class SearchResultEntry extends MatButton {
         }
 
         this.set_child(this.layout);
-        /*         if (withMenu) {
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new AppDisplay.AppIconMenu(this, St.Side.RIGHT);
-        } */
     }
 
     setSelected(selected: boolean) {

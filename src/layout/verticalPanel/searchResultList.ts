@@ -459,10 +459,11 @@ export class SearchResultList extends St.BoxLayout {
 
         this.results = {};
         this.entrySelected = null;
+
+        //Reset search results
         for (const providerDisplay of this.providerDisplayMap.values()) {
             providerDisplay.updateSearch([], []);
         }
-        //this.remove_all_children();
         this.clearSearchTimeout();
         this.startingSearch = false;
     }
