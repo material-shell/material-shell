@@ -7,7 +7,6 @@ import * as GObject from 'gobject';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
-import { MsOverview } from 'src/layout/overview';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
 import { MsThemeManager } from 'src/manager/msThemeManager';
@@ -83,7 +82,6 @@ declare global {
         locked: boolean | undefined;
         reparentInProgress: boolean | undefined;
         stateManager: StateManager;
-        msOverview: MsOverview;
         showSplashScreens: () => void;
         hideSplashScreens: () => void;
         closing: boolean;
