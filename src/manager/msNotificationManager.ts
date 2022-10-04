@@ -42,7 +42,7 @@ export class MsNotificationManager extends MsManager {
         if (compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0) {
             this.httpSession.queue_message(message, () => {
                 if (message.status_code != Soup.KnownStatusCode.OK) {
-                    global.log(
+                    Me.log(
                         `error fetching notification ${message.status_code.toString()}`
                     );
                     return;
@@ -52,7 +52,7 @@ export class MsNotificationManager extends MsManager {
                 try {
                     notifications = JSON.parse(message.response_body.data);
                 } catch (e: unknown) {
-                    global.log(`error unpack notification error ${e}`);
+                    Me.log(`error unpack notification error ${e}`);
                     return;
                 }
                 this.showNotifications(notifications);
