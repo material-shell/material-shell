@@ -293,10 +293,13 @@ export class RemoteSearchProvider {
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve) => {
+                ? new Promise<any[]>((resolve, reject) => {
                       this.proxy.GetInitialResultSetRemote(
                           terms,
-                          resolve,
+                          (results: any[], error: string) => {
+                              if (error) reject(error);
+                              resolve(results);
+                          },
                           cancellable
                       );
                   })
@@ -318,11 +321,14 @@ export class RemoteSearchProvider {
     ) {
         try {
             const [results] = await (beforeGnome43
-                ? new Promise<any[]>((resolve) => {
+                ? new Promise<any[]>((resolve, reject) => {
                       this.proxy.GetSubsearchResultSetRemote(
                           previousResults,
                           newTerms,
-                          resolve,
+                          (results: any[], error: string) => {
+                              if (error) reject(error);
+                              resolve(results);
+                          },
                           cancellable
                       );
                   })
@@ -345,10 +351,13 @@ export class RemoteSearchProvider {
         let metas: RawMeta[];
         try {
             [metas] = await (beforeGnome43
-                ? new Promise<any[]>((resolve) => {
+                ? new Promise<any[]>((resolve, reject) => {
                       this.proxy.GetResultMetasRemote(
                           ids,
-                          resolve,
+                          (results: any[], error: string) => {
+                              if (error) reject(error);
+                              resolve(results);
+                          },
                           cancellable
                       );
                   })
