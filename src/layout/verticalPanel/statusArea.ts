@@ -262,8 +262,9 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     iconSize() {
-        return Math.round(
-            Me.msThemeManager.getPanelSizeNotScaled() * (16.0 / 48.0)
+        return Math.max(
+            16.0,
+            Math.round(Me.msThemeManager.getPanelSizeNotScaled() / 3)
         );
     }
 
