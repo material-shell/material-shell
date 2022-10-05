@@ -67,7 +67,6 @@ export class ProviderResultList extends St.BoxLayout {
         this.firstResultEntryList.remove_all_children();
         this.restResultEntryList.remove_all_children();
         for (const resultMeta of newResultList) {
-            Me.logFocus(JSON.stringify(resultMeta));
             let icon = resultMeta.createIcon(32);
             if (!icon && this.provider instanceof RemoteSearchProvider) {
                 icon = new St.Icon({
