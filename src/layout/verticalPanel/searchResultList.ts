@@ -7,13 +7,22 @@ import * as GObject from 'gobject';
 import * as Shell from 'shell';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
-import { MatButton } from 'src/widget/material/button';
 import * as St from 'st';
-import { appDisplay, remoteSearch } from 'ui';
+import { ProviderResultList } from './search/ProviderResultList';
+import { AppSearchProvider } from './search/searchProvider/AppSearchProvider';
+import {
+    loadRemoteSearchProviders,
+    RemoteSearchProvider,
+} from './search/searchProvider/RemoteSearchProvider';
+import {
+    ResultMeta,
+    SearchProvider,
+} from './search/searchProvider/searchProvider';
+import { SearchResultEntry } from './search/SearchResultEntry';
 
 const ParentalControlsManager = imports.misc.parentalControlsManager;
-const SystemActions = imports.misc.systemActions;
 
 function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
@@ -24,96 +33,6 @@ const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
-type SearchProvider =
-    | appDisplay.AppSearchProvider
-    | remoteSearch.RemoteSearchProvider;
-
-@registerGObjectClass
-export class SearchResultHeader extends St.Bin {
-    static metaInfo: GObject.MetaInfo = {
-        GTypeName: 'SearchResultHeader',
-    };
-    label: St.Label;
-    constructor(text: string) {
-        super({
-            style_class:
-                'subtitle-2 margin margin-top-x2 margin-bottom-x2 text-high-emphasis',
-        });
-
-        this.label = new St.Label({
-            text: text,
-        });
-        this.set_child(this.label);
-    }
-}
-
-@registerGObjectClass
-export class SearchResultEntry extends MatButton {
-    static metaInfo: GObject.MetaInfo = {
-        GTypeName: 'SearchResultEntry',
-        Signals: {
-            activate: {
-                param_types: [],
-                accumulator: 0,
-            },
-        },
-    };
-    layout = new St.BoxLayout();
-    icon: St.Icon | null;
-    textLayout = new St.BoxLayout({
-        vertical: true,
-        styleClass: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
-        y_align: Clutter.ActorAlign.CENTER,
-    });
-    title: St.Label;
-    description: St.Label | null;
-    constructor(
-        icon: St.Icon | null,
-        title: string,
-        description?: string,
-        _withMenu?: boolean
-    ) {
-        super({});
-        if (icon) {
-            this.icon = icon;
-            this.icon.set_style('margin: 12px');
-            this.layout.add_child(this.icon);
-        } else {
-            this.icon = null;
-        }
-
-        this.layout.add_child(this.textLayout);
-        this.title = new St.Label({
-            text: title,
-        });
-        this.textLayout.add_child(this.title);
-        if (description) {
-            this.description = new St.Label({
-                text: description,
-                styleClass: 'caption text-medium-emphasis',
-                style: 'margin-top:2px',
-            });
-            this.textLayout.add_child(this.description);
-        } else {
-            this.description = null;
-        }
-
-        this.set_child(this.layout);
-        /*         if (withMenu) {
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new AppDisplay.AppIconMenu(this, St.Side.RIGHT);
-        } */
-    }
-
-    setSelected(selected: boolean) {
-        if (selected) {
-            this.add_style_class_name('highlighted');
-        } else {
-            this.remove_style_class_name('highlighted');
-        }
-    }
-}
 
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
@@ -130,7 +49,7 @@ export class SearchResultList extends St.BoxLayout {
     searchEntry: St.Entry;
     text: Text;
     parentalControlsManager;
-    providers: SearchProvider[] = [];
+    providerList: SearchProvider[] = [];
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
@@ -144,7 +63,9 @@ export class SearchResultList extends St.BoxLayout {
     });
     iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
-    allApplicationList: SearchResultEntry[] = [];
+    allApplicationList = new St.BoxLayout({ vertical: true });
+    providerDisplayMap: Map<SearchProvider, ProviderResultList> = new Map();
+    navigated = false;
     constructor(searchEntry: St.Entry) {
         super({
             style_class: 'search-result-list',
@@ -153,7 +74,7 @@ export class SearchResultList extends St.BoxLayout {
         this.searchEntry = searchEntry;
 
         this.text = this.searchEntry.clutter_text;
-
+        this.add_child(this.allApplicationList);
         this.signalObserver.observe(
             this.searchEntry,
             'secondary-icon-clicked',
@@ -177,16 +98,6 @@ export class SearchResultList extends St.BoxLayout {
         this.parentalControlsManager.connect(
             'app-filter-changed',
             this.reloadRemoteProviders.bind(this)
-        );
-
-        this.signalObserver.observe(
-            Shell.AppSystem.get_default(),
-            'installed-changed',
-            () => {
-                if (!Object.keys(this.results).length) {
-                    this.updateAllApplicationResults();
-                }
-            }
         );
 
         this.searchSettings = new Gio.Settings({
@@ -213,7 +124,7 @@ export class SearchResultList extends St.BoxLayout {
             this.reloadRemoteProviders.bind(this)
         );
 
-        this.registerProvider(new appDisplay.AppSearchProvider());
+        this.registerProvider(new AppSearchProvider());
 
         const appSystem = Shell.AppSystem.get_default();
         this.signalObserver.observe(
@@ -226,13 +137,26 @@ export class SearchResultList extends St.BoxLayout {
         this.connect('destroy', () => {
             this.signalObserver.clear();
         });
-        this.updateAllApplicationResults();
     }
 
     get resultEntryList() {
-        return this.get_children().filter(
-            (actor) => actor instanceof SearchResultEntry
-        ) as SearchResultEntry[];
+        const list: SearchResultEntry[] = [];
+        for (const providerDisplay of this.providerDisplayMap.values()) {
+            list.push(
+                ...(providerDisplay.firstResultEntryList.get_children() as SearchResultEntry[])
+            );
+            if (providerDisplay.restResultEntryList.visible) {
+                list.push(
+                    ...(providerDisplay.restResultEntryList.get_children() as SearchResultEntry[])
+                );
+            }
+        }
+        if (this.allApplicationList.visible) {
+            list.push(
+                ...(this.allApplicationList.get_children() as SearchResultEntry[])
+            );
+        }
+        return list;
     }
 
     registerProvider(provider: SearchProvider): void {
@@ -240,35 +164,39 @@ export class SearchResultList extends St.BoxLayout {
 
         // Filter out unwanted providers.
         if (
-            provider.isRemoteProvider &&
+            provider instanceof RemoteSearchProvider &&
             !this.parentalControlsManager.shouldShowApp(provider.appInfo)
         )
             return;
 
-        this.providers.push(provider);
+        this.providerList.push(provider);
+        const providerDisplay = new ProviderResultList(provider);
+        this.providerDisplayMap.set(provider, providerDisplay);
+        this.add_child(providerDisplay);
     }
 
     reloadRemoteProviders(): void {
-        const remoteProviders = this.providers.filter(
+        const remoteProviders = this.providerList.filter(
             (p) => p.isRemoteProvider
         );
         remoteProviders.forEach((provider) => {
             this.unregisterProvider(provider);
         });
-
-        remoteSearch.loadRemoteSearchProviders(
-            this.searchSettings,
-            (providers) => {
-                providers.forEach(this.registerProvider.bind(this));
-            }
+        const remoteProviderList = loadRemoteSearchProviders(
+            this.searchSettings
         );
+        remoteProviderList.forEach(this.registerProvider.bind(this));
+        this.updateAllApplicationResults();
     }
 
     unregisterProvider(provider: SearchProvider): void {
-        const index = this.providers.indexOf(provider);
-        this.providers.splice(index, 1);
+        const index = this.providerList.indexOf(provider);
+        this.providerList.splice(index, 1);
 
-        if (provider.display) provider.display.destroy();
+        if (this.providerDisplayMap.has(provider)) {
+            this.providerDisplayMap.get(provider)!.destroy();
+            this.providerDisplayMap.delete(provider);
+        }
     }
 
     onTextChanged(): void {
@@ -313,39 +241,43 @@ export class SearchResultList extends St.BoxLayout {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    private doSearch() {
+    async doProviderSearch(
+        provider: SearchProvider,
+        previousResults: string[]
+    ) {
+        provider.searchInProgress = true;
+
+        let results: string[];
+        if (this.isSubSearch && previousResults) {
+            results = await provider.getSubsearchResultSet(
+                previousResults,
+                this.terms,
+                this.cancellable
+            );
+        } else {
+            results = await provider.getInitialResultSet(
+                this.terms,
+                this.cancellable
+            );
+        }
+
+        this.results[provider.id] = results;
+        this.updateResults(
+            provider,
+            await provider.getResultMetas(results, this.cancellable)
+        );
+    }
+
+    private async doSearch() {
         this.startingSearch = false;
 
         const previousResults = this.results;
         this.results = {};
         this.entrySelected = null;
-        this.remove_all_children();
-        this.providers.forEach((provider) => {
-            provider.searchInProgress = true;
-
+        this.navigated = false;
+        for (const provider of this.providerList) {
             const previousProviderResults = previousResults[provider.id];
-            if (this.isSubSearch && previousProviderResults) {
-                provider.getSubsearchResultSet(
-                    previousProviderResults,
-                    this.terms,
-                    (results) => {
-                        this.gotResults(results, provider);
-                    },
-                    this.cancellable
-                );
-            } else {
-                provider.getInitialResultSet(
-                    this.terms,
-                    (results) => {
-                        this.gotResults(results, provider);
-                    },
-                    this.cancellable
-                );
-            }
-        });
-
-        if (!Object.keys(this.results).length) {
-            this.updateAllApplicationResults();
+            this.doProviderSearch(provider, previousProviderResults);
         }
 
         this.clearSearchTimeout();
@@ -374,6 +306,8 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     setTerms(terms: string[]): void {
+        this.allApplicationList.visible = terms.length == 0;
+
         // Check for the case of making a duplicate previous search before
         // setting state of the current search or cancelling the search.
         // This will prevent incorrect state being as a result of a duplicate
@@ -397,7 +331,6 @@ export class SearchResultList extends St.BoxLayout {
 
         this.terms = terms;
         this.isSubSearch = isSubSearch;
-        //this._updateSearchProgress();
 
         if (this.searchTimeoutId == 0)
             this.searchTimeoutId = Async.addTimeout(
@@ -405,125 +338,30 @@ export class SearchResultList extends St.BoxLayout {
                 150,
                 this.onSearchTimeout.bind(this)
             );
-
-        //this.emit('terms-changed');
     }
 
-    gotResults(results: string[], provider: SearchProvider) {
-        this.results[provider.id] = results;
-        this.updateResults(provider, results);
-    }
+    updateResults(provider: SearchProvider, results: ResultMeta[]) {
+        const terms = this.terms;
+        const display = this.providerDisplayMap.get(provider);
+        if (!display) return;
 
-    updateResults(provider: SearchProvider, results: string[]) {
-        if (!results.length) return;
+        display
+            .updateSearch(results, terms)
+            .then(() => {
+                provider.searchInProgress = false;
+                if (!this.navigated) {
+                    const resultEntryList = this.resultEntryList;
 
-        if (provider.isRemoteProvider) {
-            this.add_child(new SearchResultHeader(provider.appInfo.get_name()));
-        } else {
-            this.add_child(new SearchResultHeader(_('Applications')));
-        }
-
-        // Note: The remote search provider also provides a description field, but the app search does not
-        const onSearchMetas = (
-            resMetas: {
-                id: string;
-                name: string;
-                description?: string;
-                createIcon: (size: number) => St.Icon;
-            }[]
-        ) => {
-            let moreEntry: SearchResultEntry | null = null;
-            //
-            const extraResults: SearchResultEntry[] = [];
-            if (resMetas.length > 5) {
-                const more = (moreEntry = new SearchResultEntry(
-                    new St.Icon({
-                        icon_size: 32,
-                        gicon: Gio.icon_new_for_string(
-                            `${Me.path}/assets/icons/chevron-down-symbolic.svg`
-                        ),
-                    }),
-                    ngettext('%d more', '%d more', resMetas.length - 5).format(
-                        resMetas.length - 5
-                    ),
-                    '',
-                    provider.id === 'applications'
-                ));
-
-                more.connect('primary-action', () => {
-                    extraResults.forEach((entry) => {
-                        this.insert_child_below(entry, more);
-                    });
-                    this.remove_child(more);
-                    this.selectResult(extraResults[0]);
-                });
-            }
-            let numberOfRes = 0;
-            for (const res of resMetas) {
-                if (!res.name) return;
-                numberOfRes++;
-
-                let icon = res.createIcon(32);
-                if (!icon && provider.isRemoteProvider) {
-                    icon = new St.Icon({
-                        icon_size: 32,
-                        gicon: provider.appInfo.get_icon(),
-                    });
-                }
-                const entry = new SearchResultEntry(
-                    icon,
-                    res.name,
-                    // The remote search provider also provides a description field, but the app search does not
-                    res.description,
-                    provider.id === 'applications'
-                );
-                entry.connect('primary-action', () => {
-                    // It's important that we do this first because it will remove the focus grab that we use.
-                    // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
-                    // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-                    this.resetAndClose();
-
-                    if (provider.isRemoteProvider) {
-                        provider.activateResult(res.id, this.terms);
-                    } else {
-                        const app = Shell.AppSystem.get_default().lookup_app(
-                            res.id
-                        );
-                        if (app) {
-                            Me.msWindowManager.openApp(
-                                app,
-                                Me.msWorkspaceManager.getActiveMsWorkspace()
-                            );
-                        } else {
-                            SystemActions.getDefault().activateAction(res.id);
-                        }
+                    if (resultEntryList.length > 0) {
+                        this.selectResult(resultEntryList[0]);
                     }
-                });
-                if (numberOfRes <= 5) {
-                    this.add_child(entry);
-                } else {
-                    extraResults.push(entry);
                 }
-            }
-            if (moreEntry) {
-                this.add_child(moreEntry);
-            }
-        };
-
-        const resultEntryList = this.resultEntryList;
-
-        if (resultEntryList.length > 0) {
-            this.selectResult(resultEntryList[0]);
-        }
-
-        if (provider.isRemoteProvider) {
-            provider.getResultMetas(results, onSearchMetas, this.cancellable);
-        } else {
-            provider.getResultMetas(results, onSearchMetas);
-        }
+            })
+            .catch(logAsyncException);
     }
 
     updateAllApplicationResults() {
+        this.allApplicationList.remove_all_children();
         const appSystem = Shell.AppSystem.get_default();
         const appsInstalled = appSystem
             .get_installed()
@@ -571,7 +409,7 @@ export class SearchResultList extends St.BoxLayout {
                     );
                 }
             });
-            this.add_child(entry);
+            this.allApplicationList.add_child(entry);
         }
 
         const resultEntryList = this.resultEntryList;
@@ -591,6 +429,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectNext() {
+        this.navigated = true;
         const entryList = this.resultEntryList;
         if (this.entrySelected == null || entryList.length == 0) {
             return;
@@ -603,6 +442,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     selectPrevious() {
+        this.navigated = true;
         const entryList = this.resultEntryList;
         if (this.entrySelected == null || entryList.length == 0) {
             return;
@@ -621,10 +461,13 @@ export class SearchResultList extends St.BoxLayout {
 
         this.results = {};
         this.entrySelected = null;
-        this.remove_all_children();
+
+        //Reset search results
+        for (const providerDisplay of this.providerDisplayMap.values()) {
+            providerDisplay.updateSearch([], []);
+        }
         this.clearSearchTimeout();
         this.startingSearch = false;
-        this.updateAllApplicationResults();
     }
 
     resetAndClose() {
