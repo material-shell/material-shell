@@ -298,7 +298,7 @@ export class RemoteSearchProvider {
                           terms,
                           (results: any[], error: string) => {
                               if (error) reject(error);
-                              resolve(results);
+                              else resolve(results);
                           },
                           cancellable
                       );
@@ -327,7 +327,7 @@ export class RemoteSearchProvider {
                           newTerms,
                           (results: any[], error: string) => {
                               if (error) reject(error);
-                              resolve(results);
+                              else resolve(results);
                           },
                           cancellable
                       );
@@ -356,7 +356,7 @@ export class RemoteSearchProvider {
                           ids,
                           (results: any[], error: string) => {
                               if (error) reject(error);
-                              resolve(results);
+                              else resolve(results);
                           },
                           cancellable
                       );
