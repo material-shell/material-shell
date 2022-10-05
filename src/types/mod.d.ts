@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
 /* eslint-disable @typescript-eslint/ban-types */
 import * as Clutter from 'clutter';
+import * as Gio from 'gio';
 import { AppLaunchContext } from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
 import * as Shell from 'shell';
+import * as Soup from 'soup';
+
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { LayoutManager } from 'src/manager/layoutManager';
 import { MsNotificationManager } from 'src/manager/msNotificationManager';
@@ -273,3 +276,15 @@ declare module 'clutter' {
 //         setInitialKeyFocus(actor: Clutter.Actor): void;
 //     }
 // }
+
+declare module 'soup' {
+    export interface Session {
+        send_and_read_async(
+            msg: Soup.Message,
+            io_priority: number,
+            cancellable: Gio.Cancellable,
+            callback: Gio.AsyncReadyCallback<Soup.Session>
+        ): void;
+        send_and_read_finish(result: Gio.AsyncResult): GLib.Bytes | null;
+    }
+}

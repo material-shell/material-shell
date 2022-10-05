@@ -19,7 +19,8 @@ import * as St from 'st';
 import { dateMenu, main as Main, panel } from 'ui';
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
+const isBeforeGnome43 =
+    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
     static metaInfo: GObject.MetaInfo = {
@@ -204,9 +205,7 @@ export class MsStatusArea extends Clutter.Actor {
         if (mainChild !== undefined) {
             if (
                 mainChild instanceof
-                (compareVersions(gnomeVersionNumber, parseVersion('43.0')) >= 0
-                    ? panel.QuickSettings
-                    : panel.AggregateMenu)
+                (isBeforeGnome43 ? panel.AggregateMenu : panel.QuickSettings)
             ) {
                 // This is the main system menu
                 return 1;
