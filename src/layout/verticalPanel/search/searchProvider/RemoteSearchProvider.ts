@@ -2,6 +2,11 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as Shell from 'shell';
 import { assertNotNull } from 'src/utils/assert';
+import {
+    compareVersions,
+    gnomeVersionNumber,
+    parseVersion,
+} from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { RawMeta, ResultMeta, UnpackedMeta } from './searchProvider';
 export const Me = imports.misc.extensionUtils.getCurrentExtension();
@@ -11,6 +16,8 @@ export const GdkPixbuf = imports.gi.GdkPixbuf;
 export const ParentalControlsManager = imports.misc.parentalControlsManager;
 const KEY_FILE_GROUP = 'Shell Search Provider';
 
+const beforeGnome43 =
+    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 const SearchProviderIface = `
 <node>
 <interface name="org.gnome.Shell.SearchProvider">
@@ -284,10 +291,20 @@ export class RemoteSearchProvider {
 
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
-            const [results] = await this.proxy.GetInitialResultSetAsync(
-                terms,
-                cancellable
-            );
+            const [results] = await new Promise<any[]>((resolve) => {
+                if (beforeGnome43) {
+                    this.proxy.GetInitialResultSetRemote(
+                        terms,
+                        resolve,
+                        cancellable
+                    );
+                } else {
+                    return this.proxy.GetInitialResultSetAsync(
+                        terms,
+                        cancellable
+                    );
+                }
+            });
             return results;
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
@@ -304,11 +321,22 @@ export class RemoteSearchProvider {
         cancellable: Gio.Cancellable
     ) {
         try {
-            const [results] = await this.proxy.GetSubsearchResultSetAsync(
-                previousResults,
-                newTerms,
-                cancellable
-            );
+            const [results] = await new Promise<any[]>((resolve) => {
+                if (beforeGnome43) {
+                    this.proxy.GetSubsearchResultSetRemote(
+                        previousResults,
+                        newTerms,
+                        resolve,
+                        cancellable
+                    );
+                } else {
+                    return this.proxy.GetSubsearchResultSetAsync(
+                        previousResults,
+                        newTerms,
+                        cancellable
+                    );
+                }
+            });
             return results;
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
@@ -322,7 +350,13 @@ export class RemoteSearchProvider {
     async getResultMetas(ids: string[], cancellable: Gio.Cancellable) {
         let metas: RawMeta[];
         try {
-            [metas] = await this.proxy.GetResultMetasAsync(ids, cancellable);
+            [metas] = await new Promise<any[]>((resolve) => {
+                if (beforeGnome43) {
+                    this.proxy.GetResultMetasRemote(ids, resolve, cancellable);
+                } else {
+                    return this.proxy.GetResultMetasAsync(ids, cancellable);
+                }
+            });
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 log(
@@ -354,7 +388,15 @@ export class RemoteSearchProvider {
     }
 
     activateResult(id: string, terms: string[]) {
-        this.proxy.ActivateResultAsync(id).catch(Me.log);
+        if (beforeGnome43) {
+            this.proxy.ActivateResultRemote(
+                id,
+                terms,
+                global.get_current_time()
+            );
+        } else {
+            this.proxy.ActivateResultAsync(id).catch(Me.log);
+        }
     }
 
     launchSearch(_terms: string[]) {
