@@ -106,6 +106,7 @@ export function buildGtk3() {
     layouts.addSetting('screen-gap', WidgetType.INT);
     layouts.addSetting('tween-time', WidgetType.DECIMAL);
     layouts.addSetting('windows-excluded', WidgetType.INPUT);
+    layouts.addSetting('roles-excluded', WidgetType.INPUT);
 
     settingsTab.addCategory(layouts);
 

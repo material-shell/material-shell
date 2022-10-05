@@ -496,6 +496,7 @@ class PrefsWidget extends Gtk.Box {
         layouts.addSetting('screen-gap', WidgetType.INT);
         layouts.addSetting('tween-time', WidgetType.DECIMAL);
         layouts.addSetting('windows-excluded', WidgetType.INPUT);
+        layouts.addSetting('roles-excluded', WidgetType.INPUT);
         this._settings_box.append(layouts);
     }
 }
