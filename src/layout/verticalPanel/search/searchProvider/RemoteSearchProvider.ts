@@ -2,6 +2,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as Shell from 'shell';
 import { assertNotNull } from 'src/utils/assert';
+import { logAsyncException } from 'src/utils/log';
 import {
     compareVersions,
     gnomeVersionNumber,
@@ -291,20 +292,15 @@ export class RemoteSearchProvider {
 
     async getInitialResultSet(terms: string[], cancellable: Gio.Cancellable) {
         try {
-            const [results] = await new Promise<any[]>((resolve) => {
-                if (beforeGnome43) {
-                    this.proxy.GetInitialResultSetRemote(
-                        terms,
-                        resolve,
-                        cancellable
-                    );
-                } else {
-                    return this.proxy.GetInitialResultSetAsync(
-                        terms,
-                        cancellable
-                    );
-                }
-            });
+            const [results] = await (beforeGnome43
+                ? new Promise<any[]>((resolve) => {
+                      this.proxy.GetInitialResultSetRemote(
+                          terms,
+                          resolve,
+                          cancellable
+                      );
+                  })
+                : this.proxy.GetInitialResultSetAsync(terms, cancellable));
             return results;
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
@@ -321,22 +317,20 @@ export class RemoteSearchProvider {
         cancellable: Gio.Cancellable
     ) {
         try {
-            const [results] = await new Promise<any[]>((resolve) => {
-                if (beforeGnome43) {
-                    this.proxy.GetSubsearchResultSetRemote(
-                        previousResults,
-                        newTerms,
-                        resolve,
-                        cancellable
-                    );
-                } else {
-                    return this.proxy.GetSubsearchResultSetAsync(
-                        previousResults,
-                        newTerms,
-                        cancellable
-                    );
-                }
-            });
+            const [results] = await (beforeGnome43
+                ? new Promise<any[]>((resolve) => {
+                      this.proxy.GetSubsearchResultSetRemote(
+                          previousResults,
+                          newTerms,
+                          resolve,
+                          cancellable
+                      );
+                  })
+                : this.proxy.GetSubsearchResultSetAsync(
+                      previousResults,
+                      newTerms,
+                      cancellable
+                  ));
             return results;
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
@@ -350,13 +344,15 @@ export class RemoteSearchProvider {
     async getResultMetas(ids: string[], cancellable: Gio.Cancellable) {
         let metas: RawMeta[];
         try {
-            [metas] = await new Promise<any[]>((resolve) => {
-                if (beforeGnome43) {
-                    this.proxy.GetResultMetasRemote(ids, resolve, cancellable);
-                } else {
-                    return this.proxy.GetResultMetasAsync(ids, cancellable);
-                }
-            });
+            [metas] = await (beforeGnome43
+                ? new Promise<any[]>((resolve) => {
+                      this.proxy.GetResultMetasRemote(
+                          ids,
+                          resolve,
+                          cancellable
+                      );
+                  })
+                : this.proxy.GetResultMetasAsync(ids, cancellable));
         } catch (error: any) {
             if (!error.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 log(
@@ -395,7 +391,7 @@ export class RemoteSearchProvider {
                 global.get_current_time()
             );
         } else {
-            this.proxy.ActivateResultAsync(id).catch(Me.log);
+            this.proxy.ActivateResultAsync(id).catch(logAsyncException);
         }
     }
 
@@ -424,12 +420,12 @@ export class RemoteSearchProvider2 extends RemoteSearchProvider {
     activateResult(id: string, terms: string[]) {
         this.proxy
             .ActivateResultAsync(id, terms, global.get_current_time())
-            .catch(Me.log);
+            .catch(logAsyncException);
     }
 
     launchSearch(terms: string[]) {
         this.proxy
             .LaunchSearchAsync(terms, global.get_current_time())
-            .catch(Me.log);
+            .catch(logAsyncException);
     }
 }
