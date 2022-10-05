@@ -104,7 +104,7 @@ interface NotificationResponseItem {
     title: string;
     content: string;
     icon: string;
-    action: any;
+    action?: { url: string; label: string };
 }
 
 @registerGObjectClass
@@ -122,13 +122,13 @@ class MsNotificationSource extends messageTray.Source {
 
 @registerGObjectClass
 class MsNotification extends messageTray.Notification {
-    action: any;
+    action: { url: string; label: string } | undefined;
     constructor(
         source: messageTray.Source,
         title: string,
         text: string,
         icon: string,
-        action: any
+        action: { url: string; label: string } | undefined
     ) {
         const params: messageTray.NotificationParams = {};
         if (icon) {
