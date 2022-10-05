@@ -43,7 +43,7 @@ export class MsNotificationManager extends MsManager {
             this.httpSession.queue_message(message, () => {
                 if (message.status_code != Soup.KnownStatusCode.OK) {
                     Me.log(
-                        `error fetching notification ${message.status_code.toString()}`
+                        `error fetching notification: ${message.status_code.toString()}`
                     );
                     return;
                 }
@@ -52,7 +52,7 @@ export class MsNotificationManager extends MsManager {
                 try {
                     notifications = JSON.parse(message.response_body.data);
                 } catch (e: unknown) {
-                    Me.log(`error unpack notification error ${e}`);
+                    Me.log(`error unpacking notification: ${e}`);
                     return;
                 }
                 this.showNotifications(notifications);
@@ -71,9 +71,16 @@ export class MsNotificationManager extends MsManager {
                         const response = decoder.decode(
                             bytes.get_data() as ArrayBuffer
                         );
-                        this.showNotifications(
-                            JSON.parse(response) as NotificationResponseItem[]
-                        );
+                        let notifications: NotificationResponseItem[];
+                        try {
+                            notifications = JSON.parse(
+                                response
+                            ) as NotificationResponseItem[];
+                        } catch (e: unknown) {
+                            Me.log(`error unpacking notification: ${e}`);
+                            return;
+                        }
+                        this.showNotifications(notifications);
                     }
                 }
             );
