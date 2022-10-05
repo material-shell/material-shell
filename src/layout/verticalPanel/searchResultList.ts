@@ -193,8 +193,10 @@ export class SearchResultList extends St.BoxLayout {
         const index = this.providerList.indexOf(provider);
         this.providerList.splice(index, 1);
 
-        if (this.providerDisplayMap.has(provider))
+        if (this.providerDisplayMap.has(provider)) {
             this.providerDisplayMap.get(provider)!.destroy();
+            this.providerDisplayMap.delete(provider);
+        }
     }
 
     onTextChanged(): void {
