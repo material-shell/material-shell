@@ -215,6 +215,7 @@ declare module 'ui' {
                 // TODO: Make all optional?
                 activities: any; // ActivitiesButton,
                 aggregateMenu: any; // AggregateMenu,
+                quickSettings: any; // QuickSettings,
                 appMenu: any; // AppMenuButton,
                 dateMenu: dateMenu.DateMenuButton;
                 a11y: any; // imports.ui.status.accessibility.ATIndicator,
@@ -347,123 +348,6 @@ declare module 'ui' {
         class BoxPointer extends St.Widget {
             _calculateArrowSide(arrowSide: St.Side): St.Side;
         }
-    }
-
-    export namespace appDisplay {
-        class BaseAppView extends St.Widget {}
-        class AppDisplay extends BaseAppView {
-            constructor();
-        }
-
-        interface SearchProvider {
-            isRemoteProvider: boolean;
-            id: string;
-            canLaunchSearch: boolean;
-            searchInProgress?: boolean;
-            display: search.SearchResult | null | undefined;
-
-            getInitialResultSet(
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            getSubsearchResultSet(
-                previousResults: string[],
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            activateResult(id: string, terms: string[]): void;
-            getResultMetas(
-                identifiers: string[],
-                callback: (
-                    metas: {
-                        id: string;
-                        name: string;
-                        createIcon: (size: number) => St.Icon;
-                    }[]
-                ) => void
-            ): void;
-        }
-
-        class AppIcon extends GObject.Object {}
-
-        class AppSearchProvider implements SearchProvider {
-            isRemoteProvider: false;
-            id: string;
-            canLaunchSearch: boolean;
-            searchInProgress?: boolean;
-            display: search.SearchResult | null | undefined;
-
-            getInitialResultSet(
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            getSubsearchResultSet(
-                previousResults: string[],
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            activateResult(id: string, terms: string[]): void;
-            getResultMetas(
-                identifiers: string[],
-                callback: (
-                    metas: {
-                        id: string;
-                        name: string;
-                        createIcon: (size: number) => St.Icon;
-                    }[]
-                ) => void
-            ): void;
-        }
-    }
-
-    export namespace search {
-        class SearchResult extends St.Button {}
-    }
-
-    export namespace remoteSearch {
-        class RemoteSearchProvider implements appDisplay.SearchProvider {
-            isRemoteProvider: true;
-            id: string;
-            canLaunchSearch: boolean;
-            searchInProgress?: boolean;
-            display: search.SearchResult | null | undefined;
-
-            getInitialResultSet(
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            getSubsearchResultSet(
-                previousResults: string[],
-                terms: string[],
-                callback: (results: string[]) => void,
-                _cancellable: Gio.Cancellable
-            ): void;
-            activateResult(id: string, terms: string[]): void;
-            getResultMetas(
-                identifiers: string[],
-                callback: (
-                    metas: {
-                        id: string;
-                        name: string;
-                        description: string;
-                        createIcon: (size: number) => St.Icon;
-                    }[]
-                ) => void,
-                cancellable?: Gio.Cancellable
-            ): void;
-
-            appInfo: Gio.DesktopAppInfo;
-        }
-
-        function loadRemoteSearchProviders(
-            searchSettings: Gio.Settings,
-            callback: (providers: remoteSearch.RemoteSearchProvider[]) => void
-        ): void;
     }
 
     export namespace sessionMode {

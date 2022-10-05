@@ -251,7 +251,7 @@ export class App extends GObject.Object {
     can_open_new_window(): boolean;
     compare(other: App): number;
     compare_by_name(other: App): number;
-    create_icon_texture(size: number): Clutter.Actor;
+    create_icon_texture(size: number): St.Icon;
     get_app_info(): Gio.DesktopAppInfo;
     get_busy(): boolean;
     get_description(): string;
@@ -403,7 +403,8 @@ export namespace EmbeddedWindow {
 }
 export class EmbeddedWindow
     extends Gtk.Window
-    implements Atk.ImplementorIface, Gtk.Buildable {
+    implements Atk.ImplementorIface, Gtk.Buildable
+{
     static $gtype: GObject.GType<EmbeddedWindow>;
 
     constructor(
@@ -687,7 +688,8 @@ export class GtkEmbed<A extends Clutter.Actor = Clutter.Actor>
         Atk.ImplementorIface,
         Clutter.Animatable,
         Clutter.Container<A>,
-        Clutter.Scriptable {
+        Clutter.Scriptable
+{
     static $gtype: GObject.GType<GtkEmbed>;
 
     constructor(
@@ -1021,7 +1023,8 @@ export namespace NetworkAgent {
 }
 export class NetworkAgent
     extends NM.SecretAgentOld
-    implements Gio.AsyncInitable<NetworkAgent>, Gio.Initable {
+    implements Gio.AsyncInitable<NetworkAgent>, Gio.Initable
+{
     static $gtype: GObject.GType<NetworkAgent>;
 
     constructor(
@@ -1380,7 +1383,8 @@ export class Stack<A extends Clutter.Actor = Clutter.Actor>
         Atk.ImplementorIface,
         Clutter.Animatable,
         Clutter.Container<A>,
-        Clutter.Scriptable {
+        Clutter.Scriptable
+{
     static $gtype: GObject.GType<Stack>;
 
     constructor(
@@ -1477,7 +1481,8 @@ export class TrayIcon<A extends Clutter.Actor = Clutter.Actor>
         Atk.ImplementorIface,
         Clutter.Animatable,
         Clutter.Container<A>,
-        Clutter.Scriptable {
+        Clutter.Scriptable
+{
     static $gtype: GObject.GType<TrayIcon>;
 
     constructor(

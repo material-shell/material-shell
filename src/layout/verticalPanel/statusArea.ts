@@ -261,8 +261,9 @@ export class MsStatusArea extends Clutter.Actor {
     }
 
     iconSize() {
-        return Math.round(
-            Me.msThemeManager.getPanelSizeNotScaled() * (16.0 / 48.0)
+        return Math.max(
+            16.0,
+            Math.round(Me.msThemeManager.getPanelSizeNotScaled() / 3)
         );
     }
 
@@ -368,7 +369,12 @@ export class MsStatusArea extends Clutter.Actor {
         this.restorePanelMenuSide();
         this.restorePanelActors();
         this.restoreAppIndicatorSettings();
-        this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
+
+        if (compareVersions(gnomeVersionNumber, parseVersion('43.0')) >= 0) {
+            this.gnomeShellPanel.statusArea.quickSettings.set_y_expand(true);
+        } else {
+            this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
+        }
     }
 }
 
