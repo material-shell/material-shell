@@ -72,7 +72,6 @@ export class MsNotificationManager extends MsManager {
                 GLib.PRIORITY_DEFAULT,
                 new Gio.Cancellable(),
                 (session, result) => {
-                    Me.logFocus('RESULT', message.status_code);
                     if (session && message.status_code === Soup.Status.OK) {
                         const bytes = session.send_and_read_finish(
                             result
