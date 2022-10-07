@@ -321,7 +321,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             this.inputContainer.get_text() === '' &&
             this.currentButtonFocused === null
         ) {
-            this.msWorkspace.focusPrecedentTileable();
+            this.msWorkspace.focusPreviousTileableFromHistory();
             return;
         }
         if (this.inputContainer.get_text().length) {

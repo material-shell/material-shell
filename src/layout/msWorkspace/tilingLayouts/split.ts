@@ -56,6 +56,10 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         return this.activeTileableList;
     }
 
+    get preferredFocusHistory(): 'chronological' | 'spatial' {
+        return 'spatial';
+    }
+
     updateActiveTileableListFromFocused() {
         this.baseIndex = Math.max(
             0,
