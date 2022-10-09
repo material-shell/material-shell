@@ -43,9 +43,9 @@ export class MsNotificationManager extends MsManager {
 
         const message = Soup.Message.new(
             'GET',
-            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}&uuid=${uuid}&gnomeVersion=${PACKAGE_VERSION}&msVersion=${
-                Me.metadata.version || Me.metadata.commit
-            }`
+            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}&uuid=${uuid}&gnomeVersion=${PACKAGE_VERSION}&version=${
+                Me.metadata.version
+            }&commit=${Me.metadata.commit}`
         );
 
         // send the HTTP request and wait for response
