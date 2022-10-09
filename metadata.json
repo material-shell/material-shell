@@ -12,5 +12,6 @@
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",
     "theme": "org.gnome.shell.extensions.materialshell.theme",
-    "tweaks": "org.gnome.shell.extensions.materialshell.tweaks"
+    "tweaks": "org.gnome.shell.extensions.materialshell.tweaks",
+    "commit": "{put_commit_there}"
 }
