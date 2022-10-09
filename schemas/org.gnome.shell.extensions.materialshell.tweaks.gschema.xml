@@ -1,0 +1,24 @@
+<schemalist>
+    <schema id="org.gnome.shell.extensions.materialshell.tweaks" path="/org/gnome/shell/extensions/materialshell/tweaks/" >
+        <key name="cycle-through-windows" type="b" >
+            <default>false</default>
+            <summary>Cycle through windows</summary>
+            <description>Cycle back to first when when trying to navigate past last window, and vice-versa</description>
+        </key>
+        <key name="cycle-through-workspaces" type="b">
+            <default>false</default>
+            <summary>Cycle through workspaces</summary>
+            <description>Cycle back to first when when trying to navigate past last workspace, and vice-versa</description>
+        </key>
+        <key name="disable-notifications" type="b">
+            <default>false</default>
+            <summary>Disable Material Shell notifications</summary>
+            <description>When enabled you will not receive Material Shell communications about updates anymore</description>
+        </key>
+        <key name="enable-persistence" type="b">
+            <default>true</default>
+            <summary>Enable session persistence</summary>
+            <description>Current session layout will be saved to disk and restored in the next start</description>
+        </key>
+    </schema>
+</schemalist>
