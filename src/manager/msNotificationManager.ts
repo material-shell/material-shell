@@ -14,11 +14,14 @@ import {
 import { main as Main, messageTray } from 'ui';
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
+const { PACKAGE_VERSION } = imports.misc.config;
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const API_SERVER = 'http://api.material-shell.com';
+const beforeGnome43 =
+    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 export class MsNotificationManager extends MsManager {
     httpSession: Soup.Session;
 
@@ -28,18 +31,26 @@ export class MsNotificationManager extends MsManager {
     }
     check() {
         if (getSettings('tweaks').get_boolean('disable-notifications')) return;
+        let uuid = Me.stateManager.getState('notification-uuid');
+        if (!uuid) {
+            uuid = GLib.uuid_string_random();
+            Me.stateManager.setState('notification-uuid', uuid);
+        }
+
         const previousCheck = Me.stateManager.getState('notification-check')
             ? new Date(Me.stateManager.getState('notification-check'))
             : new Date();
 
         const message = Soup.Message.new(
             'GET',
-            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}`
+            `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}&uuid=${uuid}&gnomeVersion=${PACKAGE_VERSION}&version=${
+                Me.metadata.version
+            }&commit=${Me.metadata.commit}`
         );
 
         // send the HTTP request and wait for response
         // Before gnome 43 we use Soup 2.4 API
-        if (compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0) {
+        if (beforeGnome43) {
             this.httpSession.queue_message(message, () => {
                 if (message.status_code != Soup.KnownStatusCode.OK) {
                     Me.log(
