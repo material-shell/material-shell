@@ -739,7 +739,7 @@ export class MsWindowManager extends MsManager {
         ) {
             return false;
         }
-    
+
         if (metaWindow.above) {
             metaWindow.stick();
             return false;
