@@ -10,7 +10,8 @@ Providing a <b>unique</b>, <b>simple</b>, <b>productivity-oriented</b>, <b>innov
 <p align="center">
         Powered by its unique <b><a href="#spatial-model">spatial model</a></b>, its modern <b><a href="#interface">material design interface</a></b>, its <b><a href="#tiling-engine">tiling engine</a></b> and its <b><a href="#persistence">persistability</a></b>.
 </p>
-
+<table >
+<td  width="2400" border="0">
 <h4 align="center" valign="middle">
 Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7D9a">
         <img valign="middle" src="https://img.shields.io/discord/584783412959641716?logo=discord&style=for-the-badge"
@@ -25,6 +26,14 @@ Get notified about updates and join us at ‎‎<a href="https://discord.gg/vBb7
   <a href="#history">History</a> •
   <a href="#crypto-funding">Support</a>
 </p>
+</td>
+<td  width="1400">
+<a href="https://get.trbu.app">
+<img valign="middle" src="https://get.trbu.app/assets/promo.png"
+            alt="Discover Tribu">
+</a>
+</td>
+</table>
 
 ---
 
