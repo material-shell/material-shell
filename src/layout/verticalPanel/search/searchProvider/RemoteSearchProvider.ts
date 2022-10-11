@@ -2,7 +2,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as Shell from 'shell';
 import { assertNotNull } from 'src/utils/assert';
-import { logAsyncException } from 'src/utils/log';
+import { logAsyncException, mslog } from 'src/utils/log';
 import {
     compareVersions,
     gnomeVersionNumber,
@@ -408,7 +408,7 @@ export class RemoteSearchProvider {
     launchSearch(_terms: string[]) {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
-        log(
+        mslog(
             `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
@@ -428,14 +428,26 @@ export class RemoteSearchProvider2 extends RemoteSearchProvider {
     }
 
     activateResult(id: string, terms: string[]) {
-        this.proxy
-            .ActivateResultAsync(id, terms, global.get_current_time())
-            .catch(logAsyncException);
+        if (beforeGnome43) {
+            this.proxy.ActivateResultRemote(
+                id,
+                terms,
+                global.get_current_time()
+            );
+        } else {
+            this.proxy
+                .ActivateResultAsync(id, terms, global.get_current_time())
+                .catch(logAsyncException);
+        }
     }
 
     launchSearch(terms: string[]) {
-        this.proxy
-            .LaunchSearchAsync(terms, global.get_current_time())
-            .catch(logAsyncException);
+        if (beforeGnome43) {
+            this.proxy.LaunchSearchRemote(terms, global.get_current_time());
+        } else {
+            this.proxy
+                .LaunchSearchAsync(terms, global.get_current_time())
+                .catch(logAsyncException);
+        }
     }
 }
