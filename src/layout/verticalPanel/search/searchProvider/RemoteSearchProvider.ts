@@ -2,7 +2,7 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as Shell from 'shell';
 import { assertNotNull } from 'src/utils/assert';
-import { logAsyncException } from 'src/utils/log';
+import { logAsyncException, mslog } from 'src/utils/log';
 import {
     compareVersions,
     gnomeVersionNumber,
@@ -76,14 +76,14 @@ export var SearchProvider2ProxyInfo =
 export function loadRemoteSearchProviders(
     searchSettings: Gio.Settings
 ): (RemoteSearchProvider | RemoteSearchProvider2)[] {
-    let objectPaths: {
+    const objectPaths: {
         [objectPath: string]: RemoteSearchProvider | RemoteSearchProvider2;
     } = {};
     let loadedProviders: (RemoteSearchProvider | RemoteSearchProvider2)[] = [];
 
     function loadRemoteSearchProvider(file: Gio.File) {
-        let keyfile = new GLib.KeyFile();
-        let path = file.get_path();
+        const keyfile = new GLib.KeyFile();
+        const path = file.get_path();
 
         try {
             keyfile.load_from_file(path as string, 0);
@@ -95,15 +95,15 @@ export function loadRemoteSearchProviders(
 
         let remoteProvider;
         try {
-            let group = KEY_FILE_GROUP;
-            let busName = keyfile.get_string(group, 'BusName');
-            let objectPath = keyfile.get_string(group, 'ObjectPath');
+            const group = KEY_FILE_GROUP;
+            const busName = keyfile.get_string(group, 'BusName');
+            const objectPath = keyfile.get_string(group, 'ObjectPath');
 
             if (objectPaths[objectPath]) return;
 
             let appInfo = null;
             try {
-                let desktopId = keyfile.get_string(group, 'DesktopId');
+                const desktopId = keyfile.get_string(group, 'DesktopId');
                 appInfo = Gio.DesktopAppInfo.new(desktopId);
                 if (!appInfo.should_show()) return;
             } catch (e) {
@@ -165,7 +165,7 @@ export function loadRemoteSearchProviders(
         loadRemoteSearchProvider
     );
 
-    let sortOrder = searchSettings.get_strv('sort-order');
+    const sortOrder = searchSettings.get_strv('sort-order');
 
     // Special case gnome-control-center to be always active and always first
     sortOrder.unshift('org.gnome.Settings.desktop');
@@ -174,7 +174,7 @@ export function loadRemoteSearchProviders(
     const enabled = searchSettings.get_strv('enabled');
 
     loadedProviders = loadedProviders.filter((provider) => {
-        let appId = provider.appInfo.get_id();
+        const appId = provider.appInfo.get_id();
 
         if (provider.defaultEnabled) return !disabled.includes(appId);
         else return enabled.includes(appId);
@@ -192,8 +192,8 @@ export function loadRemoteSearchProviders(
 
         // if no provider is found in the order, use alphabetical order
         if (idxA == -1 && idxB == -1) {
-            let nameA = providerA.appInfo.get_name();
-            let nameB = providerB.appInfo.get_name();
+            const nameA = providerA.appInfo.get_name();
+            const nameB = providerB.appInfo.get_name();
 
             return GLib.utf8_collate(nameA, nameB);
         }
@@ -282,8 +282,8 @@ export class RemoteSearchProvider {
     filterResults(results: string[], maxNumber: number) {
         if (results.length <= maxNumber) return results;
 
-        let regularResults = results.filter((r) => !r.startsWith('special:'));
-        let specialResults = results.filter((r) => r.startsWith('special:'));
+        const regularResults = results.filter((r) => !r.startsWith('special:'));
+        const specialResults = results.filter((r) => r.startsWith('special:'));
 
         return regularResults
             .slice(0, maxNumber)
@@ -370,11 +370,11 @@ export class RemoteSearchProvider {
             return [];
         }
 
-        let resultMetas: ResultMeta[] = [];
+        const resultMetas: ResultMeta[] = [];
         for (let i = 0; i < metas.length; i++) {
             const rawMeta = metas[i];
             const unpackedMeta: UnpackedMeta = {};
-            for (let prop in rawMeta) {
+            for (const prop in rawMeta) {
                 // we can use the serialized icon variant directly
                 if (prop !== 'icon')
                     unpackedMeta[prop] = rawMeta[prop].deepUnpack();
@@ -408,7 +408,7 @@ export class RemoteSearchProvider {
     launchSearch(_terms: string[]) {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
-        log(
+        mslog(
             `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
@@ -428,14 +428,26 @@ export class RemoteSearchProvider2 extends RemoteSearchProvider {
     }
 
     activateResult(id: string, terms: string[]) {
-        this.proxy
-            .ActivateResultAsync(id, terms, global.get_current_time())
-            .catch(logAsyncException);
+        if (beforeGnome43) {
+            this.proxy.ActivateResultRemote(
+                id,
+                terms,
+                global.get_current_time()
+            );
+        } else {
+            this.proxy
+                .ActivateResultAsync(id, terms, global.get_current_time())
+                .catch(logAsyncException);
+        }
     }
 
     launchSearch(terms: string[]) {
-        this.proxy
-            .LaunchSearchAsync(terms, global.get_current_time())
-            .catch(logAsyncException);
+        if (beforeGnome43) {
+            this.proxy.LaunchSearchRemote(terms, global.get_current_time());
+        } else {
+            this.proxy
+                .LaunchSearchAsync(terms, global.get_current_time())
+                .catch(logAsyncException);
+        }
     }
 }
