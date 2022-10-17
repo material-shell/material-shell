@@ -85,7 +85,7 @@ export class MatButton extends St.Widget {
     }
 
     _onLongPress(
-        action: Clutter.ClickAction,
+        action: PropagateClickAction,
         actor: Clutter.Actor,
         state: Clutter.LongPressState
     ) {
@@ -93,8 +93,7 @@ export class MatButton extends St.Widget {
         // a long-press canceled when the pointer movement
         // exceeds dnd-drag-threshold to manually start the drag
         if (state == Clutter.LongPressState.CANCEL) {
-            const event = Clutter.get_current_event();
-
+            const event = action.lastEvent;
             if (this._longPressLater) return true;
 
             // A click cancels a long-press before any click handler is
@@ -167,13 +166,15 @@ export class PropagateClickAction extends Clutter.ClickAction {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'PropagateClickAction',
     };
+    lastEvent: Clutter.Event | undefined;
     constructor() {
         super();
     }
 
     vfunc_handle_event(event: Clutter.Event) {
+        this.lastEvent = event;
         super.vfunc_handle_event(event);
-        //Propagate
+        //Propagate ( propagating has the side effect to not assign global Clutter.get_current_event so we stash it in lastEvent)
         return false;
     }
 }
