@@ -3,8 +3,13 @@ import * as Clutter from 'clutter';
 import * as GnomeDesktop from 'gnomedesktop';
 import { LayoutSwitcher } from 'src/layout/msWorkspace/horizontalPanel/layoutSwitcher';
 import { TaskBar } from 'src/layout/msWorkspace/horizontalPanel/taskBar';
+import {
+    HorizontalPanelPositionEnum,
+    msThemeSignalEnum,
+} from 'src/manager/msThemeManager';
 import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { SignalObserver } from 'src/utils/signal';
 import * as St from 'st';
 import { popupMenu as PopupMenu } from 'ui';
 import { MsWorkspace } from '../msWorkspace';
@@ -22,13 +27,18 @@ export class HorizontalPanel extends St.BoxLayout {
     clockBin: St.BoxLayout | null | undefined;
     private _wallClock: any;
     msWorkspace: MsWorkspace;
-
+    signalObserver = new SignalObserver();
     constructor(msWorkspace: MsWorkspace) {
         super({
             name: 'horizontalPanel',
         });
         this._delegate = this;
-
+        this.updateStyle();
+        this.signalObserver.observe(
+            Me.msThemeManager,
+            msThemeSignalEnum.HorizontalPanelPositionChanged,
+            this.updateStyle.bind(this)
+        );
         this.msWorkspace = msWorkspace;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.taskBar = new TaskBar(msWorkspace, this.menuManager);
@@ -36,8 +46,9 @@ export class HorizontalPanel extends St.BoxLayout {
 
         this.add_child(this.taskBar);
         this.add_child(this.layoutSwitcher);
-        const horizontalChangedSignal = Me.msThemeManager.connect(
-            'clock-horizontal-changed',
+        this.signalObserver.observe(
+            Me.msThemeManager,
+            msThemeSignalEnum.ClockHorizontalChanged,
             () => {
                 if (Me.msThemeManager.clockHorizontal) {
                     this.createClock();
@@ -47,7 +58,7 @@ export class HorizontalPanel extends St.BoxLayout {
             }
         );
         this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(horizontalChangedSignal);
+            this.signalObserver.clear();
         });
 
         if (Me.msThemeManager.clockHorizontal) {
@@ -85,6 +96,20 @@ export class HorizontalPanel extends St.BoxLayout {
             this._wallClock.disconnect(signalClock);
             delete this._wallClock;
         });
+    }
+
+    updateStyle() {
+        this.remove_style_class_name('position-top');
+        this.remove_style_class_name('position-bottom');
+        switch (Me.msThemeManager.horizontalPanelPosition) {
+            case HorizontalPanelPositionEnum.TOP: {
+                this.add_style_class_name('position-top');
+                break;
+            }
+            case HorizontalPanelPositionEnum.BOTTOM: {
+                this.add_style_class_name('position-bottom');
+            }
+        }
     }
 
     removeClock() {

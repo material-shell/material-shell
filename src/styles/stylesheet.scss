@@ -236,8 +236,61 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
 #msPanel {
     background: rgba(getBackgroundColor($theme), $panel-opacity);
 
-    box-shadow: $shadow;
+    &.position-left {
+        @if ($theme== 'light') {
+            box-shadow: inset -1px 0px rgba(0, 0, 0, 0.08);
+        }
 
+        @if ($theme== 'dark') {
+            box-shadow: inset -1px 0px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset -1px
+                0px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset -1px 0px getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset -1px 0px getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+    &.position-right {
+        @if ($theme== 'light') {
+            box-shadow: inset 1px 0px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 1px 0px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                1px
+                0px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 1px 0px
+                    getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 1px 0px
+                    getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+
+    transition-duration: 0.3s;
+
+    &.shadow {
+        box-shadow: $shadow;
+    }
     .panel-button {
         @include foreground-medium-emphasis($theme);
         text-align: center;
@@ -313,7 +366,56 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         $topPanelTheme: 'light';
     }
 
-    box-shadow: $shadow;
+    &.position-top {
+        @if ($theme== 'light') {
+            box-shadow: inset 0px -1px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 0px -1px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                0px -1px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 0px -1px getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 0px -1px getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+
+    &.position-bottom {
+        @if ($theme== 'light') {
+            box-shadow: inset 0px 1px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 0px 1px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                0px
+                1px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 0px 1px
+                    getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 0px 1px
+                    getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
 
     .task-active-indicator {
         @if ($topPanelTheme== 'dark') {
@@ -482,8 +584,10 @@ MatTooltip {
     text-align: center;
 }
 
-MatDivider {
-    @include hover($theme);
+#matDivider {
+    .inner-divider {
+        @include hover($theme);
+    }
 }
 
 .surface {

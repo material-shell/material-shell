@@ -5,9 +5,13 @@ import * as GObject from 'gobject';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import { MsStatusArea } from 'src/layout/verticalPanel/statusArea';
 import { WorkspaceList } from 'src/layout/verticalPanel/workspaceList';
-import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
+import {
+    msThemeSignalEnum,
+    VerticalPanelPositionEnum,
+} from 'src/manager/msThemeManager';
 import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { SignalObserver } from 'src/utils/signal';
 import { MatDivider } from 'src/widget/material/divider';
 import * as St from 'st';
 import { main as Main, panel } from 'ui';
@@ -33,6 +37,7 @@ export class PanelContent extends St.BoxLayout {
     statusArea: MsStatusArea;
     searchButton: MatPanelButton;
     buttonIcon: St.Icon;
+
     constructor() {
         super({
             vertical: true,
@@ -141,6 +146,8 @@ export class MsPanel extends St.BoxLayout {
     divider: MatDivider;
     disableConnect: number;
     isExpanded = false;
+    signalObserver = new SignalObserver();
+
     constructor() {
         super({
             name: 'msPanel',
@@ -149,6 +156,12 @@ export class MsPanel extends St.BoxLayout {
         this.gnomeShellPanel = Main.panel;
         this.gnomeShellPanel.hide();
 
+        this.updateStyle();
+        this.signalObserver.observe(
+            Me.msThemeManager,
+            msThemeSignalEnum.VerticalPanelPositionChanged,
+            this.updateStyle.bind(this)
+        );
         // Top part
         this.panelContent = new PanelContent();
         this.add_child(this.panelContent);
@@ -160,15 +173,16 @@ export class MsPanel extends St.BoxLayout {
             this.disable();
         });
 
-        const panelSizeSignal = Me.msThemeManager.connect(
-            'panel-size-changed',
+        this.signalObserver.observe(
+            Me.msThemeManager,
+            msThemeSignalEnum.PanelSizeChanged,
             () => {
                 this.queue_relayout();
             }
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(panelSizeSignal);
+            this.signalObserver.clear();
         });
 
         this.panelContent.connect('toggle', () => {
@@ -184,6 +198,20 @@ export class MsPanel extends St.BoxLayout {
     disable() {
         this.gnomeShellPanel.show();
         this.panelContent.disable();
+    }
+
+    updateStyle() {
+        this.remove_style_class_name('position-left');
+        this.remove_style_class_name('position-right');
+        switch (Me.msThemeManager.verticalPanelPosition) {
+            case VerticalPanelPositionEnum.LEFT: {
+                this.add_style_class_name('position-left');
+                break;
+            }
+            case VerticalPanelPositionEnum.RIGHT: {
+                this.add_style_class_name('position-right');
+            }
+        }
     }
 
     override vfunc_get_preferred_width(_for_height: number): [number, number] {
