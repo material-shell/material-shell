@@ -58,7 +58,7 @@ export class MatButton extends St.Widget {
             this.add_style_class_name('primary');
         }
 
-        const clickAction = new Clutter.ClickAction();
+        const clickAction = new PropagateClickAction();
         clickAction.connect('clicked', (action) => {
             this.clicked = true;
             const button = action.get_button();
@@ -73,6 +73,7 @@ export class MatButton extends St.Widget {
             return true;
         });
         clickAction.connect('long-press', this._onLongPress.bind(this));
+
         this.add_action(clickAction);
 
         this.connect('enter-event', () => {
@@ -158,5 +159,21 @@ export class MatButton extends St.Widget {
         if (child) {
             this.add_child(child);
         }
+    }
+}
+
+@registerGObjectClass
+export class PropagateClickAction extends Clutter.ClickAction {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: 'PropagateClickAction',
+    };
+    constructor() {
+        super();
+    }
+
+    vfunc_handle_event(event: Clutter.Event) {
+        super.vfunc_handle_event(event);
+        //Propagate
+        return false;
     }
 }
