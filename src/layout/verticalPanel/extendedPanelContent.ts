@@ -29,7 +29,8 @@ export class ExtendedPanelContent extends St.BoxLayout {
         });
 
         this.searchEntry = new St.Entry({
-            style_class: 'search-entry margin',
+            style_class: 'search-entry',
+            style: 'margin: 6px 8px',
             /* Translators: this is the text displayed
                in the search entry when no search is
                active; it should not exceed ~30
@@ -44,14 +45,10 @@ export class ExtendedPanelContent extends St.BoxLayout {
         );
         ShellEntry.addContextMenu(this.searchEntry);
 
-        this.searchEntryBin = new St.Bin({
+        this.searchEntryBin = new SearchEntryBin({
             child: this.searchEntry,
             x_align: Clutter.ActorAlign.FILL,
             styleClass: 'background-primary',
-            height: Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            ),
         });
 
         this.add_child(this.searchEntryBin);
@@ -62,26 +59,27 @@ export class ExtendedPanelContent extends St.BoxLayout {
         });
         this.scrollView.add_actor(this.searchResultList);
 
-        const panelSizeSignal = Me.msThemeManager.connect(
-            'panel-size-changed',
-            () => {
-                this.searchEntryBin.height = Math.max(
-                    48,
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    )
-                );
-                this.queue_relayout();
-            }
-        );
-
         this.add_child(this.scrollView);
     }
 
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         const desiredWidth =
-            448 -
+            Me.msThemeManager.getScaledSize(448) -
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex);
         return [desiredWidth, desiredWidth];
+    }
+}
+
+@registerGObjectClass
+export class SearchEntryBin extends St.Bin {
+    constructor(params = {}) {
+        super(params);
+    }
+    override vfunc_get_preferred_height(_for_width: number): [number, number] {
+        const height = Math.max(
+            Me.msThemeManager.getScaledSize(48),
+            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
+        );
+        return [height, height];
     }
 }

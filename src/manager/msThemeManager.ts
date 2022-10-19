@@ -209,6 +209,11 @@ export class MsThemeManager extends MsManager {
         return this.themeSettings.get_int('panel-size');
     }
 
+    getScaledSize(size: number) {
+        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
+        return size * scaleFactor;
+    }
+
     get focusEffect() {
         return this.themeSettings.get_enum('focus-effect');
     }

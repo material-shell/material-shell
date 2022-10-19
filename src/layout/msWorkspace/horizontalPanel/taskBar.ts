@@ -668,7 +668,7 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        const height = box.get_height() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
             this.buildIconIdle.schedule(height);

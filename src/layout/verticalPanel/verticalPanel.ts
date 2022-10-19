@@ -56,13 +56,9 @@ export class PanelContent extends St.BoxLayout {
             icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
         });
 
-        this.searchButton = new MatPanelButton({
+        this.searchButton = new SearchButton({
             child: this.buttonIcon,
             primary: true,
-            height: Math.max(
-                48,
-                Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
-            ),
         });
 
         this.searchButton.connect('clicked', () => {
@@ -83,12 +79,6 @@ export class PanelContent extends St.BoxLayout {
             () => {
                 this.buttonIcon.set_icon_size(
                     Me.msThemeManager.getPanelSizeNotScaled() / 2
-                );
-                this.searchButton.height = Math.max(
-                    48,
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    )
                 );
 
                 this.queue_relayout();
@@ -253,9 +243,9 @@ export class MsPanel extends St.BoxLayout {
                 }
             }
 
-            this.width = 448;
+            this.width = Me.msThemeManager.getScaledSize(448);
             this.translation_x =
-                (448 -
+                (Me.msThemeManager.getScaledSize(448) -
                     (Me.layout.panelsVisible
                         ? Me.msThemeManager.getPanelSize(
                               Main.layoutManager.primaryIndex
@@ -274,13 +264,15 @@ export class MsPanel extends St.BoxLayout {
             this.extendedPanelContent.searchEntry.grab_key_focus();
             this.panelContent.setIcon('close');
             this.isExpanded = true;
+            this.add_style_class_name('shadow');
         } else {
             this.isExpanded = false;
             this.panelContent.setIcon('search');
+            this.remove_style_class_name('shadow');
 
             this.ease({
                 translation_x:
-                    (448 -
+                    (Me.msThemeManager.getScaledSize(448) -
                         (Me.layout.panelsVisible
                             ? Me.msThemeManager.getPanelSize(
                                   Main.layoutManager.primaryIndex
@@ -310,5 +302,19 @@ export class MsPanel extends St.BoxLayout {
         const monitor = Main.layoutManager.primaryMonitor;
         assert(monitor !== null, 'found no primary monitor');
         return [monitor.height, monitor.height];
+    }
+}
+
+@registerGObjectClass
+export class SearchButton extends MatPanelButton {
+    constructor(params = {}) {
+        super(params);
+    }
+    override vfunc_get_preferred_height(_for_width: number): [number, number] {
+        const height = Math.max(
+            Me.msThemeManager.getScaledSize(48),
+            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
+        );
+        return [height, height];
     }
 }

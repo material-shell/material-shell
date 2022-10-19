@@ -8,7 +8,11 @@ import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
+import {
+    Allocate,
+    AllocatePreferredSize,
+    SetAllocation,
+} from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
@@ -51,12 +55,7 @@ export class WorkspaceList extends St.Widget {
 
         this.add_child(this.buttonList);
 
-        this.workspaceActiveIndicator = new St.Widget({
-            style_class: 'workspace-active-indicator',
-            height: Me.msThemeManager.getPanelSize(
-                Main.layoutManager.primaryIndex
-            ),
-        });
+        this.workspaceActiveIndicator = new WorkspaceActiveIndicator();
 
         const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
@@ -69,8 +68,6 @@ export class WorkspaceList extends St.Widget {
                 this.queue_relayout();
             }
         );
-
-        this.workspaceActiveIndicator.add_style_class_name('primary-bg');
 
         this.add_child(this.workspaceActiveIndicator);
         this.connect('notify::mapped', () => {
@@ -121,56 +118,6 @@ export class WorkspaceList extends St.Widget {
                         msWorkspace
                     );
                     this.menuManager.addMenu(workspaceButton.menu.menu);
-                    /* workspaceButton._draggable.connect('drag-begin', () => {
-                        let workspaceButtonIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                            msWorkspace
-                        );
-                        this.tempDragData = {
-                            workspaceButton: workspaceButton,
-                            initialIndex: workspaceButtonIndex,
-                        };
-                        this.dropPlaceholder.resize(workspaceButton);
-                        this.buttonList.add_child(this.dropPlaceholder);
-                        this.buttonList.set_child_at_index(
-                            this.dropPlaceholder,
-                            workspaceButtonIndex
-                        );
-                        this.workspaceActiveIndicator.hide();
-                    });
-
-                    workspaceButton._draggable.connect(
-                        'drag-cancelled',
-                        () => {
-                            delete this.tempDragData.draggedOver;
-                            delete this.tempDragData.draggedBefore;
-                            this.buttonList.set_child_at_index(
-                                this.dropPlaceholder,
-                                this.tempDragData.initialIndex
-                            );
-                        }
-                    );
-
-                    workspaceButton._draggable.connect(
-                        'drag-end',
-                        this._onDragEnd.bind(this)
-                    ); */
-
-                    /* workspaceButton.connect('drag-over', (_, before) => {
-                        this.tempDragData.draggedOverByChild = true;
-                        this._onDragOver(workspaceButton, before);
-                        //this.buttonList.set_child_before(this.dropPlaceholder, this.tempDragData.draggedBefore ? index : index + 1);
-                    });
-
-                    workspaceButton.connect('drag-dropped', () => {
-                        this.tempDragData.workspaceButton
-                            .get_parent()
-                            .remove_child(
-                                this.tempDragData.workspaceButton
-                            );
-                        this.buttonList.add_child(
-                            this.tempDragData.workspaceButton
-                        );
-                    }); */
                     this.buttonList.insert_child_at_index(
                         workspaceButton,
                         index
@@ -200,104 +147,16 @@ export class WorkspaceList extends St.Widget {
         });
     }
 
-    /* handleDragOver(source, _actor, _x, _y) {
-        if (source instanceof WorkspaceButton) {
-            // Needed for dragging over tasks
-            if (!this.tempDragData.draggedOverByChild) {
-                let workspaceButton =
-                    this.items[this.items.length - 1] ===
-                    this.tempDragData.workspaceButton
-                        ? this.items[this.items.length - 2]
-                        : this.items[this.items.length - 1];
-                this._onDragOver(workspaceButton, false);
-            } else {
-                this.tempDragData.draggedOverByChild = false;
-            }
-        }
-
-        return DND.DragMotionResult.MOVE_DROP;
-    } */
-
-    /* _onDragEnd() {
-        this.buttonList.remove_child(this.dropPlaceholder);
-        if (this.tempDragData.draggedOver) {
-            let toIndex = this.msWorkspaceManager.primaryMsWorkspaces.indexOf(
-                this.tempDragData.draggedOver.msWorkspace
-            );
-
-            if (this.tempDragData.draggedBefore) {
-                toIndex =
-                    toIndex -
-                    (this.tempDragData.initialIndex < toIndex ? 1 : 0);
-                this.buttonList.set_child_at_index(
-                    this.tempDragData.workspaceButton,
-                    toIndex
-                );
-
-                this.msWorkspaceManager.setMsWorkspaceAt(
-                    this.tempDragData.workspaceButton.msWorkspace,
-                    toIndex
-                );
-            } else {
-                toIndex =
-                    toIndex +
-                    (this.tempDragData.initialIndex < toIndex ? 0 : 1);
-                this.buttonList.set_child_at_index(
-                    this.tempDragData.workspaceButton,
-                    toIndex
-                );
-                this.msWorkspaceManager.setMsWorkspaceAt(
-                    this.tempDragData.workspaceButton.msWorkspace,
-                    toIndex
-                );
-            }
-        } else {
-            this.buttonList.set_child_at_index(
-                this.tempDragData.workspaceButton,
-                this.tempDragData.initialIndex
-            );
-        }
-        this.workspaceActiveIndicator.show();
-        delete this.tempDragData;
-    }
-
-    _onDragOver(workspaceButton, before) {
-        this.tempDragData.draggedOver = workspaceButton;
-        this.tempDragData.draggedBefore = before;
-        this.dropPlaceholder.resize(this.tempDragData.workspaceButton);
-        let dropPlaceholderIndex = this.buttonList
-            .get_children()
-            .indexOf(this.dropPlaceholder);
-        let workspaceButtonIndex = this.buttonList
-            .get_children()
-            .indexOf(workspaceButton);
-        let toIndex =
-            dropPlaceholderIndex < workspaceButtonIndex
-                ? workspaceButtonIndex - 1
-                : workspaceButtonIndex;
-        if (this.tempDragData.draggedBefore) {
-            this.buttonList.set_child_at_index(
-                this.dropPlaceholder,
-                toIndex
-            );
-        } else {
-            this.buttonList.set_child_at_index(
-                this.dropPlaceholder,
-                toIndex + 1
-            );
-        }
-    } */
-
     activeButtonForIndex(index: number) {
         if (this.buttonActive) {
             if (this.buttonActive.has_style_class_name('active')) {
                 this.buttonActive.remove_style_class_name('active');
             }
-            const child = this.buttonList.get_child_at_index(index);
-            assert(child instanceof St.Widget, 'Child was not a widget');
-            this.buttonActive = child;
-            this.buttonActive.add_style_class_name('active');
         }
+        const child = this.buttonList.get_child_at_index(index);
+        assert(child instanceof St.Widget, 'Child was not a widget');
+        this.buttonActive = child;
+        this.buttonActive.add_style_class_name('active');
 
         this.workspaceActiveIndicator.ease({
             translation_y: this.get_preferred_width(-1)[1]! * index,
@@ -305,10 +164,31 @@ export class WorkspaceList extends St.Widget {
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
     }
+    vfunc_allocate(
+        box: Clutter.ActorBox,
+        flags?: Clutter.AllocationFlags
+    ): void {
+        SetAllocation(this, box, flags);
 
-    /**
-     * Just the parent width
-     */
+        for (const child of this.get_children()) {
+            if (child == this.workspaceActiveIndicator) {
+                const themeNode = this.get_theme_node();
+                const contentBox = themeNode.get_content_box(box);
+                const width = this.workspaceActiveIndicator.get_width();
+                const height = this.workspaceActiveIndicator.get_height();
+                const actorBox = new Clutter.ActorBox({
+                    x1: contentBox.x2 - width,
+                    x2: contentBox.x2,
+                    y1: contentBox.y1,
+                    y2: contentBox.y1 + height,
+                });
+
+                Allocate(this.workspaceActiveIndicator, actorBox);
+            } else {
+                AllocatePreferredSize(child);
+            }
+        }
+    }
     vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
             Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
@@ -362,6 +242,7 @@ export class WorkspaceButton extends MatButton {
         const workspaceButtonIcon = new WorkspaceButtonIcon(msWorkspace);
         super({
             child: workspaceButtonIcon,
+            style: 'mat-panel-button',
         });
         this.msWorkspaceManager = msWorkspaceManager;
         this.msWorkspace = msWorkspace;
@@ -783,5 +664,22 @@ export class WorkspaceButtonIcon extends St.Widget {
                 }
             });
         }
+    }
+}
+
+@registerGObjectClass
+export class WorkspaceActiveIndicator extends St.Widget {
+    constructor() {
+        super({
+            style_class: 'workspace-active-indicator',
+        });
+    }
+    vfunc_get_preferred_height(
+        _for_width: number
+    ): [number | null, number | null] {
+        const height = Me.msThemeManager.getPanelSize(
+            Main.layoutManager.primaryIndex
+        );
+        return [height, height];
     }
 }
