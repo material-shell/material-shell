@@ -1,7 +1,13 @@
 extension = material-shell@papyelgringo
 extension_tool = gnome-extensions
 
-.PHONY: schemas compile build_prod build_tasks update_git update install disable enable
+.PHONY: all schemas compile build_prod build_tasks update_git update install disable enable
+
+ifeq ($(XDG_DATA_HOME),)
+export XDG_DATA_HOME = $(HOME)/.local/share
+endif
+
+all: npm_dependencies compile
 
 schemas:
 	cp -r schemas dist
