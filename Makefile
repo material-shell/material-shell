@@ -1,7 +1,7 @@
 extension = material-shell@papyelgringo
 extension_tool = gnome-extensions
 
-.PHONY: schemas compile build_prod build_tasks update_git update install disable enable
+.PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist
 
 schemas:
 	cp -r schemas dist
@@ -19,6 +19,7 @@ dist/style-primary-theme.css: dist src/styles/primary-theme.scss
 	npx sass --no-source-map src/styles/primary-theme.scss dist/style-primary-theme.css
 
 dist:
+	rm -rf dist
 	mkdir dist
 
 disable:
