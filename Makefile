@@ -41,7 +41,7 @@ compile: dist schemas sass
 	npx tsc
 	npx tsc scripts/transpile.ts --outDir build && node build/transpile.js
 	npm run rollup-extension && npm run rollup-prefs
-	sed "s/{put_commit_there}/$(shell git rev-parse --short HEAD)/" metadata.json > dist/metadata.json
+	sed "s/{put_commit_there}/$$(test -z "$$GIT_COMMIT_HASH" && git rev-parse --short HEAD || echo "$$GIT_COMMIT_HASH")/" metadata.json > dist/metadata.json
 	cp -r assets dist/assets
 
 update_git:
