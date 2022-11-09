@@ -1,9 +1,8 @@
-import * as GLib from 'glib';
 import * as GObject from 'gobject';
-import * as Meta from 'meta';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
-import { main as Main } from 'ui';
+import * as St from 'st';
+
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
@@ -11,7 +10,6 @@ export class MatPanelButton extends MatButton {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MatPanelButton',
     };
-    monitorIndex: number;
 
     constructor(params = {}) {
         super(params);
@@ -22,38 +20,19 @@ export class MatPanelButton extends MatButton {
                 this.queue_relayout();
             }
         );
-        this.monitorIndex = this.findMonitor();
-        const monitorSignal = Main.layoutManager.connect(
-            'monitors-changed',
-            () => {
-                GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                    this.monitorIndex = this.findMonitor();
-                    return false;
-                });
-            }
-        );
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(panelSizeSignal);
-            Main.layoutManager.disconnect(monitorSignal);
         });
-    }
-
-    findMonitor() {
-        const [x, y] = this.get_transformed_position() as [number, number];
-        return (
-            global.display.get_monitor_index_for_rect(
-                new Meta.Rectangle({ x, y, width: 0, height: 0 })
-            ) || global.display.get_current_monitor()
-        );
     }
 
     /**
      * Just the panel width
      */
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
+        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
         return [
-            Me.msThemeManager.getPanelSize(this.monitorIndex),
-            Me.msThemeManager.getPanelSize(this.monitorIndex),
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 
@@ -61,9 +40,10 @@ export class MatPanelButton extends MatButton {
      * Just the panel height
      */
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
+        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
         return [
-            Me.msThemeManager.getPanelSize(this.monitorIndex),
-            Me.msThemeManager.getPanelSize(this.monitorIndex),
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
+            Me.msThemeManager.getPanelSizeNotScaled() * scaleFactor,
         ];
     }
 }
