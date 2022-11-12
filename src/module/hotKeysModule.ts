@@ -416,6 +416,16 @@ export class HotKeysModule {
             );
         });
 
+        [...Array(10).keys()].forEach((windowIndex) => {
+            const actionKey = `FOCUS_WINDOW_${windowIndex + 1}`;
+            KeyBindingAction[actionKey] = `focus-window-${windowIndex + 1}`;
+            this.actionNameToActionMap.set(KeyBindingAction[actionKey], () => {
+                const activeMsWorkspace =
+                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                activeMsWorkspace.focusNthTileable(windowIndex);
+            });
+        });
+
         [...Array(10).keys()].forEach((workspaceIndex) => {
             const actionKey = `MOVE_WINDOW_TO_${workspaceIndex + 1}`;
             KeyBindingAction[actionKey] = `move-window-to-workspace-${

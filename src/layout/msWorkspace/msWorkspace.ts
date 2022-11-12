@@ -389,6 +389,12 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
+    /** Focus the nth tileable inside this workspace */
+    focusNthTileable(nth: number) {
+        nth = Math.min(this.tileableList.length - 1, Math.max(nth, 0));
+        this.focusTileable(this.tileableList[nth]);
+    }
+
     focusNextTileable() {
         if (this.focusedIndex === this.tileableList.length - 1) {
             if (this.shouldCycleTileableNavigation()) {
