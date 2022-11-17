@@ -219,6 +219,6 @@ If you interested in funding the project throught crypto feel free to use:
 
 **Bitcoin** `395nVybx6h6CC4sWgGGcvCDxwLvGMFhfiA`
 
-**Ethereum** `0x14aaf57e59cbbc9fb6c5f09fb9cc0a10bdf366bb`
+**Ethereum** `0x45360f24f03f2a8a964f7c083815336912cba837`
 
 **Monero** `82YGUymQLZ3cWPw2kEfjTphjUJLCN3M2eX3dPxRhrBeKSoUUoj4TEHAGToPoZA8AfhSGEKa9FdZjmGKAMSBxcrgHQMRZu3v`
