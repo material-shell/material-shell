@@ -166,7 +166,7 @@ source               | `git clone https://github.com/material-shell/material-she
 
 (We appreciate package maintainers! If you would like to make a package available for your distro please submit a PR so it can be added here!)
 
-1. Reload GNOME Shell:
+3. Reload GNOME Shell:
   + On X.org: Hit `Alt+F2` and type the command `r`
   + On Wayland: Log out and back in
 
