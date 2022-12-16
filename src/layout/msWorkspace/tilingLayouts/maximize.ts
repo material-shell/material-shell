@@ -2,10 +2,8 @@
 import * as Clutter from 'clutter';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
-import { logAssert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { InfinityTo0, reparentActor } from 'src/utils/index';
-import { isNonNull } from 'src/utils/predicates';
+import { InfinityTo0 } from 'src/utils/index';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
@@ -21,6 +19,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     constructor(msWorkspace: MsWorkspace, state: MaximizeLayoutState) {
         super(msWorkspace, state);
         this.translationAnimator = new TranslationAnimator();
+        this.tileableContainer.add_child(this.translationAnimator);
         this.translationAnimator.connect('transition-completed', () => {
             this.endTransition();
         });
@@ -48,22 +47,11 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
             this.currentDisplayed.tileable !== actor
         ) {
             if (this.currentDisplayed) {
-                if (
-                    logAssert(
-                        this.tileableContainer
-                            .get_children()
-                            .includes(this.currentDisplayed.tileable),
-                        'Expected the currently displayed tileable to be a child of the tileable container'
-                    )
-                ) {
-                    this.tileableContainer.remove_child(
-                        this.currentDisplayed.tileable
-                    );
-                }
-
                 this.currentDisplayed.tileable.disconnect(
                     this.currentDisplayed.destroySignal
                 );
+            } else {
+                this.translationAnimator.setActors([actor]);
             }
             this.currentDisplayed = {
                 tileable: actor,
@@ -72,11 +60,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                 }),
             };
         }
-
-        // Make sure the tileable is parented correctly.
-        // Even if this was the currently displayed actor,
-        // the parent might be incorrect if we were just in an animation.
-        reparentActor(actor, this.tileableContainer);
 
         // Make sure the actor has focus, but only if this
         // workspace is actually visible.
@@ -135,15 +118,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
      * Animations
      */
     startTransition(nextActor: Tileable, prevActor: Tileable | null) {
-        if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width = InfinityTo0(
-                this.tileableContainer.allocation.get_width()
-            );
-            this.translationAnimator.height = InfinityTo0(
-                this.tileableContainer.allocation.get_height()
-            );
-            this.tileableContainer.add_child(this.translationAnimator);
-        }
         const indexOfPrevActor = this.msWorkspace.tileableList.findIndex(
             (tileable) => {
                 return tileable === prevActor;
@@ -166,7 +140,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         });
 
         this.translationAnimator.setTranslation(
-            [prevActor].filter(isNonNull),
             [nextActor],
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );
@@ -176,6 +149,5 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         if (this.msWorkspace.tileableFocused !== null) {
             this.displayTileable(this.msWorkspace.tileableFocused);
         }
-        this.tileableContainer.remove_child(this.translationAnimator);
     }
 }

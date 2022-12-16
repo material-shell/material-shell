@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { reparentActor } from 'src/utils/index';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
 import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
@@ -22,7 +21,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     // _state: { key: 'split', nbOfColumns: number };
     vertical: boolean;
-    translationAnimator: TranslationAnimator;
+    translationAnimator = new TranslationAnimator();
     baseIndex: number;
     activeTileableList: Tileable[];
 
@@ -35,7 +34,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         this.activeTileableList = [];
         this.updateActiveTileableListFromFocused();
         this.vertical = this.monitor.width < this.monitor.height;
-        this.translationAnimator = new TranslationAnimator();
+        this.tileableContainer.add_child(this.translationAnimator);
         this.translationAnimator.connect('transition-completed', () => {
             this.endTransition();
         });
@@ -47,7 +46,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     afterInit() {
         super.afterInit();
-        this.refreshVisibleActors();
+        this.updateActiveTileableListFromFocused();
     }
 
     get tileableListVisible() {
@@ -70,29 +69,12 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
             this.baseIndex,
             this.baseIndex + this._state.nbOfColumns
         );
+        this.translationAnimator.setActors(this.activeTileableList);
     }
 
     onTileableListChanged(newWindows: Tileable[]) {
         super.onTileableListChanged(newWindows);
         this.updateActiveTileableListFromFocused();
-        this.refreshVisibleActors();
-    }
-
-    refreshVisibleActors() {
-        // refreshVisibleActors will be called when the animation finishes
-        if (this.translationAnimator.animationInProgress) return;
-
-        for (const tileable of this.msWorkspace.tileableList) {
-            if (this.shouldBeVisible(tileable)) {
-                if (tileable.get_parent() !== this.tileableContainer) {
-                    reparentActor(tileable, this.tileableContainer);
-                }
-            } else {
-                if (tileable.get_parent() === this.tileableContainer) {
-                    this.tileableContainer.remove_child(tileable);
-                }
-            }
-        }
         this.msWorkspace.refreshFocus();
     }
 
@@ -185,11 +167,6 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     ) {
         const width = this.tileableContainer.allocation.get_width();
         const height = this.tileableContainer.allocation.get_height();
-        if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width = width;
-            this.translationAnimator.height = height;
-            this.tileableContainer.add_child(this.translationAnimator);
-        }
 
         const prevBase =
             previousTileableList.length > 0
@@ -220,19 +197,14 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
             this.borderContainer.hide();
         }
 
-        this.translationAnimator.setTranslation(
-            previousTileableList,
-            nextTileableList,
-            direction
-        );
+        this.translationAnimator.setTranslation(nextTileableList, direction);
     }
 
     endTransition() {
         if (this.borderContainer) {
             this.borderContainer.show();
         }
-        this.refreshVisibleActors();
-        this.tileableContainer.remove_child(this.translationAnimator);
+        this.msWorkspace.refreshFocus();
     }
 
     buildQuickWidget() {
@@ -242,7 +214,6 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         widget.connect('changed', (_, newValue) => {
             this._state.nbOfColumns = newValue;
             this.updateActiveTileableListFromFocused();
-            this.refreshVisibleActors();
             this.tileAll();
         });
         return widget;

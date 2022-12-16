@@ -11,7 +11,6 @@ interface TransitionConfig {
     duration: number;
     mode: Clutter.AnimationMode;
     onComplete?: () => void;
-    onStopped?: () => void;
     translation_y?: number;
     translation_x?: number;
 }
@@ -30,7 +29,8 @@ export class TranslationAnimator extends Clutter.Actor {
         Clutter.BoxLayout,
         Clutter.ContentPrototype
     >;
-    animationInProgress: boolean | undefined;
+    currentActors: Clutter.Actor[] = [];
+    animationInProgress = false;
 
     constructor(vertical = false) {
         super({
@@ -61,19 +61,14 @@ export class TranslationAnimator extends Clutter.Actor {
      * Note: The translation animator takes full control over the parenting of the actors until the animation is complete.
      * When calling this function the actors may be parented in arbitrary ways, they will be reparented to the proper state.
      */
-    setTranslation(
-        initialActors: Clutter.Actor[],
-        enteringActors: Clutter.Actor[],
-        direction: number
-    ): void {
+    setTranslation(enteringActors: Clutter.Actor[], direction: number): void {
         let translationY = this.transitionContainer.translation_y;
         let translationX = this.transitionContainer.translation_x;
-
         if (this.animationInProgress) {
             this.transitionContainer.remove_all_transitions();
             this.animationInProgress = false;
 
-            // Remove all clones outside visible area
+            // Remove all actors outside visible area
             const visibleArea = {
                 x1: Math.abs(translationX),
                 x2: Math.abs(translationX) + this.width,
@@ -107,15 +102,11 @@ export class TranslationAnimator extends Clutter.Actor {
                 }
             });
 
-            for (const actor of initialActors) {
+            for (const actor of this.currentActors) {
                 const p = actor.get_parent();
                 if (p !== null && p !== this.transitionContainer) {
                     p.remove_child(actor);
                 }
-            }
-        } else {
-            for (const actor of initialActors) {
-                reparentActor(actor, this.transitionContainer);
             }
         }
 
@@ -123,7 +114,7 @@ export class TranslationAnimator extends Clutter.Actor {
         enteringActors.forEach((actor, index) => {
             // check if the next actor are already in transition
             const nextActorFound = children.includes(actor);
-            //insert nextActor Clone at the top pile if direction is positive or at the end if negative
+            //insert nextActor at the top pile if direction is positive or at the end if negative
             if (!nextActorFound) {
                 reparentActor(actor, this.transitionContainer);
                 if (direction < 0) {
@@ -136,6 +127,7 @@ export class TranslationAnimator extends Clutter.Actor {
                 }
             }
         });
+        this.currentActors = enteringActors;
         this.transitionContainer.translation_y = translationY;
         this.transitionContainer.translation_x = translationX;
 
@@ -148,7 +140,7 @@ export class TranslationAnimator extends Clutter.Actor {
         const transitionConfig: TransitionConfig = {
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onStopped: () => {
+            onComplete: () => {
                 this.endTransition();
             },
         };
@@ -169,11 +161,51 @@ export class TranslationAnimator extends Clutter.Actor {
         this.transitionContainer.ease(transitionConfig);
     }
 
+    setActors(actors: Clutter.Actor[]) {
+        this.transitionContainer.remove_all_children();
+        for (const actor of actors) {
+            reparentActor(actor, this.transitionContainer);
+        }
+        this.currentActors = actors;
+    }
+
     endTransition(): void {
         this.transitionContainer.translation_x = 0;
         this.transitionContainer.translation_y = 0;
         this.animationInProgress = false;
         this.emit('transition-completed');
-        this.transitionContainer.remove_all_children();
+        for (const child of this.transitionContainer.get_children()) {
+            if (!this.currentActors.includes(child)) {
+                this.transitionContainer.remove_actor(child);
+            }
+        }
+    }
+
+    override vfunc_get_preferred_height(
+        _forWidth: number
+    ): [number | null, number | null] {
+        const parent = this.get_parent();
+        if (parent) {
+            return [
+                parent.allocation.get_height(),
+                parent.allocation.get_height(),
+            ];
+        } else {
+            return super.vfunc_get_preferred_height(_forWidth);
+        }
+    }
+
+    override vfunc_get_preferred_width(
+        _forHeight: number
+    ): [number | null, number | null] {
+        const parent = this.get_parent();
+        if (parent) {
+            return [
+                parent.allocation.get_width(),
+                parent.allocation.get_width(),
+            ];
+        } else {
+            return super.vfunc_get_preferred_width(_forHeight);
+        }
     }
 }
