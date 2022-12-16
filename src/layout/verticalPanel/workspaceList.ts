@@ -11,7 +11,7 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import {
     Allocate,
     AllocatePreferredSize,
-    SetAllocation,
+    SetAllocation
 } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
@@ -177,8 +177,8 @@ export class WorkspaceList extends St.Widget {
                 const width = this.workspaceActiveIndicator.get_width();
                 const height = this.workspaceActiveIndicator.get_height();
                 const actorBox = new Clutter.ActorBox({
-                    x1: contentBox.x2 - width,
-                    x2: contentBox.x2,
+                    x1: contentBox.x1,
+                    x2: contentBox.x1 + width,
                     y1: contentBox.y1,
                     y2: contentBox.y1 + height,
                 });
