@@ -11,7 +11,7 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import {
     Allocate,
     AllocatePreferredSize,
-    SetAllocation
+    SetAllocation,
 } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
