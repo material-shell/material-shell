@@ -1016,7 +1016,6 @@ export class MsWindow extends Clutter.Actor {
                 // If the window is not drawn yet, the setWindow function must still be running.
                 // Most likely a dialog was added before the window was drawn.
                 // If the window eventually gets drawn, the setWindow function will call onMetaWindowsChanged again.
-                Me.logFocus('CACA CACA CACA CACA CACA');
             }
             set_style_class(
                 this.msContent,
