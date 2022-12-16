@@ -224,15 +224,17 @@ export class BaseResizeableTilingLayout<
                 portionBorder.firstPortion
             );
             const { x, y, width, height } = this.applyBoxRatio(box, ratio);
+            const scaledBorderWidth =
+                Me.msThemeManager.getScaledSize(BORDER_WIDTH);
             if (portionBorder.vertical) {
-                actor.x = x + width - BORDER_WIDTH / 2;
+                actor.x = x + width - scaledBorderWidth / 2;
                 actor.y = y;
                 actor.height = height;
-                actor.width = BORDER_WIDTH;
+                actor.width = scaledBorderWidth;
             } else {
                 actor.x = x;
-                actor.y = y + height - BORDER_WIDTH / 2;
-                actor.height = BORDER_WIDTH;
+                actor.y = y + height - scaledBorderWidth / 2;
+                actor.height = scaledBorderWidth;
                 actor.width = width;
             }
         });

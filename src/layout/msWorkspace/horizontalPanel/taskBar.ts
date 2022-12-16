@@ -129,9 +129,6 @@ export class TaskBar extends St.Widget {
         this.menuManager = panelMenuManager;
 
         this.onTileableListChange(this.msWorkspace.tileableList);
-        if (this.items[this.msWorkspace.focusedIndex]) {
-            this.items[this.msWorkspace.focusedIndex].setActive(true);
-        }
     }
 
     get items(): (TileableItem | IconTaskBarItem)[] {
@@ -162,9 +159,12 @@ export class TaskBar extends St.Widget {
             );
         }
 
-        // Ensure tileable position in case of reorder
+        // Ensure tileable position in case of reorder and set Active to the focused tileable
         newTileableList.forEach((tileable, index) => {
             this.items[index].setTileable(tileable);
+            if (tileable == this.msWorkspace.tileableFocused) {
+                this.items[index].setActive(true);
+            }
         });
     }
 
@@ -329,7 +329,7 @@ export class TaskBarItem extends MatButton {
 
     constructor(contentActor: St.Widget, draggable: boolean) {
         super({
-            style_class: 'task-bar-item ',
+            style_class: 'task-bar-item',
         });
         this.y_expand = true;
         this._delegate = this;
@@ -672,7 +672,7 @@ export class IconTaskBarItem extends TaskBarItem {
     }
 
     vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        const height = box.get_height() / 2;
+        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {
             this.buildIconIdle.schedule(height);

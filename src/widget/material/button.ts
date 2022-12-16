@@ -58,7 +58,7 @@ export class MatButton extends St.Widget {
             this.add_style_class_name('primary');
         }
 
-        const clickAction = new Clutter.ClickAction();
+        const clickAction = new PropagateClickAction();
         clickAction.connect('clicked', (action) => {
             this.clicked = true;
             const button = action.get_button();
@@ -73,6 +73,7 @@ export class MatButton extends St.Widget {
             return true;
         });
         clickAction.connect('long-press', this._onLongPress.bind(this));
+
         this.add_action(clickAction);
 
         this.connect('enter-event', () => {
@@ -84,7 +85,7 @@ export class MatButton extends St.Widget {
     }
 
     _onLongPress(
-        action: Clutter.ClickAction,
+        action: PropagateClickAction,
         actor: Clutter.Actor,
         state: Clutter.LongPressState
     ) {
@@ -92,8 +93,7 @@ export class MatButton extends St.Widget {
         // a long-press canceled when the pointer movement
         // exceeds dnd-drag-threshold to manually start the drag
         if (state == Clutter.LongPressState.CANCEL) {
-            const event = Clutter.get_current_event();
-
+            const event = action.lastEvent;
             if (this._longPressLater) return true;
 
             // A click cancels a long-press before any click handler is
@@ -158,5 +158,23 @@ export class MatButton extends St.Widget {
         if (child) {
             this.add_child(child);
         }
+    }
+}
+
+@registerGObjectClass
+export class PropagateClickAction extends Clutter.ClickAction {
+    static metaInfo: GObject.MetaInfo = {
+        GTypeName: 'PropagateClickAction',
+    };
+    lastEvent: Clutter.Event | undefined;
+    constructor() {
+        super();
+    }
+
+    vfunc_handle_event(event: Clutter.Event) {
+        this.lastEvent = event;
+        super.vfunc_handle_event(event);
+        //Propagate ( propagating has the side effect to not assign global Clutter.get_current_event so we stash it in lastEvent)
+        return false;
     }
 }

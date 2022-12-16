@@ -141,6 +141,28 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     }
 }
 
+@mixin selected($theme) {
+    @if ($theme== 'light') {
+        background: rgba(0, 0, 0, 0.03);
+    }
+
+    @if ($theme== 'dark') {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    @if ($theme== 'primary') {
+        background: rgba(255, 255, 255, 0.03);
+
+        @at-root .light-primary#{&} {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        @at-root .dark-primary#{&} {
+            background: rgba(255, 255, 255, 0.03);
+        }
+    }
+}
+
 @mixin foreground-high-emphasis($theme) {
     @include foreground($theme, 0.87);
 }
@@ -184,7 +206,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include background('primary');
     }
 
-    width: 3px;
+    width: 2px;
 }
 
 .ripple-wave {
@@ -218,7 +240,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         @include foreground-medium-emphasis($theme);
 
         &.active {
-            @include active($theme);
+            @include selected($theme);
 
             @if ($theme== 'light') {
                 color: $color-primary;
@@ -236,8 +258,61 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
 #msPanel {
     background: rgba(getBackgroundColor($theme), $panel-opacity);
 
-    box-shadow: $shadow;
+    &.position-left {
+        @if ($theme== 'light') {
+            box-shadow: inset -1px 0px rgba(0, 0, 0, 0.08);
+        }
 
+        @if ($theme== 'dark') {
+            box-shadow: inset -1px 0px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset -1px
+                0px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset -1px 0px getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset -1px 0px getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+    &.position-right {
+        @if ($theme== 'light') {
+            box-shadow: inset 1px 0px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 1px 0px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                1px
+                0px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 1px 0px
+                    getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 1px 0px
+                    getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+
+    transition-duration: 0.2s;
+
+    &.shadow {
+        box-shadow: $shadow;
+    }
     .panel-button {
         @include foreground-medium-emphasis($theme);
         text-align: center;
@@ -303,6 +378,15 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
             }
         }
     }
+    WorkspaceButton {
+        @include foreground-medium-emphasis($theme);
+
+        &.active {
+            @include selected($theme);
+
+            @include foreground-high-emphasis($theme);
+        }
+    }
 }
 
 #horizontalPanel {
@@ -313,7 +397,56 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
         $topPanelTheme: 'light';
     }
 
-    box-shadow: $shadow;
+    &.position-top {
+        @if ($theme== 'light') {
+            box-shadow: inset 0px -1px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 0px -1px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                0px -1px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 0px -1px getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 0px -1px getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
+
+    &.position-bottom {
+        @if ($theme== 'light') {
+            box-shadow: inset 0px 1px rgba(0, 0, 0, 0.08);
+        }
+
+        @if ($theme== 'dark') {
+            box-shadow: inset 0px 1px rgba(255, 255, 255, 0.04);
+        }
+
+        @if ($theme== 'primary') {
+            box-shadow: inset
+                0px
+                1px
+                getLighterColor(getBackgroundColor($theme));
+
+            @at-root .light-primary#{&} {
+                box-shadow: inset 0px 1px
+                    getDarkerColor(getBackgroundColor($theme));
+            }
+
+            @at-root .dark-primary#{&} {
+                box-shadow: inset 0px 1px
+                    getLighterColor(getBackgroundColor($theme));
+            }
+        }
+    }
 
     .task-active-indicator {
         @if ($topPanelTheme== 'dark') {
@@ -354,7 +487,7 @@ $panel-opacity: 0.876; // Don't change this value since it's dynamically changed
     &.active {
         .task-bar-item-content,
         .task-bar-icon-container {
-            background: rgba(255, 255, 255, 0.03);
+            @include selected($theme);
 
             @if ($theme== 'light') {
                 color: $color-primary;
@@ -482,8 +615,10 @@ MatTooltip {
     text-align: center;
 }
 
-MatDivider {
-    @include hover($theme);
+#matDivider {
+    .inner-divider {
+        @include hover($theme);
+    }
 }
 
 .surface {

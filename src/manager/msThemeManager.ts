@@ -39,6 +39,18 @@ export const FocusEffectEnum = {
     BORDER: 2,
 };
 
+export const msThemeSignalEnum = {
+    HorizontalPanelPositionChanged: 'horizontal-panel-position-changed',
+    VerticalPanelPositionChanged: 'vertical-panel-position-changed',
+    PanelSizeChanged: 'panel-size-changed',
+    BlurBackgroundChanged: 'blur-background-changed',
+    PanelIconStyleChanged: 'panel-icon-style-changed',
+    PanelIconColorChanged: 'panel-icon-color-changed',
+    ClockHorizontalChanged: 'clock-horizontal-changed',
+    ClockAppLauncherChanged: 'clock-app-launcher-changed',
+    FocusEffectChanged: 'focus-effect-changed',
+};
+
 function parseCoglColor(color: string): Color {
     const c = new Color();
     c.init_from_4ub(
@@ -73,7 +85,7 @@ export class MsThemeManager extends MsManager {
         this.primary = this.themeSettings.get_string('primary-color');
         this.primaryColor = parseCoglColor(this.primary);
         this.metaCursor = Meta.Cursor.DEFAULT;
-        var displayedCursor: Meta.Cursor = this.metaCursor;
+        let displayedCursor: Meta.Cursor = this.metaCursor;
         this.throttledDisplaySetCursor = throttle(
             () => {
                 if (displayedCursor == this.metaCursor) return;
@@ -107,14 +119,14 @@ export class MsThemeManager extends MsManager {
             this.themeSettings,
             'changed::vertical-panel-position',
             () => {
-                this.emit('vertical-panel-position-changed');
+                this.emit(msThemeSignalEnum.VerticalPanelPositionChanged);
             }
         );
         this.observe(
             this.themeSettings,
             'changed::horizontal-panel-position',
             () => {
-                this.emit('horizontal-panel-position-changed');
+                this.emit(msThemeSignalEnum.HorizontalPanelPositionChanged);
             }
         );
         this.observe(this.themeSettings, 'changed::panel-opacity', () => {
@@ -124,25 +136,25 @@ export class MsThemeManager extends MsManager {
             this.regenerateStylesheet();
         });
         this.observe(this.themeSettings, 'changed::panel-size', () => {
-            this.emit('panel-size-changed');
+            this.emit(msThemeSignalEnum.PanelSizeChanged);
         });
         this.observe(this.themeSettings, 'changed::blur-background', () => {
-            this.emit('blur-background-changed');
+            this.emit(msThemeSignalEnum.BlurBackgroundChanged);
         });
         this.observe(this.themeSettings, 'changed::panel-icon-style', () => {
-            this.emit('panel-icon-style-changed');
+            this.emit(msThemeSignalEnum.PanelIconStyleChanged);
         });
         this.observe(this.themeSettings, 'changed::panel-icon-color', () => {
-            this.emit('panel-icon-color-changed');
+            this.emit(msThemeSignalEnum.PanelIconColorChanged);
         });
         this.observe(this.themeSettings, 'changed::clock-horizontal', () => {
-            this.emit('clock-horizontal-changed');
+            this.emit(msThemeSignalEnum.ClockHorizontalChanged);
         });
         this.observe(this.themeSettings, 'changed::clock-app-launcher', () => {
-            this.emit('clock-app-launcher-changed');
+            this.emit(msThemeSignalEnum.ClockAppLauncherChanged);
         });
         this.observe(this.themeSettings, 'changed::focus-effect', () => {
-            this.emit('focus-effect-changed');
+            this.emit(msThemeSignalEnum.FocusEffectChanged);
         });
     }
 
@@ -195,6 +207,11 @@ export class MsThemeManager extends MsManager {
 
     getPanelSizeNotScaled() {
         return this.themeSettings.get_int('panel-size');
+    }
+
+    getScaledSize(size: number) {
+        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
+        return size * scaleFactor;
     }
 
     get focusEffect() {
