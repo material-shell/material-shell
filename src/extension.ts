@@ -202,13 +202,13 @@ function showSplashScreens() {
         5000,
         () => {
             _splashscreenTimeoutId = 0;
-            hideSplashScreens();
+            return hideSplashScreens();
         }
     );
 }
 
 function hideSplashScreens() {
-    if (splashScreens.length < 1) return;
+    if (splashScreens.length < 1) return GLib.SOURCE_REMOVE;
     splashScreens.forEach((splashscreen) => {
         splashscreen.ease({
             opacity: 0,
@@ -222,4 +222,5 @@ function hideSplashScreens() {
     });
     splashScreens = [];
     splashscreenCalled = false;
+    return GLib.SOURCE_REMOVE;
 }

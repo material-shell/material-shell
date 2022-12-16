@@ -135,7 +135,7 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
         return true;
     }
 
-    return SOURCE_CONTINUE;
+    return false;
 }
 
 @registerGObjectClass
@@ -333,6 +333,7 @@ export class MsWindow extends Clutter.Actor {
                         reject
                     );
                 }
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             reject();
@@ -1015,6 +1016,7 @@ export class MsWindow extends Clutter.Actor {
                 // If the window is not drawn yet, the setWindow function must still be running.
                 // Most likely a dialog was added before the window was drawn.
                 // If the window eventually gets drawn, the setWindow function will call onMetaWindowsChanged again.
+                Me.logFocus('CACA CACA CACA CACA CACA');
             }
             set_style_class(
                 this.msContent,
@@ -1198,12 +1200,12 @@ export class MsWindow extends Clutter.Actor {
             }
             this.placeholder.reset();
         };
-
         this.placeholder.ease({
             opacity: 0,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-            onComplete,
+            // We use onStopped instead of onComplete because we want to remove the placeholder even if the transition has been interrupted
+            onStopped: onComplete,
         });
     }
 

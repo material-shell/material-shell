@@ -47,6 +47,7 @@ export class MsFocusManager extends MsManager {
                 this.focusProtected = true;
                 Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
+                    return GLib.SOURCE_REMOVE;
                 });
             }
         );
