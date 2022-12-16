@@ -55,7 +55,7 @@ export class RippleWave extends St.Widget {
             opacity: 0,
             duration: second * 1000,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
+            onStopped: () => {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                     if (!this.destroyed) {
                         this.remove_all_transitions();

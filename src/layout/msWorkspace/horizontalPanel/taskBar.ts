@@ -289,6 +289,10 @@ export class TaskActiveIndicator extends St.Widget {
             scale_x: 1,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onStopped: () => {
+                this.translation_x = 0;
+                this.scaleX = 1;
+            },
         });
     }
     vfunc_allocate(...args: [Clutter.ActorBox]) {

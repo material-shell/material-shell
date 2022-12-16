@@ -10,7 +10,8 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 interface TransitionConfig {
     duration: number;
     mode: Clutter.AnimationMode;
-    onComplete: () => void;
+    onComplete?: () => void;
+    onStopped?: () => void;
     translation_y?: number;
     translation_x?: number;
 }
@@ -147,7 +148,7 @@ export class TranslationAnimator extends Clutter.Actor {
         const transitionConfig: TransitionConfig = {
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
+            onStopped: () => {
                 this.endTransition();
             },
         };
