@@ -73,6 +73,7 @@ export class TranslationAnimator extends Clutter.Actor {
             // Remove all actors outside visible area
             const visibleArea = {
                 x1: Math.abs(translationX),
+                // We use allocation size instead of height / width getter since during transition the size doesn't follow the allocation
                 x2: Math.abs(translationX) + this.allocation.get_width(),
                 y1: Math.abs(translationY),
                 y2: Math.abs(translationY) + this.allocation.get_height(),
