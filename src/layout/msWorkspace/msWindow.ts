@@ -135,7 +135,7 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
         return true;
     }
 
-    return SOURCE_CONTINUE;
+    return false;
 }
 
 @registerGObjectClass
@@ -333,6 +333,7 @@ export class MsWindow extends Clutter.Actor {
                         reject
                     );
                 }
+                return GLib.SOURCE_REMOVE;
             });
         } else {
             reject();
@@ -1208,12 +1209,12 @@ export class MsWindow extends Clutter.Actor {
             }
             this.placeholder.reset();
         };
-
         this.placeholder.ease({
             opacity: 0,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
-            onComplete,
+            // We use onStopped instead of onComplete because we want to remove the placeholder even if the transition has been interrupted
+            onStopped: onComplete,
         });
     }
 

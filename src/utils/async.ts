@@ -7,11 +7,13 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 export class Async {
     static timeoutIdList = [] as number[];
 
-    static addTimeout(priority: number, interval: number, func: () => void) {
+    static addTimeout(priority: number, interval: number, func: () => boolean) {
         const timeoutId = GLib.timeout_add(priority, interval, () => {
-            func();
-            this.clearTimeoutId(timeoutId);
-            return GLib.SOURCE_REMOVE;
+            const source = func();
+            if (source == GLib.SOURCE_REMOVE) {
+                this.clearTimeoutId(timeoutId);
+            }
+            return source;
         });
         this.timeoutIdList.push(timeoutId);
         return timeoutId;

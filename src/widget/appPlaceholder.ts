@@ -99,7 +99,7 @@ export class AppPlaceholder extends St.Widget {
                     break;
                 case Clutter.EventType.BUTTON_RELEASE:
                 case Clutter.EventType.TOUCH_END:
-                    this.activate(event.get_button());
+                    if (this.pressed) this.activate(event.get_button());
                     this.pressed = false;
                     break;
                 case Clutter.EventType.LEAVE:

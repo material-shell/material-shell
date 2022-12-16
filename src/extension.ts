@@ -132,7 +132,10 @@ function loaded(disconnect: boolean) {
             Async.clearTimeoutId(_splashscreenTimeoutId);
             _splashscreenTimeoutId = 0;
         }
-        Async.addTimeout(GLib.PRIORITY_DEFAULT, 1000, hideSplashScreens);
+        Async.addTimeout(GLib.PRIORITY_DEFAULT, 1000, () => {
+            hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
+        });
     }
     log('--------------------');
     log('END EXTENSION LOADED');
@@ -203,12 +206,13 @@ function showSplashScreens() {
         () => {
             _splashscreenTimeoutId = 0;
             hideSplashScreens();
+            return GLib.SOURCE_REMOVE;
         }
     );
 }
 
 function hideSplashScreens() {
-    if (splashScreens.length < 1) return;
+    if (splashScreens.length < 1) return GLib.SOURCE_REMOVE;
     splashScreens.forEach((splashscreen) => {
         splashscreen.ease({
             opacity: 0,

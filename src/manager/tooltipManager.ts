@@ -51,6 +51,7 @@ export class TooltipManager extends MsManager {
                 if (!left) {
                     tooltip = this.createTooltip(actor, params);
                 }
+                return GLib.SOURCE_REMOVE;
             });
         };
         this.observe(actor, 'enter-event', tooltipCallback);

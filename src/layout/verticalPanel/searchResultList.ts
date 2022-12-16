@@ -293,6 +293,7 @@ export class SearchResultList extends St.BoxLayout {
     private onSearchTimeout() {
         this.searchTimeoutId = 0;
         this.doSearch();
+        return GLib.SOURCE_REMOVE;
     }
 
     private searchCancelled() {

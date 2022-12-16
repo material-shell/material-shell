@@ -197,6 +197,7 @@ export class MsDndManager extends MsManager {
         this.throttledCheckUnderPointer();
         Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
             this.checkUnderThePointerRoutine();
+            return GLib.SOURCE_REMOVE;
         });
     }
 

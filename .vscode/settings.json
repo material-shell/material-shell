@@ -12,7 +12,7 @@
         // only from the root of
         // your workspace
         "target": true,
-        "dist": true,
+        "dist": false,
         "build": true
     },
     "editor.codeActionsOnSave": {
@@ -20,5 +20,6 @@
         "source.fixAll": true,
         "source.organizeImports": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

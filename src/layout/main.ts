@@ -522,7 +522,6 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         GTypeName: 'PrimaryMonitorContainer',
     };
     panel: MsPanel;
-    translationAnimator: TranslationAnimator;
     verticalPanelSpacer: St.Widget<
         Clutter.LayoutManager,
         Clutter.ContentPrototype,
@@ -533,6 +532,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         x_align: Clutter.ActorAlign.FILL,
         y_align: Clutter.ActorAlign.FILL,
     });
+    translationAnimator: TranslationAnimator = new TranslationAnimator(true);
     constructor(
         monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
@@ -546,16 +546,14 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         this.add_child(this.verticalPanelSpacer);
         this.panel = new MsPanel();
         this.add_child(this.workspaceContainer);
+        this.workspaceContainer.add_child(this.translationAnimator);
         this.add_child(this.panel);
 
-        this.translationAnimator = new TranslationAnimator(true);
         this.translationAnimator.connect('transition-completed', () => {
             assert(
                 this.msWorkspaceActor !== undefined,
                 'expected a workspace actor to exist'
             );
-            reparentActor(this.msWorkspaceActor, this.workspaceContainer);
-            this.workspaceContainer.remove_child(this.translationAnimator);
             this.msWorkspaceActor.updateUI();
         });
         const verticalPanelPositionSignal = Me.msThemeManager.connect(
@@ -580,13 +578,6 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     }
 
     setTranslation(prevActor: Clutter.Actor, nextActor: Clutter.Actor) {
-        if (!this.translationAnimator.get_parent()) {
-            this.translationAnimator.width = this.width;
-            this.translationAnimator.height = assertNotNull(
-                Main.layoutManager.primaryMonitor
-            ).height;
-            this.workspaceContainer.add_child(this.translationAnimator);
-        }
         const indexOfPrevActor =
             Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
                 (msWorkspace) => {
@@ -601,7 +592,6 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             );
         prevActor.height = nextActor.height = this.height;
         this.translationAnimator.setTranslation(
-            [prevActor],
             [nextActor],
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );
@@ -614,11 +604,10 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             prevActor = this.msWorkspaceActor;
             if (this.msWorkspaceActor.get_parent() === this.workspaceContainer)
                 this.workspaceContainer.remove_child(this.msWorkspaceActor);
+        } else {
+            this.translationAnimator.setActors([actor]);
         }
         this.msWorkspaceActor = actor;
-        if (!this.msWorkspaceActor.get_parent()) {
-            reparentActor(this.msWorkspaceActor, this.workspaceContainer);
-        }
         assertNotNull(this.msWorkspaceActor.msWorkspace).refreshFocus(true);
         if (prevActor) {
             this.setTranslation(prevActor, this.msWorkspaceActor);
