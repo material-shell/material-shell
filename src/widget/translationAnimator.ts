@@ -36,6 +36,8 @@ export class TranslationAnimator extends Clutter.Actor {
         super({
             layout_manager: new Clutter.BinLayout(),
             clip_to_allocation: true,
+            x_expand: true,
+            y_expand: true,
         });
 
         this.vertical = vertical;
@@ -71,9 +73,9 @@ export class TranslationAnimator extends Clutter.Actor {
             // Remove all actors outside visible area
             const visibleArea = {
                 x1: Math.abs(translationX),
-                x2: Math.abs(translationX) + this.width,
+                x2: Math.abs(translationX) + this.allocation.get_width(),
                 y1: Math.abs(translationY),
-                y2: Math.abs(translationY) + this.height,
+                y2: Math.abs(translationY) + this.allocation.get_height(),
             };
 
             // Foreach child check if it's in visible bound
@@ -101,13 +103,6 @@ export class TranslationAnimator extends Clutter.Actor {
                     }
                 }
             });
-
-            for (const actor of this.currentActors) {
-                const p = actor.get_parent();
-                if (p !== null && p !== this.transitionContainer) {
-                    p.remove_child(actor);
-                }
-            }
         }
 
         const children = this.transitionContainer.get_children();
@@ -148,8 +143,8 @@ export class TranslationAnimator extends Clutter.Actor {
         let target = 0;
         if (direction > 0) {
             target = this.vertical
-                ? this.transitionContainer.height - this.height
-                : this.transitionContainer.width - this.width;
+                ? this.transitionContainer.height - this.allocation.get_height()
+                : this.transitionContainer.width - this.allocation.get_width();
         }
 
         if (this.vertical) {
@@ -161,12 +156,18 @@ export class TranslationAnimator extends Clutter.Actor {
         this.transitionContainer.ease(transitionConfig);
     }
 
-    setActors(actors: Clutter.Actor[]) {
+    setActors(newActors: Clutter.Actor[]) {
         this.transitionContainer.remove_all_children();
-        for (const actor of actors) {
-            reparentActor(actor, this.transitionContainer);
+        for (const child of this.transitionContainer.get_children()) {
+            if (!newActors.includes(child)) {
+                this.transitionContainer.remove_actor(child);
+            }
         }
-        this.currentActors = actors;
+        for (const actor of newActors) {
+            if (actor.get_parent() != this.transitionContainer)
+                reparentActor(actor, this.transitionContainer);
+        }
+        this.currentActors = newActors;
     }
 
     endTransition(): void {
@@ -174,38 +175,12 @@ export class TranslationAnimator extends Clutter.Actor {
         this.transitionContainer.translation_y = 0;
         this.animationInProgress = false;
         this.emit('transition-completed');
+
+        // Remove all actors which have just been transitioned away from
         for (const child of this.transitionContainer.get_children()) {
             if (!this.currentActors.includes(child)) {
                 this.transitionContainer.remove_actor(child);
             }
-        }
-    }
-
-    override vfunc_get_preferred_height(
-        _forWidth: number
-    ): [number | null, number | null] {
-        const parent = this.get_parent();
-        if (parent) {
-            return [
-                parent.allocation.get_height(),
-                parent.allocation.get_height(),
-            ];
-        } else {
-            return super.vfunc_get_preferred_height(_forWidth);
-        }
-    }
-
-    override vfunc_get_preferred_width(
-        _forHeight: number
-    ): [number | null, number | null] {
-        const parent = this.get_parent();
-        if (parent) {
-            return [
-                parent.allocation.get_width(),
-                parent.allocation.get_width(),
-            ];
-        } else {
-            return super.vfunc_get_preferred_width(_forHeight);
         }
     }
 }
