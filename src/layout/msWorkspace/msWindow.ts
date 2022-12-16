@@ -501,6 +501,10 @@ export class MsWindow extends Clutter.Actor {
             // Since the dialog in gnome-shell is purely a clutter dialog we only need to position the window actor,
             // not the meta window itself. In fact, attempting to move the meta window doesn't seem to have any effect.
             // This code needs to be synced with the corresponding code in the MsContent.allocate function.
+            if (!this.msContent.has_allocation()) {
+                // If we don't have an allocation yet, we cannot position the window actor.
+                return;
+            }
             const contentBox = this.msContent.allocation;
             const centeredBox = centerInBox(
                 contentBox,
@@ -510,6 +514,7 @@ export class MsWindow extends Clutter.Actor {
             const workArea = Main.layoutManager.getWorkAreaForMonitor(
                 this.msWorkspace.monitor.index
             );
+
             windowActor.x = workArea.x + this.x + centeredBox.x1;
             windowActor.y = workArea.y + this.y + centeredBox.y1;
             return;
@@ -548,7 +553,6 @@ export class MsWindow extends Clutter.Actor {
         // check if the window need a changes only if we don't need to already maximize
         if (!shouldBeMaximizedHorizontally || !shouldBeMaximizedVertically) {
             const currentFrameRect = metaWindow.get_frame_rect();
-            const contentBox = this.msContent.allocation;
 
             if (metaWindow.allows_resize()) {
                 moveTo = this.getRelativeMetaWindowPosition(metaWindow);
@@ -557,6 +561,12 @@ export class MsWindow extends Clutter.Actor {
                     height: this.height,
                 };
             } else {
+                if (this.msContent.has_allocation()) {
+                    // If we don't have an allocation yet, we cannot position the window actor.
+                    return;
+                }
+                const contentBox = this.msContent.allocation;
+
                 const relativePosition =
                     this.getRelativeMetaWindowPosition(metaWindow);
 
@@ -642,7 +652,7 @@ export class MsWindow extends Clutter.Actor {
             moveTo !== undefined &&
             resizeTo !== undefined
         ) {
-            // Secure the futur metaWindow Position to ensure it's not outside the current monitor
+            // Secure the future metaWindow position to ensure it's not outside the current monitor
             if (!this.dragged) {
                 moveTo.x = Math.max(
                     Math.min(
@@ -663,7 +673,7 @@ export class MsWindow extends Clutter.Actor {
                     this.msWorkspace.monitor.y
                 );
             }
-            //Set the size accordingly
+            // Set the size accordingly
             if (isWayland) {
                 const moveTo2 = moveTo;
                 const resizeTo2 = resizeTo;
