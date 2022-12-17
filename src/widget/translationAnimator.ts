@@ -38,6 +38,8 @@ export class TranslationAnimator extends Clutter.Actor {
             clip_to_allocation: true,
             x_expand: true,
             y_expand: true,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.FILL,
         });
 
         this.vertical = vertical;
@@ -47,6 +49,8 @@ export class TranslationAnimator extends Clutter.Actor {
                     ? Clutter.Orientation.VERTICAL
                     : Clutter.Orientation.HORIZONTAL,
             }),
+            x_expand: true,
+            y_expand: true,
         });
 
         this.add_actor(this.transitionContainer);
