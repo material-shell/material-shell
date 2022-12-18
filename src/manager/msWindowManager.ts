@@ -714,7 +714,14 @@ export class MsWindowManager extends MsManager {
             Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
                 msWindow.msWorkspace
             );
-        msWindow.app.launch(0, workspaceIndex, Shell.AppLaunchGpu.APP_PREF);
+        if (
+            msWindow.app.can_open_new_window() &&
+            msWindow.app.state == Shell.AppState.RUNNING
+        ) {
+            msWindow.app.open_new_window(workspaceIndex);
+        } else {
+            msWindow.app.launch(0, workspaceIndex, Shell.AppLaunchGpu.APP_PREF);
+        }
     }
 
     private handleWindow(metaWindow: MetaWindowWithMsProperties) {
