@@ -50,8 +50,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                 this.currentDisplayed.tileable.disconnect(
                     this.currentDisplayed.destroySignal
                 );
-            } else {
-                this.translationAnimator.setActors([actor]);
             }
             this.currentDisplayed = {
                 tileable: actor,
@@ -98,6 +96,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         tileable.visible = true;
         if (tileable === this.msWorkspace.tileableFocused) {
             this.displayTileable(tileable);
+            this.translationAnimator.setActors([tileable]);
         }
     }
 
@@ -138,7 +137,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                 );
             }
         });
-
         this.translationAnimator.setTranslation(
             [nextActor],
             indexOfNextActor > indexOfPrevActor ? 1 : -1
