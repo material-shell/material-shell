@@ -48,9 +48,7 @@ export function buildGtk3() {
     theme.addSetting('panel-icon-color', WidgetType.BOOLEAN);
     theme.addSetting('taskbar-item-style', WidgetType.COMBO);
     theme.addSetting('surface-opacity', WidgetType.INT);
-    if (!ShellVersionMatch('3.34')) {
-        theme.addSetting('blur-background', WidgetType.BOOLEAN);
-    }
+
     theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
     theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
     theme.addSetting('focus-effect', WidgetType.COMBO);

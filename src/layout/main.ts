@@ -10,11 +10,6 @@ import {
     VerticalPanelPositionEnum,
 } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import {
-    Allocate,
-    AllocatePreferredSize,
-    SetAllocation,
-} from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
@@ -484,20 +479,20 @@ export class MonitorContainer extends St.Widget {
         });
     }
 
-    allocateHorizontalPanelSpacer(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        AllocatePreferredSize(this.horizontalPanelSpacer, flags);
+    allocateHorizontalPanelSpacer(box: Clutter.ActorBox) {
+        this.horizontalPanelSpacer.allocate_preferred_size(
+            this.horizontalPanelSpacer.x,
+            this.horizontalPanelSpacer.y
+        );
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         this.get_children().forEach((actor) => {
             if (actor === this.horizontalPanelSpacer) {
-                return this.allocateHorizontalPanelSpacer(box, flags);
+                return this.allocateHorizontalPanelSpacer(box);
             }
             if (actor === this.msWorkspaceActor) {
                 const msWorkspaceActorBox = new Clutter.ActorBox();
@@ -505,13 +500,9 @@ export class MonitorContainer extends St.Widget {
                 msWorkspaceActorBox.x2 = box.x2;
                 msWorkspaceActorBox.y1 = box.y1;
                 msWorkspaceActorBox.y2 = box.y2;
-                return Allocate(
-                    this.msWorkspaceActor,
-                    msWorkspaceActorBox,
-                    flags
-                );
+                return this.msWorkspaceActor.allocate(msWorkspaceActorBox);
             }
-            AllocatePreferredSize(actor, flags);
+            actor.allocate_preferred_size(actor.x, actor.y);
         });
     }
 }
@@ -631,8 +622,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         }
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         const panelBox = new Clutter.ActorBox();
@@ -667,13 +658,16 @@ export class PrimaryMonitorContainer extends MonitorContainer {
 
         for (const child of this.get_children()) {
             if (child === this.panel) {
-                Allocate(child, panelBox, flags);
+                child.allocate(panelBox);
             } else if (child === this.horizontalPanelSpacer) {
-                this.allocateHorizontalPanelSpacer(box, flags);
+                this.allocateHorizontalPanelSpacer(box);
             } else if (child === this.verticalPanelSpacer) {
-                AllocatePreferredSize(this.verticalPanelSpacer, flags);
+                this.verticalPanelSpacer.allocate_preferred_size(
+                    this.verticalPanelSpacer.x,
+                    this.verticalPanelSpacer.y
+                );
             } else {
-                Allocate(child, msWorkspaceActorBox, flags);
+                child.allocate(msWorkspaceActorBox);
             }
         }
     }

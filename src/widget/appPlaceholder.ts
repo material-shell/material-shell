@@ -5,7 +5,6 @@ import * as GObject from 'gobject';
 import { App } from 'shell';
 import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 import * as St from 'st';
 const Animation = imports.ui.animation;
@@ -163,11 +162,9 @@ export class AppPlaceholder extends St.Widget {
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16);
         let spinnerActor;
-        if (ShellVersionMatch('3.34')) {
-            spinnerActor = this._spinner.actor;
-        } else {
-            spinnerActor = this._spinner;
-        }
+
+        spinnerActor = this._spinner;
+
         this.spinnerContainer.add_child(spinnerActor);
         this._spinner.play();
         this.spinnerContainer.set_opacity(255);
@@ -177,11 +174,7 @@ export class AppPlaceholder extends St.Widget {
     reset() {
         this.clickableContainer.reactive = true;
         if (this._spinner) {
-            if (ShellVersionMatch('3.34')) {
-                this._spinner.actor.destroy();
-            } else {
-                this._spinner.destroy();
-            }
+            this._spinner.destroy();
         }
         this.spinnerContainer.set_opacity(0);
         this.waitForReset = false;

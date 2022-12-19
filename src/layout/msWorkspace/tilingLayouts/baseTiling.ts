@@ -4,7 +4,6 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Signal } from 'src/manager/msManager';
-import { Allocate, AllocatePreferredSize } from 'src/utils/compatibility';
 import { diffLists } from 'src/utils/diff_list';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { InfinityTo0 } from 'src/utils/index';
@@ -361,17 +360,13 @@ export class BaseTilingLayout<
         return [-1, -1];
     }
 
-    override vfunc_allocate(
-        container: Clutter.Actor,
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
+    override vfunc_allocate(container: Clutter.Actor, box: Clutter.ActorBox) {
         this.tileAll(box);
         container.get_children().forEach((actor) => {
             if (this.msWorkspace.tileableList.includes(actor as Tileable)) {
-                AllocatePreferredSize(actor, flags);
+                actor.allocate_preferred_size(actor.x, actor.y);
             } else {
-                Allocate(actor, box, flags);
+                actor.allocate(box);
             }
         });
     }

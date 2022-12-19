@@ -2,7 +2,6 @@
 import * as Clutter from 'clutter';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 import * as St from 'st';
@@ -134,18 +133,15 @@ export class MatButton extends St.Widget {
         return this.child.vfunc_get_preferred_height(forWidth);
     }
 
-    override vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        SetAllocation(this, box, flags);
+    override vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         if (this.child) {
-            Allocate(this.child, contentBox, flags);
+            this.child.allocate(contentBox);
         }
         if (this.rippleBackground.get_parent()) {
-            Allocate(this.rippleBackground, contentBox, flags);
+            this.rippleBackground.allocate(contentBox);
         }
     }
 

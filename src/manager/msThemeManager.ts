@@ -8,7 +8,6 @@ import { MsManager } from 'src/manager/msManager';
 import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
 import { getSettings } from 'src/utils/settings';
-import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { main as Main } from 'ui';
 
@@ -307,11 +306,7 @@ export class MsThemeManager extends MsManager {
         if (!this.theme.application_stylesheet) {
             Main.layoutManager.uiGroup.add_style_class_name('no-theme');
         }
-        if (ShellVersionMatch('3.34')) {
-            //TODO The new code may prevent crashes on 3.34 without this, needs testing
-            // This loads an empty theme, cleaning all nodes but causes top panel flash
-            this.themeContext.set_theme(new St.Theme());
-        }
+
         await this.buildThemeStylesheetToFile(this.themeFile);
         this.theme.load_stylesheet(this.themeFile);
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {

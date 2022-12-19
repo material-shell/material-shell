@@ -7,12 +7,10 @@ import * as Shell from 'shell';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { diffLists } from 'src/utils/diff_list';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { IdleDebounce } from 'src/utils/idle_debounce';
 import { getSettings } from 'src/utils/settings';
-import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 import { MatButton } from 'src/widget/material/button';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 import { ReorderableList } from 'src/widget/reorderableList';
@@ -237,14 +235,11 @@ export class TaskBar extends St.Widget {
         });
     }
 
-    override vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        SetAllocation(this, box, flags);
+    override vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
-        Allocate(this.taskButtonContainer, contentBox, flags);
+        this.taskButtonContainer.allocate(contentBox);
 
         const activeItem = this.getActiveItem();
 
@@ -256,7 +251,7 @@ export class TaskBar extends St.Widget {
                 y1: contentBox.get_height() - this.taskActiveIndicator.height,
                 y2: contentBox.get_height(),
             });
-            Allocate(this.taskActiveIndicator, taskActiveIndicatorBox, flags);
+            this.taskActiveIndicator.allocate(taskActiveIndicatorBox);
         } else {
             this.taskActiveIndicator.hide();
         }
@@ -412,24 +407,14 @@ export class TileableItem extends TaskBarItem {
         this.container = container;
         this.buildIconIdle = new IdleDebounce(this.buildIcon.bind(this));
 
-        if (ShellVersionMatch('3.34')) {
-            this.startIconContainer = new St.Bin({
-                y_align: 1,
-            });
-        } else {
-            this.startIconContainer = new St.Bin({
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-        }
-        if (ShellVersionMatch('3.34')) {
-            this.endIconContainer = new St.Bin({
-                y_align: 1,
-            });
-        } else {
-            this.endIconContainer = new St.Bin({
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-        }
+        this.startIconContainer = new St.Bin({
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        this.endIconContainer = new St.Bin({
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
         this.menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
         this.menu.actor.add_style_class_name('horizontal-panel-menu');
         /* this.menu.addMenuItem(
@@ -620,7 +605,7 @@ export class TileableItem extends TaskBarItem {
             }
         }
     }
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox) {
         const height = box.get_height();
 
         if (!this.icon || this.lastHeight != height) {
@@ -671,7 +656,7 @@ export class IconTaskBarItem extends TaskBarItem {
         return [_forHeight, _forHeight];
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
+    vfunc_allocate(box: Clutter.ActorBox) {
         const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
 
         if (this.icon && this.icon.get_icon_size() != height) {

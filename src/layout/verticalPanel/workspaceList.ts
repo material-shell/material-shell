@@ -8,11 +8,6 @@ import { MainCategories } from 'src/layout/msWorkspace/msWorkspaceCategory';
 import { PanelIconStyleEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull } from 'src/utils/assert';
-import {
-    Allocate,
-    AllocatePreferredSize,
-    SetAllocation,
-} from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
 import { ReorderableList } from 'src/widget/reorderableList';
@@ -164,11 +159,8 @@ export class WorkspaceList extends St.Widget {
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
     }
-    vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ): void {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox): void {
+        this.set_allocation(box);
 
         for (const child of this.get_children()) {
             if (child == this.workspaceActiveIndicator) {
@@ -183,9 +175,9 @@ export class WorkspaceList extends St.Widget {
                     y2: contentBox.y1 + height,
                 });
 
-                Allocate(this.workspaceActiveIndicator, actorBox);
+                this.workspaceActiveIndicator.allocate(actorBox);
             } else {
-                AllocatePreferredSize(child);
+                child.allocate_preferred_size(child.x, child.y);
             }
         }
     }
@@ -620,11 +612,8 @@ export class WorkspaceButtonIcon extends St.Widget {
         }
     }
 
-    vfunc_allocate(
-        allocationBox: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        SetAllocation(this, allocationBox, flags);
+    vfunc_allocate(allocationBox: Clutter.ActorBox) {
+        this.set_allocation(allocationBox);
 
         const themeNode = this.get_theme_node();
         allocationBox = themeNode.get_content_box(allocationBox);
@@ -635,7 +624,7 @@ export class WorkspaceButtonIcon extends St.Widget {
             centerBox.x2 = allocationBox.x2 - 2 * portion;
             centerBox.y1 = allocationBox.y1 + 2 * portion;
             centerBox.y2 = allocationBox.y2 - 2 * portion;
-            Allocate(this.appIconList[0], centerBox, flags);
+            this.appIconList[0].allocate(centerBox);
         } else {
             this.appIconList.forEach((icon, index) => {
                 const box = new Clutter.ActorBox();
@@ -645,21 +634,21 @@ export class WorkspaceButtonIcon extends St.Widget {
                         box.x2 = allocationBox.x2 - 3 * portion;
                         box.y1 = allocationBox.y1 + 2 * portion;
                         box.y2 = allocationBox.y2 - 2 * portion;
-                        Allocate(icon, box, flags);
+                        icon.allocate(box);
                         break;
                     case 1:
                         box.x1 = allocationBox.x1 + 3 * portion;
                         box.x2 = allocationBox.x2 - portion;
                         box.y1 = allocationBox.y1 + 3 * portion;
                         box.y2 = allocationBox.y2 - portion;
-                        Allocate(icon, box, flags);
+                        icon.allocate(box);
                         break;
                     case 2:
                         box.x1 = allocationBox.x1 + 4 * portion;
                         box.x2 = allocationBox.x2 - portion;
                         box.y1 = allocationBox.y1 + portion;
                         box.y2 = allocationBox.y2 - 4 * portion;
-                        Allocate(icon, box, flags);
+                        icon.allocate(box);
                         break;
                 }
             });
