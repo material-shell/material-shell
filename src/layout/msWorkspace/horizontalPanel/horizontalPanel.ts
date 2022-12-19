@@ -7,7 +7,6 @@ import {
     HorizontalPanelPositionEnum,
     msThemeSignalEnum,
 } from 'src/manager/msThemeManager';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalObserver } from 'src/utils/signal';
 import * as St from 'st';
@@ -126,8 +125,8 @@ export class HorizontalPanel extends St.BoxLayout {
         return [height, height];
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const clockWidth = this.clockBin
@@ -141,7 +140,7 @@ export class HorizontalPanel extends St.BoxLayout {
         );
         taskBarBox.y1 = contentBox.y1;
         taskBarBox.y2 = contentBox.y2;
-        Allocate(this.taskBar, taskBarBox, flags);
+        this.taskBar.allocate(taskBarBox);
 
         if (this.clockBin) {
             const clockBox = new Clutter.ActorBox();
@@ -149,7 +148,7 @@ export class HorizontalPanel extends St.BoxLayout {
             clockBox.x2 = contentBox.x2 - this.layoutSwitcher.width;
             clockBox.y1 = contentBox.y1;
             clockBox.y2 = contentBox.y2;
-            Allocate(this.clockBin, clockBox, flags);
+            this.clockBin.allocate(clockBox);
         }
 
         const layoutSwitcherBox = new Clutter.ActorBox();
@@ -157,6 +156,6 @@ export class HorizontalPanel extends St.BoxLayout {
         layoutSwitcherBox.x2 = contentBox.x2;
         layoutSwitcherBox.y1 = contentBox.y1;
         layoutSwitcherBox.y2 = contentBox.y2;
-        Allocate(this.layoutSwitcher, layoutSwitcherBox, flags);
+        this.layoutSwitcher.allocate(layoutSwitcherBox);
     }
 }

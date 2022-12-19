@@ -10,7 +10,6 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
@@ -611,11 +610,8 @@ export class MsWorkspaceActor extends Clutter.Actor {
         this.visible = !monitorInFullScreen;
     }
 
-    override vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        SetAllocation(this, box, flags);
+    override vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
@@ -632,7 +628,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
                 ? contentBox.y1
                 : contentBox.y2 - panelHeight;
         panelBox.y2 = panelBox.y1 + panelHeight;
-        Allocate(this.panel, panelBox, flags);
+        this.panel.allocate(panelBox);
         const containerBox = contentBox.copy();
         if (this.panel.visible) {
             if (panelPosition === HorizontalPanelPositionEnum.TOP) {
@@ -641,10 +637,10 @@ export class MsWorkspaceActor extends Clutter.Actor {
                 containerBox.y2 = containerBox.y2 - panelHeight;
             }
         }
-        Allocate(this.tileableContainer, containerBox, flags);
+        this.tileableContainer.allocate(containerBox);
         for (const actor of this.get_children()) {
             if (actor !== this.panel && actor !== this.tileableContainer) {
-                Allocate(actor, containerBox, flags);
+                actor.allocate(containerBox);
             }
         }
     }

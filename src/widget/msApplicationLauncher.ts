@@ -6,7 +6,6 @@ import * as Shell from 'shell';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { AppsManager } from 'src/manager/appsManager';
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
@@ -108,8 +107,8 @@ export class MsApplicationLauncher extends St.Widget {
         this.appListContainer.initFilteredAppButtonList();
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const containerBox = new Clutter.ActorBox();
@@ -144,7 +143,7 @@ export class MsApplicationLauncher extends St.Widget {
                 ? containerBox.y2 + 1
                 : containerBox.y2;
 
-        Allocate(this.appListContainer, containerBox, flags);
+        this.appListContainer.allocate(containerBox);
     }
 }
 
@@ -545,8 +544,8 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.add_child(button);
     }
 
-    vfunc_allocate(box: Clutter.ActorBox, flags?: Clutter.AllocationFlags) {
-        SetAllocation(this, box, flags);
+    vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
         const containerPadding = 16 * this.monitorScale;
@@ -595,7 +594,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             clockBox.x2 = contentBox.x2 - horizontalOffset - containerPadding;
             clockBox.y1 = contentBox.y1 + verticalOffset;
             clockBox.y2 = clockBox.y1 + clockHeight;
-            Allocate(this.clockBin, clockBox, flags);
+            this.clockBin.allocate(clockBox);
         }
 
         const searchBox = new Clutter.ActorBox();
@@ -603,7 +602,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         searchBox.x2 = contentBox.x2 - horizontalOffset;
         searchBox.y1 = contentBox.y1 + verticalOffset + clockHeight;
         searchBox.y2 = searchBox.y1 + searchHeight;
-        Allocate(this.inputContainer, searchBox, flags);
+        this.inputContainer.allocate(searchBox);
         const containerBox = new Clutter.ActorBox();
         containerBox.x1 = contentBox.x1 + horizontalOffset;
         containerBox.x2 = contentBox.x2 - horizontalOffset;
@@ -614,7 +613,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             searchMargin +
             clockHeight;
         containerBox.y2 = contentBox.y2 - verticalOffset;
-        Allocate(this.container, containerBox, flags);
+        this.container.allocate(containerBox);
 
         let index = 0;
         for (let y = 0; y < this.numberOfRow; y++) {
@@ -634,7 +633,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                         containerPadding;
                     buttonBox.y2 = buttonBox.y1 + this.buttonSize;
                     button.visible = true;
-                    Allocate(button, buttonBox, flags);
+                    button.allocate(buttonBox);
                 }
             }
         }
@@ -651,7 +650,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         hiddenBox.y2 = contentBox.x1;
         for (const button of this.appButtonList) {
             if (!buttonSet.has(button)) {
-                Allocate(button, hiddenBox, flags);
+                button.allocate(hiddenBox);
                 button.visible = false;
             }
         }

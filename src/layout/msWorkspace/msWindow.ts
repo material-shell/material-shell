@@ -16,7 +16,6 @@ import { throttle } from 'src/utils';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 /** Extension imports */
-import { Allocate, SetAllocation } from 'src/utils/compatibility';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { centerInBox } from 'src/utils/layout';
 import { set_style_class } from 'src/utils/styling_utils';
@@ -388,22 +387,19 @@ export class MsWindow extends Clutter.Actor {
         });
     }
 
-    override vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
+    override vfunc_allocate(box: Clutter.ActorBox) {
         box.x1 = Math.round(box.x1);
         box.y1 = Math.round(box.y1);
         box.x2 = Math.round(box.x2);
         box.y2 = Math.round(box.y2);
-        SetAllocation(this, box, flags);
+        this.set_allocation(box);
         const contentBox = Clutter.ActorBox.new(
             0,
             0,
             box.get_width(),
             box.get_height()
         );
-        Allocate(this.msContent, contentBox, flags);
+        this.msContent.allocate(contentBox);
         const workArea = Main.layoutManager.getWorkAreaForMonitor(
             this.msWorkspace.monitor.index
         );
@@ -432,7 +428,7 @@ export class MsWindow extends Clutter.Actor {
                     const y2 = y1 + dialogFrame.height;
 
                     const dialogBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-                    Allocate(dialog.clone, dialogBox, flags);
+                    dialog.clone.allocate(dialogBox);
                 });
         }
     }
@@ -1284,11 +1280,8 @@ export class MsWindowContent extends St.Widget {
         this.add_child(this.placeholder);
     }
 
-    override vfunc_allocate(
-        box: Clutter.ActorBox,
-        flags?: Clutter.AllocationFlags
-    ) {
-        SetAllocation(this, box, flags);
+    override vfunc_allocate(box: Clutter.ActorBox) {
+        this.set_allocation(box);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         const parent = this.get_parent();
@@ -1320,7 +1313,7 @@ export class MsWindowContent extends St.Widget {
             }
             const cloneBox = Clutter.ActorBox.new(x1, y1, x2, y2);
 
-            Allocate(this.clone, cloneBox, flags);
+            this.clone.allocate(cloneBox);
         } else {
             // Before the first frame of the window is drawn, the window likely doesn't have the correct size.
             // But we may still want to display things there. For example if a "The application is not responding" dialog is shown.
@@ -1331,11 +1324,11 @@ export class MsWindowContent extends St.Widget {
                 number,
                 number
             ];
-            Allocate(this.clone, centerInBox(box, w, h), flags);
+            this.clone.allocate(centerInBox(box, w, h));
         }
 
         if (this.placeholder.get_parent() === this) {
-            Allocate(this.placeholder, box, flags);
+            this.placeholder.allocate(box);
         }
     }
 }
