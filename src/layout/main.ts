@@ -479,20 +479,16 @@ export class MonitorContainer extends St.Widget {
         });
     }
 
-    allocateHorizontalPanelSpacer(box: Clutter.ActorBox) {
-        this.horizontalPanelSpacer.allocate_preferred_size(
-            this.horizontalPanelSpacer.x,
-            this.horizontalPanelSpacer.y
-        );
-    }
-
     vfunc_allocate(box: Clutter.ActorBox) {
         this.set_allocation(box);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         this.get_children().forEach((actor) => {
             if (actor === this.horizontalPanelSpacer) {
-                return this.allocateHorizontalPanelSpacer(box);
+                return this.horizontalPanelSpacer.allocate_preferred_size(
+                    this.horizontalPanelSpacer.x,
+                    this.horizontalPanelSpacer.y
+                );
             }
             if (actor === this.msWorkspaceActor) {
                 const msWorkspaceActorBox = new Clutter.ActorBox();
@@ -660,7 +656,10 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             if (child === this.panel) {
                 child.allocate(panelBox);
             } else if (child === this.horizontalPanelSpacer) {
-                this.allocateHorizontalPanelSpacer(box);
+                this.horizontalPanelSpacer.allocate_preferred_size(
+                    this.horizontalPanelSpacer.x,
+                    this.horizontalPanelSpacer.y
+                );
             } else if (child === this.verticalPanelSpacer) {
                 this.verticalPanelSpacer.allocate_preferred_size(
                     this.verticalPanelSpacer.x,
