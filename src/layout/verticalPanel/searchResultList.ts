@@ -5,6 +5,8 @@ import * as Gio from 'gio';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
 import * as Shell from 'shell';
+import { throttle } from 'src/utils';
+import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
@@ -12,11 +14,13 @@ import { SignalObserver } from 'src/utils/signal';
 import * as St from 'st';
 import { ProviderResultList } from './search/ProviderResultList';
 import { AppSearchProvider } from './search/searchProvider/AppSearchProvider';
+import { RecentSearchProvider } from './search/searchProvider/RecentSearchProvider';
 import {
     loadRemoteSearchProviders,
     RemoteSearchProvider,
 } from './search/searchProvider/RemoteSearchProvider';
 import {
+    ReactiveSearchProvider,
     ResultMeta,
     SearchProvider,
 } from './search/searchProvider/searchProvider';
@@ -49,7 +53,7 @@ export class SearchResultList extends St.BoxLayout {
     searchEntry: St.Entry;
     text: Text;
     parentalControlsManager;
-    providerList: SearchProvider[] = [];
+    providerList: ReactiveSearchProvider[] = [];
     searchSettings;
     terms: string[] = [];
     private searchTimeoutId = 0;
@@ -64,13 +68,35 @@ export class SearchResultList extends St.BoxLayout {
     iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
     allApplicationList = new St.BoxLayout({ vertical: true });
-    providerDisplayMap: Map<SearchProvider, ProviderResultList> = new Map();
+    providerDisplayMap: Map<ReactiveSearchProvider, ProviderResultList> =
+        new Map();
+    recentSearchProvider: RecentSearchProvider;
+    recentSearchProviderSearchThrottled: () => void;
     navigated = false;
     constructor(searchEntry: St.Entry) {
         super({
             style_class: 'search-result-list',
             vertical: true,
         });
+        this.recentSearchProvider = new RecentSearchProvider();
+        this.recentSearchProvider.loadHistoryFromExtensionState();
+        // Throttle the recent search provider to avoid searching many times in a row
+        // if multiple search providers return their results around the same time.
+        this.recentSearchProviderSearchThrottled = throttle(() => {
+            this.updateResults(
+                this.recentSearchProvider,
+                this.recentSearchProvider.search(
+                    this.terms,
+                    new Map(
+                        [...this.providerDisplayMap.values()]
+                            .filter(
+                                (x) => x.provider != this.recentSearchProvider
+                            )
+                            .map((x) => [x.provider.id, x.resultList])
+                    )
+                )
+            );
+        }, 30);
         this.searchEntry = searchEntry;
 
         this.text = this.searchEntry.clutter_text;
@@ -124,6 +150,7 @@ export class SearchResultList extends St.BoxLayout {
             this.reloadRemoteProviders.bind(this)
         );
 
+        this.registerProvider(this.recentSearchProvider);
         this.registerProvider(new AppSearchProvider());
 
         const appSystem = Shell.AppSystem.get_default();
@@ -159,7 +186,7 @@ export class SearchResultList extends St.BoxLayout {
         return list;
     }
 
-    registerProvider(provider: SearchProvider): void {
+    registerProvider(provider: ReactiveSearchProvider): void {
         provider.searchInProgress = false;
 
         // Filter out unwanted providers.
@@ -170,7 +197,34 @@ export class SearchResultList extends St.BoxLayout {
             return;
 
         this.providerList.push(provider);
-        const providerDisplay = new ProviderResultList(provider);
+        const providerDisplay = new ProviderResultList(provider, (id) => {
+            // It's important that we do this first because it will remove the focus grab that we use.
+            // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
+            // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
+            Me.layout.toggleOverview();
+            let remappedProvider = provider;
+
+            if (remappedProvider === this.recentSearchProvider) {
+                const splitId = RecentSearchProvider.splitId(id);
+                const actualProvider = this.providerList.find(
+                    (x) => x.id == splitId.provider_id
+                );
+                assert(
+                    actualProvider !== undefined,
+                    `Could not find provider with id ${splitId.provider_id}`
+                );
+
+                remappedProvider = actualProvider;
+                id = splitId.id;
+            }
+
+            remappedProvider.activateResult(id, this.terms);
+            this.recentSearchProvider.onResultActivated(
+                remappedProvider.id,
+                id,
+                this.terms
+            );
+        });
         this.providerDisplayMap.set(provider, providerDisplay);
         this.add_child(providerDisplay);
     }
@@ -189,7 +243,7 @@ export class SearchResultList extends St.BoxLayout {
         this.updateAllApplicationResults();
     }
 
-    unregisterProvider(provider: SearchProvider): void {
+    unregisterProvider(provider: ReactiveSearchProvider): void {
         const index = this.providerList.indexOf(provider);
         this.providerList.splice(index, 1);
 
@@ -249,23 +303,25 @@ export class SearchResultList extends St.BoxLayout {
 
         let results: string[];
         if (this.isSubSearch && previousResults) {
-            results = await provider.getSubsearchResultSet(
-                previousResults,
-                this.terms,
-                this.cancellable
-            );
+            results = await provider
+                .getSubsearchResultSet(
+                    previousResults,
+                    this.terms,
+                    this.cancellable
+                )
+                .catch(logAsyncException);
         } else {
-            results = await provider.getInitialResultSet(
-                this.terms,
-                this.cancellable
-            );
+            results = await provider
+                .getInitialResultSet(this.terms, this.cancellable)
+                .catch(logAsyncException);
         }
 
         this.results[provider.id] = results;
-        this.updateResults(
-            provider,
-            await provider.getResultMetas(results, this.cancellable)
-        );
+        const resultsMetas = await provider
+            .getResultMetas(results, this.cancellable)
+            .catch(logAsyncException);
+        if (resultsMetas !== undefined)
+            this.updateResults(provider, resultsMetas);
     }
 
     private async doSearch() {
@@ -277,7 +333,12 @@ export class SearchResultList extends St.BoxLayout {
         this.navigated = false;
         for (const provider of this.providerList) {
             const previousProviderResults = previousResults[provider.id];
-            this.doProviderSearch(provider, previousProviderResults);
+            if (provider.id != 'ms-recent') {
+                this.doProviderSearch(
+                    provider as SearchProvider,
+                    previousProviderResults
+                ).catch(logAsyncException);
+            }
         }
 
         this.clearSearchTimeout();
@@ -341,7 +402,7 @@ export class SearchResultList extends St.BoxLayout {
             );
     }
 
-    updateResults(provider: SearchProvider, results: ResultMeta[]) {
+    updateResults(provider: ReactiveSearchProvider, results: ResultMeta[]) {
         const terms = this.terms;
         const display = this.providerDisplayMap.get(provider);
         if (!display) return;
@@ -359,6 +420,10 @@ export class SearchResultList extends St.BoxLayout {
                 }
             })
             .catch(logAsyncException);
+
+        if (display.provider != this.recentSearchProvider) {
+            this.recentSearchProviderSearchThrottled();
+        }
     }
 
     updateAllApplicationResults() {

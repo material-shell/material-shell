@@ -1,38 +1,43 @@
 import * as Gio from 'gio';
 import * as GObject from 'gobject';
-import * as Shell from 'shell';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-import { SystemActions } from './searchProvider/AppSearchProvider';
-import { RemoteSearchProvider } from './searchProvider/RemoteSearchProvider';
 import {
-    Me,
+    ReactiveSearchProvider,
     ResultMeta,
-    SearchProvider,
 } from './searchProvider/searchProvider';
 import { SearchResultEntry } from './SearchResultEntry';
 import { SearchResultHeader } from './SearchResultHeader';
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 @registerGObjectClass
 export class ProviderResultList extends St.BoxLayout {
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'ProviderResultList',
+        Signals: {
+            activated: {
+                param_types: [GObject.TYPE_STRING],
+            },
+        },
     };
     resultList: ResultMeta[] = [];
-    provider: SearchProvider;
+    provider: ReactiveSearchProvider;
     header: SearchResultHeader;
     firstResultEntryList = new St.BoxLayout({ vertical: true });
     restResultEntryList = new St.BoxLayout({ vertical: true });
     moreResultEntry: SearchResultEntry;
     maxResultLength = 5;
-    constructor(provider: SearchProvider) {
+    onClicked: (id: string) => void;
+
+    constructor(
+        provider: ReactiveSearchProvider,
+        onClicked: (id: string) => void
+    ) {
         super({ vertical: true, visible: false });
         this.provider = provider;
-        if (provider instanceof RemoteSearchProvider) {
-            this.header = new SearchResultHeader(provider.appInfo.get_name());
-        } else {
-            this.header = new SearchResultHeader(_('Applications'));
-        }
+        this.onClicked = onClicked;
+        this.header = new SearchResultHeader(provider.title);
 
         this.add_child(this.header);
         this.add_child(this.firstResultEntryList);
@@ -66,14 +71,10 @@ export class ProviderResultList extends St.BoxLayout {
         this.restResultEntryList.visible = false;
         this.firstResultEntryList.remove_all_children();
         this.restResultEntryList.remove_all_children();
+        this.resultList = newResultList;
         for (const resultMeta of newResultList) {
             let icon = resultMeta.createIcon(32);
-            if (!icon && this.provider instanceof RemoteSearchProvider) {
-                icon = new St.Icon({
-                    icon_size: 32,
-                    gicon: this.provider.appInfo.get_icon(),
-                });
-            }
+            if (!icon) icon = this.provider.createFallbackIcon(32);
             const entry = new SearchResultEntry(
                 icon,
                 resultMeta.name,
@@ -81,28 +82,7 @@ export class ProviderResultList extends St.BoxLayout {
                 this.provider.id === 'applications'
             );
             entry.connect('primary-action', () => {
-                // It's important that we do this first because it will remove the focus grab that we use.
-                // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
-                // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-                Me.layout.toggleOverview();
-
-                if (this.provider.isRemoteProvider) {
-                    this.provider.activateResult(resultMeta.id, termList);
-                } else {
-                    const app = Shell.AppSystem.get_default().lookup_app(
-                        resultMeta.id
-                    );
-                    if (app) {
-                        Me.msWindowManager.openApp(
-                            app,
-                            Me.msWorkspaceManager.getActiveMsWorkspace()
-                        );
-                    } else {
-                        SystemActions.getDefault().activateAction(
-                            resultMeta.id
-                        );
-                    }
-                }
+                this.onClicked(resultMeta.id);
             });
 
             if (newResultList.length > this.maxResultLength) {

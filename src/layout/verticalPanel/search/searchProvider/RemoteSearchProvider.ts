@@ -10,7 +10,7 @@ import {
 } from 'src/utils/shellVersionMatch';
 import * as St from 'st';
 import { RawMeta, ResultMeta, UnpackedMeta } from './searchProvider';
-export const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 const FileUtils = imports.misc.fileUtils;
 export const GdkPixbuf = imports.gi.GdkPixbuf;
@@ -68,9 +68,9 @@ const SearchProvider2Iface = `
 </method>
 </interface>
 </node>`;
-export var SearchProviderProxyInfo =
+export const SearchProviderProxyInfo =
     Gio.DBusInterfaceInfo.new_for_xml(SearchProviderIface);
-export var SearchProvider2ProxyInfo =
+export const SearchProvider2ProxyInfo =
     Gio.DBusInterfaceInfo.new_for_xml(SearchProvider2Iface);
 
 export function loadRemoteSearchProviders(
@@ -181,14 +181,11 @@ export function loadRemoteSearchProviders(
     });
 
     loadedProviders.sort((providerA, providerB) => {
-        let idxA, idxB;
-        let appIdA, appIdB;
+        const appIdA = providerA.appInfo.get_id();
+        const appIdB = providerB.appInfo.get_id();
 
-        appIdA = providerA.appInfo.get_id();
-        appIdB = providerB.appInfo.get_id();
-
-        idxA = sortOrder.indexOf(appIdA);
-        idxB = sortOrder.indexOf(appIdB);
+        const idxA = sortOrder.indexOf(appIdA);
+        const idxB = sortOrder.indexOf(appIdB);
 
         // if no provider is found in the order, use alphabetical order
         if (idxA == -1 && idxB == -1) {
@@ -218,7 +215,12 @@ export class RemoteSearchProvider {
     isRemoteProvider = true;
     id: string;
     canLaunchSearch = false;
-    searchInProgress?: boolean | undefined;
+    searchInProgress = false;
+
+    get title(): string {
+        return this.appInfo.get_name();
+    }
+
     constructor(
         appInfo: Gio.DesktopAppInfo,
         dbusName: string,
@@ -246,6 +248,14 @@ export class RemoteSearchProvider {
         this.appInfo = appInfo;
         this.id = appInfo.get_id();
     }
+
+    createFallbackIcon(icon_size: number): St.Icon | null {
+        return new St.Icon({
+            icon_size,
+            gicon: this.appInfo.get_icon(),
+        });
+    }
+
     createIcon(size: number, meta: UnpackedMeta): St.Icon | null {
         let gicon = null;
         let icon = null;

@@ -4,34 +4,51 @@ import * as St from 'st';
 import { ResultMeta } from './searchProvider';
 export const ParentalControlsManager = imports.misc.parentalControlsManager;
 export const SystemActions = imports.misc.systemActions;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export class AppSearchProvider {
-    _appSys: Shell.AppSystem;
+    private _appSys: Shell.AppSystem;
     isRemoteProvider = false;
-    id: string;
-    canLaunchSearch: boolean;
-    searchInProgress?: boolean;
-    defaultEnabled?: boolean;
-    _systemActions;
-    _parentalControlsManager;
+    readonly id: string = 'applications';
+    private canLaunchSearch: boolean;
+    searchInProgress = false;
+    private _systemActions;
+    private _parentalControlsManager;
+
+    get title(): string {
+        return _('Applications');
+    }
+
     constructor() {
         this._appSys = Shell.AppSystem.get_default();
-        this.id = 'applications';
         this.canLaunchSearch = false;
 
         this._systemActions = new SystemActions.getDefault();
         this._parentalControlsManager = ParentalControlsManager.getDefault();
     }
+
+    createFallbackIcon(icon_size: number): St.Icon | null {
+        return null;
+    }
+
     activateResult(id: string, terms: string[]): void {
-        throw new Error('Method not implemented.');
+        const app = Shell.AppSystem.get_default().lookup_app(id);
+        if (app) {
+            Me.msWindowManager.openApp(
+                app,
+                Me.msWorkspaceManager.getActiveMsWorkspace()
+            );
+        } else {
+            SystemActions.getDefault().activateAction(id);
+        }
     }
 
     getResultMetas(apps: string[]) {
         const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
-        let metas: ResultMeta[] = [];
-        for (let id of apps) {
+        const metas: ResultMeta[] = [];
+        for (const id of apps) {
             if (id.endsWith('.desktop')) {
-                let app = this._appSys.lookup_app(id);
+                const app = this._appSys.lookup_app(id);
 
                 metas.push({
                     id: app.get_id(),
@@ -40,8 +57,8 @@ export class AppSearchProvider {
                         app.create_icon_texture(size) as St.Icon,
                 });
             } else {
-                let name = this._systemActions.getName(id);
-                let iconName = this._systemActions.getIconName(id);
+                const name = this._systemActions.getName(id);
+                const iconName = this._systemActions.getIconName(id);
 
                 const createIcon = (size: number) =>
                     new St.Icon({
@@ -70,7 +87,7 @@ export class AppSearchProvider {
         // results can be filtered correctly.
         if (!this._parentalControlsManager.initialized) {
             return new Promise((resolve) => {
-                let initializedId = this._parentalControlsManager.connect(
+                const initializedId = this._parentalControlsManager.connect(
                     'app-filter-changed',
                     async () => {
                         if (this._parentalControlsManager.initialized) {
@@ -89,9 +106,9 @@ export class AppSearchProvider {
             });
         }
 
-        let query = terms.join(' ');
-        let groups = Shell.AppSystem.search(query);
-        let usage = Shell.AppUsage.get_default();
+        const query = terms.join(' ');
+        const groups = Shell.AppSystem.search(query);
+        const usage = Shell.AppUsage.get_default();
         let results: string[] = [];
 
         groups.forEach((group) => {

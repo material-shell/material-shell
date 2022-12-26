@@ -2,9 +2,10 @@
 import * as GLib from 'glib';
 import * as St from 'st';
 import { AppSearchProvider } from './AppSearchProvider';
+import { RecentSearchProvider } from './RecentSearchProvider';
 import { RemoteSearchProvider } from './RemoteSearchProvider';
 
-export const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export interface RawMeta {
     [prop: string]: GLib.Variant;
@@ -29,3 +30,5 @@ export interface ResultMeta {
 }
 
 export type SearchProvider = AppSearchProvider | RemoteSearchProvider;
+
+export type ReactiveSearchProvider = SearchProvider | RecentSearchProvider;
