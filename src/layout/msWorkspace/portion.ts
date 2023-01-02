@@ -191,6 +191,24 @@ export class Portion {
         this.updateBorders();
     }
 
+    /**
+     * change order or portion by one in forward direction
+     */
+    shiftForward() {
+        const firstChild = this.children.shift();
+        if (firstChild) this.children.push(firstChild);
+        this.updateBorders();
+    }
+
+    /**
+     * change order or portion by one in forward direction
+     */
+    shiftBackward() {
+        const lastChild = this.children.pop();
+        if (lastChild) this.children.splice(0, 0, lastChild);
+        this.updateBorders();
+    }
+
     isBorderInSubPortion(index: number, after = false): boolean {
         let portionIndex = 0;
         const afterOffset = after ? 1 : 0;

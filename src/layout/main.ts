@@ -13,7 +13,7 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
+import { TranslationHelper } from 'src/utils/transition';
 import * as St from 'st';
 import { layout, main as Main } from 'ui';
 import { MsWorkspaceActor } from './msWorkspace/msWorkspace';
@@ -519,7 +519,10 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         x_align: Clutter.ActorAlign.FILL,
         y_align: Clutter.ActorAlign.FILL,
     });
-    translationAnimator: TranslationAnimator = new TranslationAnimator(true);
+    translationHelper: TranslationHelper = new TranslationHelper(
+        this.workspaceContainer,
+        true
+    );
     constructor(
         monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
@@ -533,16 +536,21 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         this.add_child(this.verticalPanelSpacer);
         this.panel = new MsPanel();
         this.add_child(this.workspaceContainer);
-        this.workspaceContainer.add_child(this.translationAnimator);
         this.add_child(this.panel);
 
-        this.translationAnimator.connect('transition-completed', () => {
-            assert(
-                this.msWorkspaceActor !== undefined,
-                'expected a workspace actor to exist'
-            );
-            this.msWorkspaceActor.updateUI();
-        });
+        this.translationHelper.connect(
+            'transition-completed',
+            (_, actorsLeftList: Clutter.Actor[]) => {
+                assert(
+                    this.msWorkspaceActor !== undefined,
+                    'expected a workspace actor to exist'
+                );
+                for (const actor of actorsLeftList) {
+                    this.workspaceContainer.remove_child(actor);
+                }
+                this.msWorkspaceActor.updateUI();
+            }
+        );
         const verticalPanelPositionSignal = Me.msThemeManager.connect(
             'vertical-panel-position-changed',
             () => {
@@ -578,8 +586,11 @@ export class PrimaryMonitorContainer extends MonitorContainer {
                 }
             );
         prevActor.height = nextActor.height = this.height;
-        this.translationAnimator.setTranslation(
+        this.translationHelper.setTranslation(
             [nextActor],
+            Me.msWorkspaceManager.primaryMsWorkspaces.map(
+                (msWorkspace) => msWorkspace.msWorkspaceActor
+            ),
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );
     }
@@ -589,10 +600,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         let prevActor;
         if (this.msWorkspaceActor) {
             prevActor = this.msWorkspaceActor;
-            if (this.msWorkspaceActor.get_parent() === this.workspaceContainer)
-                this.workspaceContainer.remove_child(this.msWorkspaceActor);
         } else {
-            this.translationAnimator.setActors([actor]);
+            reparentActor(actor, this.workspaceContainer);
         }
         this.msWorkspaceActor = actor;
         assertNotNull(this.msWorkspaceActor.msWorkspace).refreshFocus(true);
