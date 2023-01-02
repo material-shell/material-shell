@@ -46,7 +46,6 @@ export class TranslationHelper extends WithSignals {
         globalContext: Clutter.Actor[],
         direction: number
     ): void {
-        Me.logFocus('setTranslation');
         let translationY = this.container.translation_y;
         let translationX = this.container.translation_x;
 

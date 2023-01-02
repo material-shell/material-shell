@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import { ActorBox } from 'clutter';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
-import { Me } from 'src/layout/verticalPanel/search/searchProvider/RemoteSearchProvider';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { TranslationHelper } from 'src/utils/transition';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
@@ -118,7 +117,6 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         if (newBaseIndex !== this.baseIndex) {
             const direction = this.baseIndex > newBaseIndex ? -1 : 1;
             const nthChange = Math.abs(this.baseIndex - newBaseIndex);
-            Me.logFocus(nthChange);
             for (let index = 0; index < nthChange; index++) {
                 if (direction > 0) {
                     this.mainPortion.shiftForward();
