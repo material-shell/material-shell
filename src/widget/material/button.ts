@@ -194,9 +194,6 @@ const PropagateClickAction = (() => {
                 GTypeName: 'PropagateClickAction',
             };
             event: Clutter.Event | undefined;
-            constructor() {
-                super();
-            }
 
             vfunc_handle_event(event: Clutter.Event) {
                 this.event = event;
