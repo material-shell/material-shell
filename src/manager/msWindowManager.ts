@@ -344,6 +344,17 @@ export class MsWindowManager extends MsManager {
                             )} with ${msWindow.windowIdentifier}`
                         );
 
+                        // Check if there MetaWindow is already associated to an other MsWindow with a different app (It usually happen when the MetaWindow begin it's lifecycle with a transitionnal state) ex: Libre Office
+                        const metaWindow =
+                            windowActor.metaWindow as MetaWindowWithMsProperties;
+                        if (
+                            metaWindow.msWindow != undefined &&
+                            metaWindow.msWindow.app != msWindow.app
+                        ) {
+                            metaWindow.msWindow.unsetWindow();
+                            metaWindow.msWindow.kill();
+                        }
+
                         // Associate the meta window with the ms window.
                         // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
                         void msWindow
@@ -353,7 +364,7 @@ export class MsWindowManager extends MsManager {
                 } else {
                     logInfoOnce();
                     Me.log(
-                        `Creating a new window for ${buildMetaWindowIdentifier(
+                        `Creating a new MsWindow for ${buildMetaWindowIdentifier(
                             windowActor.metaWindow
                         )}`
                     );
