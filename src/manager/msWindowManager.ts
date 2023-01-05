@@ -368,6 +368,9 @@ export class MsWindowManager extends MsManager {
                     });
                 }
             }
+
+            // Kill msWindows which were recently created, but their windows have either been closed quickly or
+            // they have been moved to other msWindows.
             const candidateMsWindowsToKill = candidateMsWindows.filter(
                 (msWindow) =>
                     msWindow.lifecycleState.type === 'app-placeholder' &&
