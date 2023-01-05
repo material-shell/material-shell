@@ -192,18 +192,18 @@ export class Portion {
     }
 
     /**
-     * change order or portion by one in forward direction
+     * rotate order of portions by one in next direction
      */
-    shiftForward() {
+    rotateRight() {
         const firstChild = this.children.shift();
         if (firstChild) this.children.push(firstChild);
         this.updateBorders();
     }
 
     /**
-     * change order or portion by one in forward direction
+     * rotate order of portions by one in previous direction
      */
-    shiftBackward() {
+    rotateLeft() {
         const lastChild = this.children.pop();
         if (lastChild) this.children.splice(0, 0, lastChild);
         this.updateBorders();

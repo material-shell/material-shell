@@ -119,13 +119,12 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
             const nthChange = Math.abs(this.baseIndex - newBaseIndex);
             for (let index = 0; index < nthChange; index++) {
                 if (direction > 0) {
-                    this.mainPortion.shiftForward();
+                    this.mainPortion.rotateRight();
                 } else {
-                    this.mainPortion.shiftBackward();
+                    this.mainPortion.rotateLeft();
                 }
             }
             this.baseIndex = newBaseIndex;
-            //this.tileAll();
             this.activeTileableList = this.msWorkspace.tileableList.slice(
                 newBaseIndex,
                 newBaseIndex + this._state.nbOfColumns

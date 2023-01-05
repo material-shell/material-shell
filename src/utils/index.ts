@@ -116,7 +116,7 @@ export const reparentActor = (
 
     const currentParent = actor.get_parent();
 
-    if (currentParent == parent) return;
+    if (currentParent === parent) return;
 
     Me.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
