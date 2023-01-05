@@ -345,7 +345,7 @@ export class MsWindow extends Clutter.Actor {
         Me.stateManager.stateChanged();
     }
 
-    trackAppChanges() {
+    private trackAppChanges() {
         this.appSignalId = this.app.connect('windows-changed', () => {
             const lifecycleState = this.lifecycleState;
             if (lifecycleState.type === 'window') {
