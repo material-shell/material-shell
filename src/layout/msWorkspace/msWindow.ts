@@ -167,7 +167,7 @@ export class MsWindow extends Clutter.Actor {
     lifecycleState: MsWindowLifecycleState;
 
     app: App;
-    appSignalId!: number;
+    appSignalId: number | undefined = undefined;
     _persistent: boolean | undefined;
     createdAt: Date;
     windowClone: Clutter.Clone;
