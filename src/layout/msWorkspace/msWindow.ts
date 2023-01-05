@@ -243,7 +243,7 @@ export class MsWindow extends Clutter.Actor {
         this.setMsWorkspace(msWorkspace);
     }
 
-    buildPlaceHolder() {
+    private buildPlaceHolder() {
         const placeholder = new AppPlaceholder(this.app);
         placeholder.connect('activated', (_) => {
             this.emit('request-new-meta-window');
