@@ -143,7 +143,7 @@ export class MsWorkspace extends WithSignals {
                         height: msWindowData.height,
                     },
                     matchingInfo,
-                    // Set yesterday for older state because we don't want windows to be recognised as just created
+                    // Set createdAt to yesterday when migrating older state, because we don't want restored old windows to be treated as just having been created
                     msWindowData.createdAt
                         ? new Date(msWindowData.createdAt)
                         : new Date(
