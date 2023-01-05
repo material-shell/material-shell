@@ -112,7 +112,12 @@ export const reparentActor = (
     parent: Clutter.Actor | null,
     first = false
 ) => {
-    if (!actor || !parent || actor.get_parent() == parent) return;
+    if (!actor || !parent) return;
+
+    const currentParent = actor.get_parent();
+
+    if (currentParent == parent) return;
+
     Me.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
         ? actor
@@ -120,7 +125,6 @@ export const reparentActor = (
         ? global.stage.key_focus
         : null;
 
-    const currentParent = actor.get_parent();
     if (restoreFocusTo) {
         Main.layoutManager.uiGroup.grab_key_focus();
     }
