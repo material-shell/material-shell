@@ -209,7 +209,7 @@ export class MsWindow extends Clutter.Actor {
             ) {
                 this.lifecycleState.matchingInfo.appId = this.app.id;
             }
-            if (this.msContent.contains(this.placeholder)) {
+            if (this.placeholder.get_parent() === msContent) {
                 this.msContent.remove_child(this.placeholder);
             }
             this.placeholder = this.buildPlaceHolder();
