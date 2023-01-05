@@ -112,7 +112,7 @@ export const reparentActor = (
     parent: Clutter.Actor | null,
     first = false
 ) => {
-    if (!actor || !parent) return;
+    if (!actor || !parent || actor.get_parent() == parent) return;
     Me.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
         ? actor

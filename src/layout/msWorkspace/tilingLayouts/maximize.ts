@@ -61,7 +61,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         };
 
         reparentActor(actor, this.tileableContainer);
-        actor.grab_key_focus();
+        if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
     }
 
     showAppLauncher() {
