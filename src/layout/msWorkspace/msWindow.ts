@@ -367,6 +367,7 @@ export class MsWindow extends Clutter.Actor {
                                 );
                             if (app !== null) {
                                 this.app.disconnect(this.appSignalId);
+                                this.appSignalId = undefined;
                                 this.app = app;
                                 this.emit('app-changed');
                             }
