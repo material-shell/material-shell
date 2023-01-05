@@ -976,7 +976,6 @@ export class MsWindow extends Clutter.Actor {
     }
 
     public unsetWindow() {
-        Me.logWithStackTrace('unsetWindow');
         assert(
             this.lifecycleState.type === 'window',
             'Can only unset the window when in the window state'
