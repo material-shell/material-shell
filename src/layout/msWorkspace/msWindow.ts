@@ -157,10 +157,6 @@ export class MsWindow extends Clutter.Actor {
                 param_types: [],
                 accumulator: 0,
             },
-            app_changed: {
-                param_types: [],
-                accumulator: 0,
-            },
         },
     };
 
@@ -201,23 +197,6 @@ export class MsWindow extends Clutter.Actor {
         this.app = app;
         this.createdAt = createdAt;
         this.trackAppChanges();
-        this.connect('app-changed', () => {
-            this.trackAppChanges();
-            if (
-                this.lifecycleState.type === 'window' ||
-                this.lifecycleState.type === 'app-placeholder'
-            ) {
-                this.lifecycleState.matchingInfo.appId = this.app.id;
-            }
-            if (this.placeholder.get_parent() === msContent) {
-                this.msContent.remove_child(this.placeholder);
-            }
-            this.placeholder = this.buildPlaceHolder();
-            this.msContent.placeholder = this.placeholder;
-            if (this.lifecycleState.type === 'app-placeholder') {
-                this.msContent.add_child(this.placeholder);
-            }
-        });
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
         this.updateMetaWindowPositionAndSizeThrottled = throttle(
@@ -366,10 +345,12 @@ export class MsWindow extends Clutter.Actor {
                                     lifecycleState.metaWindow
                                 );
                             if (app !== null) {
-                                this.app.disconnect(this.appSignalId);
+                                this.app.disconnect(
+                                    assertNotNull(this.appSignalId)
+                                );
                                 this.appSignalId = undefined;
                                 this.app = app;
-                                this.emit('app-changed');
+                                this.onAppChanged();
                             }
                         }
                         return GLib.SOURCE_REMOVE;
@@ -377,6 +358,24 @@ export class MsWindow extends Clutter.Actor {
                 }
             }
         });
+    }
+
+    private onAppChanged() {
+        this.trackAppChanges();
+        if (
+            this.lifecycleState.type === 'window' ||
+            this.lifecycleState.type === 'app-placeholder'
+        ) {
+            this.lifecycleState.matchingInfo.appId = this.app.id;
+        }
+        if (this.placeholder.get_parent() === this.msContent) {
+            this.msContent.remove_child(this.placeholder);
+        }
+        this.placeholder = this.buildPlaceHolder();
+        this.msContent.placeholder = this.placeholder;
+        if (this.lifecycleState.type === 'app-placeholder') {
+            this.msContent.add_child(this.placeholder);
+        }
     }
 
     delayGetMetaWindowActor(
