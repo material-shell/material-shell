@@ -325,6 +325,10 @@ export class MsWindow extends Clutter.Actor {
     }
 
     private trackAppChanges() {
+        assert(
+            this.appSignalId === undefined,
+            'Expected the signalId to be undefined'
+        );
         this.appSignalId = this.app.connect('windows-changed', () => {
             const lifecycleState = this.lifecycleState;
             if (lifecycleState.type === 'window') {
