@@ -361,21 +361,16 @@ export class MsWindow extends Clutter.Actor {
     }
 
     private onAppChanged() {
+        const state = this.lifecycleState;
+        // App should change only if there is an window that change it's app
+        assert(
+            state.type == 'window',
+            "Expected the MsWindow to be in the 'window' state"
+        );
         this.trackAppChanges();
-        if (
-            this.lifecycleState.type === 'window' ||
-            this.lifecycleState.type === 'app-placeholder'
-        ) {
-            this.lifecycleState.matchingInfo.appId = this.app.id;
-        }
-        if (this.placeholder.get_parent() === this.msContent) {
-            this.msContent.remove_child(this.placeholder);
-        }
+        state.matchingInfo.appId = this.app.id;
         this.placeholder = this.buildPlaceHolder();
         this.msContent.placeholder = this.placeholder;
-        if (this.lifecycleState.type === 'app-placeholder') {
-            this.msContent.add_child(this.placeholder);
-        }
     }
 
     delayGetMetaWindowActor(
