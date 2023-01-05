@@ -6,7 +6,8 @@ import * as GLib from 'glib';
 import { PRIORITY_DEFAULT, SOURCE_CONTINUE, SOURCE_REMOVE } from 'glib';
 import * as GObject from 'gobject';
 import * as Meta from 'meta';
-import { App } from 'shell';
+
+import { App, WindowTracker } from 'shell';
 import {
     MetaWindowActorWithMsProperties,
     MetaWindowWithMsProperties,
@@ -55,6 +56,7 @@ export interface MsWindowState {
     y: number;
     width: number;
     height: number;
+    createdAt: EpochTimeStamp;
 }
 
 export interface MsWindowConstructProps {
@@ -63,6 +65,7 @@ export interface MsWindowConstructProps {
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
     lifecycleState: MsWindowLifecycleState;
+    createdAt: Date;
 }
 
 type MsWindowLifecycleState =
@@ -154,13 +157,19 @@ export class MsWindow extends Clutter.Actor {
                 param_types: [],
                 accumulator: 0,
             },
+            app_changed: {
+                param_types: [],
+                accumulator: 0,
+            },
         },
     };
 
     lifecycleState: MsWindowLifecycleState;
 
-    public app: App;
+    app: App;
+    appSignalId!: number;
     _persistent: boolean | undefined;
+    createdAt: Date;
     windowClone: Clutter.Clone;
     placeholder: AppPlaceholder;
     destroyId: number;
@@ -178,6 +187,7 @@ export class MsWindow extends Clutter.Actor {
         initialAllocation,
         msWorkspace,
         lifecycleState,
+        createdAt,
     }: MsWindowConstructProps) {
         super({
             reactive: true,
@@ -189,6 +199,25 @@ export class MsWindow extends Clutter.Actor {
 
         this.lifecycleState = lifecycleState;
         this.app = app;
+        this.createdAt = createdAt;
+        this.trackAppChanges();
+        this.connect('app-changed', () => {
+            this.trackAppChanges();
+            if (
+                this.lifecycleState.type === 'window' ||
+                this.lifecycleState.type === 'app-placeholder'
+            ) {
+                this.lifecycleState.matchingInfo.appId = this.app.id;
+            }
+            if (this.msContent.contains(this.placeholder)) {
+                this.msContent.remove_child(this.placeholder);
+            }
+            this.placeholder = this.buildPlaceHolder();
+            this.msContent.placeholder = this.placeholder;
+            if (this.lifecycleState.type === 'app-placeholder') {
+                this.msContent.add_child(this.placeholder);
+            }
+        });
         this._persistent = persistent;
         this.msWorkspace = msWorkspace;
         this.updateMetaWindowPositionAndSizeThrottled = throttle(
@@ -197,10 +226,7 @@ export class MsWindow extends Clutter.Actor {
         );
 
         this.windowClone = new Clutter.Clone();
-        this.placeholder = new AppPlaceholder(this.app);
-        this.placeholder.connect('activated', (_) => {
-            this.emit('request-new-meta-window');
-        });
+        this.placeholder = this.buildPlaceHolder();
         this.destroyId = this.connect('destroy', this._onDestroy.bind(this));
         this.connect('parent-set', () => {
             this.msContent.style_changed();
@@ -214,8 +240,15 @@ export class MsWindow extends Clutter.Actor {
             clone: this.windowClone,
         });
         this.add_child(this.msContent);
-
         this.setMsWorkspace(msWorkspace);
+    }
+
+    buildPlaceHolder() {
+        const placeholder = new AppPlaceholder(this.app);
+        placeholder.connect('activated', (_) => {
+            this.emit('request-new-meta-window');
+        });
+        return placeholder;
     }
 
     get state(): MsWindowState {
@@ -260,6 +293,7 @@ export class MsWindow extends Clutter.Actor {
             y: this.y,
             width: this.width,
             height: this.height,
+            createdAt: this.createdAt.valueOf(),
         };
     }
 
@@ -309,6 +343,39 @@ export class MsWindow extends Clutter.Actor {
     set persistent(boolean: boolean) {
         this._persistent = boolean;
         Me.stateManager.stateChanged();
+    }
+
+    trackAppChanges() {
+        this.appSignalId = this.app.connect('windows-changed', () => {
+            const lifecycleState = this.lifecycleState;
+            if (lifecycleState.type === 'window') {
+                const metaWindowList = this.app.get_windows();
+                if (
+                    lifecycleState.metaWindow &&
+                    !metaWindowList.includes(lifecycleState.metaWindow)
+                ) {
+                    // We have to wait next cycle to get the proper app
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        // Guard to ensure the lifecycle state has not changed before the callback was called
+                        if (
+                            this.lifecycleState == lifecycleState &&
+                            lifecycleState.metaWindow
+                        ) {
+                            const app =
+                                WindowTracker.get_default().get_window_app(
+                                    lifecycleState.metaWindow
+                                );
+                            if (app !== null) {
+                                this.app.disconnect(this.appSignalId);
+                                this.app = app;
+                                this.emit('app-changed');
+                            }
+                        }
+                        return GLib.SOURCE_REMOVE;
+                    });
+                }
+            }
+        });
     }
 
     delayGetMetaWindowActor(
@@ -908,6 +975,7 @@ export class MsWindow extends Clutter.Actor {
     }
 
     public unsetWindow() {
+        Me.logWithStackTrace('unsetWindow');
         assert(
             this.lifecycleState.type === 'window',
             'Can only unset the window when in the window state'
@@ -1251,6 +1319,7 @@ export class MsWindow extends Clutter.Actor {
 
     _onDestroy() {
         if (this.destroyId) this.disconnect(this.destroyId);
+        if (this.appSignalId) this.app.disconnect(this.appSignalId);
         this.unregisterOnMetaWindowSignals();
         this.lifecycleState = { type: 'destroyed' };
     }

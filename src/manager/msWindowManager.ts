@@ -344,17 +344,6 @@ export class MsWindowManager extends MsManager {
                             )} with ${msWindow.windowIdentifier}`
                         );
 
-                        // Check if there MetaWindow is already associated to an other MsWindow with a different app (It usually happen when the MetaWindow begin it's lifecycle with a transitionnal state) ex: Libre Office
-                        const metaWindow =
-                            windowActor.metaWindow as MetaWindowWithMsProperties;
-                        if (
-                            metaWindow.msWindow != undefined &&
-                            metaWindow.msWindow.app != msWindow.app
-                        ) {
-                            metaWindow.msWindow.unsetWindow();
-                            metaWindow.msWindow.kill();
-                        }
-
                         // Associate the meta window with the ms window.
                         // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
                         void msWindow
@@ -378,6 +367,17 @@ export class MsWindowManager extends MsManager {
                         insert: true,
                     });
                 }
+            }
+            const candidateMsWindowsToKill = candidateMsWindows.filter(
+                (msWindow) =>
+                    msWindow.lifecycleState.type === 'app-placeholder' &&
+                    msWindow.lifecycleState.waitingForAppSince === undefined &&
+                    !msWindow.persistent &&
+                    Date.now() - msWindow.createdAt.valueOf() < 2000
+            );
+
+            for (const msWindow of candidateMsWindowsToKill) {
+                msWindow.kill();
             }
         }
     }
@@ -581,7 +581,8 @@ export class MsWindowManager extends MsManager {
         },
         persistent?: boolean,
         initialAllocation?: Rectangular,
-        matchingInfo?: MsWindowMatchingInfo
+        matchingInfo?: MsWindowMatchingInfo,
+        createdAt?: Date
     ) {
         // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
         // This can for example happen with the "gnome-shell" pseudo-window which always seems to exist (but doesn't correspond to anything visible).
@@ -619,6 +620,7 @@ export class MsWindowManager extends MsManager {
                 matchingInfo,
                 waitingForAppSince: undefined,
             },
+            createdAt: createdAt ?? new Date(),
         });
 
         if (source instanceof Meta.Window) {
