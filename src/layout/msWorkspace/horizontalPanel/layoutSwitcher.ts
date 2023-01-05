@@ -84,7 +84,7 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     updateLayoutWidget() {
-        this.layoutQuickWidgetBin.remove_all_children();
+        this.layoutQuickWidgetBin.set_child(null);
 
         if (!this.msWorkspace.layout) {
             return;

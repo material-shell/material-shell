@@ -285,9 +285,6 @@ export class MsWorkspace extends WithSignals {
 
         this.tileableList.splice(insertAt, 0, msWindow);
 
-        if (focus) {
-            this.focusTileable(msWindow);
-        }
         this.msWorkspaceActor.updateUI();
 
         // TODO: Emitting the event after a small duration is potentially bad.
@@ -295,6 +292,9 @@ export class MsWorkspace extends WithSignals {
         // until the 'tileableList-changed' event runs because the focus index
         // will be out of bounds.
         await this.emitTileableListChangedOnce();
+        if (focus) {
+            this.focusTileable(msWindow);
+        }
     }
 
     async removeMsWindow(msWindow: MsWindow) {

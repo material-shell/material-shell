@@ -1,10 +1,13 @@
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
 /** Gnome libs imports */
 import * as Clutter from 'clutter';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
+import { logAssert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { InfinityTo0 } from 'src/utils/index';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
+import { reparentActor } from 'src/utils/index';
+import { TranslationHelper } from 'src/utils/transition';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 type MaximizeLayoutState = { key: 'maximize' };
@@ -12,15 +15,14 @@ type MaximizeLayoutState = { key: 'maximize' };
 export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     static state = { key: 'maximize' };
     static label = 'Maximize';
-    translationAnimator: TranslationAnimator;
+    translationHelper: TranslationHelper;
     currentDisplayed: { tileable: Tileable; destroySignal: number } | null =
         null;
 
     constructor(msWorkspace: MsWorkspace, state: MaximizeLayoutState) {
         super(msWorkspace, state);
-        this.translationAnimator = new TranslationAnimator();
-        this.tileableContainer.add_child(this.translationAnimator);
-        this.translationAnimator.connect('transition-completed', () => {
+        this.translationHelper = new TranslationHelper(this.tileableContainer);
+        this.translationHelper.connect('transition-completed', () => {
             this.endTransition();
         });
     }
@@ -31,39 +33,35 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         );
     }
 
-    override onDestroy() {
-        super.onDestroy();
+    displayTileable(actor: Tileable) {
+        if (this.translationHelper.animationInProgress) return;
         if (this.currentDisplayed) {
+            if (
+                logAssert(
+                    this.tileableContainer
+                        .get_children()
+                        .includes(this.currentDisplayed.tileable),
+                    'Expected the currently displayed tileable to be a child of the tileable container'
+                )
+            ) {
+                this.tileableContainer.remove_child(
+                    this.currentDisplayed.tileable
+                );
+            }
+
             this.currentDisplayed.tileable.disconnect(
                 this.currentDisplayed.destroySignal
             );
-            this.currentDisplayed = null;
         }
-    }
+        this.currentDisplayed = {
+            tileable: actor,
+            destroySignal: actor.connect('destroy', () => {
+                this.currentDisplayed = null;
+            }),
+        };
 
-    displayTileable(actor: Tileable) {
-        if (
-            !this.currentDisplayed ||
-            this.currentDisplayed.tileable !== actor
-        ) {
-            if (this.currentDisplayed) {
-                this.currentDisplayed.tileable.disconnect(
-                    this.currentDisplayed.destroySignal
-                );
-            }
-            this.currentDisplayed = {
-                tileable: actor,
-                destroySignal: actor.connect('destroy', () => {
-                    this.currentDisplayed = null;
-                }),
-            };
-        }
-
-        // Make sure the actor has focus, but only if this
-        // workspace is actually visible.
-        if (this.msWorkspace.isDisplayed()) {
-            actor.grab_key_focus();
-        }
+        reparentActor(actor, this.tileableContainer);
+        if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
     }
 
     showAppLauncher() {
@@ -76,13 +74,9 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
     }
 
     onFocusChanged(windowFocused: Tileable, oldWindowFocused: Tileable | null) {
-        if (windowFocused.dragged) {
+        if (windowFocused.dragged || windowFocused === oldWindowFocused) {
             this.displayTileable(windowFocused);
         } else {
-            if (!windowFocused.get_parent()) {
-                this.displayTileable(windowFocused);
-            }
-
             this.startTransition(windowFocused, oldWindowFocused);
         }
     }
@@ -96,7 +90,6 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         tileable.visible = true;
         if (tileable === this.msWorkspace.tileableFocused) {
             this.displayTileable(tileable);
-            this.translationAnimator.setActors([tileable]);
         }
     }
 
@@ -127,24 +120,24 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                 return tileable === nextActor;
             }
         );
-        [nextActor, prevActor].forEach((actor) => {
-            if (actor) {
-                actor.set_width(
-                    InfinityTo0(this.tileableContainer.allocation.get_width())
-                );
-                actor.set_height(
-                    InfinityTo0(this.tileableContainer.allocation.get_height())
-                );
-            }
-        });
-        this.translationAnimator.setTranslation(
+
+        this.translationHelper.setTranslation(
             [nextActor],
+            this.msWorkspace.tileableList,
             indexOfNextActor > indexOfPrevActor ? 1 : -1
         );
     }
 
     endTransition() {
         if (this.msWorkspace.tileableFocused !== null) {
+            for (const child of this.tileableContainer.get_children()) {
+                if (
+                    child != this.msWorkspace.tileableFocused &&
+                    child != this.currentDisplayed?.tileable
+                ) {
+                    this.tileableContainer.remove_child(child);
+                }
+            }
             this.displayTileable(this.msWorkspace.tileableFocused);
         }
     }

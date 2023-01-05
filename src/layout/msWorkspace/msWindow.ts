@@ -482,7 +482,6 @@ export class MsWindow extends Clutter.Actor {
 
         if (
             !windowActor ||
-            !this.mapped ||
             this.width === 0 ||
             this.height === 0 ||
             this.followMetaWindow ||
@@ -558,7 +557,7 @@ export class MsWindow extends Clutter.Actor {
                     height: this.height,
                 };
             } else {
-                if (this.msContent.has_allocation()) {
+                if (!this.msContent.has_allocation()) {
                     // If we don't have an allocation yet, we cannot position the window actor.
                     return;
                 }

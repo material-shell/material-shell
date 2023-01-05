@@ -1,8 +1,9 @@
 /** Gnome libs imports */
+import { ActorBox } from 'clutter';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
+import { TranslationHelper } from 'src/utils/transition';
 import { MatNumberPicker } from 'src/widget/material/numberPicker';
-import { TranslationAnimator } from 'src/widget/translationAnimator';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 import { Portion } from '../portion';
 
@@ -21,7 +22,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     // _state: { key: 'split', nbOfColumns: number };
     vertical: boolean;
-    translationAnimator = new TranslationAnimator();
+    translationHelper = new TranslationHelper(this.tileableContainer);
     baseIndex: number;
     activeTileableList: Tileable[];
 
@@ -34,10 +35,12 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         this.activeTileableList = [];
         this.updateActiveTileableListFromFocused();
         this.vertical = this.monitor.width < this.monitor.height;
-        this.tileableContainer.add_child(this.translationAnimator);
-        this.translationAnimator.connect('transition-completed', () => {
-            this.endTransition();
-        });
+        this.translationHelper.connect(
+            'transition-completed',
+            (_, actorsLeftList: Tileable[]) => {
+                this.endTransition(actorsLeftList);
+            }
+        );
 
         if (this.mainPortion.vertical !== this.vertical) {
             this.mainPortion.convert();
@@ -46,13 +49,11 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     afterInit() {
         super.afterInit();
-        this.updateActiveTileableListFromFocused();
+        this.refreshVisibleActors();
     }
 
     get tileableListVisible() {
-        return this.msWorkspace.tileableList.filter(
-            (tileable) => tileable.visible
-        );
+        return this.activeTileableList;
     }
 
     updateActiveTileableListFromFocused() {
@@ -69,12 +70,25 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
             this.baseIndex,
             this.baseIndex + this._state.nbOfColumns
         );
-        this.translationAnimator.setActors(this.activeTileableList);
     }
 
     onTileableListChanged(newWindows: Tileable[]) {
         super.onTileableListChanged(newWindows);
         this.updateActiveTileableListFromFocused();
+        this.refreshVisibleActors();
+    }
+
+    refreshVisibleActors() {
+        // refreshVisibleActors will be called when the animation finishes
+        if (this.translationHelper.animationInProgress) return;
+
+        for (const tileable of this.msWorkspace.tileableList) {
+            if (this.activeTileableList.includes(tileable)) {
+                tileable.show();
+            } else {
+                tileable.hide();
+            }
+        }
         this.msWorkspace.refreshFocus();
     }
 
@@ -84,26 +98,39 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
     ) {
         const newIndex = this.msWorkspace.tileableList.indexOf(tileableFocused);
         // Represents a slice from baseIndex to baseIndex + this._state.nbOfColumns (exclusive)
-        let baseIndex = this.baseIndex;
+        let newBaseIndex = this.baseIndex;
         // Ensure the new tileable is visible
-        baseIndex = Math.max(baseIndex, newIndex - this._state.nbOfColumns + 1);
-        baseIndex = Math.min(baseIndex, newIndex);
+        newBaseIndex = Math.max(
+            newBaseIndex,
+            newIndex - this._state.nbOfColumns + 1
+        );
+        newBaseIndex = Math.min(newBaseIndex, newIndex);
         // Ensure the slice does not go out of bounds
-        baseIndex = Math.min(
-            baseIndex,
+        newBaseIndex = Math.min(
+            newBaseIndex,
             this.msWorkspace.tileableList.length - this._state.nbOfColumns
         );
-        baseIndex = Math.max(baseIndex, 0);
+        newBaseIndex = Math.max(newBaseIndex, 0);
 
         const oldTileableList = this.activeTileableList;
 
-        if (baseIndex !== this.baseIndex) {
-            this.baseIndex = baseIndex;
+        if (newBaseIndex !== this.baseIndex) {
+            const direction = this.baseIndex > newBaseIndex ? -1 : 1;
+            const nthChange = Math.abs(this.baseIndex - newBaseIndex);
+            for (let index = 0; index < nthChange; index++) {
+                if (direction > 0) {
+                    this.mainPortion.rotateRight();
+                } else {
+                    this.mainPortion.rotateLeft();
+                }
+            }
+            this.baseIndex = newBaseIndex;
             this.activeTileableList = this.msWorkspace.tileableList.slice(
-                baseIndex,
-                baseIndex + this._state.nbOfColumns
+                newBaseIndex,
+                newBaseIndex + this._state.nbOfColumns
             );
-            this.startTransition(oldTileableList, this.activeTileableList);
+            this.tileAll();
+            this.startTransition(this.activeTileableList, direction);
         }
 
         for (const tileable of new Set([
@@ -127,8 +154,8 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         // Never hide the Applauncher
     }
 
-    override shouldBeVisible(tileable: Tileable): boolean {
-        return this.activeTileableList.includes(tileable);
+    override shouldBeVisible(_tileable: Tileable): boolean {
+        return true;
     }
 
     initializeTileable(tileable: Tileable) {
@@ -138,7 +165,8 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
 
     restoreTileable(tileable: Tileable) {
         super.restoreTileable(tileable);
-        this.translationAnimator.tryRemoveActor(tileable);
+        tileable.visible = true;
+
         if (!tileable.get_parent()) {
             this.tileableContainer.add_child(tileable);
         }
@@ -158,51 +186,31 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         return -1;
     }
 
+    tileAll(box?: ActorBox | undefined): void {
+        if (!this.translationHelper.animationInProgress) super.tileAll(box);
+    }
+
     /** Start a transition from one slice of visible tileables to another slice.
      * Note that it is expected that the sequences are slices of `this.msWorkspace.tileableList`.
      */
-    startTransition(
-        previousTileableList: Tileable[],
-        nextTileableList: Tileable[]
-    ) {
-        const width = this.tileableContainer.allocation.get_width();
-        const height = this.tileableContainer.allocation.get_height();
-
-        const prevBase =
-            previousTileableList.length > 0
-                ? this.msWorkspace.tileableList.indexOf(previousTileableList[0])
-                : -1;
-        const nextBase =
-            nextTileableList.length > 0
-                ? this.msWorkspace.tileableList.indexOf(nextTileableList[0])
-                : -1;
-        const direction = prevBase > nextBase ? -1 : 1;
-
-        const itemWidth = Math.round(
-            this.vertical ? width : width / this._state.nbOfColumns
-        );
-        const itemHeight = Math.round(
-            this.vertical ? height / this._state.nbOfColumns : height
-        );
-
-        for (const actor of new Set([
-            ...previousTileableList,
-            ...nextTileableList,
-        ])) {
-            actor.width = itemWidth;
-            actor.height = itemHeight;
-        }
-
+    startTransition(nextTileableList: Tileable[], direction: number) {
         if (this.borderContainer) {
             this.borderContainer.hide();
         }
 
-        this.translationAnimator.setTranslation(nextTileableList, direction);
+        this.translationHelper.setTranslation(
+            nextTileableList,
+            this.msWorkspace.tileableList,
+            direction
+        );
     }
 
-    endTransition() {
+    endTransition(actorListToRemove: Tileable[]) {
         if (this.borderContainer) {
             this.borderContainer.show();
+        }
+        for (const actor of actorListToRemove) {
+            actor.hide();
         }
         this.msWorkspace.refreshFocus();
     }
@@ -214,6 +222,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         widget.connect('changed', (_, newValue) => {
             this._state.nbOfColumns = newValue;
             this.updateActiveTileableListFromFocused();
+            this.refreshVisibleActors();
             this.tileAll();
         });
         return widget;

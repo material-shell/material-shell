@@ -191,6 +191,24 @@ export class Portion {
         this.updateBorders();
     }
 
+    /**
+     * rotate order of portions by one in next direction
+     */
+    rotateRight() {
+        const firstChild = this.children.shift();
+        if (firstChild) this.children.push(firstChild);
+        this.updateBorders();
+    }
+
+    /**
+     * rotate order of portions by one in previous direction
+     */
+    rotateLeft() {
+        const lastChild = this.children.pop();
+        if (lastChild) this.children.splice(0, 0, lastChild);
+        this.updateBorders();
+    }
+
     isBorderInSubPortion(index: number, after = false): boolean {
         let portionIndex = 0;
         const afterOffset = after ? 1 : 0;
