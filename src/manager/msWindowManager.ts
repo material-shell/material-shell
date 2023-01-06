@@ -63,7 +63,10 @@ const INF_COST = 100000;
  */
 const MAX_WINDOW_REASSOCIATION_TIME_MS = 3000;
 
-const CREATED_LESS_THAN = 2000;
+/** Windows that are created, but then have their metawindow removed from them very quickly are not desirable.
+ * So we kill those windows when that happens.
+ */
+const WINDOW_RECENTLY_CREATED_TIME_MS = 2000;
 
 /** Cost for associating the the given metaWindow to the msWindow.
  *
@@ -379,7 +382,7 @@ export class MsWindowManager extends MsManager {
                     msWindow.lifecycleState.waitingForAppSince === undefined &&
                     !msWindow.persistent &&
                     Date.now() - msWindow.createdAt.valueOf() <
-                        CREATED_LESS_THAN
+                        WINDOW_RECENTLY_CREATED_TIME_MS
             );
 
             for (const msWindow of candidateMsWindowsToKill) {

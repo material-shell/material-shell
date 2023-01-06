@@ -29,6 +29,8 @@ import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
 const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
 
+const PLACEHOLDER_ICON_SIZE = 248;
+
 export function buildMetaWindowIdentifier(metaWindow: Meta.Window) {
     return `${metaWindow.get_wm_class_instance()}-${metaWindow.get_pid()}-${metaWindow.get_stable_sequence()}`;
 }
@@ -206,7 +208,7 @@ export class MsWindow extends Clutter.Actor {
 
         this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(
-            this.app.create_icon_texture(248),
+            this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE),
             this.app.get_name()
         );
         this.placeholder.connect('activated', (_) => {
@@ -371,7 +373,9 @@ export class MsWindow extends Clutter.Actor {
         );
         this.trackAppChanges();
         state.matchingInfo.appId = this.app.id;
-        this.placeholder.setIcon(this.app.create_icon_texture(248));
+        this.placeholder.setIcon(
+            this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE)
+        );
         this.placeholder.setTitle(this.app.get_name());
     }
 
@@ -1316,6 +1320,7 @@ export class MsWindow extends Clutter.Actor {
     _onDestroy() {
         if (this.destroyId) this.disconnect(this.destroyId);
         if (this.appSignalId) this.app.disconnect(this.appSignalId);
+        if (this.placeholder.get_parent() === null) this.placeholder.destroy();
         this.unregisterOnMetaWindowSignals();
         this.lifecycleState = { type: 'destroyed' };
     }
