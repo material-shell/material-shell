@@ -142,7 +142,15 @@ export class MsWorkspace extends WithSignals {
                         width: msWindowData.width,
                         height: msWindowData.height,
                     },
-                    matchingInfo
+                    matchingInfo,
+                    // Set createdAt to yesterday when migrating older state, because we don't want restored old windows to be treated as just having been created
+                    msWindowData.createdAt
+                        ? new Date(msWindowData.createdAt)
+                        : new Date(
+                              new Date().setUTCHours(
+                                  new Date().getUTCHours() - 24
+                              )
+                          )
                 );
             }
         }

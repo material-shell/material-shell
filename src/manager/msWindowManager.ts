@@ -63,6 +63,11 @@ const INF_COST = 100000;
  */
 const MAX_WINDOW_REASSOCIATION_TIME_MS = 3000;
 
+/** Windows that are created, but then have their metawindow removed from them very quickly are not desirable.
+ * So we kill those windows when that happens.
+ */
+const WINDOW_RECENTLY_CREATED_TIME_MS = 2000;
+
 /** Cost for associating the the given metaWindow to the msWindow.
  *
  * windowInfo are the matching details for the meta window, for example its window title.
@@ -353,7 +358,7 @@ export class MsWindowManager extends MsManager {
                 } else {
                     logInfoOnce();
                     Me.log(
-                        `Creating a new window for ${buildMetaWindowIdentifier(
+                        `Creating a new MsWindow for ${buildMetaWindowIdentifier(
                             windowActor.metaWindow
                         )}`
                     );
@@ -367,6 +372,21 @@ export class MsWindowManager extends MsManager {
                         insert: true,
                     });
                 }
+            }
+
+            // Kill msWindows which were recently created, but their windows have either been closed quickly or
+            // they have been moved to other msWindows.
+            const candidateMsWindowsToKill = candidateMsWindows.filter(
+                (msWindow) =>
+                    msWindow.lifecycleState.type === 'app-placeholder' &&
+                    msWindow.lifecycleState.waitingForAppSince === undefined &&
+                    !msWindow.persistent &&
+                    Date.now() - msWindow.createdAt.valueOf() <
+                        WINDOW_RECENTLY_CREATED_TIME_MS
+            );
+
+            for (const msWindow of candidateMsWindowsToKill) {
+                msWindow.kill();
             }
         }
     }
@@ -570,7 +590,8 @@ export class MsWindowManager extends MsManager {
         },
         persistent?: boolean,
         initialAllocation?: Rectangular,
-        matchingInfo?: MsWindowMatchingInfo
+        matchingInfo?: MsWindowMatchingInfo,
+        createdAt?: Date
     ) {
         // Note: Contrary to what the type definitions say, the get_window_app function can in fact return null.
         // This can for example happen with the "gnome-shell" pseudo-window which always seems to exist (but doesn't correspond to anything visible).
@@ -608,6 +629,7 @@ export class MsWindowManager extends MsManager {
                 matchingInfo,
                 waitingForAppSince: undefined,
             },
+            createdAt: createdAt ?? new Date(),
         });
 
         if (source instanceof Meta.Window) {
