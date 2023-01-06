@@ -63,6 +63,8 @@ const INF_COST = 100000;
  */
 const MAX_WINDOW_REASSOCIATION_TIME_MS = 3000;
 
+const CREATED_LESS_THAN = 2000;
+
 /** Cost for associating the the given metaWindow to the msWindow.
  *
  * windowInfo are the matching details for the meta window, for example its window title.
@@ -376,7 +378,8 @@ export class MsWindowManager extends MsManager {
                     msWindow.lifecycleState.type === 'app-placeholder' &&
                     msWindow.lifecycleState.waitingForAppSince === undefined &&
                     !msWindow.persistent &&
-                    Date.now() - msWindow.createdAt.valueOf() < 2000
+                    Date.now() - msWindow.createdAt.valueOf() <
+                        CREATED_LESS_THAN
             );
 
             for (const msWindow of candidateMsWindowsToKill) {

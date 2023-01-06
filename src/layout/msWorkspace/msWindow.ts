@@ -205,7 +205,13 @@ export class MsWindow extends Clutter.Actor {
         );
 
         this.windowClone = new Clutter.Clone();
-        this.placeholder = this.buildPlaceHolder();
+        this.placeholder = new AppPlaceholder(
+            this.app.create_icon_texture(248),
+            this.app.get_name()
+        );
+        this.placeholder.connect('activated', (_) => {
+            this.emit('request-new-meta-window');
+        });
         this.destroyId = this.connect('destroy', this._onDestroy.bind(this));
         this.connect('parent-set', () => {
             this.msContent.style_changed();
@@ -220,14 +226,6 @@ export class MsWindow extends Clutter.Actor {
         });
         this.add_child(this.msContent);
         this.setMsWorkspace(msWorkspace);
-    }
-
-    private buildPlaceHolder() {
-        const placeholder = new AppPlaceholder(this.app);
-        placeholder.connect('activated', (_) => {
-            this.emit('request-new-meta-window');
-        });
-        return placeholder;
     }
 
     get state(): MsWindowState {
@@ -373,8 +371,8 @@ export class MsWindow extends Clutter.Actor {
         );
         this.trackAppChanges();
         state.matchingInfo.appId = this.app.id;
-        this.placeholder = this.buildPlaceHolder();
-        this.msContent.placeholder = this.placeholder;
+        this.placeholder.setIcon(this.app.create_icon_texture(248));
+        this.placeholder.setTitle(this.app.get_name());
     }
 
     delayGetMetaWindowActor(

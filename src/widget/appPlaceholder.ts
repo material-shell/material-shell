@@ -2,8 +2,6 @@
 import * as Clutter from 'clutter';
 import * as GLib from 'glib';
 import * as GObject from 'gobject';
-import { App } from 'shell';
-import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 import * as St from 'st';
@@ -23,8 +21,9 @@ export class AppPlaceholder extends St.Widget {
             },
         },
     };
-    app: App;
-    icon: St.Widget;
+    iconContainer = new St.Bin({
+        style: 'padding:24px',
+    });
     pressed = false;
     waitForReset = false;
     clickableContainer: RippleBackground;
@@ -36,22 +35,19 @@ export class AppPlaceholder extends St.Widget {
     vertical = true;
     private _spinner: any;
 
-    constructor(app: App) {
+    constructor(icon: St.Widget, textLabel: string) {
         super({
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
             layout_manager: new Clutter.BinLayout(),
             reactive: true,
         });
-        this.app = app;
-        const icon = this.app.create_icon_texture(248);
-        assert(icon instanceof St.Widget, 'expected icon to be a widget');
-        this.icon = icon;
-        this.icon.set_style('padding:24px');
+
+        this.iconContainer.set_child(icon);
         this.spinnerContainer = new Clutter.Actor({});
         this.spinnerContainer.set_opacity(0);
         this.appTitle = new St.Label({
-            text: app.get_name(),
+            text: textLabel,
             style_class: 'headline-4 text-high-emphasis',
         });
 
@@ -81,7 +77,7 @@ export class AppPlaceholder extends St.Widget {
             style: 'padding:48px; border-radius:48px',
         });
 
-        this.box.add_child(this.icon);
+        this.box.add_child(this.iconContainer);
         this.box.add_child(this.identityContainer);
 
         this.add_style_class_name('surface-darker');
@@ -115,6 +111,14 @@ export class AppPlaceholder extends St.Widget {
         this.connect('key-focus-out', () => {
             this.box.remove_style_class_name('surface');
         });
+    }
+
+    setIcon(icon: St.Widget) {
+        this.iconContainer.set_child(icon);
+    }
+
+    setTitle(title: string) {
+        this.appTitle.set_text(title);
     }
 
     setOrientation(width: number, height: number) {
@@ -161,11 +165,7 @@ export class AppPlaceholder extends St.Widget {
         this.waitForReset = true;
         this.clickableContainer.reactive = false;
         this._spinner = new Animation.Spinner(16);
-        let spinnerActor;
-
-        spinnerActor = this._spinner;
-
-        this.spinnerContainer.add_child(spinnerActor);
+        this.spinnerContainer.add_child(this._spinner);
         this._spinner.play();
         this.spinnerContainer.set_opacity(255);
         this.emit('activated', button);
