@@ -6,7 +6,6 @@ import * as Clutter from 'clutter';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { logAssert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import { reparentActor } from 'src/utils/index';
 import { TranslationHelper } from 'src/utils/transition';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
@@ -44,9 +43,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                     'Expected the currently displayed tileable to be a child of the tileable container'
                 )
             ) {
-                this.tileableContainer.remove_child(
-                    this.currentDisplayed.tileable
-                );
+                this.currentDisplayed.tileable.hide();
             }
 
             this.currentDisplayed.tileable.disconnect(
@@ -60,7 +57,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
             }),
         };
 
-        reparentActor(actor, this.tileableContainer);
+        actor.show();
         if (this.msWorkspace.isDisplayed()) actor.grab_key_focus();
     }
 
@@ -87,16 +84,14 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
 
     initializeTileable(tileable: Tileable) {
         super.initializeTileable(tileable);
-        tileable.visible = true;
+        tileable.visible = false;
         if (tileable === this.msWorkspace.tileableFocused) {
             this.displayTileable(tileable);
         }
     }
 
     restoreTileable(tileable: Tileable) {
-        if (!tileable.get_parent()) {
-            this.tileableContainer.add_child(tileable);
-        }
+        tileable.visible = true;
     }
 
     tileTileable(tileable: Tileable, box: Clutter.ActorBox) {
@@ -135,7 +130,7 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
                     child != this.msWorkspace.tileableFocused &&
                     child != this.currentDisplayed?.tileable
                 ) {
-                    this.tileableContainer.remove_child(child);
+                    child.hide();
                 }
             }
             this.displayTileable(this.msWorkspace.tileableFocused);

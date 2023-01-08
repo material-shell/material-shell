@@ -126,9 +126,7 @@ export class BaseTilingLayout<
                 this.tileableContainer.add_child(tileable);
             }
         } else {
-            if (tileable.get_parent() === this.tileableContainer) {
-                this.tileableContainer.remove_child(tileable);
-            }
+            tileable.visible = false;
         }
     }
 

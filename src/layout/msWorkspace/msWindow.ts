@@ -13,7 +13,7 @@ import {
     MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
 import { Rectangular } from 'src/types/mod';
-import { throttle } from 'src/utils';
+import { reparentActor, throttle } from 'src/utils';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 /** Extension imports */
@@ -168,7 +168,6 @@ export class MsWindow extends Clutter.Actor {
     appSignalId: number | undefined = undefined;
     _persistent: boolean | undefined;
     createdAt: Date;
-    windowClone: Clutter.Clone;
     placeholder: AppPlaceholder;
     destroyId: number;
     msContent: MsWindowContent;
@@ -205,8 +204,6 @@ export class MsWindow extends Clutter.Actor {
             () => this.updateMetaWindowPositionAndSizeInternal(),
             16
         );
-
-        this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE),
             this.app.get_name()
@@ -222,10 +219,7 @@ export class MsWindow extends Clutter.Actor {
         this.connect('notify::visible', () => {
             this.updateMetaWindowVisibility();
         });
-        this.msContent = new MsWindowContent({
-            placeholder: this.placeholder,
-            clone: this.windowClone,
-        });
+        this.msContent = new MsWindowContent(this.placeholder);
         this.add_child(this.msContent);
         this.setMsWorkspace(msWorkspace);
     }
@@ -948,7 +942,6 @@ export class MsWindow extends Clutter.Actor {
                 this.lifecycleState.waitingForAppSince !== undefined,
         });
         metaWindow.msWindow = this;
-        this.windowClone.set_source(null);
 
         await this.onMetaWindowActorExist(metaWindow);
         // Check if this method needs to be cancelled.
@@ -969,7 +962,7 @@ export class MsWindow extends Clutter.Actor {
             return;
 
         this.updateWorkspaceAndMonitor(metaWindow);
-        this.windowClone.set_source(
+        this.msContent.setChild(
             metaWindow.get_compositor_private<Meta.WindowActor>()
         );
         this.onMetaWindowsChanged();
@@ -981,9 +974,7 @@ export class MsWindow extends Clutter.Actor {
             'Can only unset the window when in the window state'
         );
         this.unregisterOnMetaWindowSignals();
-        // Required when re-assigning windows.
-        // Normally if a window is destroyed the source is implicitly cleared because the source window doesn't exist anymore.
-        this.windowClone.set_source(null);
+
         this.reactive = true;
         this.lifecycleState = {
             type: 'app-placeholder',
@@ -1103,7 +1094,7 @@ export class MsWindow extends Clutter.Actor {
             this.reactive = false;
             set_style_class(this.msContent, 'surface-darker', false);
             if (!this.placeholder.get_parent()) {
-                this.msContent.add_child(this.placeholder);
+                this.msContent.setChild(this.placeholder);
             }
         }
         this.emit('title-changed', this.title);
@@ -1328,25 +1319,22 @@ export class MsWindow extends Clutter.Actor {
 
 @registerGObjectClass
 export class MsWindowContent extends St.Widget {
-    placeholder: Clutter.Actor;
-    clone: Clutter.Clone;
+    child: Clutter.Actor;
 
     static metaInfo: GObject.MetaInfo = {
         GTypeName: 'MsWindowContent',
     };
 
-    constructor({
-        placeholder,
-        clone,
-    }: {
-        placeholder: Clutter.Actor;
-        clone: Clutter.Clone;
-    }) {
+    constructor(child: Clutter.Actor) {
         super({ clip_to_allocation: true });
-        this.placeholder = placeholder;
-        this.clone = clone;
-        this.add_child(this.clone);
-        this.add_child(this.placeholder);
+        this.child = child;
+        this.add_child(this.child);
+    }
+
+    setChild(child: Clutter.Actor) {
+        this.remove_child(this.child);
+        this.child = child;
+        reparentActor(child, this);
     }
 
     override vfunc_allocate(box: Clutter.ActorBox) {
@@ -1354,50 +1342,47 @@ export class MsWindowContent extends St.Widget {
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
         const parent = this.get_parent();
+        Me.logFocus(parent);
         assert(parent instanceof MsWindow, 'expected parent to be an MsWindow');
         const metaWindow = parent.metaWindow;
-        if (
-            metaWindow &&
-            metaWindow.firstFrameDrawn &&
-            metaWindow.get_compositor_private<Meta.WindowActor>()
-        ) {
-            const windowFrameRect = metaWindow.get_frame_rect();
-            const windowBufferRect = metaWindow.get_buffer_rect();
-            //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
-            let x1: number, x2: number, y1: number, y2: number;
-            if (metaWindow.resizeable || metaWindow.fullscreen) {
-                x1 = windowBufferRect.x - windowFrameRect.x;
-                y1 = windowBufferRect.y - windowFrameRect.y;
-                x2 = x1 + windowBufferRect.width;
-                y2 = y1 + windowBufferRect.height;
+
+        for (const actor of this.get_children()) {
+            if (actor === this.child) {
+                if (
+                    actor instanceof Meta.WindowActor &&
+                    metaWindow &&
+                    metaWindow.firstFrameDrawn
+                ) {
+                    const windowFrameRect = metaWindow.get_frame_rect();
+                    const windowBufferRect = metaWindow.get_buffer_rect();
+                    //The WindowActor position are not the same as the real window position, I'm not sure why. We need to determine the offset to correctly position the windowClone inside the msWindow container;
+                    let x1: number, x2: number, y1: number, y2: number;
+                    if (metaWindow.resizeable || metaWindow.fullscreen) {
+                        x1 = windowBufferRect.x - windowFrameRect.x;
+                        y1 = windowBufferRect.y - windowFrameRect.y;
+                        x2 = x1 + windowBufferRect.width;
+                        y2 = y1 + windowBufferRect.height;
+                    } else {
+                        const monitor = parent.msWorkspace.monitor;
+                        const workArea =
+                            Main.layoutManager.getWorkAreaForMonitor(
+                                monitor.index
+                            );
+                        x1 = windowBufferRect.x - workArea.x - parent.x;
+                        y1 = windowBufferRect.y - workArea.y - parent.y;
+                        x2 = x1 + windowBufferRect.width;
+                        y2 = y1 + windowBufferRect.height;
+                    }
+                    const cloneBox = Clutter.ActorBox.new(x1, y1, x2, y2);
+
+                    actor.allocate(cloneBox);
+                }
+                if (actor instanceof AppPlaceholder) {
+                    actor.allocate(box);
+                }
             } else {
-                const monitor = parent.msWorkspace.monitor;
-                const workArea = Main.layoutManager.getWorkAreaForMonitor(
-                    monitor.index
-                );
-                x1 = windowBufferRect.x - workArea.x - parent.x;
-                y1 = windowBufferRect.y - workArea.y - parent.y;
-                x2 = x1 + windowBufferRect.width;
-                y2 = y1 + windowBufferRect.height;
+                actor.allocate_preferred_size(actor.x, actor.y);
             }
-            const cloneBox = Clutter.ActorBox.new(x1, y1, x2, y2);
-
-            this.clone.allocate(cloneBox);
-        } else {
-            // Before the first frame of the window is drawn, the window likely doesn't have the correct size.
-            // But we may still want to display things there. For example if a "The application is not responding" dialog is shown.
-            // So to make things pretty we ensure to center the clone actor.
-            const [_mw, _mh, w, h] = this.clone.get_preferred_size() as [
-                number,
-                number,
-                number,
-                number
-            ];
-            this.clone.allocate(centerInBox(box, w, h));
-        }
-
-        if (this.placeholder.get_parent() === this) {
-            this.placeholder.allocate(box);
         }
     }
 }
