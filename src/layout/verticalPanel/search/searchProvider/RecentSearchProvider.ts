@@ -19,7 +19,7 @@ export class RecentSearchProvider {
     isRemoteProvider = false;
     searchInProgress = false;
     readonly id: string = 'ms-recent';
-    history: HistoryItem[] = [];
+    historyList: HistoryItem[] = [];
 
     get title(): string {
         return 'Recent';
@@ -51,7 +51,7 @@ export class RecentSearchProvider {
             historyState.history !== undefined &&
             Array.isArray(historyState.history)
         ) {
-            this.history = historyState.history;
+            this.historyList = historyState.history;
         }
     }
 
@@ -65,17 +65,17 @@ export class RecentSearchProvider {
             // It rarely makes sense to suggest recent calculations again
             return;
         }
-        this.history.push({
+        this.historyList.push({
             id,
             provider_id,
             terms,
             context: this.getContext(),
         });
-        if (this.history.length > MAX_HISTORY_SIZE) {
-            this.history.shift();
+        if (this.historyList.length > MAX_HISTORY_SIZE) {
+            this.historyList.shift();
         }
         Me.stateManager.setState(STATE_KEY, {
-            history: this.history,
+            history: this.historyList,
         });
     }
 
@@ -121,7 +121,7 @@ export class RecentSearchProvider {
 
         // Filter history items by if the current search includes them as a result
         const filteredHistory: HistoryItem[] = [];
-        for (const item of this.history) {
+        for (const item of this.historyList) {
             const key = item.provider_id + SEPARATOR + item.id;
             const meta = seen.get(key);
             if (meta !== undefined) {
