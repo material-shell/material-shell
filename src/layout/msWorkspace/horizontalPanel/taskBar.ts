@@ -82,13 +82,13 @@ export class TaskBar extends St.Widget {
         );
         this.taskButtonContainer.connect(
             'drag-start',
-            (_, actor, foreignActor) => {
+            (_, _actor, _foreignActor) => {
                 this.taskActiveIndicator.hide();
             }
         );
         this.taskButtonContainer.connect(
             'drag-end',
-            (_, actor, foreignActor) => {
+            (_, _actor, _foreignActor) => {
                 this.taskActiveIndicator.show();
             }
         );
@@ -191,6 +191,9 @@ export class TaskBar extends St.Widget {
         //if you change the class before animate the indicator there is an issue for retrieving the item.x
 
         nextItem.setActive(true);
+
+        // Changing the focus does not automatically queue a relayout, so we need to queue it manually
+        this.queue_relayout();
     }
 
     /** Returns the item for the app which is currently active.

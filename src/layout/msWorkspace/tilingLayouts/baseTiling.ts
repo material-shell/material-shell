@@ -48,6 +48,19 @@ export class BaseTilingLayout<
         this.onTileableListChanged(this.msWorkspace.tileableList);
     }
 
+    /// Specifies the focus mode used for this layout when closing a tileable.
+    ///
+    /// Chronological mode:
+    /// The last focused tileable will be focused.
+    ///
+    /// Spatial mode:
+    /// One of the two tileables next to the closed one will be focused.
+    /// The last focused tileable will be preferred if it is next to the closed one.
+    /// The application launcher will be avoided if possible.
+    get preferredFocusHistory(): 'chronological' | 'spatial' {
+        return 'chronological';
+    }
+
     get state() {
         return this._state;
     }

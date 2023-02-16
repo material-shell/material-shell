@@ -20,6 +20,15 @@ import Monitor = layout.Monitor;
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
+/** Maximum number of previously focused windows to keep track of.
+ * The history should be kept reasonably short to avoid memory leaks and because it makes no sense to remember user actions too long ago.
+ *
+ * With a history length of N, the user can open N windows, close them all, and the focus will be correctly restored to the window they had open before.
+ *
+ * @See {@link MsWorkspace.focusHistory} for more details.
+ */
+const MAX_FOCUS_HISTORY_LENGTH = 5;
+
 export type Tileable = MsWindow | MsApplicationLauncher;
 
 function isMsWindow(argument: unknown): argument is MsWindow {
@@ -39,11 +48,9 @@ export interface MsWorkspaceState {
 export class MsWorkspace extends WithSignals {
     msWorkspaceManager: MsWorkspaceManager;
     private _state: MsWorkspaceState;
-    insertedMsWindow: MsWindow | null;
     appLauncher: MsApplicationLauncher;
     tileableList: Tileable[] = [];
     msWorkspaceCategory: MsWorkspaceCategory;
-    precedentIndex: number;
     msWorkspaceActor: MsWorkspaceActor;
     // Safety: We always assign this because we call setLayoutByKey from the constructor
     layout!: InstanceType<LayoutType>;
@@ -54,6 +61,20 @@ export class MsWorkspace extends WithSignals {
     // Definitely set because we call `setMonitor` in the constructor
     monitor!: Monitor;
     emitTileableChangedInProgress: Promise<void> | undefined;
+    /** History of previously focused windows.
+     * This is used to get a better estimate of how to restore focus when a window is removed from the workspace.
+     *
+     * Take the example that a user has a window at workspace 1, and wants to move it to workspace 3.
+     * This involves moving it one workspace down twice. First it is moved to workspace 2, and the focus is set to that window.
+     * Then, when it is moved to workspace 3, the focus for workspace 2 needs to be changed again.
+     * If we don't keep a history, we would be forced to make a simple guess, e.g. focus the last window of the workspace.
+     * But this is not great. If we keep a history we can instead ensure that the focus is restored to the window
+     * that was focused before the user started moving windows around.
+     *
+     * This list should be kept somewhat short to avoid memory leaks.
+     * We do not need to persist this list between restarts, since it is only used to restore focus.
+     */
+    focusHistory: Tileable[] = [];
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
@@ -83,14 +104,12 @@ export class MsWorkspace extends WithSignals {
         // Note: _state may be updated while some functions in the constructor run, so we keep the original state in initialState.
         this._state = Object.assign({}, initialState);
 
-        this.insertedMsWindow = null;
         this.appLauncher = new MsApplicationLauncher(this);
 
         this.msWorkspaceCategory = new MsWorkspaceCategory(
             this,
             initialState.forcedCategory
         );
-        this.precedentIndex = initialState.focusedIndex;
 
         this.msWorkspaceActor = new MsWorkspaceActor(this);
 
@@ -161,6 +180,10 @@ export class MsWorkspace extends WithSignals {
         // Among other things, informs the TaskBar about the initial windows
         this.emit('tileableList-changed', this.tileableList);
 
+        this.focusTileable(
+            this.tileableList[initialState.focusedIndex] || null
+        );
+
         this.connect('tileableList-changed', () => {
             this.msWorkspaceCategory.refreshCategory();
         });
@@ -183,7 +206,7 @@ export class MsWorkspace extends WithSignals {
         return this._state.focusedIndex;
     }
 
-    set focusedIndex(index) {
+    private set focusedIndex(index) {
         this._state.focusedIndex = index;
         Me.stateManager.stateChanged();
     }
@@ -219,8 +242,6 @@ export class MsWorkspace extends WithSignals {
 
     get tileableFocused() {
         logAssert(!this.destroyed, 'Workspace is destroyed');
-
-        if (!this.tileableList) return null;
         return this.tileableList[this.focusedIndex] || null;
     }
 
@@ -288,18 +309,17 @@ export class MsWorkspace extends WithSignals {
         // Do not insert tileable after App Launcher
         if (insert && this.tileableFocused !== this.appLauncher) {
             insertAt = this.focusedIndex + 1;
-            this.insertedMsWindow = msWindow;
         }
 
+        const oldFocused = this.tileableFocused;
         this.tileableList.splice(insertAt, 0, msWindow);
-
-        this.msWorkspaceActor.updateUI();
+        // Preserve focus index when splicing
+        this.focusedIndex = this.tileableList.indexOf(oldFocused);
 
         // TODO: Emitting the event after a small duration is potentially bad.
-        // If the window was focused the task bar will be in an invalid state
-        // until the 'tileableList-changed' event runs because the focus index
-        // will be out of bounds.
         await this.emitTileableListChangedOnce();
+
+        this.msWorkspaceActor.updateUI();
         if (focus) {
             this.focusTileable(msWindow);
         }
@@ -309,37 +329,67 @@ export class MsWorkspace extends WithSignals {
         logAssert(!this.destroyed, 'Workspace is destroyed');
 
         if (this.msWindowList.indexOf(msWindow) === -1) return;
-        const tileableIsFocused = msWindow === this.tileableFocused;
-        const appLauncherFocused = this.appLauncher === this.tileableFocused;
+        const oldFocused = this.tileableFocused;
         const tileableIndex = this.tileableList.indexOf(msWindow);
         this.tileableList.splice(tileableIndex, 1);
-        // Update the focusedIndex
-        if (
-            (tileableIsFocused && this.insertedMsWindow) ||
-            this.focusedIndex > tileableIndex
-        ) {
-            this.focusedIndex--;
-        }
-        this.focusedIndex = Math.max(
-            0,
-            Math.min(this.tileableList.length - 1, this.focusedIndex)
-        );
-        if (
-            !appLauncherFocused &&
-            this.focusedIndex === this.tileableList.length - 1 &&
-            this.tileableList.length > 1
-        ) {
-            // If the app launcher was not focused, try to avoid making it focused if a window closes unless absolutely necessary.
-            this.focusedIndex--;
+
+        if (oldFocused === msWindow) {
+            let newFocusedIndex;
+            const toFocus = this.popTileableFromFocusHistory();
+            const chronologicalFocusIndex =
+                toFocus !== undefined
+                    ? this.tileableList.indexOf(toFocus)
+                    : undefined;
+
+            if (
+                this.layout.preferredFocusHistory === 'chronological' &&
+                chronologicalFocusIndex !== undefined
+            ) {
+                newFocusedIndex = chronologicalFocusIndex;
+            } else {
+                newFocusedIndex = Math.max(
+                    0,
+                    Math.min(this.tileableList.length - 1, this.focusedIndex)
+                );
+
+                if (
+                    chronologicalFocusIndex === this.focusedIndex ||
+                    chronologicalFocusIndex === this.focusedIndex - 1
+                ) {
+                    // If the previously focused tileable is adjacent to the closed tileable, prefer to focus that
+                    newFocusedIndex = chronologicalFocusIndex;
+                }
+
+                if (
+                    newFocusedIndex === this.tileableList.length - 1 &&
+                    this.tileableList.length > 1
+                ) {
+                    // Since the app launcher was not focused, try to avoid making it focused if a window closes unless absolutely necessary.
+                    newFocusedIndex--;
+                }
+
+                if (
+                    newFocusedIndex !== chronologicalFocusIndex &&
+                    chronologicalFocusIndex !== undefined
+                ) {
+                    // We didn't end up using the chronological focus index, so push it back onto the stack
+                    this.pushTileableToFocusHistory(
+                        this.tileableList[chronologicalFocusIndex]
+                    );
+                }
+            }
+
+            // During the 'tileableList-changed' event, no tileable is focused
+            this.focusedIndex = -1;
+            await this.emitTileableListChangedOnce();
+            // Update our focus to the new index
+            this.focusTileable(this.tileableList[newFocusedIndex]);
+        } else {
+            // Preserve focus
+            this.focusedIndex = this.tileableList.indexOf(oldFocused);
+            await this.emitTileableListChangedOnce();
         }
 
-        await this.emitTileableListChangedOnce();
-        // If there's no more focused msWindow on this workspace focus the last one
-
-        if (tileableIsFocused) {
-            // If the window removed as just been inserted focus previous instead of next
-            this.focusTileable(this.tileableList[this.focusedIndex], true);
-        }
         this.msWorkspaceActor.updateUI();
         this.refreshFocus();
     }
@@ -432,34 +482,59 @@ export class MsWorkspace extends WithSignals {
         this.focusTileable(this.appLauncher);
     }
 
-    focusPrecedentTileable() {
-        if (!this.tileableList || this.tileableList.length < 2) return;
-        if (
-            this.focusedIndex !== this.precedentIndex &&
-            this.precedentIndex < this.tileableList.length
-        ) {
-            this.focusTileable(this.tileableList[this.precedentIndex]);
-        }
+    focusPreviousTileableFromHistory() {
+        const toFocus = this.popTileableFromFocusHistory();
+        if (toFocus !== undefined) this.focusTileable(toFocus);
     }
 
-    focusTileable(
-        tileable: MsWindow | MsApplicationLauncher | null,
-        forced = false
-    ) {
+    private maintainTileableFocusHistory() {
+        // Remove old tileables
+        for (let i = this.focusHistory.length - 1; i >= 0; i--) {
+            if (!this.tileableList.includes(this.focusHistory[i])) {
+                this.focusHistory.splice(i, 1);
+            }
+        }
+
+        while (this.focusHistory.length > MAX_FOCUS_HISTORY_LENGTH)
+            this.focusHistory.splice(0, 1);
+    }
+
+    private pushTileableToFocusHistory(tileable: Tileable) {
+        logAssert(
+            this.tileableList.includes(tileable),
+            "Tileable doesn't exist in workspace"
+        );
+        this.focusHistory.push(tileable);
+        this.maintainTileableFocusHistory();
+    }
+
+    /** Pops a valid tileable from the focus stack.
+     * The returned tileable is guaranteed to be either undefined or a tileable in this workspace.
+     */
+    private popTileableFromFocusHistory(): Tileable | undefined {
+        this.maintainTileableFocusHistory();
+        return this.focusHistory.pop();
+    }
+
+    focusTileable(tileable: Tileable | null, forced = false) {
         if (!tileable || (tileable === this.tileableFocused && !forced)) {
             return;
         }
 
-        if (tileable !== this.insertedMsWindow) {
-            this.insertedMsWindow = null;
-        }
+        const newFocusIndex = this.tileableList.indexOf(tileable);
+        if (newFocusIndex === -1) return;
 
         const oldTileableFocused = this.tileableFocused;
-        if (tileable !== this.tileableFocused) {
-            this.precedentIndex = this.focusedIndex;
+        if (
+            tileable !== oldTileableFocused &&
+            oldTileableFocused !== null &&
+            // Never push the app launcher to the focus history, it's rarely useful to focus it automatically
+            oldTileableFocused instanceof MsWindow
+        ) {
+            this.pushTileableToFocusHistory(oldTileableFocused);
         }
 
-        this.focusedIndex = Math.max(this.tileableList.indexOf(tileable), 0);
+        this.focusedIndex = newFocusIndex;
         if (this.msWorkspaceManager.getActiveMsWorkspace() === this) {
             tileable.grab_key_focus();
         }
