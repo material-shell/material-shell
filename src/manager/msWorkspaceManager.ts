@@ -393,11 +393,11 @@ export class MsWorkspaceManager extends MsManager {
 
             // if there is not external msWorkspace available create one
             if (msWorkspace) {
-                const workspace = assertNotNull(
-                    this.getWorkspaceOfMsWorkspace(msWorkspace)
-                );
                 msWorkspace.setMonitor(externalMonitor);
                 if (!Meta.prefs_get_dynamic_workspaces()) {
+                    const workspace = assertNotNull(
+                        this.getWorkspaceOfMsWorkspace(msWorkspace)
+                    );
                     this.workspaceManager.remove_workspace(
                         workspace,
                         global.get_current_time()
