@@ -18,7 +18,7 @@ jobs:
           persist-credentials: false
 
       - name: Prettify code
-        uses: creyD/prettier_action@v4.2
+        uses: creyD/prettier_action@v4.3
         with:
           dry: True
           prettier_options: --check src/**/*.{ts,ts.d}
