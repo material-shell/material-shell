@@ -361,7 +361,7 @@ export class TaskBarItem extends MatButton {
     }
 
     override vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager.getPanelSize(this.monitor.index);
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 

@@ -309,11 +309,8 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.add_child(this.container);
     }
 
-    get monitorScale() {
-        return global.display.get_monitor_scale(this.msWorkspace.monitor.index);
-    }
     get buttonSize() {
-        return BUTTON_SIZE * this.monitorScale;
+        return Me.msThemeManager.getScaledSize(BUTTON_SIZE);
     }
     reset() {
         //Go back to the previous window if ESC is pressed and nothing is selected
@@ -548,11 +545,12 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
-        const containerPadding = 16 * this.monitorScale;
-        const clockHeight =
-            (Me.msThemeManager.clockAppLauncher ? 64 : 0) * this.monitorScale;
-        const searchHeight = 48 * this.monitorScale;
-        const searchMargin = 24 * this.monitorScale;
+        const containerPadding = Me.msThemeManager.getScaledSize(16);
+        const clockHeight = Me.msThemeManager.getScaledSize(
+            Me.msThemeManager.clockAppLauncher ? 64 : 0
+        );
+        const searchHeight = Me.msThemeManager.getScaledSize(48);
+        const searchMargin = Me.msThemeManager.getScaledSize(24);
 
         const availableWidth = contentBox.get_width() - containerPadding * 2;
 

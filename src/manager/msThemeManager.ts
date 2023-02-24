@@ -197,11 +197,8 @@ export class MsThemeManager extends MsManager {
         return this.themeSettings.get_boolean('clock-app-launcher');
     }
 
-    getPanelSize(monitorIndex: number) {
-        return (
-            this.themeSettings.get_int('panel-size') *
-            global.display.get_monitor_scale(monitorIndex)
-        );
+    getPanelSize() {
+        return this.getScaledSize(this.themeSettings.get_int('panel-size'));
     }
 
     getPanelSizeNotScaled() {
