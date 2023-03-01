@@ -641,6 +641,8 @@ export class MsWorkspace extends WithSignals {
             );
         } else {
             workspace.activate(global.get_current_time());
+            // Focus the tileable that is selected
+            this.refreshFocus();
         }
     }
 

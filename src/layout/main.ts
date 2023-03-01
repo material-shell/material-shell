@@ -604,7 +604,6 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             reparentActor(actor, this.workspaceContainer);
         }
         this.msWorkspaceActor = actor;
-        assertNotNull(this.msWorkspaceActor.msWorkspace).refreshFocus(true);
         if (prevActor) {
             this.setTranslation(prevActor, this.msWorkspaceActor);
         }
