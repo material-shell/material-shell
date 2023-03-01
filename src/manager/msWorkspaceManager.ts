@@ -767,8 +767,8 @@ export class MsWorkspaceManager extends MsManager {
             global.display.get_current_time_roundtrip() -
             msWindow.metaWindow.createdAt;
 
-        if (lifetime < 100) {
-            Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
+        if (lifetime < 200) {
+            Async.addTimeout(GLib.PRIORITY_DEFAULT, 200, () => {
                 if (
                     msWindow.metaWindow != null &&
                     msWindow.metaWindow.get_monitor() ===
