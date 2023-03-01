@@ -142,6 +142,14 @@ declare module 'ui' {
     type findModalPost42 = (grab: Clutter.Grab) => number;
 
     export const main: {
+        modalActorFocusStack: {
+            actor: Clutter.Actor;
+            grab: Clutter.Grab;
+            destroyId: number;
+            prevFocus: Clutter.Actor;
+            prevFocusDestroyId: number;
+            actionMode: ActionMode;
+        }[];
         layoutManager: layout.LayoutManager;
         wm: windowManager.WindowManager;
         sessionMode: sessionMode.SessionMode;
@@ -356,6 +364,7 @@ declare module 'ui' {
 
     export namespace sessionMode {
         class SessionMode {
+            isLocked: boolean;
             pushMode(mode: string): void;
             popMode(mode: string): void;
             switchMode(mode: string): void;
