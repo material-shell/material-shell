@@ -641,8 +641,12 @@ export class MsWorkspace extends WithSignals {
             );
         } else {
             workspace.activate(global.get_current_time());
+            // grab the tileable to prevent other window to take focus
+            const grab = global.stage.grab(this.tileableFocused);
             // Focus the tileable that is selected
             this.refreshFocus();
+            // Dismiss the grab
+            grab.dismiss();
         }
     }
 

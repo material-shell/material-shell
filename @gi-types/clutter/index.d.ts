@@ -7401,6 +7401,7 @@ export class Stage<A extends Actor = Actor>
     get_title(): string;
     get_use_alpha(): boolean;
     get_grab_actor(): Actor;
+    grab(actor:Actor): Grab;
     paint_to_buffer(
         rect: cairo.RectangleInt,
         scale: number,

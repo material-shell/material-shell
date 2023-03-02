@@ -30,6 +30,7 @@ declare module 'clutter' {
     class Grab {
         // Necessary to disallow weird assignments. If this is not here typescript allows assigning e.g. booleans to fields of type 'Grab', which is weird.
         private _grab: 'symbol';
+        dismiss(): void;
     }
 
     interface ClickAction {
