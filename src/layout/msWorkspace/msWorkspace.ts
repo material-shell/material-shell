@@ -641,7 +641,7 @@ export class MsWorkspace extends WithSignals {
             );
         } else {
             workspace.activate(global.get_current_time());
-            // grab the tileable to prevent other window to take focus
+            // grab the tileable to prevent other window to take focus (eg: In multi-monitor setup if an window is opened on external monitor, switching to empty workspace or workspace with placeholder focused would result on focus being highjacked by the real window on external monitor instead)
             const grab = global.stage.grab(this.tileableFocused);
             // Focus the tileable that is selected
             this.refreshFocus();
