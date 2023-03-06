@@ -199,6 +199,13 @@ gnome-extensions enable material-shell@papyelgringo
 -   GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 -   Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
+## For Multi Monitor with different scaling factor to work properly
+You need to enable Wayland Fractionnal Scaling capabilities with:
+```
+gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
+```
+Note that it current have the downside to make XWayland window to possibly become blurry
+
 # Reset Material Shell
 
 ## Reset the Material Shell persistent state
