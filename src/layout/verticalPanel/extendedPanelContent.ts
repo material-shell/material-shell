@@ -2,7 +2,6 @@
 import * as Clutter from 'clutter';
 import { registerGObjectClass } from 'src/utils/gjs';
 import * as St from 'st';
-import { main as Main } from 'ui';
 import { SearchResultList } from './searchResultList';
 const Util = imports.misc.util;
 const ShellEntry = imports.ui.shellEntry;
@@ -65,7 +64,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
     override vfunc_get_preferred_width(_forHeight: number): [number, number] {
         const desiredWidth =
             Me.msThemeManager.getScaledSize(448) -
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex);
+            Me.msThemeManager.getPanelSize();
         return [desiredWidth, desiredWidth];
     }
 }
@@ -78,7 +77,7 @@ export class SearchEntryBin extends St.Bin {
     override vfunc_get_preferred_height(_for_width: number): [number, number] {
         const height = Math.max(
             Me.msThemeManager.getScaledSize(48),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
+            Me.msThemeManager.getPanelSize()
         );
         return [height, height];
     }

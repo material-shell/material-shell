@@ -97,6 +97,10 @@ export class MaximizeLayout extends BaseTilingLayout<MaximizeLayoutState> {
         if (!tileable.get_parent()) {
             this.tileableContainer.add_child(tileable);
         }
+        if (this.translationHelper.animationInProgress) {
+            tileable.translation_x = 0;
+            tileable.translation_y = 0;
+        }
     }
 
     tileTileable(tileable: Tileable, box: Clutter.ActorBox) {

@@ -56,9 +56,7 @@ export class WorkspaceList extends St.Widget {
             'panel-size-changed',
             () => {
                 this.workspaceActiveIndicator.set_height(
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    )
+                    Me.msThemeManager.getPanelSize()
                 );
                 this.queue_relayout();
             }
@@ -183,8 +181,8 @@ export class WorkspaceList extends St.Widget {
     }
     vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            Me.msThemeManager.getPanelSize(),
+            Me.msThemeManager.getPanelSize(),
         ];
     }
 
@@ -462,8 +460,8 @@ export class WorkspaceButton extends MatButton {
      */
     vfunc_get_preferred_width(_forHeight: number): [number, number] {
         return [
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            Me.msThemeManager.getPanelSize(),
+            Me.msThemeManager.getPanelSize(),
         ];
     }
 
@@ -472,8 +470,8 @@ export class WorkspaceButton extends MatButton {
      */
     vfunc_get_preferred_height(_forWidth: number): [number, number] {
         return [
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex),
+            Me.msThemeManager.getPanelSize(),
+            Me.msThemeManager.getPanelSize(),
         ];
     }
 }
@@ -666,9 +664,7 @@ export class WorkspaceActiveIndicator extends St.Widget {
     vfunc_get_preferred_height(
         _for_width: number
     ): [number | null, number | null] {
-        const height = Me.msThemeManager.getPanelSize(
-            Main.layoutManager.primaryIndex
-        );
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 }

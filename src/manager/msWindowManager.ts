@@ -18,8 +18,12 @@ import { groupBy } from 'src/utils/group_by';
 import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
+import { main as Main } from 'ui';
+
 const Signals = imports.signals;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
+const AuthenticationDialog =
+    imports.ui.components.polkitAgent.AuthenticationDialog;
 
 export type MetaWindowWithMsProperties = Meta.Window & {
     createdAt?: number;
@@ -681,6 +685,15 @@ export class MsWindowManager extends MsManager {
                 msWindow.lifecycleState.type === 'app-placeholder' &&
                 msWindow.lifecycleState.waitingForAppSince !== undefined
             ) {
+                // If there is an authentication dialog postpone the window cleaning process
+                const isAuthenticationDialogDisplayed =
+                    Main.modalActorFocusStack.length > 0 &&
+                    Main.modalActorFocusStack[
+                        Main.modalActorFocusStack.length - 1
+                    ].actor instanceof AuthenticationDialog;
+                if (isAuthenticationDialogDisplayed) {
+                    msWindow.lifecycleState.waitingForAppSince = now;
+                }
                 if (
                     now.getTime() -
                         msWindow.lifecycleState.waitingForAppSince.getTime() >

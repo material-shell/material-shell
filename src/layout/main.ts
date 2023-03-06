@@ -454,7 +454,7 @@ export class MonitorContainer extends St.Widget {
     }
 
     updateSpacer() {
-        const panelHeight = Me.msThemeManager.getPanelSize(this.monitor.index);
+        const panelHeight = Me.msThemeManager.getPanelSize();
         const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         this.horizontalPanelSpacer.set_size(this.monitor.width, panelHeight);
         this.horizontalPanelSpacer.set_position(
@@ -604,7 +604,6 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             reparentActor(actor, this.workspaceContainer);
         }
         this.msWorkspaceActor = actor;
-        assertNotNull(this.msWorkspaceActor.msWorkspace).refreshFocus(true);
         if (prevActor) {
             this.setTranslation(prevActor, this.msWorkspaceActor);
         }
@@ -613,9 +612,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     updateSpacer() {
         super.updateSpacer();
         if (this.verticalPanelSpacer) {
-            const panelWidth = Me.msThemeManager.getPanelSize(
-                this.monitor.index
-            );
+            const panelWidth = Me.msThemeManager.getPanelSize();
             const panelPosition = Me.msThemeManager.verticalPanelPosition;
             this.verticalPanelSpacer.set_size(panelWidth, this.monitor.height);
             this.verticalPanelSpacer.set_position(
@@ -648,16 +645,10 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         if (this.panel && this.panel.visible && Me.layout.panelsVisible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
-                    msWorkspaceActorBox.x1 +
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    );
+                    msWorkspaceActorBox.x1 + Me.msThemeManager.getPanelSize();
             } else {
                 msWorkspaceActorBox.x2 =
-                    msWorkspaceActorBox.x2 -
-                    Me.msThemeManager.getPanelSize(
-                        Main.layoutManager.primaryIndex
-                    );
+                    msWorkspaceActorBox.x2 - Me.msThemeManager.getPanelSize();
             }
         }
 

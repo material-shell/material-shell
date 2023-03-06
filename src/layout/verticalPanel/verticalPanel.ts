@@ -101,9 +101,7 @@ export class PanelContent extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_width(_for_height: number): [number, number] {
-        const panelSize = Me.msThemeManager.getPanelSize(
-            Main.layoutManager.primaryIndex
-        );
+        const panelSize = Me.msThemeManager.getPanelSize();
         return [panelSize, panelSize];
     }
 
@@ -205,9 +203,7 @@ export class MsPanel extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_width(_for_height: number): [number, number] {
-        const panelSize = Me.msThemeManager.getPanelSize(
-            Main.layoutManager.primaryIndex
-        );
+        const panelSize = Me.msThemeManager.getPanelSize();
         return [panelSize, panelSize];
     }
 
@@ -247,9 +243,7 @@ export class MsPanel extends St.BoxLayout {
             this.translation_x =
                 (Me.msThemeManager.getScaledSize(448) -
                     (Me.layout.panelsVisible
-                        ? Me.msThemeManager.getPanelSize(
-                              Main.layoutManager.primaryIndex
-                          )
+                        ? Me.msThemeManager.getPanelSize()
                         : 0)) *
                 (Me.msThemeManager.verticalPanelPosition ===
                 VerticalPanelPositionEnum.LEFT
@@ -274,9 +268,7 @@ export class MsPanel extends St.BoxLayout {
                 translation_x:
                     (Me.msThemeManager.getScaledSize(448) -
                         (Me.layout.panelsVisible
-                            ? Me.msThemeManager.getPanelSize(
-                                  Main.layoutManager.primaryIndex
-                              )
+                            ? Me.msThemeManager.getPanelSize()
                             : 0)) *
                     (Me.msThemeManager.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
@@ -313,7 +305,7 @@ export class SearchButton extends MatPanelButton {
     override vfunc_get_preferred_height(_for_width: number): [number, number] {
         const height = Math.max(
             Me.msThemeManager.getScaledSize(48),
-            Me.msThemeManager.getPanelSize(Main.layoutManager.primaryIndex)
+            Me.msThemeManager.getPanelSize()
         );
         return [height, height];
     }

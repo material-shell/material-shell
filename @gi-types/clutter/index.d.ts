@@ -14,7 +14,6 @@ import * as Graphene from '@gi-types/graphene';
 import * as Json from '@gi-types/json';
 import * as Pango from '@gi-types/pango';
 
-
 export const BUTTON_MIDDLE: number;
 export const BUTTON_PRIMARY: number;
 export const BUTTON_SECONDARY: number;
@@ -3579,7 +3578,8 @@ export namespace Actor {
 }
 export class Actor<A = LayoutManager, B = Content>
     extends GObject.InitiallyUnowned
-    implements Atk.ImplementorIface, Animatable, Container<Actor>, Scriptable {
+    implements Atk.ImplementorIface, Animatable, Container<Actor>, Scriptable
+{
     static $gtype: GObject.GType<Actor>;
 
     constructor(
@@ -4912,7 +4912,8 @@ export namespace Clone {
 }
 export class Clone<A extends Actor = Actor>
     extends Actor
-    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable {
+    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable
+{
     static $gtype: GObject.GType<Clone>;
 
     constructor(
@@ -5954,7 +5955,8 @@ export namespace KeyframeTransition {
 }
 export class KeyframeTransition
     extends PropertyTransition
-    implements Scriptable {
+    implements Scriptable
+{
     static $gtype: GObject.GType<KeyframeTransition>;
 
     constructor(
@@ -6718,7 +6720,8 @@ export namespace ScrollActor {
 }
 export class ScrollActor<A extends Actor = Actor>
     extends Actor
-    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable {
+    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable
+{
     static $gtype: GObject.GType<ScrollActor>;
 
     constructor(
@@ -7255,7 +7258,8 @@ export namespace Stage {
 }
 export class Stage<A extends Actor = Actor>
     extends Actor
-    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable {
+    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable
+{
     static $gtype: GObject.GType<Stage>;
 
     constructor(
@@ -7396,6 +7400,8 @@ export class Stage<A extends Actor = Actor>
     get_throttle_motion_events(): boolean;
     get_title(): string;
     get_use_alpha(): boolean;
+    get_grab_actor(): Actor;
+    grab(actor:Actor): Grab;
     paint_to_buffer(
         rect: cairo.RectangleInt,
         scale: number,
@@ -7773,7 +7779,8 @@ export namespace Text {
 }
 export class Text<A extends Actor = Actor>
     extends Actor
-    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable {
+    implements Atk.ImplementorIface, Animatable, Container<A>, Scriptable
+{
     static $gtype: GObject.GType<Text>;
 
     constructor(

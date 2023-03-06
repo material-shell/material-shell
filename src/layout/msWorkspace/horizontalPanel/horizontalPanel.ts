@@ -119,9 +119,7 @@ export class HorizontalPanel extends St.BoxLayout {
     }
 
     vfunc_get_preferred_height(_forWidth: number): [number, number] {
-        const height = Me.msThemeManager.getPanelSize(
-            this.msWorkspace.monitor.index
-        );
+        const height = Me.msThemeManager.getPanelSize();
         return [height, height];
     }
 
