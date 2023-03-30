@@ -71,11 +71,8 @@ declare global {
             top_window_group: Clutter.Actor;
             compositor: {
                 get_laters: () => {
-                    later_add(
-                        when: Meta.LaterType,
-                        func: GLib.SourceFunc
-                    ): number;
-                    later_remove(later_id: number): void;
+                    add(when: Meta.LaterType, func: GLib.SourceFunc): number;
+                    remove(later_id: number): void;
                 };
             };
         }

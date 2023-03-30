@@ -14,7 +14,8 @@ import { Widget } from 'st';
 
 /** Extension imports */
 const Me = imports.misc.extensionUtils.getCurrentExtension();
-
+const beforeGnome44 =
+    compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
 interface MatButtonParams extends Partial<Widget.ConstructorProperties> {
     primary?: boolean;
     child?: St.Widget;
@@ -102,24 +103,21 @@ export class MatButton extends St.Widget {
 
             // A click cancels a long-press before any click handler is
             // run - make sure to not start a drag in that case
-            const beforeGnome44 =
-                compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
-            const laters = beforeGnome44
-                ? Meta
-                : global.compositor.get_laters();
-            this._longPressLater = laters.later_add(
-                Meta.LaterType.BEFORE_REDRAW,
-                () => {
-                    delete this._longPressLater;
-                    if (this.clicked) {
-                        delete this.clicked;
-                        return false;
-                    }
-                    action.release();
-                    this.emit('drag-start', event);
+            const callback = () => {
+                delete this._longPressLater;
+                if (this.clicked) {
+                    delete this.clicked;
                     return false;
                 }
-            );
+                action.release();
+                this.emit('drag-start', event);
+                return false;
+            };
+            this._longPressLater = beforeGnome44
+                ? Meta.later_add(Meta.LaterType.BEFORE_REDRAW, callback)
+                : global.compositor
+                      .get_laters()
+                      .add(Meta.LaterType.BEFORE_REDRAW, callback);
         }
         if (state == Clutter.LongPressState.ACTIVATE) {
             this.emit('secondary-action');
