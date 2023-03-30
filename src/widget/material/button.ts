@@ -102,7 +102,12 @@ export class MatButton extends St.Widget {
 
             // A click cancels a long-press before any click handler is
             // run - make sure to not start a drag in that case
-            this._longPressLater = Meta.later_add(
+            const beforeGnome44 =
+                compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
+            const laters = beforeGnome44
+                ? Meta
+                : global.compositor.get_laters();
+            this._longPressLater = laters.later_add(
                 Meta.LaterType.BEFORE_REDRAW,
                 () => {
                     delete this._longPressLater;

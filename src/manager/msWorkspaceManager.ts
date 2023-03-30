@@ -14,6 +14,11 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
+import {
+    compareVersions,
+    gnomeVersionNumber,
+    parseVersion,
+} from 'src/utils/shellVersionMatch';
 import { layout, main as Main, windowManager } from 'ui';
 import { MetaWindowWithMsProperties } from './msWindowManager';
 import Monitor = layout.Monitor;
@@ -160,7 +165,12 @@ export class MsWorkspaceManager extends MsManager {
 
         // If a _queueCheckWorkspaces is already pending it's will would use the previous _checkWorkspaces method we need to kill it and add a new one
         if (this.workspaceTracker._checkWorkspacesId !== 0) {
-            Meta.later_remove(this.workspaceTracker._checkWorkspacesId);
+            const beforeGnome44 =
+                compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
+            const laters = beforeGnome44
+                ? Meta
+                : global.compositor.get_laters();
+            laters.later_remove(this.workspaceTracker._checkWorkspacesId);
             this.workspaceTracker._queueCheckWorkspaces();
         }
 
