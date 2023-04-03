@@ -69,6 +69,12 @@ declare global {
             window_manager: Shell.WM;
             workspace_manager: Meta.WorkspaceManager;
             top_window_group: Clutter.Actor;
+            compositor: {
+                get_laters: () => {
+                    add(when: Meta.LaterType, func: GLib.SourceFunc): number;
+                    remove(later_id: number): void;
+                };
+            };
         }
     }
 
