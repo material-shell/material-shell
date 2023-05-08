@@ -48,7 +48,7 @@ Created to **simplify** navigation and **reduce** the need to **manipulate** win
 
 ## Spatial Model
 
-This is the **core** of the **workflow** and what everything is built around and in our case it's one of the simplest: **a Grid**
+This is the **core** of the **workflow** and what everything is built around and in our case, it's one of the simplest: **a Grid**
 
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/spatialisation.gif"
@@ -59,7 +59,7 @@ A **Workspace** is an applications container that can be **visualized as a row**
 
 Every **new application** is **automatically positioned** inside this grid at the end of its workspace row and every **new workspaces** are **appended at the bottom** which is very **predictable** and **always sorted automatically**.
 
-This allows us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** changes the current window(s) on screen.
+This allows us to provide **intuitive navigation** by moving the screen around a larger context. Navigating **up** and **down** will change the current workspace and navigating **left** and **right** changes the current window(s) on the screen.
 
 You can organize your applications by use cases as **activities** or by applications type as **categories**.
 
@@ -69,11 +69,11 @@ Designed to represent the **state** of the **workflow** and provide **navigation
 
 ### Layout
 
-The interface is divided in **two parts**:
+The interface is divided into **two parts**:
 
 In the **left panel** everything pertains to the **system**: workspaces state, current system status, notifications, etc.
 
-On the **right** of the left panel everything pertains to the **active workspace**: the windows on the workspace's row, the layout switcher, and the windows themselves.
+On the **right** of the left panel, everything pertains to the **active workspace**: the windows on the workspace's row, the layout switcher, and the windows themselves.
 
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/interface_showcase.gif"
@@ -87,7 +87,7 @@ The two most important components are the **system panel** (on the left) and the
 The system panel is the main component of the left side of the interface. It consists of:
 
 -   **Workspace list and switcher**: This component lists all the workspaces available and the currently selected one. It allows us to navigate to a specific workspace by clicking on its icon.
--   **System tray**: This component lists all the information about the system, e.g. network status, bluetooth connectivity, volume, battery, and notification icons.
+-   **System tray**: This component lists all the information about the system, e.g. network status, Bluetooth connectivity, volume, battery, and notification icons.
 
 #### Workspace panel
 
@@ -108,11 +108,11 @@ You can choose between 3 different themes:
 -   Light
 -   Primary (Colorful one)
 
-And there is also a **blurry** version available for the more fancy ones !
+And there is also a **blurry** version available for the more fancy ones!
 
 ## Tiling engine
 
-It's the **tool** that **automatically organize** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
+It's the **tool** that **automatically organizes** the application's **window** for you in a **predictable** and mutually **non-overlapping** disposition.
 
 <p align="center" valign="middle">
  <img align="center" valign="middle" src="./documentation/tiling_showcase.gif"
@@ -123,15 +123,15 @@ It's the **tool** that **automatically organize** the application's **window** f
 
 -   **Maximize**: Single window at a time
 -   **Split**: 2 windows side by side
--   **Simple**: All windows evenly split and stacked along horizontal or vertical axis (useful for ultra wide monitor)
--   **Half**: One master window on the left then others windows stacked to the right
+-   **Simple**: All windows evenly split and stacked along the horizontal or vertical axis (useful for ultra-wide monitor)
+-   **Half**: One master window on the left then other windows stacked to the right
 -   **Grid**: All windows displayed as a grid
 
 ## Persistence
 
 The **best way** to **configure** the desktop layout is to **not** have to **do it**.
 
-Material Shell **keeps track** of every **decision** relative to the desktop layout: where are windows, in which workspaces, and in which order.
+Material Shell **keeps track** of every **decision** relative to the desktop layout: where the windows are, in which workspaces, and in which order.
 
 This allows **configuration** of the layouts **on the go** while using it.
 
@@ -145,8 +145,8 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 
 -   `Super+W` Navigate to the upper workspace/category.
 -   `Super+S` Navigate to the lower workspace/category.
--   `Super+A` Focus the window at the left of the current window.
--   `Super+D` Focus the window at the right of the current window.
+-   `Super+A` Focus on the window at the left of the current window.
+-   `Super+D` Focus on the window at the right of the current window.
 -   `Super+1`, `Super+2` ... `Super+0` Navigate to specific workspace
 
 #### Window manipulation
@@ -165,14 +165,14 @@ Some hotkeys might already be used by GNOME Shell - please check your keybinding
 
 # Installation
 
-You can install the extension either using the gnome extensions website, or directly from source.
+You can install the extension either using the gnome extensions website or directly from the source.
 
 ## Get it in two clicks
 
 -   Navigate to [extensions.gnome.org](https://extensions.gnome.org/extension/3357/material-shell/)
 -   Switch the toggle ON
 
-## Get the most up to date version with Git
+## Get the most up-to-date version with Git
 
 1. Check your GNOME Shell version as we only support **gnome-shell >= 40.0**
 
@@ -199,22 +199,22 @@ gnome-extensions enable material-shell@papyelgringo
 -   GTK and GNOME Shell theme: [Plata Theme](https://gitlab.com/tista500/plata-theme)
 -   Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
-## For Multi Monitor with different scaling factor to work properly
-You need to enable Wayland Fractionnal Scaling capabilities with:
+## For Multi Monitor with different scaling factors to work properly
+You need to enable Wayland Fractional Scaling capabilities with:
 ```
 gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
 ```
-Note that it current have the downside to make XWayland window to possibly become blurry
+Note that it currently has the downside of making the XWayland window possibly become blurry
 
 # Reset Material Shell
 
-## Reset the Material Shell persistent state
+## Reset the Material Shell's persistent state
 
-If you have some weird behavior or a degradation over time, it can be a good idea to try to reset the Material Shell state.
+If you have some weird behavior or degradation over time, it can be a good idea to try to reset the Material Shell state.
 
 1. Open Looking Glass tool by pressing `Alt + F2` and type `lg`
 2. Copy and paste the command `global.set_persistent_state('material-shell-state',new GLib.Variant('s', '{}'));`
-3. Reload the shell by either pressing `Alt + F2` and type `r` (does not work on Wayland), or log out and then log in again.
+3. Reload the shell by either pressing `Alt + F2` and typing `r` (does not work on Wayland) or logging out and then logging in again.
 
 ## Reset the Material Shell settings
 
@@ -238,7 +238,7 @@ gnome-extensions disable material-shell@papyelgringo
 rm -rf ~/.local/share/gnome-shell/extensions/material-shell@papyelgringo
 ```
 
-if you miss the minimize and maximize button on windows titlebar you can restore them with
+if you miss the minimize and maximize buttons on the window title bar you can restore them with
 
 ```bash
 /usr/bin/gsettings set org.gnome.desktop.wm.preferences button-layout :minimize,maximize,close
@@ -250,7 +250,7 @@ The project is based on my earlier work on [Material Awesome](https://github.com
 
 # Crypto Funding
 
-If you interested in funding the project throught crypto feel free to use:
+If you are interested in funding the project through crypto feel free to use:
 
 **Bitcoin** `395nVybx6h6CC4sWgGGcvCDxwLvGMFhfiA`
 
