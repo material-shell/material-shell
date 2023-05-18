@@ -174,19 +174,8 @@ const PropagateClickAction = (() => {
             static metaInfo: GObject.MetaInfo = {
                 GTypeName: 'PropagateClickAction',
             };
-            event: Clutter.Event | undefined;
-
-            vfunc_clicked(actor: Clutter.Actor) {
-                this.event = Clutter.get_current_event();
-                return super.vfunc_clicked(actor);
-            }
-
-            vfunc_long_press(
-                actor: Clutter.Actor,
-                state: Clutter.LongPressState
-            ) {
-                this.event = Clutter.get_current_event();
-                return super.vfunc_long_press(actor, state);
+            get event(): Clutter.Event | undefined {
+                return Clutter.get_current_event();
             }
         }
         return PropagateClickActionBefore42;
