@@ -2,13 +2,9 @@
 const Util = imports.misc.util;
 import * as Meta from 'meta';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
-import { compareVersions, gnomeVersionNumber, parseVersion } from './shellVersionMatch';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-/* exported updateTitleBarVisibility */
-const beforeGnome44 =
-    compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
-    
+/* exported updateTitleBarVisibility */    
 export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
 ) {
@@ -40,7 +36,7 @@ export const setTitleBarVisibility = function (
             '32c',
             '-set',
             '_MOTIF_WM_HINTS',
-            `2, 0, ${visible ? '1' : beforeGnome44 ? '2' : '0'} 0, 0`,
+            `2, 0, ${visible ? '1' : '0'} 0, 0`,
         ]);
     } catch (e) {
         Me.logFocus('xprop', e);
