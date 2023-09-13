@@ -4,7 +4,7 @@ import * as Meta from 'meta';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
-/* exported updateTitleBarVisibility */    
+/* exported updateTitleBarVisibility */
 export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
 ) {
