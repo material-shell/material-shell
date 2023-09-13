@@ -5,7 +5,6 @@ import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 /* exported updateTitleBarVisibility */
-
 export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
 ) {
@@ -37,7 +36,7 @@ export const setTitleBarVisibility = function (
             '32c',
             '-set',
             '_MOTIF_WM_HINTS',
-            `2, 0, ${visible ? '1' : '2'} 0, 0`,
+            `2, 0, ${visible ? '1' : '0'} 0, 0`,
         ]);
     } catch (e) {
         Me.logFocus('xprop', e);
