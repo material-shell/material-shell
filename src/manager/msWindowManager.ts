@@ -254,7 +254,7 @@ export class MsWindowManager extends MsManager {
                         windowActor.metaWindow.title
                     }' dialog=${this.isMetaWindowDialog(
                         windowActor.metaWindow
-                    )}`
+                    )} role=${windowActor.metaWindow.get_role()}`
                 );
             }
             for (const msWindow of candidateMsWindows) {
@@ -802,12 +802,22 @@ export class MsWindowManager extends MsManager {
             Meta.WindowType.MODAL_DIALOG,
             Meta.WindowType.UTILITY,
         ];
-        const isFrozen = !(
-            metaWindow.allows_resize() && metaWindow.allows_move()
-        );
+        const isFrozen =
+            !metaWindow.allows_resize() && !metaWindow.allows_move();
         const isMaximizedAny =
             metaWindow.maximized_horizontally ||
             metaWindow.maximized_vertically;
+
+        const isMonitorSized = metaWindow.is_monitor_sized();
+
+        const monitorRect = global.display.get_monitor_geometry(
+            metaWindow.get_monitor()
+        );
+        const windowRect = metaWindow.get_frame_rect();
+        const isSmallerThanHalfOfTheMonitor =
+            (windowRect.width * windowRect.height) /
+                (monitorRect.width * monitorRect.height) <
+            0.5;
         return (
             dialogTypes.includes(metaWindow.window_type) ||
             // Any window which is transient_for another window should be considered a dialog.
@@ -818,8 +828,9 @@ export class MsWindowManager extends MsManager {
             // not truly their own windows, and not truly dialogs. But we treat them all as dialogs
             // for now.
             metaWindow.get_transient_for() != null ||
-            !metaWindow.resizeable ||
-            (isFrozen && !isMaximizedAny)
+            // Try to distinguish updater dialog (eg: Discord or Steam updater) and Game window
+            (!metaWindow.resizeable && isSmallerThanHalfOfTheMonitor) ||
+            (isFrozen && !isMaximizedAny && !isMonitorSized)
         );
     }
 
