@@ -17,7 +17,7 @@ const incompatibleExtensions = [
     'improved-workspace-indicator@michaelaquilina.github.io',
 ];
 
-let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
+let originalFunction: { apply: (uuid: any, args: IArguments) => Promise<undefined> } | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction = ExtensionManager.prototype._callExtensionEnable;
@@ -25,9 +25,11 @@ export class DisableIncompatibleExtensionsModule {
             uuid: string,
             ...args: any[]
         ) {
-            if (incompatibleExtensions.includes(uuid)) return;
+            if (incompatibleExtensions.includes(uuid))
+                return Promise.resolve();
+
             // eslint-disable-next-line prefer-rest-params
-            originalFunction!.apply(this, arguments);
+            return originalFunction!.apply(this, arguments);
         };
 
         this.disableExtensions();

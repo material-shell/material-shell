@@ -3,7 +3,7 @@ extension_tool = gnome-extensions
 
 .PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist
 
-schemas:
+schemas: dist
 	cp -r schemas dist
 	glib-compile-schemas dist/schemas/
 
