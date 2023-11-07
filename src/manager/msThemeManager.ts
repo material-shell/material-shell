@@ -1,7 +1,6 @@
 /** Gnome libs imports */
 import { Color } from 'cogl';
 import * as Gio from 'gio';
-import { byteArray } from 'gjs';
 import * as GLib from 'glib';
 import * as Meta from 'meta';
 import { MsManager } from 'src/manager/msManager';
@@ -251,7 +250,7 @@ export class MsThemeManager extends MsManager {
                     assertNotNull(obj).load_contents_finish(res);
                 if (success) {
                     //Read the binay content as string
-                    const content = byteArray.toString(contents);
+                    const content = new TextDecoder().decode(contents);
                     resolve(content);
                 } else {
                     reject(success);
@@ -262,7 +261,9 @@ export class MsThemeManager extends MsManager {
 
     async writeContentToFile(content: string, file: Gio.File) {
         return new Promise<Gio.File>((resolve, _) => {
-            const contentBytes = new GLib.Bytes(byteArray.fromString(content));
+            const contentBytes = new GLib.Bytes(
+                new TextEncoder().encode(content)
+            );
             file.replace_async(
                 null,
                 false,
