@@ -1,9 +1,24 @@
-import { parse, print } from "recast";
+import { ASTNode } from 'ast-types';
+import {
+    ArrayExpression,
+    AssignmentExpression,
+    BaseNode,
+    BlockStatement,
+    ClassDeclaration,
+    ClassExpression,
+    ExpressionStatement,
+    FunctionDeclaration,
+    Identifier,
+    ImportDeclaration,
+    ImportSpecifier,
+    MethodDefinition,
+    Program,
+    SimpleCallExpression,
+} from 'estree';
 import { walk } from 'estree-walker';
-import {BaseNode, Program, ClassDeclaration, Identifier, MethodDefinition, SimpleCallExpression, BlockStatement, ClassExpression, ExpressionStatement, AssignmentExpression, FunctionDeclaration, ArrayExpression, ImportDeclaration, VariableDeclaration, ImportSpecifier} from 'estree';
-import { glob } from 'glob';
 import * as fs from 'fs';
-import { ASTNode } from "ast-types";
+import { glob } from 'glob';
+import { parse, print } from 'recast';
 
 /// Test case that this script should pass.
 /// It should transpile `testInput` to `testOutput`.
@@ -42,7 +57,6 @@ TestClass = TestClass_1 = __decorate([
 ], TestClass);
 `;
 
-
 function test() {
     const output = print(transpile(parse(convertImports(testInput)))).code;
     if (output !== testOutput) {
@@ -53,55 +67,55 @@ function test() {
 test();
 
 function isProgram(arg: BaseNode): arg is Program {
-    return arg.type == "Program";
+    return arg.type == 'Program';
 }
 
 function isImportDeclaration(arg: BaseNode): arg is ImportDeclaration {
-    return arg.type == "ImportDeclaration";
+    return arg.type == 'ImportDeclaration';
 }
 
 function isImportSpecifier(arg: BaseNode): arg is ImportSpecifier {
-    return arg.type == "ImportSpecifier";
+    return arg.type == 'ImportSpecifier';
 }
 
 function isClassDeclaration(arg: BaseNode): arg is ClassDeclaration {
-    return arg.type == "ClassDeclaration";
+    return arg.type == 'ClassDeclaration';
 }
 
 function isClassExpression(arg: BaseNode): arg is ClassExpression {
-    return arg.type == "ClassExpression";
+    return arg.type == 'ClassExpression';
 }
 
 function isBlockStatement(arg: BaseNode): arg is BlockStatement {
-    return arg.type == "BlockStatement";
+    return arg.type == 'BlockStatement';
 }
 
 function isFunctionDeclaration(arg: BaseNode): arg is FunctionDeclaration {
-    return arg.type == "FunctionDeclaration";
+    return arg.type == 'FunctionDeclaration';
 }
 
 function isSimpleCallExpression(arg: BaseNode): arg is SimpleCallExpression {
-    return arg.type == "CallExpression";
+    return arg.type == 'CallExpression';
 }
 
 function isExpressionStatement(arg: BaseNode): arg is ExpressionStatement {
-    return arg.type == "ExpressionStatement";
+    return arg.type == 'ExpressionStatement';
 }
 
 function isAssignmentExpression(arg: BaseNode): arg is AssignmentExpression {
-    return arg.type == "AssignmentExpression";
+    return arg.type == 'AssignmentExpression';
 }
 
 function isMethodDefinition(arg: BaseNode): arg is MethodDefinition {
-    return arg.type == "MethodDefinition";
+    return arg.type == 'MethodDefinition';
 }
 
 function isIdentifier(arg: BaseNode): arg is Identifier {
-    return arg.type == "Identifier";
+    return arg.type == 'Identifier';
 }
 
 function isArrayExpression(arg: BaseNode): arg is ArrayExpression {
-    return arg.type == "ArrayExpression";
+    return arg.type == 'ArrayExpression';
 }
 
 /** The name of the decorated class if it's a block on the form
@@ -123,17 +137,22 @@ function getDecoratorTargets(node: BaseNode): string[] | null {
             if (!isSimpleCallExpression(rhs)) continue;
             if (!isIdentifier(rhs.callee)) continue;
 
-            if (rhs.callee.name != "__decorate") continue;
+            if (rhs.callee.name != '__decorate') continue;
 
             let args = rhs.arguments;
             if (args.length != 2) continue;
 
             let decoratorFunctions = args[0];
             if (!isArrayExpression(decoratorFunctions)) continue;
-            
-            const gObjectDecorator = decoratorFunctions.elements.find(item => {
-                return isIdentifier(item) && item.name == "registerGObjectClass";
-            });
+
+            const gObjectDecorator = decoratorFunctions.elements.find(
+                (item) => {
+                    return (
+                        isIdentifier(item) &&
+                        item.name == 'registerGObjectClass'
+                    );
+                }
+            );
             if (gObjectDecorator === undefined) continue;
 
             let targetClass = args[1];
@@ -158,44 +177,50 @@ function getDecoratorTargets(node: BaseNode): string[] | null {
 /// const { a, b, c } = imports.gi.Source;
 function convertImports(text: string) {
     const giImports = [
-        ["clutter", "imports.gi.Clutter"],
-        ["cogl", "imports.gi.Cogl"],
-        ["gdk", "imports.gi.Gdk"],
-        ["gio", "imports.gi.Gio"],
-        ["glib", "imports.gi.GLib"],
-        ["gnomedesktop", "imports.gi.GnomeDesktop"],
-        ["gobject", "imports.gi.GObject"],
-        ["gtk", "imports.gi.Gtk"],
-        ["meta", "imports.gi.Meta"],
-        ["shell", "imports.gi.Shell"],
-        ["soup", "imports.gi.Soup"],
-        ["st", "imports.gi.St"],
-        ["gjs", "imports"],
-        ["ui", "imports.ui"],
+        ['clutter', 'imports.gi.Clutter'],
+        ['cogl', 'imports.gi.Cogl'],
+        ['gdk', 'imports.gi.Gdk'],
+        ['gio', 'imports.gi.Gio'],
+        ['glib', 'imports.gi.GLib'],
+        ['gnomedesktop', 'imports.gi.GnomeDesktop'],
+        ['gobject', 'imports.gi.GObject'],
+        ['gtk', 'imports.gi.Gtk'],
+        ['meta', 'imports.gi.Meta'],
+        ['shell', 'imports.gi.Shell'],
+        ['soup', 'imports.gi.Soup'],
+        ['st', 'imports.gi.St'],
+        ['gjs', 'imports'],
+        ['ui', 'imports.ui'],
     ];
 
-    const regexes: [RegExp, string][] = giImports.map(x => {
+    const regexes: [RegExp, string][] = giImports.map((x) => {
         const [name, importpath] = x;
         return [
-            new RegExp("import \\* as ([\\w\\d]+) from ['\"]" + name + "['\"];", "g"),
-            "const $1 = " + importpath + ";"
-        ]
+            new RegExp(
+                'import \\* as ([\\w\\d]+) from [\'"]' + name + '[\'"];',
+                'g'
+            ),
+            'const $1 = ' + importpath + ';',
+        ];
     });
 
-    const regexes2: [RegExp, string][] = giImports.map(x => {
+    const regexes2: [RegExp, string][] = giImports.map((x) => {
         const [name, importpath] = x;
         return [
-            new RegExp("import \\{([^\\}]+)\\} from ['\"]" + name + "['\"];", "g"),
-            "const {$1} = " + importpath + ";"
-        ]
+            new RegExp(
+                'import \\{([^\\}]+)\\} from [\'"]' + name + '[\'"];',
+                'g'
+            ),
+            'const {$1} = ' + importpath + ';',
+        ];
     });
 
-    const regexes3: [RegExp, string][] = giImports.map(x => {
+    const regexes3: [RegExp, string][] = giImports.map((x) => {
         const [name, importpath] = x;
         return [
-            new RegExp(`(const {.+) as (.+} = ${importpath};)`, "g"),
-            "$1: $2"
-        ]
+            new RegExp(`(const {.+) as (.+} = ${importpath};)`, 'g'),
+            '$1: $2',
+        ];
     });
 
     for (let regex of regexes) {
@@ -215,13 +240,12 @@ function convertImports(text: string) {
     return text;
 }
 function transpile(ast: BaseNode) {
-
     let insideClass = false;
     let decoratedClasses = [];
 
     // Find all classes that have been decorated with @registerGObjectClass
-    walk( ast, {
-        enter: function ( node, parent, prop, index ) {
+    walk(ast, {
+        enter: function (node, parent, prop, index) {
             let decoratedNames = getDecoratorTargets(node);
             if (decoratedNames !== null) {
                 for (let name of decoratedNames) {
@@ -229,11 +253,11 @@ function transpile(ast: BaseNode) {
                 }
             }
         },
-        leave: function(node, parent, prop, index) {}
+        leave: function (node, parent, prop, index) {},
     });
-    
-    walk( ast, {
-        enter: function ( node, parent, prop, index ) {
+
+    walk(ast, {
+        enter: function (node, parent, prop, index) {
             if (isClassExpression(node)) {
                 if (decoratedClasses.indexOf(node.id.name) !== -1) {
                     insideClass = true;
@@ -241,45 +265,45 @@ function transpile(ast: BaseNode) {
             }
 
             if (insideClass) {
-                if (isMethodDefinition(node) && node.kind == "constructor") {
+                if (isMethodDefinition(node) && node.kind == 'constructor') {
                     if (isIdentifier(node.key)) {
                         // We have found a constructor, change it to a normal method named `_init`
-                        node.kind = "method";
-                        node.key.name = "_init";
+                        node.kind = 'method';
+                        node.key.name = '_init';
                     }
                 }
                 if (isSimpleCallExpression(node)) {
-                    if (node.callee.type == "Super") {
+                    if (node.callee.type == 'Super') {
                         // We found a `super(...)` call
                         // Change it to `super._init(...)`
                         node.callee = {
-                            type: "MemberExpression",
+                            type: 'MemberExpression',
                             object: node.callee,
                             property: {
-                                type: "Identifier",
-                                name: "_init",
+                                type: 'Identifier',
+                                name: '_init',
                             },
                             computed: false,
                             optional: false,
-                        }
+                        };
                     }
                 }
             }
         },
-        leave: function ( node, parent, prop, index ) {
+        leave: function (node, parent, prop, index) {
             if (isClassExpression(node)) {
                 if (decoratedClasses.indexOf(node.id.name) !== -1) {
                     console.assert(insideClass);
                     insideClass = false;
                 }
             }
-        }
+        },
     });
 
     return ast;
 }
 
-glob("build/**/*.js", {}, (er, files) => {
+glob('build/**/*.js', {}, (er, files) => {
     for (let file of files) {
         let text = fs.readFileSync(file).toString();
         text = convertImports(text);
@@ -287,10 +311,10 @@ glob("build/**/*.js", {}, (er, files) => {
         let ast: ASTNode;
         try {
             ast = parse(text);
-        } catch(e) {
+        } catch (e) {
             console.log(`Failed to parse ${file}`);
-            console.log("Writing converted text to temp.js");
-            fs.writeFileSync("temp.js", text);
+            console.log('Writing converted text to temp.js');
+            fs.writeFileSync('temp.js', text);
             throw e;
         }
         // Change the things we want to change
