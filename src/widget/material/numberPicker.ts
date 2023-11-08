@@ -1,12 +1,16 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 export interface NumberPickerParams {
     step: number;
@@ -16,7 +20,7 @@ export interface NumberPickerParams {
 
 @registerGObjectClass
 export class MatNumberPicker extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MatNumberPicker',
         Signals: {
             changed: {
@@ -28,9 +32,9 @@ export class MatNumberPicker extends St.BoxLayout {
     value: number;
     params: NumberPickerParams;
     minIcon: St.Icon;
-    minButton: St.Button<St.Icon>;
+    minButton: St.Button;
     plusIcon: St.Icon;
-    plusButton: St.Button<St.Icon>;
+    plusButton: St.Button;
     valueLabel: St.Label;
 
     constructor(value: number, params: Partial<NumberPickerParams>) {
@@ -48,7 +52,7 @@ export class MatNumberPicker extends St.BoxLayout {
         );
         this.minIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/minus-symbolic.svg`
+                `${Me.metadata.path}/assets/icons/minus-symbolic.svg`
             ),
         });
         this.minButton = new St.Button({
@@ -59,7 +63,7 @@ export class MatNumberPicker extends St.BoxLayout {
         });
         this.plusIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/plus-symbolic.svg`
+                `${Me.metadata.path}/assets/icons/plus-symbolic.svg`
             ),
         });
         this.plusButton = new St.Button({

@@ -1,15 +1,19 @@
-import * as Gdk from 'gdk';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
-import * as Gtk from 'gtk';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/Shell/Extensions/js/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
-    Me.dir.get_child('schemas').get_path(),
+    Me.metadata.dir.get_child('schemas').get_path()!,
     Gio.SettingsSchemaSource.get_default(),
     false
 );
@@ -46,9 +50,9 @@ enum WidgetType {
 /* TODO make the hotkey edition through Dialog
  @registerGObjectClass
 class HotkeyDialog extends Gtk.Dialog {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyDialog',
-        Template: Me.dir.get_child('hotkey_dialog.ui').get_uri(),
+        Template: Me.metadata.dir.get_child('hotkey_dialog.ui').get_uri(),
         Signals: {
             key_press_cb: {
                 param_types: [GObject.TYPE_STRING],
@@ -70,9 +74,11 @@ class HotkeyDialog extends Gtk.Dialog {
 
 @registerGObjectClass
 class SettingListBoxRow extends Gtk.ListBoxRow {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SettingListBoxRow',
-        Template: Me.dir.get_child('setting_list_box_row.ui').get_uri(),
+        Template: Me.metadata.dir
+            .get_child('setting_list_box_row.ui')
+            .get_uri()!,
         Properties: {
             'settings-widget': GObject.ParamSpec.object(
                 'settings-widget',
@@ -119,9 +125,9 @@ class HotkeyRowData extends GObject.Object {
 
 @registerGObjectClass
 class HotkeyListBox extends Gtk.ListBox {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyListBox',
-        Template: Me.dir.get_child('hotkey_list_box.ui').get_uri(),
+        Template: Me.metadata.dir.get_child('hotkey_list_box.ui').get_uri()!,
     };
     settings: Gio.Settings;
 
@@ -173,14 +179,14 @@ class HotkeyListBox extends Gtk.ListBox {
                 };
             })
             .sort((modelEntryA, modelEntryB) => {
-                return modelEntryA.summary > modelEntryB.summary ? 1 : 0;
+                return modelEntryA.summary! > modelEntryB.summary! ? 1 : 0;
             })
             .forEach((modelEntry) => {
                 const row = this.createHotkeyRow(
                     new HotkeyRowData(
                         modelEntry.key,
-                        modelEntry.summary,
-                        modelEntry.accelName
+                        modelEntry.summary!,
+                        modelEntry.accelName!
                     )
                 );
                 row.connect('accel-changed', (_, value) => {
@@ -199,9 +205,11 @@ class HotkeyListBox extends Gtk.ListBox {
 //Todo: Replace Gtk TreeView with Gtk ListBox
 @registerGObjectClass
 class HotkeyListBoxRow extends Gtk.ListBoxRow {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyListBoxRow',
-        Template: Me.dir.get_child('hotkey_list_box_row.ui').get_uri(),
+        Template: Me.metadata.dir
+            .get_child('hotkey_list_box_row.ui')
+            .get_uri()!,
         InternalChildren: ['accel_label', 'hotkey_label', 'dialog'],
         Signals: {
             accel_changed: {
@@ -277,9 +285,11 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
 }
 @registerGObjectClass
 class SettingCategoryListBox extends Gtk.Box {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SettingCategoryListBox',
-        Template: Me.dir.get_child('setting_category_list_box.ui').get_uri(),
+        Template: Me.metadata.dir
+            .get_child('setting_category_list_box.ui')
+            .get_uri()!,
         Properties: {
             title: GObject.ParamSpec.string(
                 'title',
@@ -309,7 +319,7 @@ class SettingCategoryListBox extends Gtk.Box {
     }
 
     get title(): string {
-        return this._title_label.get_text();
+        return this._title_label.get_text()!;
     }
 
     set title(value: string) {
@@ -332,7 +342,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 );
                 break;
 
-            case WidgetType.COMBO:
+            case WidgetType.COMBO: {
                 const combo = (widget = new Gtk.ComboBoxText());
                 const a = settingKey
                     .get_range()
@@ -348,6 +358,7 @@ class SettingCategoryListBox extends Gtk.Box {
                     Gio.SettingsBindFlags.DEFAULT
                 );
                 break;
+            }
 
             case WidgetType.COLOR: {
                 const btn = (widget = new Gtk.ColorButton());
@@ -362,7 +373,7 @@ class SettingCategoryListBox extends Gtk.Box {
                 });
                 break;
             }
-            case WidgetType.INT:
+            case WidgetType.INT: {
                 const spin = (widget = Gtk.SpinButton.new_with_range(
                     0,
                     1000,
@@ -375,8 +386,9 @@ class SettingCategoryListBox extends Gtk.Box {
                     Gio.SettingsBindFlags.DEFAULT
                 );
                 break;
+            }
 
-            case WidgetType.DECIMAL:
+            case WidgetType.DECIMAL: {
                 const spin2 = (widget = Gtk.SpinButton.new_with_range(
                     0,
                     1,
@@ -389,6 +401,7 @@ class SettingCategoryListBox extends Gtk.Box {
                     Gio.SettingsBindFlags.DEFAULT
                 );
                 break;
+            }
 
             case WidgetType.INPUT:
                 widget = Gtk.Entry.new();
@@ -408,16 +421,16 @@ class SettingCategoryListBox extends Gtk.Box {
                 break;
         }
         widget.set_valign(Gtk.Align.CENTER);
-        const row = new SettingListBoxRow(summary, description, widget);
+        const row = new SettingListBoxRow(summary!, description!, widget);
 
         this._list_box.append(row);
     }
 }
 @registerGObjectClass
 class PrefsWidget extends Gtk.Box {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'PrefsWidget',
-        Template: Me.dir.get_child('prefs.ui').get_uri(),
+        Template: Me.metadata.dir.get_child('prefs.ui').get_uri()!,
         InternalChildren: ['settings_box'],
     };
 

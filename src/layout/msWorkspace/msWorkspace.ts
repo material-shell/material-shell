@@ -1,8 +1,9 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
-import { App, AppSystem } from 'shell';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { HorizontalPanel } from 'src/layout/msWorkspace/horizontalPanel/horizontalPanel';
 import { MsWindow, MsWindowState } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspaceCategory } from 'src/layout/msWorkspace/msWorkspaceCategory';
@@ -10,15 +11,17 @@ import { LayoutState, LayoutType } from 'src/manager/layoutManager';
 import { HorizontalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { MsWorkspaceManager } from 'src/manager/msWorkspaceManager';
 import { assert, assertNotNull, logAssert } from 'src/utils/assert';
-import { registerGObjectClass, WithSignals } from 'src/utils/gjs';
+import { WithSignals, registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
-import { layout, main as Main } from 'ui';
-import Monitor = layout.Monitor;
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /** Maximum number of previously focused windows to keep track of.
  * The history should be kept reasonably short to avoid memory leaks and because it makes no sense to remember user actions too long ago.
@@ -59,7 +62,7 @@ export class MsWorkspace extends WithSignals {
     // Safety: We always assign this because we call setMonitor from the constructor
     monitorIsExternal!: boolean;
     // Definitely set because we call `setMonitor` in the constructor
-    monitor!: Monitor;
+    monitor!: Main.Monitor;
     emitTileableChangedInProgress: Promise<void> | undefined;
     /** History of previously focused windows.
      * This is used to get a better estimate of how to restore focus when a window is removed from the workspace.
@@ -78,7 +81,7 @@ export class MsWorkspace extends WithSignals {
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
-        monitor: Monitor,
+        monitor: Main.Monitor,
         state: Partial<MsWorkspaceState> = {}
     ) {
         super();
@@ -92,12 +95,13 @@ export class MsWorkspace extends WithSignals {
                 focusedIndex: 0,
                 forcedCategory: null,
                 msWindowList: [],
-                layoutStateList: Me.layoutManager.defaultLayoutKeyList.map(
+                layoutStateList: Me.layoutManager!.defaultLayoutKeyList.map(
                     (layoutKey) => {
-                        return Me.layoutManager.getLayoutByKey(layoutKey).state;
+                        return Me.layoutManager!.getLayoutByKey(layoutKey)
+                            .state;
                     }
                 ),
-                layoutKey: Me.layoutManager.defaultLayoutKey,
+                layoutKey: Me.layoutManager!.defaultLayoutKey,
             },
             state
         );
@@ -116,7 +120,7 @@ export class MsWorkspace extends WithSignals {
         // First add AppLauncher since windows are inserted before it otherwise the order is a mess.
         // It's important that this is done after the workspace actor is created.
         this.tileableList.push(this.appLauncher);
-        const appSys = AppSystem.get_default();
+        const appSys = Shell.AppSystem.get_default();
 
         for (const msWindowData of initialState.msWindowList) {
             let matchingInfo = msWindowData.matchingInfo;
@@ -143,9 +147,9 @@ export class MsWorkspace extends WithSignals {
             }
 
             // Note: lookup_app can return null even though the type definitions don't say that.
-            const app: App | null = appSys.lookup_app(msWindowData.appId);
+            const app: Shell.App | null = appSys.lookup_app(msWindowData.appId);
             if (app) {
-                Me.msWindowManager.createNewMsWindow(
+                Me.msWindowManager!.createNewMsWindow(
                     app,
                     {
                         msWorkspace: this,
@@ -208,7 +212,7 @@ export class MsWorkspace extends WithSignals {
 
     private set focusedIndex(index) {
         this._state.focusedIndex = index;
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
     }
 
     get state(): MsWorkspaceState {
@@ -592,7 +596,7 @@ export class MsWorkspace extends WithSignals {
             this.layout.onDestroy();
         }
 
-        this.layout = Me.layoutManager.createLayout(
+        this.layout = Me.layoutManager!.createLayout(
             this,
             assertNotNull(
                 this.state.layoutStateList.find(
@@ -607,8 +611,8 @@ export class MsWorkspace extends WithSignals {
     shouldPanelBeVisible() {
         return !this.containFullscreenWindow &&
             this.msWorkspaceManager &&
-            Me.layout
-            ? Me.layout.panelsVisible
+            Me.layout!
+            ? Me.layout!.panelsVisible
             : true;
     }
 
@@ -650,7 +654,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    setMonitor(monitor: Monitor) {
+    setMonitor(monitor: Main.Monitor) {
         this.monitor = monitor;
         this.monitorIsExternal =
             monitor.index !== Main.layoutManager.primaryIndex;
@@ -662,13 +666,10 @@ export class MsWorkspace extends WithSignals {
 
 @registerGObjectClass
 export class MsWorkspaceActor extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsWorkspaceActor',
     };
-    tileableContainer: Clutter.Actor<
-        Clutter.LayoutManager,
-        Clutter.ContentPrototype
-    >;
+    tileableContainer: Clutter.Actor;
     panel: HorizontalPanel;
     msWorkspace: MsWorkspace;
 
@@ -704,7 +705,7 @@ export class MsWorkspaceActor extends Clutter.Actor {
         const contentBox = new Clutter.ActorBox();
         contentBox.x2 = box.get_width();
         contentBox.y2 = box.get_height();
-        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
+        const panelPosition = Me.msThemeManager!.horizontalPanelPosition;
         const panelHeight = (
             this.panel.get_preferred_height(-1) as [number, number]
         )[1];

@@ -1,7 +1,11 @@
 import { MsWorkspace } from './msWorkspace';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /* exported MsWorkspaceCategory, MainCategories */
 
@@ -43,7 +47,7 @@ export class MsWorkspaceCategory {
     forceCategory(category: string | undefined) {
         this.forcedCategory = category;
         this.refreshCategory();
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
     }
 
     refreshCategory() {

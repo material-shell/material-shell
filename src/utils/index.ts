@@ -1,12 +1,17 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import { main as Main } from 'ui';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
 import { assert } from './assert';
 import { Async } from './async';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /* exported range, debounce, throttle, reparentActor */
 export const range = (to: any) =>

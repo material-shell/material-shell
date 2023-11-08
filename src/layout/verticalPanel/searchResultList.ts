@@ -1,17 +1,16 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import { Text } from 'clutter';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
-import * as Shell from 'shell';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 import { throttle } from 'src/utils';
 import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { logAsyncException } from 'src/utils/log';
 import { SignalObserver } from 'src/utils/signal';
-import * as St from 'st';
 import { ProviderResultList } from './search/ProviderResultList';
 import { AppSearchProvider } from './search/searchProvider/AppSearchProvider';
 import { RecentSearchProvider } from './search/searchProvider/RecentSearchProvider';
@@ -26,7 +25,7 @@ import {
 } from './search/searchProvider/searchProvider';
 import { SearchResultEntry } from './search/SearchResultEntry';
 
-const ParentalControlsManager = imports.misc.parentalControlsManager;
+import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
 
 function getTermsForSearchString(searchString: string): string[] {
     searchString = searchString.replace(/^\s+/g, '').replace(/\s+$/g, '');
@@ -36,11 +35,15 @@ function getTermsForSearchString(searchString: string): string[] {
 const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 @registerGObjectClass
 export class SearchResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SearchResultList',
         Signals: {
             'result-selected-changed': {
@@ -51,7 +54,7 @@ export class SearchResultList extends St.BoxLayout {
     };
     signalObserver: SignalObserver = new SignalObserver();
     searchEntry: St.Entry;
-    text: Text;
+    text: Clutter.Text;
     parentalControlsManager;
     providerList: ReactiveSearchProvider[] = [];
     searchSettings;
@@ -201,7 +204,7 @@ export class SearchResultList extends St.BoxLayout {
             // It's important that we do this first because it will remove the focus grab that we use.
             // This has the effect of restoring focus to the actor that was focused when we first grabbed it.
             // So if we want to focus a newly created window we need to be sure to do it after we close the search view.
-            Me.layout.toggleOverview();
+            Me.layout!.toggleOverview();
             let remappedProvider = provider;
 
             if (remappedProvider === this.recentSearchProvider) {
@@ -254,7 +257,7 @@ export class SearchResultList extends St.BoxLayout {
     }
 
     onTextChanged(): void {
-        const terms = getTermsForSearchString(this.searchEntry.get_text());
+        const terms = getTermsForSearchString(this.searchEntry.get_text()!);
         if (terms == this.terms) return;
         const searchActive = terms.length > 0;
         this.setTerms(terms);
@@ -443,7 +446,7 @@ export class SearchResultList extends St.BoxLayout {
                 );
             })
             .sort((a, b) =>
-                a.get_display_name().localeCompare(b.get_display_name())
+                a.get_display_name()!.localeCompare(b.get_display_name()!)
             );
 
         for (const appInfo of appsInstalled) {
@@ -454,9 +457,9 @@ export class SearchResultList extends St.BoxLayout {
 
             const entry = new SearchResultEntry(
                 icon,
-                appInfo.get_display_name(),
+                appInfo.get_display_name()!,
                 // The remote search provider also provides a description field, but the app search does not
-                appInfo.get_description(),
+                appInfo.get_description()!,
                 true
             );
             entry.connect('primary-action', () => {
@@ -469,9 +472,9 @@ export class SearchResultList extends St.BoxLayout {
                     appInfo.get_id()
                 );
                 if (app) {
-                    Me.msWindowManager.openApp(
+                    Me.msWindowManager!.openApp(
                         app,
-                        Me.msWorkspaceManager.getActiveMsWorkspace()
+                        Me.msWorkspaceManager!.getActiveMsWorkspace()
                     );
                 }
             });
@@ -538,6 +541,6 @@ export class SearchResultList extends St.BoxLayout {
 
     resetAndClose() {
         this.reset();
-        Me.layout.toggleOverview();
+        Me.layout!.toggleOverview();
     }
 }

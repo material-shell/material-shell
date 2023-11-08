@@ -1,8 +1,8 @@
-import * as Gdk from 'gdk';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
-import * as Gtk from 'gtk4';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 const ExtensionUtils = imports.misc.extensionUtils;

@@ -1,7 +1,7 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Signal } from 'src/manager/msManager';
 import { diffLists } from 'src/utils/diff_list';
@@ -11,14 +11,18 @@ import { getSettings } from 'src/utils/settings';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 @registerGObjectClass
 export class BaseTilingLayout<
     S extends { key: string }
 > extends Clutter.LayoutManager {
     _state: S;
-    icon: Gio.IconPrototype;
+    icon: Gio.Icon;
     msWorkspace: MsWorkspace;
     themeSettings: Gio.Settings;
     signals: Signal[];
@@ -32,7 +36,7 @@ export class BaseTilingLayout<
             state
         );
         this.icon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
+            `${Me.metadata.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
         );
         this.msWorkspace = msWorkspace;
         this.themeSettings = getSettings('theme');
@@ -244,7 +248,7 @@ export class BaseTilingLayout<
         for (const tileable of leavingTileableList) {
             if (
                 tileable instanceof MsWindow &&
-                Me.msWindowManager.msWindowList.includes(tileable)
+                Me.msWindowManager!.msWindowList.includes(tileable)
             ) {
                 this.restoreTileable(tileable);
             }
@@ -300,10 +304,10 @@ export class BaseTilingLayout<
         gap?: number
     ) {
         // Reduces box size according to gap setting
-        gap = gap || Me.layoutManager.gap;
+        gap = gap || Me.layoutManager!.gap;
         if (screenGap == undefined) {
-            screenGap = Me.layoutManager.useScreenGap
-                ? Me.layoutManager.screenGap
+            screenGap = Me.layoutManager!.useScreenGap
+                ? Me.layoutManager!.screenGap
                 : gap;
         }
 

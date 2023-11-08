@@ -1,6 +1,10 @@
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as Shell from 'shell';
+import GLib from 'gi://GLib';
+import GdkPixbuf from 'gi://GdkPixbuf';
+import Gio from 'gi://Gio';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
 import { assertNotNull } from 'src/utils/assert';
 import { logAsyncException, mslog } from 'src/utils/log';
 import {
@@ -8,13 +12,13 @@ import {
     gnomeVersionNumber,
     parseVersion,
 } from 'src/utils/shellVersionMatch';
-import * as St from 'st';
 import { RawMeta, ResultMeta, UnpackedMeta } from './searchProvider';
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
-const FileUtils = imports.misc.fileUtils;
-export const GdkPixbuf = imports.gi.GdkPixbuf;
-export const ParentalControlsManager = imports.misc.parentalControlsManager;
+import * as FileUtils from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
 const KEY_FILE_GROUP = 'Shell Search Provider';
 
 const beforeGnome43 =
@@ -99,7 +103,7 @@ export function loadRemoteSearchProviders(
             const busName = keyfile.get_string(group, 'BusName');
             const objectPath = keyfile.get_string(group, 'ObjectPath');
 
-            if (objectPaths[objectPath]) return;
+            if (objectPaths[objectPath!]) return;
 
             let appInfo = null;
             try {
@@ -120,7 +124,7 @@ export function loadRemoteSearchProviders(
 
             let version = '1';
             try {
-                version = keyfile.get_string(group, 'Version');
+                version = keyfile.get_string(group, 'Version')!;
             } catch (e) {
                 // ignore error
             }
@@ -128,15 +132,15 @@ export function loadRemoteSearchProviders(
             if (parseInt(version) >= 2)
                 remoteProvider = new RemoteSearchProvider2(
                     appInfo,
-                    busName,
-                    objectPath,
+                    busName!,
+                    objectPath!,
                     autoStart
                 );
             else
                 remoteProvider = new RemoteSearchProvider(
                     appInfo,
-                    busName,
-                    objectPath,
+                    busName!,
+                    objectPath!,
                     autoStart
                 );
 
@@ -150,7 +154,7 @@ export function loadRemoteSearchProviders(
                 // ignore error
             }
 
-            objectPaths[objectPath] = remoteProvider;
+            objectPaths[objectPath!] = remoteProvider;
             loadedProviders.push(remoteProvider);
         } catch (e) {
             log(`Failed to add search provider ${path}: ${e}`);
@@ -174,15 +178,15 @@ export function loadRemoteSearchProviders(
     const enabled = searchSettings.get_strv('enabled');
 
     loadedProviders = loadedProviders.filter((provider) => {
-        const appId = provider.appInfo.get_id();
+        const appId = provider.appInfo.get_id()!;
 
         if (provider.defaultEnabled) return !disabled.includes(appId);
         else return enabled.includes(appId);
     });
 
     loadedProviders.sort((providerA, providerB) => {
-        const appIdA = providerA.appInfo.get_id();
-        const appIdB = providerB.appInfo.get_id();
+        const appIdA = providerA.appInfo.get_id()!;
+        const appIdB = providerB.appInfo.get_id()!;
 
         const idxA = sortOrder.indexOf(appIdA);
         const idxB = sortOrder.indexOf(appIdB);
@@ -218,7 +222,7 @@ export class RemoteSearchProvider {
     searchInProgress = false;
 
     get title(): string {
-        return this.appInfo.get_name();
+        return this.appInfo.get_name()!;
     }
 
     constructor(
@@ -241,12 +245,12 @@ export class RemoteSearchProvider {
             g_object_path: dbusPath,
             g_interface_info: proxyInfo,
             g_interface_name: proxyInfo.name,
-            gFlags,
+            g_flags: gFlags,
         });
         this.proxy.init_async(GLib.PRIORITY_DEFAULT, null);
 
         this.appInfo = appInfo;
-        this.id = appInfo.get_id();
+        this.id = appInfo.get_id()!;
     }
 
     createFallbackIcon(icon_size: number): St.Icon | null {
@@ -419,7 +423,7 @@ export class RemoteSearchProvider {
         // the provider is not compatible with the new version of the interface, launch
         // the app itself but warn so we can catch the error in logs
         mslog(
-            `Search provider ${this.appInfo.get_id()} does not implement LaunchSearch`
+            `Search provider ${this.appInfo.get_id()!} does not implement LaunchSearch`
         );
         this.appInfo.launch([], global.create_app_launch_context(0, -1));
     }

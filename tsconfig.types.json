@@ -1,0 +1,8 @@
+{
+  // A separate configuration to check type declarations
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": false
+  }
+}

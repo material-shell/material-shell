@@ -1,9 +1,14 @@
 /** Gnome libs imports */
-import { main as Main } from 'ui';
-const { ExtensionManager, ENABLED_EXTENSIONS_KEY } = imports.ui.extensionSystem;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+import { ExtensionManager } from 'resource:///org/gnome/shell/ui/main.js';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const incompatibleExtensions = [
     'desktop-icons@csoriano',

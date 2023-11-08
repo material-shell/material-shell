@@ -1,7 +1,9 @@
 /** Gnome libs imports */
-import { Settings } from 'gio';
-import * as GLib from 'glib';
-import * as Meta from 'meta';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Meta from 'gi://Meta';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import MaterialShellExtension from 'src/extension';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
@@ -17,10 +19,13 @@ import { MaximizeLayout } from 'src/layout/msWorkspace/tilingLayouts/maximize';
 import { SplitLayout } from 'src/layout/msWorkspace/tilingLayouts/split';
 import { MsManager } from 'src/manager/msManager';
 import { getSettings } from 'src/utils/settings';
-import { main as Main } from 'ui';
+
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
 
@@ -74,7 +79,7 @@ export const TilingLayoutByKey: {
 export class LayoutManager extends MsManager {
     workspaceManager: Meta.WorkspaceManager;
     layoutList: LayoutType[];
-    layoutsSettings: Settings;
+    layoutsSettings: Gio.Settings;
     screenGap: number;
     ratio: number;
     useScreenGap: boolean;
@@ -204,10 +209,10 @@ export class LayoutManager extends MsManager {
                 let msWorkspace;
                 if (monitor.index === Main.layoutManager.primaryIndex) {
                     msWorkspace =
-                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                        Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
                 } else {
                     msWorkspace =
-                        Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                        Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
                             monitor.index
                         )[0];
                 }

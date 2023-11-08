@@ -1,19 +1,19 @@
-import { get_monotonic_time } from 'glib';
+import GLib from 'gi://GLib';
 
 export class Stopwatch {
     private t: number;
 
     constructor() {
-        this.t = get_monotonic_time();
+        this.t = GLib.get_monotonic_time();
     }
 
     restart() {
-        this.t = get_monotonic_time();
+        this.t = GLib.get_monotonic_time();
     }
 
     /** Elapsed milliseconds since construction */
     elapsed(): number {
-        return (get_monotonic_time() - this.t) * 0.001;
+        return (GLib.get_monotonic_time() - this.t) * 0.001;
     }
 
     elapsedString() {

@@ -1,14 +1,18 @@
 /** Gnome libs imports */
-import * as GObject from 'gobject';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 @registerGObjectClass
 export class MatDivider extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MatDivider',
     };
 

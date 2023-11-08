@@ -1,8 +1,12 @@
+import St from 'gi://St';
 import { assert } from 'src/utils/assert';
-import * as St from 'st';
 import { ResultMeta } from './searchProvider';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 export type HistoryItem = {
     provider_id: string;
@@ -45,7 +49,7 @@ export class RecentSearchProvider {
     }
 
     loadHistoryFromExtensionState() {
-        const historyState = Me.stateManager.getState(STATE_KEY);
+        const historyState = Me.stateManager!.getState(STATE_KEY);
         if (
             historyState !== undefined &&
             historyState.history !== undefined &&
@@ -74,7 +78,7 @@ export class RecentSearchProvider {
         if (this.historyList.length > MAX_HISTORY_SIZE) {
             this.historyList.shift();
         }
-        Me.stateManager.setState(STATE_KEY, {
+        Me.stateManager!.setState(STATE_KEY, {
             history: this.historyList,
         });
     }
@@ -84,24 +88,22 @@ export class RecentSearchProvider {
             timestamp: new Date().getTime(),
             visible_apps: [
                 ...new Set(
-                    Me.msWindowManager.msWindowList
-                        .filter(
-                            (x) =>
-                                x.lifecycleState.type === 'window' &&
-                                x.msWorkspace.isDisplayed()
-                        )
-                        .map((x) => x.state.appId)
+                    Me.msWindowManager!.msWindowList.filter(
+                        (x) =>
+                            x.lifecycleState.type === 'window' &&
+                            x.msWorkspace.isDisplayed()
+                    ).map((x) => x.state.appId)
                 ).values(),
             ],
             open_apps: [
                 ...new Set(
-                    Me.msWindowManager.msWindowList
-                        .filter((x) => x.lifecycleState.type === 'window')
-                        .map((x) => x.state.appId)
+                    Me.msWindowManager!.msWindowList.filter(
+                        (x) => x.lifecycleState.type === 'window'
+                    ).map((x) => x.state.appId)
                 ).values(),
             ],
             workspace_index:
-                Me.msWorkspaceManager.workspaceManager.get_active_workspace_index(),
+                Me.msWorkspaceManager!.workspaceManager.get_active_workspace_index(),
         };
     }
 

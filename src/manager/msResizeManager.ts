@@ -1,18 +1,21 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Meta from 'meta';
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
+import MaterialShellExtension from 'src/extension';
 import { MsWorkspace, Tileable } from 'src/layout/msWorkspace/msWorkspace';
 import { PortionBorder } from 'src/layout/msWorkspace/portion';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { MsManager } from 'src/manager/msManager';
-import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { throttle } from 'src/utils/index';
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import { MsWindowManager } from './msWindowManager';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const RESIZE_CODES = [
     Meta.GrabOp.RESIZING_N,
@@ -70,7 +73,7 @@ export class MsResizeManager extends MsManager {
                         msWindow.metaWindow === metaWindow &&
                         !msWindow.followMetaWindow
                     ) {
-                        global.display.end_grab_op(global.get_current_time());
+                        //global.display.end_grab_op(global.get_current_time());
 
                         const { layout } = msWindow.msWorkspace;
 
@@ -163,13 +166,13 @@ export class MsResizeManager extends MsManager {
         assert(this.resizeInProgress === null, 'Resize already in progress');
         this.resizeInProgress = {
             border: border,
-            msWorkspace: Me.msWorkspaceManager.getActiveMsWorkspace(),
+            msWorkspace: Me.msWorkspaceManager!.getActiveMsWorkspace(),
         };
 
         global.stage.add_child(this.inputResizer);
         this.msWindowManager.msFocusManager.pushModal(this.inputResizer);
 
-        Me.msThemeManager.setCursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
+        Me.msThemeManager!.setCursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
     }
 
     updateResize() {
@@ -195,10 +198,10 @@ export class MsResizeManager extends MsManager {
         this.resizeInProgress = null;
 
         this.msWindowManager.msFocusManager.popModal(this.inputResizer);
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
 
         global.stage.remove_child(this.inputResizer);
-        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
     }
 
     resizeTileable(

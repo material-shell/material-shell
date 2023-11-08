@@ -1,5 +1,4 @@
 /** Gnome libs imports */
-import { Rectangular } from 'src/types/mod';
 
 const MIN_BASIS_RATIO = 0.1;
 

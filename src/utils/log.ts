@@ -1,4 +1,8 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /** Logs an exception from a promise.
  * If a promise throws an unhandled exception it will not be logged automatically, so this method can be used to

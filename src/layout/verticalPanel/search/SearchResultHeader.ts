@@ -1,10 +1,10 @@
-import * as GObject from 'gobject';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
 
 @registerGObjectClass
 export class SearchResultHeader extends St.Bin {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SearchResultHeader',
     };
     label: St.Label;

@@ -1,6 +1,8 @@
 /** Gnome libs imports */
-import * as Meta from 'meta';
-import * as Shell from 'shell';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import MaterialShellExtension from 'src/extension';
 import {
     buildMetaWindowIdentifier,
     MsWindow,
@@ -11,19 +13,20 @@ import { MsDndManager } from 'src/manager/msDndManager';
 import { MsFocusManager } from 'src/manager/msFocusManager';
 import { MsManager } from 'src/manager/msManager';
 import { MsResizeManager } from 'src/manager/msResizeManager';
-import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
 import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
-import { main as Main } from 'ui';
+
+import { AuthenticationDialog } from 'resource:///org/gnome/shell/ui/components/polkitAgent.js';
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 
 const Signals = imports.signals;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const AuthenticationDialog =
-    imports.ui.components.polkitAgent.AuthenticationDialog;
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 export type MetaWindowWithMsProperties = Meta.Window & {
     createdAt?: number;
@@ -138,7 +141,7 @@ export class MsWindowManager extends MsManager {
             'window-created',
             (_, metaWindow: MetaWindowWithMsProperties) => {
                 const actor =
-                    metaWindow.get_compositor_private<Meta.WindowActor>();
+                    metaWindow.get_compositor_private() as Meta.WindowActor;
                 metaWindow.firstFrameDrawn = false;
                 metaWindow.firstFrameDrawnPromise = new Promise((resolve) => {
                     actor.connect('first-frame', (_params) => {
@@ -175,7 +178,7 @@ export class MsWindowManager extends MsManager {
             .get_window_actors()
             .filter(
                 (x) =>
-                    (x.metaWindow as MetaWindowWithMsProperties)
+                    (x.meta_window as MetaWindowWithMsProperties)
                         .handledByMaterialShell
             );
         // Assign all non-dialog windows first
@@ -218,8 +221,8 @@ export class MsWindowManager extends MsManager {
         // Handle all non-dialog windows that haven't been associated with an MsWindow yet. Dialog windows are handled by assignDialogWindows
         const windowActors = actors.filter(
             (w) =>
-                !assignedMetaWindows.has(w.metaWindow) &&
-                !this.isMetaWindowDialog(w.metaWindow)
+                !assignedMetaWindows.has(w.meta_window) &&
+                !this.isMetaWindowDialog(w.meta_window)
         );
 
         const candidateMsWindows = this.msWindowList.filter(
@@ -239,7 +242,7 @@ export class MsWindowManager extends MsManager {
         });
         const groupedMetaWindowsByApp = groupBy(
             windowActors,
-            (window) => this.windowTracker.get_window_app(window.metaWindow).id
+            (window) => this.windowTracker.get_window_app(window.meta_window).id
         );
 
         let logged = false;
@@ -249,11 +252,11 @@ export class MsWindowManager extends MsManager {
             for (const windowActor of actors) {
                 Me.log(
                     `Meta window: ${buildMetaWindowIdentifier(
-                        windowActor.metaWindow
+                        windowActor.meta_window
                     )} title='${
-                        windowActor.metaWindow.title
+                        windowActor.meta_window.title
                     }' dialog=${this.isMetaWindowDialog(
-                        windowActor.metaWindow
+                        windowActor.meta_window
                     )}`
                 );
             }
@@ -279,16 +282,16 @@ export class MsWindowManager extends MsManager {
             windowActorGroup,
         ] of groupedMetaWindowsByApp.entries()) {
             const candidateMsWindows =
-                groupedMsWindowsByApp.get(groupKey) || [];
+                groupedMsWindowsByApp.get(groupKey!) || [];
             const costMatrix: number[][] = [];
             for (const windowActor of windowActorGroup) {
-                const metaWindow = windowActor.metaWindow;
+                const metaWindow = windowActor.meta_window;
                 const windowInfo: MsWindowMatchingInfo = {
-                    appId: groupKey,
-                    wmClass: metaWindow.get_wm_class_instance(),
+                    appId: groupKey!,
+                    wmClass: metaWindow.get_wm_class_instance()!,
                     pid: metaWindow.get_pid(),
                     stableSeq: metaWindow.get_stable_sequence(),
-                    title: metaWindow.title,
+                    title: metaWindow.title!,
                 };
 
                 const costs = candidateMsWindows.map((msWindow) =>
@@ -313,7 +316,7 @@ export class MsWindowManager extends MsManager {
                 const idx = assignments[i];
                 if (idx < candidateMsWindows.length) {
                     // Found a good match
-                    msWindowAssignments[idx] = windowActorGroup[i].metaWindow;
+                    msWindowAssignments[idx] = windowActorGroup[i].meta_window;
                 }
             }
 
@@ -349,28 +352,28 @@ export class MsWindowManager extends MsManager {
                         logInfoOnce();
                         Me.log(
                             `Associating ${buildMetaWindowIdentifier(
-                                windowActor.metaWindow
+                                windowActor.meta_window
                             )} with ${msWindow.windowIdentifier}`
                         );
 
                         // Associate the meta window with the ms window.
                         // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
                         void msWindow
-                            .setWindow(windowActor.metaWindow)
+                            .setWindow(windowActor.meta_window)
                             .catch(logAsyncException);
                     }
                 } else {
                     logInfoOnce();
                     Me.log(
                         `Creating a new MsWindow for ${buildMetaWindowIdentifier(
-                            windowActor.metaWindow
+                            windowActor.meta_window
                         )}`
                     );
                     // Did not find a good match, create a new window instead
-                    this.createNewMsWindow(windowActor.metaWindow, {
+                    this.createNewMsWindow(windowActor.meta_window, {
                         msWorkspace:
-                            Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                                windowActor.metaWindow
+                            Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
+                                windowActor.meta_window
                             ),
                         focus: true,
                         insert: true,
@@ -405,10 +408,10 @@ export class MsWindowManager extends MsManager {
 
         for (const windowActor of actors) {
             if (windowActor.is_destroyed()) continue;
-            if (assignedMetaWindows.has(windowActor.metaWindow)) continue;
-            if (!this.isMetaWindowDialog(windowActor.metaWindow)) continue;
+            if (assignedMetaWindows.has(windowActor.meta_window)) continue;
+            if (!this.isMetaWindowDialog(windowActor.meta_window)) continue;
 
-            const metaWindow = windowActor.metaWindow;
+            const metaWindow = windowActor.meta_window;
             const app = this.windowTracker.get_window_app(
                 metaWindow
             ) as Shell.App | null;
@@ -509,10 +512,10 @@ export class MsWindowManager extends MsManager {
                 msWindowFound.addDialog(metaWindow);
             } else {
                 // No good existing MsWindow was found, instead we create a new MsWindow just for this dialog.
-                this.createNewMsWindow(windowActor.metaWindow, {
+                this.createNewMsWindow(windowActor.meta_window, {
                     msWorkspace:
-                        Me.msWorkspaceManager.determineAppropriateMsWorkspace(
-                            windowActor.metaWindow
+                        Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
+                            windowActor.meta_window
                         ),
                     focus: true,
                     insert: true,
@@ -530,7 +533,7 @@ export class MsWindowManager extends MsManager {
 
         for (const windowActor of global.get_window_actors()) {
             const metaWindow =
-                windowActor.metaWindow as MetaWindowWithMsProperties;
+                windowActor.meta_window as MetaWindowWithMsProperties;
             // Initialize and reset fields to well defined states.
             metaWindow.firstFrameDrawn = true;
             metaWindow.firstFrameDrawnPromise = Promise.resolve();
@@ -545,10 +548,10 @@ export class MsWindowManager extends MsManager {
     onNewMetaWindow(metaWindow: MetaWindowWithMsProperties) {
         if (Me.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
-        const actor = metaWindow.get_compositor_private<Meta.WindowActor>();
+        const actor = metaWindow.get_compositor_private() as Meta.WindowActor;
 
         if (!this.handleWindow(metaWindow)) {
-            /* return Me.layout.setActorAbove(metaWindow.get_compositor_private<
+            /* return Me.layout!.setActorAbove(metaWindow.get_compositor_private<
                     Meta.WindowActor
                 >()); */
             const parent = actor.get_parent();
@@ -613,7 +616,7 @@ export class MsWindowManager extends MsManager {
 
         if (matchingInfo === undefined) {
             matchingInfo = {
-                appId: app.id,
+                appId: app.id!,
                 title: undefined,
                 pid: undefined,
                 wmClass: undefined,
@@ -659,7 +662,7 @@ export class MsWindowManager extends MsManager {
 
     openApp(app: Shell.App, msWorkspace: MsWorkspace, insert = false) {
         if (app.can_open_new_window()) {
-            const msWindow = Me.msWindowManager.createNewMsWindow(app, {
+            const msWindow = Me.msWindowManager!.createNewMsWindow(app, {
                 msWorkspace: msWorkspace,
                 focus: true,
                 insert: insert,
@@ -734,7 +737,7 @@ export class MsWindowManager extends MsManager {
         }
         if (msWindow.lifecycleState.matchingInfo === undefined) {
             msWindow.lifecycleState.matchingInfo = {
-                appId: msWindow.app.id,
+                appId: msWindow.app.id!,
                 title: undefined,
                 pid: undefined,
                 wmClass: undefined,
@@ -746,7 +749,7 @@ export class MsWindowManager extends MsManager {
         this.checkWindowsForAssignationsDebounce.schedule();
 
         const workspaceIndex =
-            Me.msWorkspaceManager.primaryMsWorkspaces.indexOf(
+            Me.msWorkspaceManager!.primaryMsWorkspaces.indexOf(
                 msWindow.msWorkspace
             );
         if (
@@ -762,19 +765,19 @@ export class MsWindowManager extends MsManager {
     private handleWindow(metaWindow: MetaWindowWithMsProperties) {
         if (
             metaWindow.wm_class !== '' &&
-            getSettings('layouts')
-                .get_string('windows-excluded')
+            getSettings('layouts')!
+                .get_string('windows-excluded')!
                 .split(',')
                 .map((item) => item.trim())
-                .indexOf(metaWindow.wm_class) > -1
+                .indexOf(metaWindow.wm_class!) > -1
         ) {
             return false;
         }
-        const windowRole = metaWindow.get_role();
+        const windowRole = metaWindow.get_role()!;
         if (
             windowRole !== '' &&
-            getSettings('layouts')
-                .get_string('roles-excluded')
+            getSettings('layouts')!
+                .get_string('roles-excluded')!
                 .split(',')
                 .map((item) => item.trim())
                 .indexOf(windowRole) !== -1
@@ -831,7 +834,7 @@ export class MsWindowManager extends MsManager {
         this.checkWindowsForAssignationsDebounce.cancel();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow =
-                windowActor.metaWindow as MetaWindowWithMsProperties;
+                windowActor.meta_window as MetaWindowWithMsProperties;
             if (metaWindow.handledByMaterialShell)
                 delete metaWindow.handledByMaterialShell;
         });

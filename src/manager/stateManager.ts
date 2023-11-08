@@ -1,15 +1,21 @@
 // Inspired by https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator/blob/master/utils.js
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import * as Gio from 'gio';
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
 import { getSettings } from 'src/utils/settings';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /** Gnome libs imports */
 const FileTest = GLib.FileTest;
 
-const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
+const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${
+    Me.metadata.uuid
+}-state.json`;
 
 type StateDict = { [Key: string]: any };
 
@@ -106,7 +112,7 @@ export class StateManager {
     stateChanged() {
         if (
             !Me.loaded ||
-            Me.msWorkspaceManager.updatingMonitors ||
+            Me.msWorkspaceManager!.updatingMonitors ||
             this.stateChangedTriggered ||
             Me.disableInProgress
         )
@@ -125,7 +131,7 @@ export class StateManager {
         if (!Me.loaded || Me.disableInProgress) return;
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
-            this.setState('workspaces-state', Me.msWorkspaceManager.state);
+            this.setState('workspaces-state', Me.msWorkspaceManager!.state);
         }
     }
 

@@ -1,4 +1,4 @@
-import * as GObject from 'gobject';
+import GObject from 'gi://GObject';
 const Signals = imports.signals;
 
 /// Decorator function to call `GObject.registerClass` with the given class.
@@ -10,7 +10,10 @@ const Signals = imports.signals;
 export function registerGObjectClass<
     K,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends { metaInfo?: GObject.MetaInfo; new (...params: any[]): K }
+    T extends {
+        metaInfo?: GObject.MetaInfo<any, any, any>;
+        new (...params: any[]): K;
+    }
 >(target: T) {
     // Note that we use 'hasOwnProperty' because otherwise we would get inherited meta infos.
     // This would be bad because we would inherit the GObjectName too, which is supposed to be unique.

@@ -1,26 +1,30 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GnomeDesktop from 'gnomedesktop';
-import * as GObject from 'gobject';
-import * as Shell from 'shell';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import GnomeDesktop from 'gi://GnomeDesktop';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { PrimaryBorderEffect } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { AppsManager } from 'src/manager/appsManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
-import * as St from 'st';
-import { main as Main } from 'ui';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /* exported MsApplicationLauncher */
 
 const BUTTON_SIZE = 124;
 @registerGObjectClass
 export class MsApplicationLauncher extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsApplicationLauncher',
         CssName: 'MsApplicationLauncher',
     };
@@ -45,7 +49,7 @@ export class MsApplicationLauncher extends St.Widget {
         );
         this.initAppListContainer();
         this.launcherChangedSignal = SignalHandle.connect(
-            Me.msThemeManager,
+            Me.msThemeManager!,
             'clock-app-launcher-changed',
             () => {
                 this.restartAppListContainer();
@@ -99,7 +103,7 @@ export class MsApplicationLauncher extends St.Widget {
                 this.appListContainer.highlightButton(button);
             });
             button.connect('clicked', () => {
-                Me.msWindowManager.openApp(app, this.msWorkspace);
+                Me.msWindowManager!.openApp(app, this.msWorkspace);
                 this.appListContainer.reset();
             });
             this.appListContainer.addAppButton(button);
@@ -184,7 +188,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.numberOfColumn = 1;
         this.maxIndex = 1;
 
-        if (Me.msThemeManager.clockAppLauncher) {
+        if (Me.msThemeManager!.clockAppLauncher) {
             const clockLabel = new St.Label({
                 style_class: 'headline-6 text-medium-emphasis margin-right-x2',
                 y_align: Clutter.ActorAlign.CENTER,
@@ -209,7 +213,7 @@ export class MsApplicationButtonContainer extends St.Widget {
                     const date = new Date();
                     const dateFormat = Shell.util_translate_time_string(
                         N_('%A %B %-d')
-                    );
+                    )!;
                     // TODO: toLocaleFormat is deprecated
                     dateLabel.text = date.toLocaleFormat(dateFormat);
                 }
@@ -310,7 +314,7 @@ export class MsApplicationButtonContainer extends St.Widget {
     }
 
     get buttonSize() {
-        return Me.msThemeManager.getScaledSize(BUTTON_SIZE);
+        return Me.msThemeManager!.getScaledSize(BUTTON_SIZE);
     }
     reset() {
         //Go back to the previous window if ESC is pressed and nothing is selected
@@ -321,7 +325,7 @@ export class MsApplicationButtonContainer extends St.Widget {
             this.msWorkspace.focusPreviousTileableFromHistory();
             return;
         }
-        if (this.inputContainer.get_text().length) {
+        if (this.inputContainer.get_text()!.length) {
             this.inputContainer.set_text('');
             this._text.cursor_position = -1;
             return;
@@ -339,7 +343,7 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.filteredAppButtonListBuffer = this.appButtonList.filter(
             (button) => {
                 const stringToSearch = `${button.app.get_name()}${button.app.get_id()}${button.app.get_description()}`;
-                const regex = new RegExp(this.inputContainer.get_text(), 'i');
+                const regex = new RegExp(this.inputContainer.get_text()!, 'i');
                 if (regex.test(stringToSearch)) {
                     button.visible = true;
                     return true;
@@ -545,12 +549,12 @@ export class MsApplicationButtonContainer extends St.Widget {
         this.set_allocation(box);
         const themeNode = this.get_theme_node();
         const contentBox = themeNode.get_content_box(box);
-        const containerPadding = Me.msThemeManager.getScaledSize(16);
-        const clockHeight = Me.msThemeManager.getScaledSize(
-            Me.msThemeManager.clockAppLauncher ? 64 : 0
+        const containerPadding = Me.msThemeManager!.getScaledSize(16);
+        const clockHeight = Me.msThemeManager!.getScaledSize(
+            Me.msThemeManager!.clockAppLauncher ? 64 : 0
         );
-        const searchHeight = Me.msThemeManager.getScaledSize(48);
-        const searchMargin = Me.msThemeManager.getScaledSize(24);
+        const searchHeight = Me.msThemeManager!.getScaledSize(48);
+        const searchMargin = Me.msThemeManager!.getScaledSize(24);
 
         const availableWidth = contentBox.get_width() - containerPadding * 2;
 
@@ -662,7 +666,7 @@ export class MsApplicationButtonContainer extends St.Widget {
 
 @registerGObjectClass
 export class MsApplicationButton extends MatButton {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsApplicationButton',
     };
 
@@ -693,7 +697,7 @@ export class MsApplicationButton extends MatButton {
             this.layout.add_child(this.icon);
             this.layout.add_child(this.title);
 
-            Me.tooltipManager.add(this.title, { relativeActor: this });
+            Me.tooltipManager!.add(this.title, { relativeActor: this });
         }
         this.layout.set_style('padding:12px;');
         this.set_child(this.layout);

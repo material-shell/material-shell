@@ -1,29 +1,31 @@
 /** Gnome libs imports */
-import { Actor, Grab } from 'clutter';
-import * as GLib from 'glib';
-import { ModalOptions } from 'meta';
-import { ActionMode } from 'shell';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Shell from 'gi://Shell';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import MaterialShellExtension from 'src/extension';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
-import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
-import { main as Main } from 'ui';
+
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
     msWindowManager: MsWindowManagerType;
     lastMsWindowFocused: MsWindow | null = null;
-    lastKeyFocus: Actor | null = null;
+    lastKeyFocus: Clutter.Actor | null = null;
     focusProtected?: boolean;
-    actorGrabMap: Map<Actor, boolean | Grab> = new Map();
+    actorGrabMap: Map<Clutter.Actor, boolean | Clutter.Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
@@ -74,7 +76,7 @@ export class MsFocusManager extends MsManager {
 
         this.lastKeyFocus = keyFocus;
 
-        let actor: Actor | null = keyFocus;
+        let actor: Clutter.Actor | null = keyFocus;
         while (actor !== null) {
             if (actor instanceof MsWindow) {
                 this.setFocusToMsWindow(actor);
@@ -117,29 +119,22 @@ export class MsFocusManager extends MsManager {
     }
 
     pushModal(
-        actor: Actor,
+        actor: Clutter.Actor,
         options?: {
             timestamp?: number;
-            options?: ModalOptions;
-            actionMode?: ActionMode;
+            options?: any;
+            actionMode?: Shell.ActionMode;
         }
     ) {
         const grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);
     }
 
-    popModal(actor: Actor) {
+    popModal(actor: Clutter.Actor) {
         const grab = this.actorGrabMap.get(actor);
         if (grab !== undefined) {
-            if (gnomeVersionGreaterOrEqualTo(Main.popModal, '42.0')) {
-                assert(
-                    typeof grab !== 'boolean',
-                    'Expected grab to be a grab object'
-                );
-                Main.popModal(grab);
-            } else {
-                Main.popModal(actor);
-            }
+            Main.popModal(grab);
+
             this.actorGrabMap.delete(actor);
         }
     }

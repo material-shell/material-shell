@@ -2,22 +2,25 @@
 const { round } = Math;
 
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Cogl from 'cogl';
-import * as GObject from 'gobject';
-import * as Meta from 'meta';
+import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { Portion, PortionBorder } from 'src/layout/msWorkspace/portion';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { FocusEffectEnum } from 'src/manager/msThemeManager';
-import { Rectangular } from 'src/types/mod';
 import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const BORDER_WIDTH = 2;
 @registerGObjectClass
@@ -41,7 +44,7 @@ export class BaseResizeableTilingLayout<
 
             delete state.mainPortion;
         }
-        this.currentFocusEffect = Me.msThemeManager.focusEffect;
+        this.currentFocusEffect = Me.msThemeManager!.focusEffect;
         this.onGapChange();
     }
 
@@ -49,15 +52,15 @@ export class BaseResizeableTilingLayout<
         super.registerToSignals();
         this.signals.push(
             {
-                from: Me.layoutManager,
-                id: Me.layoutManager.connect(
+                from: Me.layoutManager!,
+                id: Me.layoutManager!.connect(
                     'gap-changed',
                     this.onGapChange.bind(this)
                 ),
             },
             {
-                from: Me.msThemeManager,
-                id: Me.msThemeManager.connect(
+                from: Me.msThemeManager!,
+                id: Me.msThemeManager!.connect(
                     'focus-effect-changed',
                     this.onFocusEffectChanged.bind(this)
                 ),
@@ -71,7 +74,7 @@ export class BaseResizeableTilingLayout<
         });
     }
     onGapChange() {
-        if (!Me.layoutManager.someGap) {
+        if (!Me.layoutManager!.someGap) {
             if (!this.borderContainer) {
                 this.borderActorList = [];
                 this.borderContainer = new Clutter.Actor();
@@ -156,10 +159,10 @@ export class BaseResizeableTilingLayout<
         width: number,
         height: number
     ): Rectangular {
-        const gap = Me.layoutManager.gap || BORDER_WIDTH;
-        const screenGap = Me.layoutManager.useScreenGap
-            ? Me.layoutManager.screenGap
-            : Me.layoutManager.gap;
+        const gap = Me.layoutManager!.gap || BORDER_WIDTH;
+        const screenGap = Me.layoutManager!.useScreenGap
+            ? Me.layoutManager!.screenGap
+            : Me.layoutManager!.gap;
         return super.applyGaps(x, y, width, height, screenGap, gap);
     }
 
@@ -225,7 +228,7 @@ export class BaseResizeableTilingLayout<
             );
             const { x, y, width, height } = this.applyBoxRatio(box, ratio);
             const scaledBorderWidth =
-                Me.msThemeManager.getScaledSize(BORDER_WIDTH);
+                Me.msThemeManager!.getScaledSize(BORDER_WIDTH);
             if (portionBorder.vertical) {
                 actor.x = x + width - scaledBorderWidth / 2;
                 actor.y = y;
@@ -256,7 +259,7 @@ export class BaseResizeableTilingLayout<
 
     onFocusEffectChanged() {
         const oldFocusEffect = this.currentFocusEffect;
-        this.currentFocusEffect = Me.msThemeManager.focusEffect;
+        this.currentFocusEffect = Me.msThemeManager!.focusEffect;
         this.msWorkspace.tileableList.forEach((tileable) => {
             this.removeUnFocusEffect(tileable, oldFocusEffect);
             this.addUnFocusEffect(
@@ -298,8 +301,9 @@ export class BaseResizeableTilingLayout<
         } else if (effect === FocusEffectEnum.BORDER) {
             const border = new PrimaryBorderEffect({
                 name: 'border',
-                opacity: focused ? 1.0 : 0.0,
             });
+            border.opacity = focused ? 1.0 : 0.0;
+
             tileable.focusEffects = {
                 border,
             };
@@ -377,7 +381,7 @@ export class BaseResizeableTilingLayout<
 
 @registerGObjectClass
 export class ResizableBorderActor extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'ResizableBorderActor',
         Signals: {
             'drag-start': {},
@@ -386,9 +390,7 @@ export class ResizableBorderActor extends St.Widget {
 
     constructor() {
         super({ reactive: true, track_hover: true });
-        this.set_background_color(
-            new Clutter.Color({ red: 10, green: 10, blue: 10, alpha: 255 })
-        );
+        this.set_background_color(new Clutter.Color(10, 10, 10, 255));
 
         this.connect('event', (actor, event) => {
             const eventType = event.type();
@@ -401,16 +403,16 @@ export class ResizableBorderActor extends St.Widget {
                         }
                     ).portionBorder;
                     assert(border !== undefined, 'Actor has no border');
-                    Me.msWindowManager.msResizeManager.startResize(border);
+                    Me.msWindowManager!.msResizeManager.startResize(border);
                     break;
                 }
                 case Clutter.EventType.ENTER:
-                    Me.msThemeManager.setCursor(
+                    Me.msThemeManager!.setCursor(
                         Meta.Cursor.MOVE_OR_RESIZE_WINDOW
                     );
                     break;
                 case Clutter.EventType.LEAVE:
-                    Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+                    Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
                     break;
             }
         });
@@ -422,7 +424,7 @@ export class ResizableBorderActor extends St.Widget {
 
 @registerGObjectClass
 export class PrimaryBorderEffect extends Clutter.Effect {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'PrimaryBorderEffect',
         Properties: {
             opacity: GObject.ParamSpec.float(
@@ -461,8 +463,8 @@ export class PrimaryBorderEffect extends Clutter.Effect {
             this._pipeline = new Cogl.Pipeline(coglContext);
         }
 
-        if (this.color !== Me.msThemeManager.primaryColor) {
-            this.color = Me.msThemeManager.primaryColor;
+        if (this.color !== Me.msThemeManager!.primaryColor) {
+            this.color = Me.msThemeManager!.primaryColor;
             const c = this.color.copy();
             c.set_alpha_float(this.opacity);
             c.premultiply();

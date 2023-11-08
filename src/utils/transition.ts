@@ -1,10 +1,14 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 import { WithSignals } from 'src/utils/gjs';
 import { InfinityTo0, reparentActor } from 'src/utils/index';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 interface TransitionConfig {
     duration: number;
@@ -31,7 +35,7 @@ export class TranslationHelper extends WithSignals {
         const x2 = x1 + actor.width;
         const y1 = actor.y + actor.translation_y;
         const y2 = y1 + actor.height;
-        return new Clutter.ActorBox({ x1, y1, x2, y2 });
+        return new Clutter.ActorBox(x1, y1, x2, y2);
     }
 
     /** Starts a transition.

@@ -1,7 +1,9 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import * as Meta from 'meta';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import MaterialShellExtension from 'src/extension';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
@@ -10,11 +12,14 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor, throttle } from 'src/utils/index';
-import { main as Main } from 'ui';
+
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import { MsWindowManager } from './msWindowManager';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 interface CurrentDrag {
     msWindow: MsWindow;
@@ -46,14 +51,14 @@ export class MsDndManager extends MsManager {
             () => {
                 if (this.dragInProgress !== null) {
                     const newMsWorkspace =
-                        Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                        Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
                     if (this.dragInProgress.msWindow.metaWindow) {
                         this.dragInProgress.msWindow.metaWindow.change_workspace_by_index(
                             global.workspace_manager.get_active_workspace_index(),
                             true
                         );
                     } else {
-                        Me.msWorkspaceManager.setWindowToMsWorkspace(
+                        Me.msWorkspaceManager!.setWindowToMsWorkspace(
                             this.dragInProgress.msWindow,
                             newMsWorkspace
                         );
@@ -76,7 +81,7 @@ export class MsDndManager extends MsManager {
                         msWindow.metaWindow === metaWindow &&
                         !msWindow.followMetaWindow
                     ) {
-                        global.display.end_grab_op(global.get_current_time());
+                        //global.display.end_grab_op(global.get_current_time());
                         this.startDrag(msWindow);
                     }
                 }
@@ -156,12 +161,12 @@ export class MsDndManager extends MsManager {
         this.dragInProgress = {
             msWindow,
             originPointerAnchor: [
-                relativeX / msWindow.width,
-                relativeY / msWindow.height,
+                relativeX! / msWindow.width,
+                relativeY! / msWindow.height,
             ],
             originalParent,
         };
-        Me.layout.setActorAbove(msWindow);
+        Me.layout!.setActorAbove(msWindow);
         this.checkUnderThePointerRoutine();
         msWindow.set_position(
             Math.round(
@@ -174,7 +179,7 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        Me.msThemeManager.setCursor(Meta.Cursor.DND_IN_DRAG);
+        Me.msThemeManager!.setCursor(Meta.Cursor.DND_IN_DRAG);
     }
 
     endDrag() {
@@ -189,7 +194,7 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {
@@ -215,15 +220,15 @@ export class MsDndManager extends MsManager {
             let newMsWorkspace: MsWorkspace;
             if (monitor === Main.layoutManager.primaryMonitor) {
                 newMsWorkspace =
-                    Me.msWorkspaceManager.getActivePrimaryMsWorkspace();
+                    Me.msWorkspaceManager!.getActivePrimaryMsWorkspace();
             } else {
                 newMsWorkspace =
-                    Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
+                    Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
                         monitor.index
                     )[0];
             }
 
-            Me.msWorkspaceManager.setWindowToMsWorkspace(
+            Me.msWorkspaceManager!.setWindowToMsWorkspace(
                 msWindowDragged,
                 newMsWorkspace
             );
@@ -276,36 +281,37 @@ export class InputGrabber extends Clutter.Actor {
     }
     override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
         const actionId = global.display.get_keybinding_action(
-            keyEvent.hardware_keycode,
-            keyEvent.modifier_state
+            keyEvent.get_key_code(),
+            keyEvent.get_state()
         );
-        if (Me.hotKeysModule.actionIdToNameMap.has(actionId)) {
-            const actionName = Me.hotKeysModule.actionIdToNameMap.get(actionId);
+        if (Me.hotKeysModule!.actionIdToNameMap.has(actionId)) {
+            const actionName =
+                Me.hotKeysModule!.actionIdToNameMap.get(actionId);
             switch (actionName) {
                 case KeyBindingAction.PREVIOUS_WINDOW:
                     assertNotNull(
-                        Me.hotKeysModule.actionNameToActionMap.get(
+                        Me.hotKeysModule!.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_LEFT
                         )
                     )();
                     break;
                 case KeyBindingAction.NEXT_WINDOW:
                     assertNotNull(
-                        Me.hotKeysModule.actionNameToActionMap.get(
+                        Me.hotKeysModule!.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_RIGHT
                         )
                     )();
                     break;
                 case KeyBindingAction.PREVIOUS_WORKSPACE:
                     assertNotNull(
-                        Me.hotKeysModule.actionNameToActionMap.get(
+                        Me.hotKeysModule!.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_TOP
                         )
                     )();
                     break;
                 case KeyBindingAction.NEXT_WORKSPACE:
                     assertNotNull(
-                        Me.hotKeysModule.actionNameToActionMap.get(
+                        Me.hotKeysModule!.actionNameToActionMap.get(
                             KeyBindingAction.MOVE_WINDOW_BOTTOM
                         )
                     )();

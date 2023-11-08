@@ -1,8 +1,8 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
 
 @registerGObjectClass
 export class RippleWave extends St.Widget {
@@ -88,10 +88,12 @@ export class RippleBackground extends St.Widget {
                         Clutter.EventType.TOUCH_BEGIN,
                     ].indexOf(eventType) > -1
                 ) {
-                    const [_, x, y] = this.transform_stage_point(
+                    const [success, x, y] = this.transform_stage_point(
                         ...event.get_coords()
                     );
-                    this.createRippleWave(x, y);
+                    if (success) {
+                        this.createRippleWave(x!, y!);
+                    }
                 } else if (
                     [
                         Clutter.EventType.BUTTON_RELEASE,

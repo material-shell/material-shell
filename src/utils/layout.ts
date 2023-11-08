@@ -1,4 +1,4 @@
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 
 export function centerInBox(
     box: Clutter.ActorBox,

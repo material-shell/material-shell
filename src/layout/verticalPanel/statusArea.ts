@@ -1,9 +1,14 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GnomeDesktop from 'gnomedesktop';
-import * as GObject from 'gobject';
-import * as Shell from 'shell';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import GnomeDesktop from 'gi://GnomeDesktop';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
+
 import { VerticalPanelPositionEnum } from 'src/manager/msThemeManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { getExtensionSettings } from 'src/utils/extension_utils';
@@ -15,21 +20,24 @@ import {
     gnomeVersionNumber,
     parseVersion,
 } from 'src/utils/shellVersionMatch';
-import * as St from 'st';
-import { dateMenu, main as Main, panel } from 'ui';
+
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 const isBeforeGnome43 =
     compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 @registerGObjectClass
 export class MsStatusArea extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsStatusArea',
     };
-    gnomeShellPanel: panel.Panel;
+    gnomeShellPanel: Panel.Panel;
     leftBoxActors: Clutter.Actor[];
     rightBoxActors: Clutter.Actor[];
-    dateMenu: dateMenu.DateMenuButton;
+    dateMenu: DateMenu.DateMenuButton;
     msDateMenuBox?: {
         box: MsDateMenuBox;
         originalDateMenuBox: Clutter.Actor;
@@ -46,7 +54,6 @@ export class MsStatusArea extends Clutter.Actor {
         super({
             layout_manager: new Clutter.BoxLayout({
                 orientation: Clutter.Orientation.VERTICAL,
-                pack_start: false,
             }),
         });
         this.gnomeShellPanel = Main.panel;
@@ -56,13 +63,13 @@ export class MsStatusArea extends Clutter.Actor {
         this.dateMenu = this.gnomeShellPanel.statusArea.dateMenu;
         this.enable();
 
-        const panelSizeSignal = Me.msThemeManager.connect(
+        const panelSizeSignal = Me.msThemeManager!.connect(
             'panel-size-changed',
             () => this.onPanelSizeChanged()
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(panelSizeSignal);
+            Me.msThemeManager!.disconnect(panelSizeSignal);
             this.restoreAppIndicatorSettings();
         });
 
@@ -94,7 +101,7 @@ export class MsStatusArea extends Clutter.Actor {
         // Ubuntu app indicators reads this property.
         // Sadly it only does that on startup, so we can't quite
         // get things to work properly if the panel size setting changes.
-        panel.PANEL_ICON_SIZE = iconSize;
+        //Panel.PANEL_ICON_SIZE = iconSize;
     }
 
     restoreAppIndicatorSettings() {
@@ -113,7 +120,7 @@ export class MsStatusArea extends Clutter.Actor {
             );
         }
         // Reset to the default value (based on gnome source code)
-        panel.PANEL_ICON_SIZE = 16;
+        //Panel.PANEL_ICON_SIZE = 16;
     }
 
     enable() {
@@ -203,13 +210,10 @@ export class MsStatusArea extends Clutter.Actor {
         // All icons actors should have a single child.
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
-            if (
-                mainChild instanceof
-                (isBeforeGnome43 ? panel.AggregateMenu : panel.QuickSettings)
-            ) {
+            if (mainChild instanceof Panel.QuickSettings) {
                 // This is the main system menu
                 return 1;
-            } else if (mainChild instanceof dateMenu.DateMenuButton) {
+            } else if (mainChild instanceof DateMenu.DateMenuButton) {
                 return 2;
             }
         }
@@ -263,7 +267,7 @@ export class MsStatusArea extends Clutter.Actor {
     iconSize() {
         return Math.max(
             16.0,
-            Math.round(Me.msThemeManager.getPanelSizeNotScaled() / 3)
+            Math.round(Me.msThemeManager!.getPanelSizeNotScaled() / 3)
         );
     }
 
@@ -303,14 +307,14 @@ export class MsStatusArea extends Clutter.Actor {
             if (controlledByMS) {
                 const iconSize = this.iconSize();
                 // Scale the icon to the panel size and ensure the spacing is also scaled appropriately
-                actor.marginTop = Math.round(iconSize * 0.5);
-                actor.marginBottom = Math.round(iconSize * 0.5);
+                actor.margin_top = Math.round(iconSize * 0.5);
+                actor.margin_bottom = Math.round(iconSize * 0.5);
                 actor.width = iconSize;
                 actor.height = iconSize;
             } else {
                 // Unset all values. The gnome theme will take care of sizing them now.
-                actor.marginTop = -1;
-                actor.marginBottom = -1;
+                actor.margin_top = -1;
+                actor.margin_bottom = -1;
                 actor.width = -1;
                 actor.height = -1;
             }
@@ -340,7 +344,7 @@ export class MsStatusArea extends Clutter.Actor {
                 (menu._boxPointer as any).oldArrowSideFunction =
                     menu._boxPointer._calculateArrowSide;
                 menu._boxPointer._calculateArrowSide = function () {
-                    return Me.msThemeManager.verticalPanelPosition ===
+                    return Me.msThemeManager!.verticalPanelPosition ===
                         VerticalPanelPositionEnum.LEFT
                         ? St.Side.LEFT
                         : St.Side.RIGHT;
@@ -380,30 +384,22 @@ export class MsStatusArea extends Clutter.Actor {
 
 @registerGObjectClass
 export class MsDateMenuBox extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsDateMenuBox',
     };
-    dateMenu: dateMenu.DateMenuButton;
-    indicatorActor: dateMenu.MessagesIndicator;
+    dateMenu: DateMenu.DateMenuButton;
+    indicatorActor: DateMenu.MessagesIndicator;
     private _wallClock: any;
-    clockLabel: St.Label<
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
-    notificationIcon: St.Icon<
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
-    notificationIconRing: St.Icon<
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
-    dndIcon: St.Icon<
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
+    clockLabel: St.Label;
+    notificationIcon: St.Icon;
+    notificationIconRing: St.Icon;
+    dndIcon: St.Icon;
     private _settings: Gio.Settings;
-    iconDisplay: Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>;
+    iconDisplay: Clutter.Actor;
     dateMenuSignal: number;
     indicatorSignal: number;
 
-    constructor(dateMenu: dateMenu.DateMenuButton) {
+    constructor(dateMenu: DateMenu.DateMenuButton) {
         super({
             x_align: Clutter.ActorAlign.CENTER,
             layout_manager: new Clutter.BinLayout(),
@@ -417,20 +413,20 @@ export class MsDateMenuBox extends St.Widget {
 
         this.notificationIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/bell-symbolic.svg`
+                `${Me.metadata.path}/assets/icons/bell-symbolic.svg`
             ),
         });
 
         this.notificationIconRing = new St.Icon({
             style_class: 'primary',
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/bell-ring-symbolic.svg`
+                `${Me.metadata.path}/assets/icons/bell-ring-symbolic.svg`
             ),
         });
 
         this.dndIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/bell-off-symbolic.svg`
+                `${Me.metadata.path}/assets/icons/bell-off-symbolic.svg`
             ),
         });
 
@@ -442,16 +438,16 @@ export class MsDateMenuBox extends St.Widget {
         this.iconDisplay.add_child(this.notificationIcon);
         this.iconDisplay.add_child(this.notificationIconRing);
         this.iconDisplay.add_child(this.dndIcon);
-        if (Me.msThemeManager.clockHorizontal) {
+        if (Me.msThemeManager!.clockHorizontal) {
             this.add_child(this.iconDisplay);
         } else {
             this.add_child(this.clockLabel);
         }
 
-        const clockHorizontalSignal = Me.msThemeManager.connect(
+        const clockHorizontalSignal = Me.msThemeManager!.connect(
             'clock-horizontal-changed',
             () => {
-                if (Me.msThemeManager.clockHorizontal) {
+                if (Me.msThemeManager!.clockHorizontal) {
                     this.remove_child(this.clockLabel);
                     this.add_child(this.iconDisplay);
                 } else {
@@ -475,7 +471,7 @@ export class MsDateMenuBox extends St.Widget {
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(clockHorizontalSignal);
+            Me.msThemeManager!.disconnect(clockHorizontalSignal);
             this.indicatorActor.disconnect(this.indicatorSignal);
             this._wallClock.disconnect(this.dateMenuSignal);
             delete this._wallClock;
@@ -503,7 +499,7 @@ export class MsDateMenuBox extends St.Widget {
     updateVisibility() {
         const doNotDisturb = !this._settings.get_boolean('show-banners');
         if (this.indicatorActor.visible) {
-            if (Me.msThemeManager.clockHorizontal) {
+            if (Me.msThemeManager!.clockHorizontal) {
                 if (doNotDisturb) {
                     this.dndIcon.show();
                     this.notificationIconRing.hide();
@@ -523,7 +519,7 @@ export class MsDateMenuBox extends St.Widget {
                 this.clockLabel.add_style_class_name('primary');
             }
         } else {
-            if (Me.msThemeManager.clockHorizontal) {
+            if (Me.msThemeManager!.clockHorizontal) {
                 this.notificationIcon.show();
                 this.notificationIconRing.hide();
                 this.dndIcon.hide();

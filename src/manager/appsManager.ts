@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Shell from 'shell';
+import Shell from 'gi://Shell';
 
 export class AppsManager {
     static getApps() {

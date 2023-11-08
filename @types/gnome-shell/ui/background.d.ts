@@ -1,0 +1,1 @@
+export const BackgroundManager: any;

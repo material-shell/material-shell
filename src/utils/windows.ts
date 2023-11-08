@@ -1,8 +1,12 @@
 /** Gnome libs imports */
-const Util = imports.misc.util;
-import * as Meta from 'meta';
+import Meta from 'gi://Meta';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Util from 'resource:///org/gnome/shell/misc/util.js';
+import MaterialShellExtension from 'src/extension';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /* exported updateTitleBarVisibility */
 export const updateTitleBarVisibility = function (

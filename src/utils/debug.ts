@@ -1,8 +1,12 @@
 /** Gnome libs imports */
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const DEBUG = true;
 const FOCUS_ONLY = false;

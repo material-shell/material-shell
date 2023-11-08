@@ -1,8 +1,11 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as Soup from 'soup';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Soup from 'gi://Soup';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
+import MaterialShellExtension from 'src/extension';
 import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
@@ -11,13 +14,15 @@ import {
     gnomeVersionNumber,
     parseVersion,
 } from 'src/utils/shellVersionMatch';
-import { main as Main, messageTray } from 'ui';
-const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
-const { PACKAGE_VERSION } = imports.misc.config;
 
+import { PACKAGE_VERSION } from 'resource:///org/gnome/shell/misc/config.js';
+import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
+import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
+import { Extension } from '../../@types/gnome-shell/extensions/extension';
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const API_SERVER = 'http://api.material-shell.com';
 const beforeGnome43 =
@@ -31,21 +36,21 @@ export class MsNotificationManager extends MsManager {
     }
     check() {
         if (getSettings('tweaks').get_boolean('disable-notifications')) return;
-        let uuid = Me.stateManager.getState('notification-uuid');
+        let uuid = Me.stateManager!.getState('notification-uuid');
         if (!uuid) {
             uuid = GLib.uuid_string_random();
-            Me.stateManager.setState('notification-uuid', uuid);
+            Me.stateManager!.setState('notification-uuid', uuid);
         }
 
-        const previousCheck = Me.stateManager.getState('notification-check')
-            ? new Date(Me.stateManager.getState('notification-check'))
+        const previousCheck = Me.stateManager!.getState('notification-check')
+            ? new Date(Me.stateManager!.getState('notification-check'))
             : new Date();
 
         const message = Soup.Message.new(
             'GET',
             `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}&uuid=${uuid}&gnomeVersion=${PACKAGE_VERSION}&version=${
-                Me.metadata.version
-            }&commit=${Me.metadata.commit}`
+                Me.metadata['version-name']
+            }`
         );
 
         // send the HTTP request and wait for response
@@ -96,7 +101,7 @@ export class MsNotificationManager extends MsManager {
                 }
             );
         }
-        Me.stateManager.setState(
+        Me.stateManager!.setState(
             'notification-check',
             new Date().toISOString()
         );
@@ -126,32 +131,32 @@ interface NotificationResponseItem {
 }
 
 @registerGObjectClass
-class MsNotificationSource extends messageTray.Source {
+class MsNotificationSource extends MessageTray.Source {
     constructor() {
         super('Material Shell');
     }
 
     getIcon() {
         return Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/on-dark-small.svg`
+            `${Me.metadata.path}/assets/icons/on-dark-small.svg`
         );
     }
 }
 
 @registerGObjectClass
-class MsNotification extends messageTray.Notification {
+class MsNotification extends MessageTray.Notification {
     action: { url: string; label: string } | undefined;
     constructor(
-        source: messageTray.Source,
+        source: MessageTray.Source,
         title: string,
         text: string,
         icon: string,
         action: { url: string; label: string } | undefined
     ) {
-        const params: messageTray.NotificationParams = {};
+        const params: MessageTray.NotificationParams = {};
         if (icon) {
             params.gicon = Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/${icon}.svg`
+                `${Me.metadata.path}/assets/icons/${icon}.svg`
             );
         }
         super(source, title, text, params);

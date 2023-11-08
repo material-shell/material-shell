@@ -1,8 +1,12 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
 import { WithSignals } from 'src/utils/gjs';
 
 export interface Signal {

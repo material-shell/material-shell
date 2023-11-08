@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import { ActorBox } from 'clutter';
+import Clutter from 'gi://Clutter';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { TranslationHelper } from 'src/utils/transition';
@@ -190,7 +190,7 @@ export class SplitLayout extends BaseResizeableTilingLayout<SplitLayoutState> {
         return -1;
     }
 
-    tileAll(box?: ActorBox | undefined): void {
+    tileAll(box?: Clutter.ActorBox | undefined): void {
         if (!this.translationHelper.animationInProgress) super.tileAll(box);
     }
 

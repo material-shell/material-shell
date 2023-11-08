@@ -1,18 +1,21 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import * as Animation from 'resource:///org/gnome/shell/ui/animation';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
-import * as St from 'st';
-const Animation = imports.ui.animation;
-
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'AppPlaceholder',
         Signals: {
             activated: {
@@ -35,7 +38,7 @@ export class AppPlaceholder extends St.Widget {
     vertical = true;
     private _spinner: any;
 
-    constructor(icon: St.Widget, textLabel: string) {
+    constructor(icon: Clutter.Actor, textLabel: string) {
         super({
             x_align: Clutter.ActorAlign.FILL,
             y_align: Clutter.ActorAlign.FILL,
@@ -113,7 +116,7 @@ export class AppPlaceholder extends St.Widget {
         });
     }
 
-    setIcon(icon: St.Widget) {
+    setIcon(icon: Clutter.Actor) {
         this.iconContainer.set_child(icon);
     }
 
@@ -138,7 +141,7 @@ export class AppPlaceholder extends St.Widget {
     }
 
     override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
-        switch (keyEvent.keyval) {
+        switch (keyEvent.get_key_symbol()) {
             case Clutter.KEY_Return:
             case Clutter.KEY_KP_Enter:
             case Clutter.KEY_space:

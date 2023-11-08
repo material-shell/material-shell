@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 
 /* exported polyfillClutter, SetAllocation, Allocate, AllocatePreferredSize */
 export function polyfillClutter() {

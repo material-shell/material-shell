@@ -1,11 +1,15 @@
-import * as Gdk from 'gdk';
-import * as Gio from 'gio';
-import * as GObject from 'gobject';
-import * as Gtk from 'gtk';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import MaterialShellExtension from 'src/extension';
+const Me = Extension.lookupByUUID(
+    'material-shell@papyelgringo'
+) as MaterialShellExtension;
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),
