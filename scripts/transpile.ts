@@ -306,7 +306,7 @@ function transpile(ast: BaseNode) {
 glob('build/**/*.js', {}, (er, files) => {
     for (let file of files) {
         let text = fs.readFileSync(file).toString();
-        text = convertImports(text);
+        //text = convertImports(text);
         // Parse it into an AST
         let ast: ASTNode;
         try {

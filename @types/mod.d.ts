@@ -7,7 +7,6 @@ import Gio from 'gi://Gio';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import 'gi://Soup';
-
 import MaterialShellExtension from 'src/extension';
 
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';

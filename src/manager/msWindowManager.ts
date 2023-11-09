@@ -2,7 +2,8 @@
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import {
     buildMetaWindowIdentifier,
     MsWindow,
@@ -20,13 +21,10 @@ import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
 
-import { AuthenticationDialog } from 'resource:///org/gnome/shell/ui/components/polkitAgent.js';
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
+import * as PolkitAgent from 'resource:///org/gnome/shell/ui/components/polkitAgent.js';
+import { Debug } from 'src/utils/debug';
 
 const Signals = imports.signals;
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 export type MetaWindowWithMsProperties = Meta.Window & {
     createdAt?: number;
@@ -250,7 +248,7 @@ export class MsWindowManager extends MsManager {
             if (logged) return;
             logged = true;
             for (const windowActor of actors) {
-                Me.log(
+                Debug.log(
                     `Meta window: ${buildMetaWindowIdentifier(
                         windowActor.meta_window
                     )} title='${
@@ -266,7 +264,7 @@ export class MsWindowManager extends MsManager {
                         msWindow.lifecycleState.type === 'app-placeholder',
                     'MsWindow has no matching info'
                 );
-                Me.log(
+                Debug.log(
                     `MSWindow: ${JSON.stringify(
                         msWindow.lifecycleState.matchingInfo
                     )} waiting=${
@@ -350,7 +348,7 @@ export class MsWindowManager extends MsManager {
                     // and we can skip associating it again.
                     if (msWindow.lifecycleState.type === 'app-placeholder') {
                         logInfoOnce();
-                        Me.log(
+                        Debug.log(
                             `Associating ${buildMetaWindowIdentifier(
                                 windowActor.meta_window
                             )} with ${msWindow.windowIdentifier}`
@@ -364,7 +362,7 @@ export class MsWindowManager extends MsManager {
                     }
                 } else {
                     logInfoOnce();
-                    Me.log(
+                    Debug.log(
                         `Creating a new MsWindow for ${buildMetaWindowIdentifier(
                             windowActor.meta_window
                         )}`
@@ -546,7 +544,7 @@ export class MsWindowManager extends MsManager {
     }
 
     onNewMetaWindow(metaWindow: MetaWindowWithMsProperties) {
-        if (Me.disableInProgress) return;
+        if (Me.instance.disableInProgress) return;
         metaWindow.createdAt = metaWindow.user_time;
         const actor = metaWindow.get_compositor_private() as Meta.WindowActor;
 
@@ -576,7 +574,7 @@ export class MsWindowManager extends MsManager {
     }
 
     onMetaWindowUnManaged(metaWindow: MetaWindowWithMsProperties) {
-        if (Me.disableInProgress || Me.closing) return;
+        if (Me.instance.disableInProgress || Me.instance.closing) return;
         if (metaWindow.msWindow) {
             const msWindow = metaWindow.msWindow;
             msWindow.metaWindowUnManaged(metaWindow);
@@ -693,7 +691,7 @@ export class MsWindowManager extends MsManager {
                     Main.modalActorFocusStack.length > 0 &&
                     Main.modalActorFocusStack[
                         Main.modalActorFocusStack.length - 1
-                    ].actor instanceof AuthenticationDialog;
+                    ].actor instanceof PolkitAgent.AuthenticationDialog;
                 if (isAuthenticationDialogDisplayed) {
                     msWindow.lifecycleState.waitingForAppSince = now;
                 }

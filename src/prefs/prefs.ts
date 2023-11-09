@@ -6,14 +6,10 @@ import Gtk from 'gi://Gtk';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 
-import { Extension } from 'resource:///org/gnome/Shell/Extensions/js/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
-    Me.metadata.dir.get_child('schemas').get_path()!,
+    Me.instance.metadata.dir.get_child('schemas').get_path()!,
     Gio.SettingsSchemaSource.get_default(),
     false
 );
@@ -52,7 +48,7 @@ enum WidgetType {
 class HotkeyDialog extends Gtk.Dialog {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyDialog',
-        Template: Me.metadata.dir.get_child('hotkey_dialog.ui').get_uri(),
+        Template: Me.instance.metadata.dir.get_child('hotkey_dialog.ui').get_uri(),
         Signals: {
             key_press_cb: {
                 param_types: [GObject.TYPE_STRING],
@@ -76,7 +72,7 @@ class HotkeyDialog extends Gtk.Dialog {
 class SettingListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SettingListBoxRow',
-        Template: Me.metadata.dir
+        Template: Me.instance.metadata.dir
             .get_child('setting_list_box_row.ui')
             .get_uri()!,
         Properties: {
@@ -127,7 +123,9 @@ class HotkeyRowData extends GObject.Object {
 class HotkeyListBox extends Gtk.ListBox {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyListBox',
-        Template: Me.metadata.dir.get_child('hotkey_list_box.ui').get_uri()!,
+        Template: Me.instance.metadata.dir
+            .get_child('hotkey_list_box.ui')
+            .get_uri()!,
     };
     settings: Gio.Settings;
 
@@ -207,7 +205,7 @@ class HotkeyListBox extends Gtk.ListBox {
 class HotkeyListBoxRow extends Gtk.ListBoxRow {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'HotkeyListBoxRow',
-        Template: Me.metadata.dir
+        Template: Me.instance.metadata.dir
             .get_child('hotkey_list_box_row.ui')
             .get_uri()!,
         InternalChildren: ['accel_label', 'hotkey_label', 'dialog'],
@@ -287,7 +285,7 @@ class HotkeyListBoxRow extends Gtk.ListBoxRow {
 class SettingCategoryListBox extends Gtk.Box {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SettingCategoryListBox',
-        Template: Me.metadata.dir
+        Template: Me.instance.metadata.dir
             .get_child('setting_category_list_box.ui')
             .get_uri()!,
         Properties: {
@@ -430,7 +428,7 @@ class SettingCategoryListBox extends Gtk.Box {
 class PrefsWidget extends Gtk.Box {
     static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'PrefsWidget',
-        Template: Me.metadata.dir.get_child('prefs.ui').get_uri()!,
+        Template: Me.instance.metadata.dir.get_child('prefs.ui').get_uri()!,
         InternalChildren: ['settings_box'],
     };
 

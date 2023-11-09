@@ -1,14 +1,11 @@
 import Gio from 'gi://Gio';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
 import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import { ResultMeta } from './searchProvider';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 export class AppSearchProvider {
     private _appSys: Shell.AppSystem;

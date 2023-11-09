@@ -12,11 +12,7 @@ import {
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 const beforeGnome44 =
     compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
 interface MatButtonParams extends Partial<St.Widget.ConstructorProperties> {

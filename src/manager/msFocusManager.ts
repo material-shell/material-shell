@@ -3,21 +3,17 @@ import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
 
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
+import { Debug } from 'src/utils/debug';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
-
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
@@ -45,7 +41,7 @@ export class MsFocusManager extends MsManager {
             global.workspace_manager,
             'active-workspace-changed',
             () => {
-                if (!Me.loaded) return;
+                if (!Me.instance.loaded) return;
                 this.focusProtected = true;
                 Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
@@ -64,7 +60,7 @@ export class MsFocusManager extends MsManager {
                 this.lastKeyFocus != this.lastMsWindowFocused &&
                 this.lastKeyFocus.mapped
             ) {
-                Me.logFocus(
+                Debug.logFocus(
                     'Focus Protected, restore focus to ',
                     this.lastKeyFocus
                 );

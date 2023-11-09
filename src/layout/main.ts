@@ -21,11 +21,7 @@ import { MsWorkspaceActor } from './msWorkspace/msWorkspace';
 import * as Background from 'resource:///org/gnome/shell/ui/background.js';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
@@ -45,9 +41,7 @@ export class MsMain extends St.Widget {
 
     constructor() {
         super({});
-        Me.layout! = this;
-        this.panelsVisible =
-            Me.stateManager!.getState('panels-visible') ?? true;
+        this.panelsVisible = Me.stateManager.getState('panels-visible') ?? true;
 
         Main.layoutManager.uiGroup.insert_child_above(
             this,
@@ -58,10 +52,11 @@ export class MsMain extends St.Widget {
         this.aboveContainer = new Clutter.Actor();
         this.add_child(this.aboveContainer);
         this.backgroundGroup = new Meta.BackgroundGroup({});
-        this.setBlurBackground(Me.msThemeManager!.blurBackground);
+        this.setBlurBackground(Me.msThemeManager.blurBackground);
         this.add_child(this.backgroundGroup);
 
         this.primaryMonitorContainer = new PrimaryMonitorContainer(
+            this,
             assertNotNull(this.primaryMonitor),
             this.backgroundGroup,
             {
@@ -71,11 +66,11 @@ export class MsMain extends St.Widget {
         this.add_child(this.primaryMonitorContainer);
         this.panel = this.primaryMonitorContainer.panel;
         this.primaryMonitorContainer.setMsWorkspaceActor(
-            Me.msWorkspaceManager!.getActivePrimaryMsWorkspace()
-                .msWorkspaceActor
+            Me.msWorkspaceManager.getActivePrimaryMsWorkspace().msWorkspaceActor
         );
         for (const externalMonitor of this.externalMonitors) {
             const container = new MonitorContainer(
+                this,
                 externalMonitor,
                 this.backgroundGroup,
                 {
@@ -168,15 +163,15 @@ export class MsMain extends St.Widget {
         });
 
         this.signals.push({
-            from: Me.msThemeManager!,
-            id: Me.msThemeManager!.connect('blur-background-changed', () => {
-                this.setBlurBackground(Me.msThemeManager!.blurBackground);
+            from: Me.msThemeManager,
+            id: Me.msThemeManager.connect('blur-background-changed', () => {
+                this.setBlurBackground(Me.msThemeManager.blurBackground);
             }),
         });
 
         this.signals.push({
-            from: Me.msWorkspaceManager!,
-            id: Me.msWorkspaceManager!.connect(
+            from: Me.msWorkspaceManager,
+            id: Me.msWorkspaceManager.connect(
                 'switch-workspace',
                 (_, from: number, to: number) => {
                     this.onSwitchWorkspace(from, to);
@@ -185,8 +180,8 @@ export class MsMain extends St.Widget {
         });
 
         this.signals.push({
-            from: Me.msWorkspaceManager!,
-            id: Me.msWorkspaceManager!.connect(
+            from: Me.msWorkspaceManager,
+            id: Me.msWorkspaceManager.connect(
                 'dynamic-super-workspaces-changed',
                 () => {
                     this.onMsWorkspacesChanged();
@@ -195,8 +190,8 @@ export class MsMain extends St.Widget {
         });
 
         this.signals.push({
-            from: Me,
-            id: Me.connect('extension-disable', () => {
+            from: Me.instance,
+            id: Me.instance.connect('extension-disable', () => {
                 this.aboveContainer.get_children().forEach((actor) => {
                     this.aboveContainer.remove_child(actor);
                     global.window_group.add_child(actor);
@@ -228,6 +223,7 @@ export class MsMain extends St.Widget {
                 if (externalMonitorsDiff > 0) {
                     for (let i = 0; i < Math.abs(externalMonitorsDiff); i++) {
                         const container = new MonitorContainer(
+                            this,
                             this.externalMonitors[
                                 this.externalMonitors.length -
                                     Math.abs(externalMonitorsDiff) +
@@ -268,12 +264,11 @@ export class MsMain extends St.Widget {
 
     onMsWorkspacesChanged(): void {
         this.primaryMonitorContainer.setMsWorkspaceActor(
-            Me.msWorkspaceManager!.getActivePrimaryMsWorkspace()
-                .msWorkspaceActor
+            Me.msWorkspaceManager.getActivePrimaryMsWorkspace().msWorkspaceActor
         );
         this.monitorsContainer.forEach((container) => {
             const msWorkspace =
-                Me.msWorkspaceManager!.getMsWorkspacesOfMonitorIndex(
+                Me.msWorkspaceManager.getMsWorkspacesOfMonitorIndex(
                     container.monitor.index
                 )[0];
             if (msWorkspace) {
@@ -288,7 +283,7 @@ export class MsMain extends St.Widget {
 
     togglePanelsVisibilities(): void {
         this.panelsVisible = !this.panelsVisible;
-        Me.stateManager!.setState('panels-visible', this.panelsVisible);
+        Me.stateManager.setState('panels-visible', this.panelsVisible);
         this.updatePanelVisibilities();
     }
 
@@ -312,7 +307,7 @@ export class MsMain extends St.Widget {
             }
         });
         this.primaryMonitorContainer.panel.visible = this.panelsVisible;
-        Me.msWorkspaceManager!.refreshMsWorkspaceUI();
+        Me.msWorkspaceManager.refreshMsWorkspaceUI();
     }
 
     updateFullscreenMonitors(): void {
@@ -320,7 +315,7 @@ export class MsMain extends St.Widget {
         for (const container of this.monitorsContainer) {
             container.refreshFullscreen();
         }
-        Me.msWorkspaceManager!.refreshMsWorkspaceUI();
+        Me.msWorkspaceManager.refreshMsWorkspaceUI();
     }
 
     toggleOverview(): void {
@@ -337,10 +332,10 @@ export class MsMain extends St.Widget {
                     },
                 }
             );
-            Me.msWindowManager!.msFocusManager.popModal(this);
+            Me.msWindowManager.msFocusManager.popModal(this);
         } else {
             this.overviewShown = true;
-            Me.msWindowManager!.msFocusManager.pushModal(this, {
+            Me.msWindowManager.msFocusManager.pushModal(this, {
                 actionMode: Shell.ActionMode.OVERVIEW,
             });
 
@@ -394,13 +389,15 @@ export class MonitorContainer extends St.Widget {
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
     monitor!: Main.Monitor;
-
+    layout: MsMain;
     constructor(
+        layout: MsMain,
         monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProperties>
     ) {
         super(params);
+        this.layout = layout;
         this.bgGroup = bgGroup;
 
         this.horizontalPanelSpacer = new St.Widget({
@@ -409,21 +406,21 @@ export class MonitorContainer extends St.Widget {
         this.setMonitor(monitor);
 
         this.add_child(this.horizontalPanelSpacer);
-        const panelSizeSignal = Me.msThemeManager!.connect(
+        const panelSizeSignal = Me.msThemeManager.connect(
             'panel-size-changed',
             () => {
                 this.updateSpacer();
             }
         );
-        const horizontalPanelPositionSignal = Me.msThemeManager!.connect(
+        const horizontalPanelPositionSignal = Me.msThemeManager.connect(
             'horizontal-panel-position-changed',
             () => {
                 this.updateSpacer();
             }
         );
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(panelSizeSignal);
-            Me.msThemeManager!.disconnect(horizontalPanelPositionSignal);
+            Me.msThemeManager.disconnect(panelSizeSignal);
+            Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
             if (this.bgManager) {
                 this.bgManager.destroy();
             }
@@ -439,7 +436,7 @@ export class MonitorContainer extends St.Widget {
     protected setFullscreen(monitorIsFullscreen: boolean) {
         this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
         this.horizontalPanelSpacer.visible =
-            Me.layout!.panelsVisible && !monitorIsFullscreen;
+            this.layout.panelsVisible && !monitorIsFullscreen;
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
@@ -456,8 +453,8 @@ export class MonitorContainer extends St.Widget {
     }
 
     updateSpacer() {
-        const panelHeight = Me.msThemeManager!.getPanelSize();
-        const panelPosition = Me.msThemeManager!.horizontalPanelPosition;
+        const panelHeight = Me.msThemeManager.getPanelSize();
+        const panelPosition = Me.msThemeManager.horizontalPanelPosition;
         this.horizontalPanelSpacer.set_size(this.monitor.width, panelHeight);
         this.horizontalPanelSpacer.set_position(
             0,
@@ -493,7 +490,7 @@ export class MonitorContainer extends St.Widget {
                 );
             }
             if (actor === this.msWorkspaceActor) {
-                const msWorkspaceActorBox = new Clutter.ActorBox(0, 0, 0, 0);
+                const msWorkspaceActorBox = new Clutter.ActorBox();
                 msWorkspaceActorBox.x1 = box.x1;
                 msWorkspaceActorBox.x2 = box.x2;
                 msWorkspaceActorBox.y1 = box.y1;
@@ -522,11 +519,12 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         true
     );
     constructor(
+        layout: MsMain,
         monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProperties>
     ) {
-        super(monitor, bgGroup, params);
+        super(layout, monitor, bgGroup, params);
 
         this.verticalPanelSpacer = new St.Widget({
             style_class: 'VerticalSpacer',
@@ -549,7 +547,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
                 this.msWorkspaceActor.updateUI();
             }
         );
-        const verticalPanelPositionSignal = Me.msThemeManager!.connect(
+        const verticalPanelPositionSignal = Me.msThemeManager.connect(
             'vertical-panel-position-changed',
             () => {
                 this.queue_relayout();
@@ -557,28 +555,28 @@ export class PrimaryMonitorContainer extends MonitorContainer {
             }
         );
         this.connect('destroy', () => {
-            Me.msThemeManager!.disconnect(verticalPanelPositionSignal);
+            Me.msThemeManager.disconnect(verticalPanelPositionSignal);
         });
 
         this.updateSpacer();
     }
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
-        this.panel.visible = Me.layout!.panelsVisible && !monitorIsFullscreen;
+        this.panel.visible = this.layout.panelsVisible && !monitorIsFullscreen;
         this.verticalPanelSpacer.visible =
-            Me.layout!.panelsVisible && !monitorIsFullscreen;
+            this.layout.panelsVisible && !monitorIsFullscreen;
         super.setFullscreen(monitorIsFullscreen);
     }
 
     setTranslation(prevActor: Clutter.Actor, nextActor: Clutter.Actor) {
         const indexOfPrevActor =
-            Me.msWorkspaceManager!.primaryMsWorkspaces.findIndex(
+            Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
                 (msWorkspace) => {
                     return msWorkspace.msWorkspaceActor === prevActor;
                 }
             );
         const indexOfNextActor =
-            Me.msWorkspaceManager!.primaryMsWorkspaces.findIndex(
+            Me.msWorkspaceManager.primaryMsWorkspaces.findIndex(
                 (msWorkspace) => {
                     return msWorkspace.msWorkspaceActor === nextActor;
                 }
@@ -586,7 +584,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         prevActor.height = nextActor.height = this.height;
         this.translationHelper.setTranslation(
             [nextActor],
-            Me.msWorkspaceManager!.primaryMsWorkspaces.map(
+            Me.msWorkspaceManager.primaryMsWorkspaces.map(
                 (msWorkspace) => msWorkspace.msWorkspaceActor
             ),
             indexOfNextActor > indexOfPrevActor ? 1 : -1
@@ -610,8 +608,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     updateSpacer() {
         super.updateSpacer();
         if (this.verticalPanelSpacer) {
-            const panelWidth = Me.msThemeManager!.getPanelSize();
-            const panelPosition = Me.msThemeManager!.verticalPanelPosition;
+            const panelWidth = Me.msThemeManager.getPanelSize();
+            const panelPosition = Me.msThemeManager.verticalPanelPosition;
             this.verticalPanelSpacer.set_size(panelWidth, this.monitor.height);
             this.verticalPanelSpacer.set_position(
                 panelPosition === VerticalPanelPositionEnum.LEFT
@@ -626,8 +624,8 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         this.set_allocation(box);
         const themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
-        const panelBox = new Clutter.ActorBox(0, 0, 0, 0);
-        const panelPosition = Me.msThemeManager!.verticalPanelPosition;
+        const panelBox = new Clutter.ActorBox();
+        const panelPosition = Me.msThemeManager.verticalPanelPosition;
         if (this.panel) {
             const panelWidth = this.panel.get_preferred_width(-1)[1];
             panelBox.x1 =
@@ -640,13 +638,13 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         }
 
         const msWorkspaceActorBox = box.copy();
-        if (this.panel && this.panel.visible && Me.layout!.panelsVisible) {
+        if (this.panel && this.panel.visible && this.layout.panelsVisible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
-                    msWorkspaceActorBox.x1 + Me.msThemeManager!.getPanelSize();
+                    msWorkspaceActorBox.x1 + Me.msThemeManager.getPanelSize();
             } else {
                 msWorkspaceActorBox.x2 =
-                    msWorkspaceActorBox.x2 - Me.msThemeManager!.getPanelSize();
+                    msWorkspaceActorBox.x2 - Me.msThemeManager.getPanelSize();
             }
         }
 

@@ -11,11 +11,8 @@ import { getSettings } from 'src/utils/settings';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 
 @registerGObjectClass
 export class BaseTilingLayout<
@@ -36,7 +33,7 @@ export class BaseTilingLayout<
             state
         );
         this.icon = Gio.icon_new_for_string(
-            `${Me.metadata.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
+            `${Me.instance.metadata.path}/assets/icons/tiling/${this._state.key}-symbolic.svg`
         );
         this.msWorkspace = msWorkspace;
         this.themeSettings = getSettings('theme');
@@ -393,7 +390,7 @@ export class BaseTilingLayout<
             try {
                 signal.from.disconnect(signal.id);
             } catch (error) {
-                Me.log(
+                Debug.log(
                     `Failed to disconnect signal ${signal.id} from ${
                         signal.from
                     } ${
@@ -402,7 +399,7 @@ export class BaseTilingLayout<
                 );
             }
         });
-        if (!Me.disableInProgress) {
+        if (!Me.instance.disableInProgress) {
             this.msWorkspace.tileableList.forEach((tileable) => {
                 this.restoreTileable(tileable);
             });

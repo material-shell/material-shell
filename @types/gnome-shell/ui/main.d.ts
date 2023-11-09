@@ -6,6 +6,7 @@ import type Pango from '../../gir-generated/pango-1.0.js';
 import type Shell from '../../gir-generated/shell-13.js';
 import type St from '../../gir-generated/st-13.js';
 
+import * as ExtensionSystem from 'resource:///org/gnome/shell/ui/extensionSystem.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
 
@@ -13,7 +14,6 @@ import {
     IntroducedInGnome,
     RemovedInGnome,
 } from '../../../src/utils/shellVersionMatch';
-import { Extension } from '../extensions/extension.js';
 import { WindowManager } from './windowManager.js';
 
 declare module 'meta' {
@@ -146,7 +146,7 @@ export const sessionMode: SessionMode;
 export const overview: Overview;
 export const messageTray: MessageTray.MessageTray;
 export const uiGroup: UiActor;
-export const extensionManager: ExtensionManager;
+export const extensionManager: ExtensionSystem.ExtensionManager;
 export const panel: Panel.Panel;
 
 export function pushModal(
@@ -166,22 +166,6 @@ export function _findModal():
 
 export function loadTheme(): void;
 export function reloadThemeResource(): void;
-
-export class ExtensionManager {
-    _callExtensionEnable: any;
-
-    lookup(uuid: string):
-        | {
-              uuid: string;
-              stateObj: Extension;
-              path: string;
-              metadata: {
-                  'settings-schema': string;
-              };
-          }
-        | undefined;
-    disableExtension(uuid: string): boolean;
-}
 
 export class BoxPointer extends St.Widget {
     _calculateArrowSide(arrowSide: St.Side): St.Side;

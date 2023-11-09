@@ -5,11 +5,7 @@ import Gtk from 'gi://Gtk';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { ShellVersionMatch } from 'src/utils/shellVersionMatch';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),

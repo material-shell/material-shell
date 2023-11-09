@@ -5,17 +5,12 @@ import Gio from 'gi://Gio';
 import Meta from 'gi://Meta';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
 import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
+import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import { MsManager } from './msManager';
-
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
@@ -81,7 +76,9 @@ export class MsThemeManager extends MsManager {
         this.theme = this.themeContext.get_theme();
         this.themeSettings = getSettings('theme');
         this.themeFile = Gio.file_new_for_path(
-            `${GLib.get_user_cache_dir()}/${Me.metadata.uuid}-theme.css`
+            `${GLib.get_user_cache_dir()}/${
+                Me.instance.metadata.uuid
+            }-theme.css`
         );
         this.themeValue = this.themeSettings.get_string('theme')!;
         this.primary = this.themeSettings.get_string('primary-color')!;
@@ -98,7 +95,7 @@ export class MsThemeManager extends MsManager {
             { leading: false }
         );
         this.observe(this.themeContext, 'changed', () => {
-            Me.log('theme changed');
+            Debug.log('theme changed');
             this.theme = this.themeContext.get_theme();
 
             if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
@@ -294,7 +291,7 @@ export class MsThemeManager extends MsManager {
 
     async buildThemeStylesheetToFile(file: Gio.File) {
         const originThemeFile = Gio.file_new_for_path(
-            `${Me.metadata.path}/style-${this.themeValue}-theme.css`
+            `${Me.instance.metadata.path}/style-${this.themeValue}-theme.css`
         );
         let content = await this.readFileContent(originThemeFile);
         content = content.replace(/#3f51b5/g, this.primary); // color-primary
@@ -329,7 +326,7 @@ export class MsThemeManager extends MsManager {
     destroy() {
         super.destroy();
         // Do not remove the stylesheet in during locking disable
-        if (!Me.locked) {
+        if (!Me.instance.locked) {
             this.unloadStylesheet();
         }
     }

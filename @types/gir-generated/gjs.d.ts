@@ -6,11 +6,11 @@
  */
 import './ambient.d.ts';
 
-import type GObject from './gobject-2.0.js';
-import type GLib from './glib-2.0.js';
-import gettext from './gettext.js';
-import system from './system.js';
 import cairo from './cairo.js';
+import gettext from './gettext.js';
+import type GLib from './glib-2.0.js';
+import type GObject from './gobject-2.0.js';
+import system from './system.js';
 
 // https://gitlab.gnome.org/GNOME/gjs/-/blob/1.72.0/modules/script/package.js
 declare namespace package {

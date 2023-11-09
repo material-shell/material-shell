@@ -21,11 +21,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 const isTileableItem = (obj: any): obj is TileableItem => {
     return obj instanceof TileableItem;
@@ -226,7 +222,7 @@ export class TaskBar extends St.Widget {
             item = new IconTaskBarItem(
                 tileable,
                 Gio.icon_new_for_string(
-                    `${Me.metadata.path}/assets/icons/plus-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/plus-symbolic.svg`
                 )
             );
         }
@@ -252,12 +248,12 @@ export class TaskBar extends St.Widget {
 
         if (activeItem) {
             this.taskActiveIndicator.show();
-            const taskActiveIndicatorBox = new Clutter.ActorBox(
-                activeItem.x,
-                activeItem.x + activeItem.width,
-                contentBox.get_height() - this.taskActiveIndicator.height,
-                contentBox.get_height()
-            );
+            const taskActiveIndicatorBox = new Clutter.ActorBox();
+            taskActiveIndicatorBox.x1 = activeItem.x;
+            taskActiveIndicatorBox.x2 = activeItem.x + activeItem.width;
+            taskActiveIndicatorBox.y1 =
+                contentBox.get_height() - this.taskActiveIndicator.height;
+            taskActiveIndicatorBox.y2 = contentBox.get_height();
             this.taskActiveIndicator.allocate(taskActiveIndicatorBox);
         } else {
             this.taskActiveIndicator.hide();
@@ -438,7 +434,7 @@ export class TileableItem extends TaskBarItem {
                 this.unmakePersistentAction.show();
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/pin-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/pin-symbolic.svg`
             )
         );
 
@@ -453,7 +449,7 @@ export class TileableItem extends TaskBarItem {
                 this.unmakePersistentAction.hide();
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/pin-off-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/pin-off-symbolic.svg`
             )
         );
 
@@ -463,7 +459,7 @@ export class TileableItem extends TaskBarItem {
                 this.emit('close-clicked');
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/close-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/close-symbolic.svg`
             )
         );
 
@@ -501,7 +497,7 @@ export class TileableItem extends TaskBarItem {
         this.closeIcon = new St.Icon({
             style_class: 'task-small-icon',
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/close-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/close-symbolic.svg`
             ),
         });
         this.closeButton = new St.Button({
@@ -515,7 +511,7 @@ export class TileableItem extends TaskBarItem {
         this.persistentIcon = new St.Icon({
             style_class: 'task-small-icon',
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/pin-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/pin-symbolic.svg`
             ),
         });
 

@@ -3,15 +3,10 @@ import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
-import * as Animation from 'resource:///org/gnome/shell/ui/animation';
+import * as Animation from 'resource:///org/gnome/shell/ui/animation.js';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 @registerGObjectClass
 export class AppPlaceholder extends St.Widget {

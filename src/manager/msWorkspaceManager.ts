@@ -7,7 +7,8 @@ import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as WindowManager from 'resource:///org/gnome/shell/ui/windowManager.js';
 
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import {
     MsWorkspace,
@@ -18,22 +19,8 @@ import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
-import {
-    compareVersions,
-    gnomeVersionNumber,
-    parseVersion,
-} from 'src/utils/shellVersionMatch';
 
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import { MetaWindowWithMsProperties } from './msWindowManager';
-
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
-const WorkspaceTracker = WindowManager.WorkspaceTracker;
-const beforeGnome44 =
-    compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
 
 interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
@@ -72,104 +59,109 @@ export class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         this.workspaceTracker = Main.wm._workspaceTracker;
-        (WorkspaceTracker.prototype as any)._oldCheckWorkspaces =
-            WorkspaceTracker.prototype._checkWorkspaces;
-        WorkspaceTracker.prototype._checkWorkspaces = function () {
-            const workspaceManager = global.workspace_manager;
-            let i;
-            const emptyWorkspaces: boolean[] = [];
-            if (!Meta.prefs_get_dynamic_workspaces()) {
-                this._checkWorkspacesId = 0;
-                const msWorkspaceManager = global.ms.msWorkspaceManager!;
+        (
+            Main.wm._workspaceTracker.constructor.prototype as any
+        )._oldCheckWorkspaces =
+            Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces;
+        Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces =
+            function () {
+                const workspaceManager = global.workspace_manager;
+                let i;
+                const emptyWorkspaces: boolean[] = [];
+                if (!Meta.prefs_get_dynamic_workspaces()) {
+                    this._checkWorkspacesId = 0;
+                    const msWorkspaceManager = global.ms.msWorkspaceManager!;
 
-                while (
-                    workspaceManager.get_n_workspaces() <
-                    msWorkspaceManager.primaryMsWorkspaces.length
-                ) {
-                    const workspaceIndex =
-                        msWorkspaceManager.msWorkspaceList.indexOf(
-                            msWorkspaceManager.primaryMsWorkspaces[
-                                msWorkspaceManager.primaryMsWorkspaces.length -
-                                    1
-                            ]
+                    while (
+                        workspaceManager.get_n_workspaces() <
+                        msWorkspaceManager.primaryMsWorkspaces.length
+                    ) {
+                        const workspaceIndex =
+                            msWorkspaceManager.msWorkspaceList.indexOf(
+                                msWorkspaceManager.primaryMsWorkspaces[
+                                    msWorkspaceManager.primaryMsWorkspaces
+                                        .length - 1
+                                ]
+                            );
+
+                        msWorkspaceManager.removeMsWorkspaceAtIndex(
+                            workspaceIndex
                         );
+                    }
 
-                    msWorkspaceManager.removeMsWorkspaceAtIndex(workspaceIndex);
+                    return false;
                 }
 
-                return false;
-            }
+                for (i = 0; i < this._workspaces.length; i++) {
+                    const lastRemoved = this._workspaces[i]._lastRemovedWindow;
+                    if (
+                        (lastRemoved &&
+                            (lastRemoved.get_window_type() ==
+                                Meta.WindowType.SPLASHSCREEN ||
+                                lastRemoved.get_window_type() ==
+                                    Meta.WindowType.DIALOG ||
+                                lastRemoved.get_window_type() ==
+                                    Meta.WindowType.MODAL_DIALOG)) ||
+                        this._workspaces[i]._keepAliveId
+                    )
+                        emptyWorkspaces[i] = false;
+                    else emptyWorkspaces[i] = true;
+                }
 
-            for (i = 0; i < this._workspaces.length; i++) {
-                const lastRemoved = this._workspaces[i]._lastRemovedWindow;
-                if (
-                    (lastRemoved &&
-                        (lastRemoved.get_window_type() ==
-                            Meta.WindowType.SPLASHSCREEN ||
-                            lastRemoved.get_window_type() ==
-                                Meta.WindowType.DIALOG ||
-                            lastRemoved.get_window_type() ==
-                                Meta.WindowType.MODAL_DIALOG)) ||
-                    this._workspaces[i]._keepAliveId
-                )
-                    emptyWorkspaces[i] = false;
-                else emptyWorkspaces[i] = true;
-            }
+                const sequences =
+                    Shell.WindowTracker.get_default().get_startup_sequences();
+                for (i = 0; i < sequences.length; i++) {
+                    const index = sequences[i].get_workspace();
+                    if (index >= 0 && index <= workspaceManager.n_workspaces)
+                        emptyWorkspaces[index] = false;
+                }
 
-            const sequences =
-                Shell.WindowTracker.get_default().get_startup_sequences();
-            for (i = 0; i < sequences.length; i++) {
-                const index = sequences[i].get_workspace();
-                if (index >= 0 && index <= workspaceManager.n_workspaces)
-                    emptyWorkspaces[index] = false;
-            }
+                const msWindowList = global.ms.msWindowManager!.msWindowList;
+                for (i = 0; i < msWindowList.length; i++) {
+                    const msWindow = msWindowList[i];
 
-            const msWindowList = global.ms.msWindowManager!.msWindowList;
-            for (i = 0; i < msWindowList.length; i++) {
-                const msWindow = msWindowList[i];
+                    if (
+                        msWindow.msWorkspace.monitor !=
+                        Main.layoutManager.primaryMonitor
+                    )
+                        continue;
+                    const workspace =
+                        global.ms.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
+                            msWindow.msWorkspace
+                        );
+                    assert(workspace !== null, 'Workspace does not exist');
+                    emptyWorkspaces[workspace.index()] = false;
+                }
 
-                if (
-                    msWindow.msWorkspace.monitor !=
-                    Main.layoutManager.primaryMonitor
-                )
-                    continue;
-                const workspace =
-                    global.ms.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
-                        msWindow.msWorkspace
-                    );
-                assert(workspace !== null, 'Workspace does not exist');
-                emptyWorkspaces[workspace.index()] = false;
-            }
-
-            // If we don't have an empty workspace at the end, add one
-            if (!emptyWorkspaces[emptyWorkspaces.length - 1]) {
-                workspaceManager.append_new_workspace(
-                    false,
-                    global.get_current_time()
-                );
-                emptyWorkspaces.push(true);
-            }
-
-            const lastIndex = emptyWorkspaces.length - 1;
-            const lastEmptyIndex = emptyWorkspaces.lastIndexOf(false) + 1;
-            const activeWorkspaceIndex =
-                workspaceManager.get_active_workspace_index();
-            emptyWorkspaces[activeWorkspaceIndex] = false;
-
-            // Delete empty workspaces except for the last one; do it from the end
-            // to avoid index changes
-            for (i = lastIndex; i >= 0; i--) {
-                if (emptyWorkspaces[i] && i != lastEmptyIndex) {
-                    workspaceManager.remove_workspace(
-                        this._workspaces[i],
+                // If we don't have an empty workspace at the end, add one
+                if (!emptyWorkspaces[emptyWorkspaces.length - 1]) {
+                    workspaceManager.append_new_workspace(
+                        false,
                         global.get_current_time()
                     );
+                    emptyWorkspaces.push(true);
                 }
-            }
 
-            this._checkWorkspacesId = 0;
-            return false;
-        };
+                const lastIndex = emptyWorkspaces.length - 1;
+                const lastEmptyIndex = emptyWorkspaces.lastIndexOf(false) + 1;
+                const activeWorkspaceIndex =
+                    workspaceManager.get_active_workspace_index();
+                emptyWorkspaces[activeWorkspaceIndex] = false;
+
+                // Delete empty workspaces except for the last one; do it from the end
+                // to avoid index changes
+                for (i = lastIndex; i >= 0; i--) {
+                    if (emptyWorkspaces[i] && i != lastEmptyIndex) {
+                        workspaceManager.remove_workspace(
+                            this._workspaces[i],
+                            global.get_current_time()
+                        );
+                    }
+                }
+
+                this._checkWorkspacesId = 0;
+                return false;
+            };
 
         // If a _queueCheckWorkspaces is already pending it's will would use the previous _checkWorkspaces method we need to kill it and add a new one
         if (this.workspaceTracker._checkWorkspacesId !== 0) {
@@ -242,10 +234,11 @@ export class MsWorkspaceManager extends MsManager {
 
     destroy() {
         super.destroy();
-        WorkspaceTracker.prototype._checkWorkspaces = (
-            WorkspaceTracker.prototype as any
+        WindowManager.WorkspaceTracker.prototype._checkWorkspaces = (
+            WindowManager.WorkspaceTracker.prototype as any
         )._oldCheckWorkspaces;
-        delete (WorkspaceTracker.prototype as any)._oldCheckWorkspaces;
+        delete (WindowManager.WorkspaceTracker.prototype as any)
+            ._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
             const workspace = this.workspaceManager.get_workspace_by_index(

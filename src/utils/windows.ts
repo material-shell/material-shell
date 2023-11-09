@@ -1,12 +1,8 @@
 /** Gnome libs imports */
 import Meta from 'gi://Meta';
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Util from 'resource:///org/gnome/shell/misc/util.js';
-import MaterialShellExtension from 'src/extension';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { Debug } from './debug';
 
 /* exported updateTitleBarVisibility */
 export const updateTitleBarVisibility = function (
@@ -43,7 +39,7 @@ export const setTitleBarVisibility = function (
             `2, 0, ${visible ? '1' : '0'} 0, 0`,
         ]);
     } catch (e) {
-        Me.logFocus('xprop', e);
+        Debug.logFocus('xprop', e);
     }
 
     metaWindow.titleBarVisible = visible;

@@ -5,12 +5,6 @@ import { AppSearchProvider } from './AppSearchProvider';
 import { RecentSearchProvider } from './RecentSearchProvider';
 import { RemoteSearchProvider } from './RemoteSearchProvider';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
-
 export interface RawMeta {
     [prop: string]: GLib.Variant;
 }

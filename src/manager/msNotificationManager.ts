@@ -5,7 +5,7 @@ import Gio from 'gi://Gio';
 import Soup from 'gi://Soup';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
 import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
@@ -18,11 +18,7 @@ import {
 import { PACKAGE_VERSION } from 'resource:///org/gnome/shell/misc/config.js';
 import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { Debug } from 'src/utils/debug';
 
 const API_SERVER = 'http://api.material-shell.com';
 const beforeGnome43 =
@@ -49,7 +45,7 @@ export class MsNotificationManager extends MsManager {
         const message = Soup.Message.new(
             'GET',
             `${API_SERVER}/notifications?lastCheck=${previousCheck.toISOString()}&uuid=${uuid}&gnomeVersion=${PACKAGE_VERSION}&version=${
-                Me.metadata['version-name']
+                Me.instance.metadata['version-name']
             }`
         );
 
@@ -58,7 +54,7 @@ export class MsNotificationManager extends MsManager {
         if (beforeGnome43) {
             this.httpSession.queue_message(message, () => {
                 if (message.status_code != Soup.KnownStatusCode.OK) {
-                    Me.log(
+                    Debug.log(
                         `error fetching notification: ${message.status_code.toString()}`
                     );
                     return;
@@ -68,7 +64,7 @@ export class MsNotificationManager extends MsManager {
                 try {
                     notifications = JSON.parse(message.response_body.data);
                 } catch (e: unknown) {
-                    Me.log(`error unpacking notification: ${e}`);
+                    Debug.log(`error unpacking notification: ${e}`);
                     return;
                 }
                 this.showNotifications(notifications);
@@ -93,7 +89,7 @@ export class MsNotificationManager extends MsManager {
                                 response
                             ) as NotificationResponseItem[];
                         } catch (e: unknown) {
-                            Me.log(`error unpacking notification: ${e}`);
+                            Debug.log(`error unpacking notification: ${e}`);
                             return;
                         }
                         this.showNotifications(notifications);
@@ -138,7 +134,7 @@ class MsNotificationSource extends MessageTray.Source {
 
     getIcon() {
         return Gio.icon_new_for_string(
-            `${Me.metadata.path}/assets/icons/on-dark-small.svg`
+            `${Me.instance.metadata.path}/assets/icons/on-dark-small.svg`
         );
     }
 }
@@ -156,7 +152,7 @@ class MsNotification extends MessageTray.Notification {
         const params: MessageTray.NotificationParams = {};
         if (icon) {
             params.gicon = Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/${icon}.svg`
+                `${Me.instance.metadata.path}/assets/icons/${icon}.svg`
             );
         }
         super(source, title, text, params);

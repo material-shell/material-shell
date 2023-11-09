@@ -12,12 +12,9 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalHandle } from 'src/utils/signal';
 import { MatButton } from 'src/widget/material/button';
 
+import { formatDateWithCFormatString } from 'resource:///org/gnome/shell/misc/dateUtils.js';
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 /* exported MsApplicationLauncher */
 
@@ -215,7 +212,10 @@ export class MsApplicationButtonContainer extends St.Widget {
                         N_('%A %B %-d')
                     )!;
                     // TODO: toLocaleFormat is deprecated
-                    dateLabel.text = date.toLocaleFormat(dateFormat);
+                    dateLabel.text = formatDateWithCFormatString(
+                        date,
+                        dateFormat
+                    );
                 }
             };
 

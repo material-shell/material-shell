@@ -9,11 +9,7 @@ import {
     ResultMeta,
 } from './searchProvider/searchProvider';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class ProviderResultList extends St.BoxLayout {
@@ -51,7 +47,7 @@ export class ProviderResultList extends St.BoxLayout {
             new St.Icon({
                 icon_size: 32,
                 gicon: Gio.icon_new_for_string(
-                    `${Me.metadata.path}/assets/icons/chevron-down-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/chevron-down-symbolic.svg`
                 ),
             }),
             '',

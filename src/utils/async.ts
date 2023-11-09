@@ -2,12 +2,6 @@ import GLib from 'gi://GLib';
 import { assert } from './assert';
 import { logAsyncException } from './log';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
-
 export class Async {
     static timeoutIdList = [] as number[];
 

@@ -3,7 +3,8 @@ import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
@@ -13,13 +14,7 @@ import { Async } from 'src/utils/async';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor, throttle } from 'src/utils/index';
 
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
 import { MsWindowManager } from './msWindowManager';
-
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 interface CurrentDrag {
     msWindow: MsWindow;

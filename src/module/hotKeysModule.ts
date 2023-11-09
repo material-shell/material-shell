@@ -10,11 +10,8 @@ import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 
 /* exported HotKeysModule, KeyBindingAction */
 
@@ -553,7 +550,7 @@ export class HotKeysModule {
     addKeybinding(name: string) {
         const actionCallback = this.actionNameToActionMap.get(name);
         if (actionCallback === undefined) {
-            Me.log(
+            Debug.log(
                 'Error: Cannot add keybinding. No such action exists: ' + name
             );
             return;

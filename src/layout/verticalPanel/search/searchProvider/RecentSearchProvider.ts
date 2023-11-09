@@ -2,11 +2,7 @@ import St from 'gi://St';
 import { assert } from 'src/utils/assert';
 import { ResultMeta } from './searchProvider';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 export type HistoryItem = {
     provider_id: string;

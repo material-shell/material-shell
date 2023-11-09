@@ -17,11 +17,8 @@ import { getSettings } from 'src/utils/settings';
 import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 
 /** Maximum number of previously focused windows to keep track of.
  * The history should be kept reasonably short to avoid memory leaks and because it makes no sense to remember user actions too long ago.
@@ -291,7 +288,7 @@ export class MsWorkspace extends WithSignals {
         try {
             return await this.addMsWindowUnchecked(msWindow, focus, insert);
         } catch (e) {
-            return Me.logWithStackTrace('addMsWindowUnchecked failed');
+            return Debug.logWithStackTrace('addMsWindowUnchecked failed');
         }
     }
 

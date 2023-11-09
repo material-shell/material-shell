@@ -3,7 +3,8 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Meta from 'gi://Meta';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import MaterialShellExtension from 'src/extension';
+import { default as Me } from 'src/extension';
+
 import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { GridLayout } from 'src/layout/msWorkspace/tilingLayouts/custom/grid';
@@ -19,13 +20,6 @@ import { MaximizeLayout } from 'src/layout/msWorkspace/tilingLayouts/maximize';
 import { SplitLayout } from 'src/layout/msWorkspace/tilingLayouts/split';
 import { MsManager } from 'src/manager/msManager';
 import { getSettings } from 'src/utils/settings';
-
-import { Extension } from '../../@types/gnome-shell/extensions/extension';
-
-/** Extension imports */
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 type ExtractState<L> = L extends BaseTilingLayout<infer S> ? S : never;
 

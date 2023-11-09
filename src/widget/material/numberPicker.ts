@@ -6,11 +6,7 @@ import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 export interface NumberPickerParams {
     step: number;
@@ -52,7 +48,7 @@ export class MatNumberPicker extends St.BoxLayout {
         );
         this.minIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/minus-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/minus-symbolic.svg`
             ),
         });
         this.minButton = new St.Button({
@@ -63,7 +59,7 @@ export class MatNumberPicker extends St.BoxLayout {
         });
         this.plusIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/plus-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/plus-symbolic.svg`
             ),
         });
         this.plusButton = new St.Button({

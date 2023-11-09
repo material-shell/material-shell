@@ -1,8 +1,4 @@
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
@@ -27,6 +23,7 @@ import { set_style_class } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
 
+import { Debug } from 'src/utils/debug';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
@@ -1177,7 +1174,7 @@ export class MsWindow extends Clutter.Actor {
         );
         // If it's neither the MainMetaWindow or a Dialog we ignore, but this shouldn't happen
         if (!isMainMetaWindow && !dialog) {
-            Me.log('Cannot find the window which was unmanaged');
+            Debug.log('Cannot find the window which was unmanaged');
             return;
         }
         if (dialog) {

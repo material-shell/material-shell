@@ -18,17 +18,11 @@ import { DisableIncompatibleExtensionsModule } from 'src/module/disableIncompati
 import { HotKeysModule } from 'src/module/hotKeysModule';
 import { OverrideModule } from 'src/module/overrideModule';
 import { RequiredSettingsModule } from 'src/module/requiredSettingsModule';
-import * as debug from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 import { Async } from './utils/async';
 import { polyfillClutter } from './utils/compatibility';
+import { Debug } from './utils/debug';
 import { WithSignals } from './utils/gjs';
-
-/* import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension; */
 
 const Signals = imports.signals;
 
@@ -45,6 +39,41 @@ export default class MaterialShellExtension
     extends Extension
     implements WithSignals
 {
+    static get instance() {
+        return Extension.lookupByUUID(
+            'material-shell@papyelgringo'
+        ) as MaterialShellExtension;
+    }
+
+    static get stateManager() {
+        return this.instance.stateManager!;
+    }
+
+    static get layoutManager() {
+        return this.instance.layoutManager!;
+    }
+    static get tooltipManager() {
+        return this.instance.tooltipManager!;
+    }
+    static get msWindowManager() {
+        return this.instance.msWindowManager!;
+    }
+    static get msWorkspaceManager() {
+        return this.instance.msWorkspaceManager!;
+    }
+    static get msNotificationManager() {
+        return this.instance.msNotificationManager!;
+    }
+    static get msThemeManager() {
+        return this.instance.msThemeManager!;
+    }
+    static get layout() {
+        return this.instance.layout!;
+    }
+    static get hotKeysModule() {
+        return this.instance.hotKeysModule!;
+    }
+
     disableInProgress: boolean | undefined;
     emit(name: string, ...params: any[]): void {
         throw new Error('Method not implemented.');
@@ -86,7 +115,7 @@ export default class MaterialShellExtension
             return;
         }
         polyfillClutter();
-        debug.initDebug();
+        new Debug();
         _closingId = global.display.connect('closing', () => {
             this.closing = true;
         });
@@ -124,7 +153,7 @@ export default class MaterialShellExtension
                 } else {
                     this.msWorkspaceManager.initState();
                 }
-                new MsMain();
+                this.layout = new MsMain();
                 this.msWindowManager.handleExistingMetaWindows();
                 if (Main.layoutManager._startingUp) {
                     _startupPreparedId = Main.layoutManager.connect(
@@ -250,19 +279,6 @@ export default class MaterialShellExtension
         });
         splashScreens = [];
         splashscreenCalled = false;
-    }
-
-    log(...args: any[]) {
-        throw new Error('Method not implemented.');
-    }
-    logWithStackTrace(...args: any[]) {
-        throw new Error('Method not implemented.');
-    }
-    logFocus(...args: any[]) {
-        throw new Error('Method not implemented.');
-    }
-    logBlank() {
-        throw new Error('Method not implemented.');
     }
 }
 Signals.addSignalMethods(MaterialShellExtension.prototype);

@@ -19,11 +19,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { MsWorkspace } from '../msWorkspace';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class LayoutSwitcher extends St.BoxLayout {
@@ -205,7 +201,7 @@ export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
         this._icon = new St.Icon({
             style_class: 'popup-menu-icon',
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/tiling/${layoutConstructor.state.key}-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/tiling/${layoutConstructor.state.key}-symbolic.svg`
             ),
             x_align: Clutter.ActorAlign.END,
         });
@@ -312,14 +308,14 @@ export class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
     ) {
         const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(
-            `${Me.metadata.path}/assets/icons/category/settings-symbolic.svg`
+            `${Me.instance.metadata.path}/assets/icons/category/settings-symbolic.svg`
         );
         super(editText, editIcon, params);
         this.editText = editText;
         this.editIcon = editIcon;
         this.confirmText = _('Confirm layouts');
         this.confirmIcon = Gio.icon_new_for_string(
-            `${Me.metadata.path}/assets/icons/check-symbolic.svg`
+            `${Me.instance.metadata.path}/assets/icons/check-symbolic.svg`
         );
         this.menu = menu;
         this.editable = false;

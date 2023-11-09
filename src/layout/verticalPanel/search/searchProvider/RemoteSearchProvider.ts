@@ -3,8 +3,7 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import Gio from 'gi://Gio';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
+
 import { assertNotNull } from 'src/utils/assert';
 import { logAsyncException, mslog } from 'src/utils/log';
 import {
@@ -13,9 +12,6 @@ import {
     parseVersion,
 } from 'src/utils/shellVersionMatch';
 import { RawMeta, ResultMeta, UnpackedMeta } from './searchProvider';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 import * as FileUtils from 'resource:///org/gnome/shell/misc/fileUtils.js';
 

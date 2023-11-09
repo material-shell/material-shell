@@ -1,9 +1,3 @@
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
-
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 /** Extension imports */

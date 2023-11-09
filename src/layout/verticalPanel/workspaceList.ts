@@ -18,11 +18,7 @@ import { ReorderableList } from 'src/widget/reorderableList';
 import { MsWorkspace } from '../msWorkspace/msWorkspace';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
@@ -171,12 +167,11 @@ export class WorkspaceList extends St.Widget {
                 const contentBox = themeNode.get_content_box(box);
                 const width = this.workspaceActiveIndicator.get_width();
                 const height = this.workspaceActiveIndicator.get_height();
-                const actorBox = new Clutter.ActorBox(
-                    contentBox.x1,
-                    contentBox.x1 + width,
-                    contentBox.y1,
-                    contentBox.y1 + height
-                );
+                const actorBox = new Clutter.ActorBox();
+                actorBox.x1 = contentBox.x1;
+                actorBox.x2 = contentBox.x1 + width;
+                actorBox.y1 = contentBox.y1;
+                actorBox.y2 = contentBox.y1 + height;
 
                 this.workspaceActiveIndicator.allocate(actorBox);
             } else {
@@ -307,7 +302,7 @@ export class WorkspaceButton extends MatButton {
                 Me.msThemeManager!.panelIconStyle = PanelIconStyleEnum.HYBRID;
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/radiobox-${
+                `${Me.instance.metadata.path}/assets/icons/radiobox-${
                     Me.msThemeManager!.panelIconStyle ===
                     PanelIconStyleEnum.HYBRID
                         ? 'marked'
@@ -321,7 +316,7 @@ export class WorkspaceButton extends MatButton {
                 Me.msThemeManager!.panelIconStyle = PanelIconStyleEnum.CATEGORY;
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/radiobox-${
+                `${Me.instance.metadata.path}/assets/icons/radiobox-${
                     Me.msThemeManager!.panelIconStyle ===
                     PanelIconStyleEnum.CATEGORY
                         ? 'marked'
@@ -336,7 +331,7 @@ export class WorkspaceButton extends MatButton {
                     PanelIconStyleEnum.APPLICATION;
             },
             Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/radiobox-${
+                `${Me.instance.metadata.path}/assets/icons/radiobox-${
                     Me.msThemeManager!.panelIconStyle ===
                     PanelIconStyleEnum.APPLICATION
                         ? 'marked'
@@ -350,7 +345,7 @@ export class WorkspaceButton extends MatButton {
             () => {
                 assertNotNull(panelIconStyleHybridRadio._icon).set_gicon(
                     Gio.icon_new_for_string(
-                        `${Me.metadata.path}/assets/icons/radiobox-${
+                        `${Me.instance.metadata.path}/assets/icons/radiobox-${
                             Me.msThemeManager!.panelIconStyle ===
                             PanelIconStyleEnum.HYBRID
                                 ? 'marked'
@@ -360,7 +355,7 @@ export class WorkspaceButton extends MatButton {
                 );
                 assertNotNull(panelIconStyleCategoryRadio._icon).set_gicon(
                     Gio.icon_new_for_string(
-                        `${Me.metadata.path}/assets/icons/radiobox-${
+                        `${Me.instance.metadata.path}/assets/icons/radiobox-${
                             Me.msThemeManager!.panelIconStyle ===
                             PanelIconStyleEnum.CATEGORY
                                 ? 'marked'
@@ -370,7 +365,7 @@ export class WorkspaceButton extends MatButton {
                 );
                 assertNotNull(panelIconStyleApplicationRadio._icon).set_gicon(
                     Gio.icon_new_for_string(
-                        `${Me.metadata.path}/assets/icons/radiobox-${
+                        `${Me.instance.metadata.path}/assets/icons/radiobox-${
                             Me.msThemeManager!.panelIconStyle ===
                             PanelIconStyleEnum.APPLICATION
                                 ? 'marked'
@@ -404,7 +399,7 @@ export class WorkspaceButton extends MatButton {
                 },
                 Gio.icon_new_for_string(
                     `${
-                        Me.metadata.path
+                        Me.instance.metadata.path
                     }/assets/icons/category/${key.toLowerCase()}-symbolic.svg`
                 )
             );
@@ -587,7 +582,7 @@ export class WorkspaceButtonIcon extends St.Widget {
                 const icon = new St.Icon({
                     gicon: Gio.icon_new_for_string(
                         `${
-                            Me.metadata.path
+                            Me.instance.metadata.path
                         }/assets/icons/category/${category.toLowerCase()}-symbolic.svg`
                     ),
                     icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
@@ -606,7 +601,7 @@ export class WorkspaceButtonIcon extends St.Widget {
         } else {
             const icon = new St.Icon({
                 gicon: Gio.icon_new_for_string(
-                    `${Me.metadata.path}/assets/icons/plus-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/plus-symbolic.svg`
                 ),
                 icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
             });

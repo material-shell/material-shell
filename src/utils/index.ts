@@ -7,11 +7,7 @@ import { assert } from './assert';
 import { Async } from './async';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
 
 /* exported range, debounce, throttle, reparentActor */
 export const range = (to: any) =>
@@ -123,7 +119,7 @@ export const reparentActor = (
 
     if (currentParent === parent) return;
 
-    Me.reparentInProgress = true;
+    Me.instance.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
         ? actor
         : isParentOfActor(actor, global.stage.key_focus)
@@ -144,7 +140,7 @@ export const reparentActor = (
     if (restoreFocusTo) {
         restoreFocusTo.grab_key_focus();
     }
-    Me.reparentInProgress = false;
+    Me.instance.reparentInProgress = false;
 };
 
 export const InfinityTo0 = (number: number) => {

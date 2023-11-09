@@ -4,11 +4,6 @@ import { WithSignals } from 'src/utils/gjs';
 import { InfinityTo0, reparentActor } from 'src/utils/index';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
 
 interface TransitionConfig {
     duration: number;
@@ -31,11 +26,12 @@ export class TranslationHelper extends WithSignals {
     }
 
     getTransformedBox(actor: Clutter.Actor) {
-        const x1 = actor.x + actor.translation_x;
-        const x2 = x1 + actor.width;
-        const y1 = actor.y + actor.translation_y;
-        const y2 = y1 + actor.height;
-        return new Clutter.ActorBox(x1, y1, x2, y2);
+        const box = new Clutter.ActorBox();
+        box.x1 = actor.x + actor.translation_x;
+        box.x2 = box.x1 + actor.width;
+        box.y1 = actor.y + actor.translation_y;
+        box.y2 = box.y1 + actor.height;
+        return box;
     }
 
     /** Starts a transition.

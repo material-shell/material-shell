@@ -19,11 +19,8 @@ import { MatDivider } from 'src/widget/material/divider';
 import { ExtendedPanelContent } from './extendedPanelContent';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 
 @registerGObjectClass
 export class PanelContent extends St.BoxLayout {
@@ -113,14 +110,14 @@ export class PanelContent extends St.BoxLayout {
         if (icon === 'search') {
             this.buttonIcon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.metadata.path}/assets/icons/magnify-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/magnify-symbolic.svg`
                 )
             );
         }
         if (icon === 'close') {
             this.buttonIcon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.metadata.path}/assets/icons/close-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/close-symbolic.svg`
                 )
             );
         }
@@ -159,9 +156,9 @@ export class MsPanel extends St.BoxLayout {
         this.add_child(this.panelContent);
         this.extendedPanelContent = new ExtendedPanelContent();
         this.divider = new MatDivider();
-        this.disableConnect = Me.connect('extension-disable', () => {
-            Me.logFocus('extension-disable');
-            Me.disconnect(this.disableConnect);
+        this.disableConnect = Me.instance.connect('extension-disable', () => {
+            Debug.logFocus('extension-disable');
+            Me.instance.disconnect(this.disableConnect);
             this.disable();
         });
 

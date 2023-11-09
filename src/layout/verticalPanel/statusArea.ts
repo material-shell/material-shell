@@ -5,7 +5,7 @@ import Gio from 'gi://Gio';
 import GnomeDesktop from 'gi://GnomeDesktop';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
-import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu';
+import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
 
@@ -22,11 +22,8 @@ import {
 } from 'src/utils/shellVersionMatch';
 
 /** Extension imports */
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import MaterialShellExtension from 'src/extension';
-const Me = Extension.lookupByUUID(
-    'material-shell@papyelgringo'
-) as MaterialShellExtension;
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 const isBeforeGnome43 =
     compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 @registerGObjectClass
@@ -210,7 +207,12 @@ export class MsStatusArea extends Clutter.Actor {
         // All icons actors should have a single child.
         const mainChild = actor.get_children()[0] as Clutter.Actor | undefined;
         if (mainChild !== undefined) {
-            if (mainChild instanceof Panel.QuickSettings) {
+            Debug.logFocus(mainChild);
+            Debug.logFocus(Panel.QuickSettings);
+            if (
+                mainChild instanceof
+                this.gnomeShellPanel.statusArea.quickSettings.constructor
+            ) {
                 // This is the main system menu
                 return 1;
             } else if (mainChild instanceof DateMenu.DateMenuButton) {
@@ -368,7 +370,7 @@ export class MsStatusArea extends Clutter.Actor {
         }
     }
     disable() {
-        Me.logFocus('disable statusArea');
+        Debug.logFocus('disable statusArea');
         this.unVerticaliseDateMenuButton();
         this.restorePanelMenuSide();
         this.restorePanelActors();
@@ -413,20 +415,20 @@ export class MsDateMenuBox extends St.Widget {
 
         this.notificationIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/bell-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/bell-symbolic.svg`
             ),
         });
 
         this.notificationIconRing = new St.Icon({
             style_class: 'primary',
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/bell-ring-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/bell-ring-symbolic.svg`
             ),
         });
 
         this.dndIcon = new St.Icon({
             gicon: Gio.icon_new_for_string(
-                `${Me.metadata.path}/assets/icons/bell-off-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/bell-off-symbolic.svg`
             ),
         });
 
