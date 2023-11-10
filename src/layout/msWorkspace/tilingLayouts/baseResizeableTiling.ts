@@ -386,7 +386,7 @@ export class ResizableBorderActor extends St.Widget {
 
     constructor() {
         super({ reactive: true, track_hover: true });
-        this.set_background_color(new Clutter.Color(10, 10, 10, 255));
+        this.set_background_color(Clutter.Color.new(10, 10, 10, 255));
 
         this.connect('event', (actor, event) => {
             const eventType = event.type();

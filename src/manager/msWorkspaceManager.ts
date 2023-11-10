@@ -234,10 +234,10 @@ export class MsWorkspaceManager extends MsManager {
 
     destroy() {
         super.destroy();
-        WindowManager.WorkspaceTracker.prototype._checkWorkspaces = (
-            WindowManager.WorkspaceTracker.prototype as any
+        Main.wm._workspaceTracker.constructor.prototype._checkWorkspaces = (
+            Main.wm._workspaceTracker.constructor.prototype as any
         )._oldCheckWorkspaces;
-        delete (WindowManager.WorkspaceTracker.prototype as any)
+        delete (Main.wm._workspaceTracker.constructor.prototype as any)
             ._oldCheckWorkspaces;
         for (let i = 0; i < this.workspaceManager.n_workspaces; i++) {
             // _keepAliveId is an internal field in gnome-shell
