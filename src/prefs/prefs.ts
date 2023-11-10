@@ -1,18 +1,16 @@
-import Gdk from 'gi://Gdk';
-import Gio from 'gi://Gio';
+import Adw from 'gi://Adw';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
+import {
+    ExtensionMetadata,
+    ExtensionPreferences,
+    gettext as _,
+} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-
-import { default as Me } from 'src/extension';
-
-const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
-    Me.instance.metadata.dir.get_child('schemas').get_path()!,
-    Gio.SettingsSchemaSource.get_default(),
-    false
-);
 
 const hotkeysSchemaName = 'org.gnome.shell.extensions.materialshell.bindings';
 
@@ -21,495 +19,6 @@ function log(...args: any[]) {
     const domain = 'Material Shell';
 
     GLib.log_structured(domain, GLib.LogLevelFlags.LEVEL_MESSAGE, fields);
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-function init() {
-    log('INITIALIZING PREFERENCES');
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function buildPrefsWidget() {
-    log('Prefs widget');
-    return new PrefsWidget();
-}
-
-enum WidgetType {
-    BOOLEAN = 0,
-    COMBO = 1,
-    INT = 2,
-    DECIMAL = 3,
-    INPUT = 4,
-    COLOR = 5,
-    CUSTOM = 6,
-}
-
-/* TODO make the hotkey edition through Dialog
- @registerGObjectClass
-class HotkeyDialog extends Gtk.Dialog {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'HotkeyDialog',
-        Template: Me.instance.metadata.dir.get_child('hotkey_dialog.ui').get_uri(),
-        Signals: {
-            key_press_cb: {
-                param_types: [GObject.TYPE_STRING],
-                accumulator: 0,
-            },
-        },
-    };
-    constructor(parent: Gtk.Window) {
-        super({
-            destroyWithParent: true,
-            transientFor: parent,
-        });
-
-        this.connect('key_press_cb', (_, response) => {
-            log('key', response);
-        });
-    }
-} */
-
-@registerGObjectClass
-class SettingListBoxRow extends Gtk.ListBoxRow {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'SettingListBoxRow',
-        Template: Me.instance.metadata.dir
-            .get_child('setting_list_box_row.ui')
-            .get_uri()!,
-        Properties: {
-            'settings-widget': GObject.ParamSpec.object(
-                'settings-widget',
-                'Settings Widget',
-                'The widget in which the user sets the settings value',
-                GObject.ParamFlags.READWRITE,
-                Gtk.Widget.$gtype
-            ),
-        },
-        InternalChildren: [
-            'name_label',
-            'description_label',
-            'widget_container',
-        ],
-    };
-
-    private declare _name_label: Gtk.Label;
-    private declare _description_label: Gtk.Label;
-    private declare _widget_container: Gtk.Box;
-    private _settings_widget: Gtk.Widget;
-
-    constructor(summary: string, description: string, widget: Gtk.Widget) {
-        super();
-        this._name_label.set_text(summary);
-        this._description_label.set_text(description);
-        this._settings_widget = widget;
-        this._widget_container.append(this._settings_widget);
-    }
-}
-
-@registerGObjectClass
-class HotkeyRowData extends GObject.Object {
-    key: string;
-    summary: string;
-    accelName: string;
-
-    constructor(key: string, summary: string, accelName: string) {
-        super();
-        this.key = key;
-        this.summary = summary;
-        this.accelName = accelName;
-    }
-}
-
-@registerGObjectClass
-class HotkeyListBox extends Gtk.ListBox {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'HotkeyListBox',
-        Template: Me.instance.metadata.dir
-            .get_child('hotkey_list_box.ui')
-            .get_uri()!,
-    };
-    settings: Gio.Settings;
-
-    constructor() {
-        super();
-        this.connect('row-activated', (_, row: HotkeyListBoxRow) => {
-            row.openDialog();
-        });
-
-        this.settings = new Gio.Settings({
-            settings_schema:
-                schemaSource.lookup(hotkeysSchemaName, false) || undefined,
-        });
-
-        this.settings
-            .list_keys()
-            .map((key) => {
-                const [ok, accelKey, accelerators, mods] =
-                    Gtk.accelerator_parse_with_keycode(
-                        this.settings.get_strv(key)[0],
-                        null
-                    );
-                if (!ok) {
-                    log(
-                        `Could not parse key for ${key}: ${
-                            this.settings.get_strv(key)[0]
-                        }`
-                    );
-                }
-                let accelName;
-                if (accelKey == 0) {
-                    accelName = 'Disabled';
-                } else {
-                    assert(
-                        accelKey !== null && mods !== null,
-                        'parse should have succeeded'
-                    );
-                    accelName = Gtk.accelerator_get_label(accelKey, mods);
-                }
-                const summary = this.settings.settings_schema
-                    .get_key(key)
-                    .get_summary();
-                return {
-                    key,
-                    summary,
-                    accelKey,
-                    mods,
-                    accelName,
-                };
-            })
-            .sort((modelEntryA, modelEntryB) => {
-                return modelEntryA.summary! > modelEntryB.summary! ? 1 : 0;
-            })
-            .forEach((modelEntry) => {
-                const row = this.createHotkeyRow(
-                    new HotkeyRowData(
-                        modelEntry.key,
-                        modelEntry.summary!,
-                        modelEntry.accelName!
-                    )
-                );
-                row.connect('accel-changed', (_, value) => {
-                    this.settings.set_strv(modelEntry.key, [value]);
-                });
-                this.append(row);
-            });
-    }
-
-    createHotkeyRow(obj: GObject.Object): Gtk.Widget {
-        const data = obj as HotkeyRowData;
-        return new HotkeyListBoxRow(data.key, data.summary, data.accelName);
-    }
-}
-
-//Todo: Replace Gtk TreeView with Gtk ListBox
-@registerGObjectClass
-class HotkeyListBoxRow extends Gtk.ListBoxRow {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'HotkeyListBoxRow',
-        Template: Me.instance.metadata.dir
-            .get_child('hotkey_list_box_row.ui')
-            .get_uri()!,
-        InternalChildren: ['accel_label', 'hotkey_label', 'dialog'],
-        Signals: {
-            accel_changed: {
-                param_types: [GObject.TYPE_STRING],
-                accumulator: 0,
-            },
-        },
-    };
-    // Note: will be created by gjs from the InternalChildren meta info property
-    private declare _accel_label: Gtk.Label;
-    private declare _hotkey_label: Gtk.Label;
-    private declare _dialog: Gtk.Dialog;
-
-    key: string;
-    constructor(key: string, hotkeyName: string, accel: string) {
-        super();
-        this.key = key;
-        this._accel_label.set_text(accel);
-        this._hotkey_label.set_text(hotkeyName);
-        this.connect('activate', () => this.openDialog());
-    }
-
-    openDialog() {
-        this._dialog.transient_for = this.get_root() as Gtk.Window;
-        this._dialog.present();
-        (
-            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
-        ).inhibit_system_shortcuts(null);
-    }
-
-    onKeyPressed(
-        _widget: Gtk.Widget,
-        keyval: number,
-        keycode: number,
-        state: Gdk.ModifierType
-    ) {
-        let mask = state & Gtk.accelerator_get_default_mod_mask();
-        mask &= ~Gdk.ModifierType.LOCK_MASK;
-
-        if (mask === 0 && keyval === Gdk.KEY_Escape) {
-            this.closeDialog();
-            return Gdk.EVENT_STOP;
-        }
-
-        if (mask === 0 && keyval === Gdk.KEY_BackSpace) {
-            this._accel_label.set_text('Disabled');
-            this.emit('accel-changed', '');
-            this.closeDialog();
-            return Gdk.EVENT_STOP;
-        }
-
-        if (!Gtk.accelerator_valid(keyval, mask)) return Gdk.EVENT_STOP;
-        const accel = Gtk.accelerator_name_with_keycode(
-            null,
-            keyval,
-            keycode,
-            mask
-        );
-        this._accel_label.set_text(Gtk.accelerator_get_label(keyval, mask));
-
-        this.emit('accel-changed', accel);
-        /* this.keybinding =  */
-        this.closeDialog();
-        return Gdk.EVENT_STOP;
-    }
-
-    closeDialog() {
-        (
-            assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
-        ).restore_system_shortcuts();
-        this._dialog.close();
-    }
-}
-@registerGObjectClass
-class SettingCategoryListBox extends Gtk.Box {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'SettingCategoryListBox',
-        Template: Me.instance.metadata.dir
-            .get_child('setting_category_list_box.ui')
-            .get_uri()!,
-        Properties: {
-            title: GObject.ParamSpec.string(
-                'title',
-                'Title',
-                'The title of the category',
-                GObject.ParamFlags.READWRITE,
-                ''
-            ),
-        },
-        InternalChildren: ['title_label', 'list_box'],
-    };
-
-    // Note: will be created by gjs from the InternalChildren meta info property
-    private declare _title_label: Gtk.Label;
-    // Note: will be created by gjs from the InternalChildren meta info property
-    private declare _list_box: Gtk.ListBox;
-
-    public settings: Gio.Settings;
-
-    constructor(title: string, schema: string) {
-        super();
-
-        this.settings = new Gio.Settings({
-            settings_schema: schemaSource.lookup(schema, false) || undefined,
-        });
-        this.title = title;
-    }
-
-    get title(): string {
-        return this._title_label.get_text()!;
-    }
-
-    set title(value: string) {
-        this._title_label.set_markup(`<span size="medium">${value}</span>`);
-    }
-
-    addSetting(key: string, type: WidgetType, customWidget?: Gtk.Widget) {
-        const settingKey = this.settings.settings_schema.get_key(key);
-        const summary = settingKey.get_summary();
-        const description = settingKey.get_description();
-        let widget: Gtk.Widget;
-        switch (type) {
-            case WidgetType.BOOLEAN:
-                widget = new Gtk.Switch();
-                this.settings.bind(
-                    key,
-                    widget,
-                    'active',
-                    Gio.SettingsBindFlags.DEFAULT
-                );
-                break;
-
-            case WidgetType.COMBO: {
-                const combo = (widget = new Gtk.ComboBoxText());
-                const a = settingKey
-                    .get_range()
-                    .get_child_value(1)
-                    .recursiveUnpack() as any[];
-                a.forEach((value) => {
-                    combo.append(value, value);
-                });
-                this.settings.bind(
-                    key,
-                    widget,
-                    'active-id',
-                    Gio.SettingsBindFlags.DEFAULT
-                );
-                break;
-            }
-
-            case WidgetType.COLOR: {
-                const btn = (widget = new Gtk.ColorButton());
-                const rgba = new Gdk.RGBA();
-                rgba.parse(this.settings.get_string(key));
-                btn.set_rgba(rgba);
-                widget.connect('color-set', (button) => {
-                    const rgba = button.get_rgba();
-                    const css = rgba.to_string();
-                    const hexString = cssHexString(css);
-                    this.settings.set_string(key, hexString);
-                });
-                break;
-            }
-            case WidgetType.INT: {
-                const spin = (widget = Gtk.SpinButton.new_with_range(
-                    0,
-                    1000,
-                    1
-                ));
-                this.settings.bind(
-                    key,
-                    spin.get_adjustment(),
-                    'value',
-                    Gio.SettingsBindFlags.DEFAULT
-                );
-                break;
-            }
-
-            case WidgetType.DECIMAL: {
-                const spin2 = (widget = Gtk.SpinButton.new_with_range(
-                    0,
-                    1,
-                    0.1
-                ));
-                this.settings.bind(
-                    key,
-                    spin2.get_adjustment(),
-                    'value',
-                    Gio.SettingsBindFlags.DEFAULT
-                );
-                break;
-            }
-
-            case WidgetType.INPUT:
-                widget = Gtk.Entry.new();
-                this.settings.bind(
-                    key,
-                    widget,
-                    'text',
-                    Gio.SettingsBindFlags.DEFAULT
-                );
-                break;
-
-            case WidgetType.CUSTOM:
-                if (customWidget == undefined) {
-                    throw new Error('Supplied custom widget is undefined');
-                }
-                widget = customWidget;
-                break;
-        }
-        widget.set_valign(Gtk.Align.CENTER);
-        const row = new SettingListBoxRow(summary!, description!, widget);
-
-        this._list_box.append(row);
-    }
-}
-@registerGObjectClass
-class PrefsWidget extends Gtk.Box {
-    static metaInfo: GObject.MetaInfo<any, any, any> = {
-        GTypeName: 'PrefsWidget',
-        Template: Me.instance.metadata.dir.get_child('prefs.ui').get_uri()!,
-        InternalChildren: ['settings_box'],
-    };
-
-    // Note: will be created by gjs from the InternalChildren meta info property
-    private declare _settings_box: Gtk.Box;
-
-    constructor() {
-        super();
-
-        const theme = new SettingCategoryListBox(
-            'Theme',
-            'org.gnome.shell.extensions.materialshell.theme'
-        );
-
-        theme.addSetting('theme', WidgetType.COMBO);
-        theme.addSetting('primary-color', WidgetType.COLOR);
-        theme.addSetting('vertical-panel-position', WidgetType.COMBO);
-        theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
-        theme.addSetting('panel-size', WidgetType.INT);
-        theme.addSetting('panel-opacity', WidgetType.INT);
-        theme.addSetting('panel-icon-style', WidgetType.COMBO);
-        theme.addSetting('panel-icon-color', WidgetType.BOOLEAN);
-        theme.addSetting('taskbar-item-style', WidgetType.COMBO);
-        theme.addSetting('surface-opacity', WidgetType.INT);
-        theme.addSetting('blur-background', WidgetType.BOOLEAN);
-        theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
-        theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
-        theme.addSetting('focus-effect', WidgetType.COMBO);
-        this._settings_box.append(theme);
-
-        const tweaks = new SettingCategoryListBox(
-            'Tweaks',
-            'org.gnome.shell.extensions.materialshell.tweaks'
-        );
-
-        tweaks.addSetting('cycle-through-windows', WidgetType.BOOLEAN);
-        tweaks.addSetting('cycle-through-workspaces', WidgetType.BOOLEAN);
-        tweaks.addSetting('disable-notifications', WidgetType.BOOLEAN);
-        tweaks.addSetting('enable-persistence', WidgetType.BOOLEAN);
-        this._settings_box.append(tweaks);
-
-        const layouts = new SettingCategoryListBox(
-            'Tiling layouts',
-            'org.gnome.shell.extensions.materialshell.layouts'
-        );
-
-        const tilingLayouts = [
-            'maximize',
-            'split',
-            'half',
-            'half-horizontal',
-            'half-vertical',
-            'ratio',
-            'grid',
-            'float',
-            'simple',
-            'simple-horizontal',
-            'simple-vertical',
-        ];
-
-        layouts.addSetting(
-            'default-layout',
-            WidgetType.CUSTOM,
-            getDefaultLayoutComboBox(tilingLayouts, layouts.settings)
-        );
-
-        tilingLayouts.forEach((layoutKey) => {
-            layouts.addSetting(layoutKey, WidgetType.BOOLEAN);
-            if (layoutKey === 'ratio') {
-                layouts.addSetting('ratio-value', WidgetType.DECIMAL);
-            }
-        });
-
-        layouts.addSetting('gap', WidgetType.INT);
-        layouts.addSetting('use-screen-gap', WidgetType.BOOLEAN);
-        layouts.addSetting('screen-gap', WidgetType.INT);
-        layouts.addSetting('tween-time', WidgetType.DECIMAL);
-        layouts.addSetting('windows-excluded', WidgetType.INPUT);
-        layouts.addSetting('roles-excluded', WidgetType.INPUT);
-        this._settings_box.append(layouts);
-    }
 }
 
 function cssHexString(css: string) {
@@ -565,3 +74,546 @@ function getDefaultLayoutComboBox(
     );
     return widget;
 }
+
+export default class MyExtensionPreferences extends ExtensionPreferences {
+    private loadPages(templateDirectory: Gio.File) {
+        @registerGObjectClass
+        class SettingListBoxRow extends Gtk.ListBoxRow {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
+                GTypeName: 'SettingListBoxRow',
+                Template: templateDirectory
+                    .get_child('setting_list_box_row.ui')
+                    .get_uri()!,
+                Properties: {
+                    'settings-widget': GObject.ParamSpec.object(
+                        'settings-widget',
+                        'Settings Widget',
+                        'The widget in which the user sets the settings value',
+                        GObject.ParamFlags.READWRITE,
+                        Gtk.Widget.$gtype
+                    ),
+                },
+                InternalChildren: [
+                    'name_label',
+                    'description_label',
+                    'widget_container',
+                ],
+            };
+
+            private declare _name_label: Gtk.Label;
+            private declare _description_label: Gtk.Label;
+            private declare _widget_container: Gtk.Box;
+            private _settings_widget: Gtk.Widget;
+
+            constructor(
+                summary: string,
+                description: string,
+                widget: Gtk.Widget
+            ) {
+                super();
+                this._name_label.set_text(summary);
+                this._description_label.set_text(description);
+                this._settings_widget = widget;
+                this._widget_container.append(this._settings_widget);
+            }
+        }
+
+        @registerGObjectClass
+        class HotkeyRowData extends GObject.Object {
+            key: string;
+            summary: string;
+            accelName: string;
+
+            constructor(key: string, summary: string, accelName: string) {
+                super();
+                this.key = key;
+                this.summary = summary;
+                this.accelName = accelName;
+            }
+        }
+
+        @registerGObjectClass
+        class HotkeyListBox extends Gtk.ListBox {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
+                GTypeName: 'HotkeyListBox',
+                Template: templateDirectory
+                    .get_child('hotkey_list_box.ui')
+                    .get_uri()!,
+            };
+            settings: Gio.Settings;
+
+            constructor(schemaSource: Gio.SettingsSchemaSource) {
+                super();
+                this.connect('row-activated', (_, row: HotkeyListBoxRow) => {
+                    row.openDialog();
+                });
+
+                this.settings = new Gio.Settings({
+                    settings_schema:
+                        schemaSource.lookup(hotkeysSchemaName, false) ||
+                        undefined,
+                });
+
+                this.settings
+                    .list_keys()
+                    .map((key) => {
+                        const [ok, accelKey, accelerators, mods] =
+                            Gtk.accelerator_parse_with_keycode(
+                                this.settings.get_strv(key)[0],
+                                null
+                            );
+                        if (!ok) {
+                            log(
+                                `Could not parse key for ${key}: ${
+                                    this.settings.get_strv(key)[0]
+                                }`
+                            );
+                        }
+                        let accelName;
+                        if (accelKey == 0) {
+                            accelName = 'Disabled';
+                        } else {
+                            assert(
+                                accelKey !== null && mods !== null,
+                                'parse should have succeeded'
+                            );
+                            accelName = Gtk.accelerator_get_label(
+                                accelKey,
+                                mods
+                            );
+                        }
+                        const summary = this.settings.settings_schema
+                            .get_key(key)
+                            .get_summary();
+                        return {
+                            key,
+                            summary,
+                            accelKey,
+                            mods,
+                            accelName,
+                        };
+                    })
+                    .sort((modelEntryA, modelEntryB) => {
+                        return modelEntryA.summary! > modelEntryB.summary!
+                            ? 1
+                            : 0;
+                    })
+                    .forEach((modelEntry) => {
+                        const row = this.createHotkeyRow(
+                            new HotkeyRowData(
+                                modelEntry.key,
+                                modelEntry.summary!,
+                                modelEntry.accelName!
+                            )
+                        );
+                        row.connect('accel-changed', (_, value) => {
+                            this.settings.set_strv(modelEntry.key, [value]);
+                        });
+                        this.append(row);
+                    });
+            }
+
+            createHotkeyRow(obj: GObject.Object): Gtk.Widget {
+                const data = obj as HotkeyRowData;
+                return new HotkeyListBoxRow(
+                    data.key,
+                    data.summary,
+                    data.accelName
+                );
+            }
+        }
+
+        //Todo: Replace Gtk TreeView with Gtk ListBox
+        @registerGObjectClass
+        class HotkeyListBoxRow extends Gtk.ListBoxRow {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
+                GTypeName: 'HotkeyListBoxRow',
+                Template: templateDirectory
+                    .get_child('hotkey_list_box_row.ui')
+                    .get_uri()!,
+                InternalChildren: ['accel_label', 'hotkey_label', 'dialog'],
+                Signals: {
+                    accel_changed: {
+                        param_types: [GObject.TYPE_STRING],
+                        accumulator: 0,
+                    },
+                },
+            };
+            // Note: will be created by gjs from the InternalChildren meta info property
+            private declare _accel_label: Gtk.Label;
+            private declare _hotkey_label: Gtk.Label;
+            private declare _dialog: Gtk.Dialog;
+
+            key: string;
+            constructor(key: string, hotkeyName: string, accel: string) {
+                super();
+                this.key = key;
+                this._accel_label.set_text(accel);
+                this._hotkey_label.set_text(hotkeyName);
+                this.connect('activate', () => this.openDialog());
+            }
+
+            openDialog() {
+                this._dialog.transient_for = this.get_root() as Gtk.Window;
+                this._dialog.present();
+                (
+                    assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
+                ).inhibit_system_shortcuts(null);
+            }
+
+            onKeyPressed(
+                _widget: Gtk.Widget,
+                keyval: number,
+                keycode: number,
+                state: Gdk.ModifierType
+            ) {
+                let mask = state & Gtk.accelerator_get_default_mod_mask();
+                mask &= ~Gdk.ModifierType.LOCK_MASK;
+
+                if (mask === 0 && keyval === Gdk.KEY_Escape) {
+                    this.closeDialog();
+                    return Gdk.EVENT_STOP;
+                }
+
+                if (mask === 0 && keyval === Gdk.KEY_BackSpace) {
+                    this._accel_label.set_text('Disabled');
+                    this.emit('accel-changed', '');
+                    this.closeDialog();
+                    return Gdk.EVENT_STOP;
+                }
+
+                if (!Gtk.accelerator_valid(keyval, mask)) return Gdk.EVENT_STOP;
+                const accel = Gtk.accelerator_name_with_keycode(
+                    null,
+                    keyval,
+                    keycode,
+                    mask
+                );
+                this._accel_label.set_text(
+                    Gtk.accelerator_get_label(keyval, mask)
+                );
+
+                this.emit('accel-changed', accel);
+                /* this.keybinding =  */
+                this.closeDialog();
+                return Gdk.EVENT_STOP;
+            }
+
+            closeDialog() {
+                (
+                    assertNotNull(this.get_root()).get_surface() as Gdk.Toplevel
+                ).restore_system_shortcuts();
+                this._dialog.close();
+            }
+        }
+        @registerGObjectClass
+        class SettingCategoryListBox extends Gtk.Box {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
+                GTypeName: 'SettingCategoryListBox',
+                Template: templateDirectory
+                    .get_child('setting_category_list_box.ui')
+                    .get_uri()!,
+                Properties: {
+                    title: GObject.ParamSpec.string(
+                        'title',
+                        'Title',
+                        'The title of the category',
+                        GObject.ParamFlags.READWRITE,
+                        ''
+                    ),
+                },
+                InternalChildren: ['title_label', 'list_box'],
+            };
+
+            // Note: will be created by gjs from the InternalChildren meta info property
+            private declare _title_label: Gtk.Label;
+            // Note: will be created by gjs from the InternalChildren meta info property
+            private declare _list_box: Gtk.ListBox;
+
+            public settings: Gio.Settings;
+
+            constructor(
+                title: string,
+                schema: string,
+                schemaSource: Gio.SettingsSchemaSource
+            ) {
+                super();
+
+                this.settings = new Gio.Settings({
+                    settings_schema:
+                        schemaSource.lookup(schema, false) || undefined,
+                });
+                this.title = title;
+            }
+
+            get title(): string {
+                return this._title_label.get_text()!;
+            }
+
+            set title(value: string) {
+                this._title_label.set_markup(
+                    `<span size="medium">${value}</span>`
+                );
+            }
+
+            addSetting(
+                key: string,
+                type: WidgetType,
+                customWidget?: Gtk.Widget
+            ) {
+                const settingKey = this.settings.settings_schema.get_key(key);
+                const summary = settingKey.get_summary();
+                const description = settingKey.get_description();
+                let widget: Gtk.Widget;
+                switch (type) {
+                    case WidgetType.BOOLEAN:
+                        widget = new Gtk.Switch();
+                        this.settings.bind(
+                            key,
+                            widget,
+                            'active',
+                            Gio.SettingsBindFlags.DEFAULT
+                        );
+                        break;
+
+                    case WidgetType.COMBO: {
+                        const combo = (widget = new Gtk.ComboBoxText());
+                        const a = settingKey
+                            .get_range()
+                            .get_child_value(1)
+                            .recursiveUnpack() as any[];
+                        a.forEach((value) => {
+                            combo.append(value, value);
+                        });
+                        this.settings.bind(
+                            key,
+                            widget,
+                            'active-id',
+                            Gio.SettingsBindFlags.DEFAULT
+                        );
+                        break;
+                    }
+
+                    case WidgetType.COLOR: {
+                        const btn = (widget = new Gtk.ColorButton());
+                        const rgba = new Gdk.RGBA();
+                        rgba.parse(this.settings.get_string(key));
+                        btn.set_rgba(rgba);
+                        widget.connect('color-set', (button) => {
+                            const rgba = button.get_rgba();
+                            const css = rgba.to_string();
+                            const hexString = cssHexString(css);
+                            this.settings.set_string(key, hexString);
+                        });
+                        break;
+                    }
+                    case WidgetType.INT: {
+                        const spin = (widget = Gtk.SpinButton.new_with_range(
+                            0,
+                            1000,
+                            1
+                        ));
+                        this.settings.bind(
+                            key,
+                            spin.get_adjustment(),
+                            'value',
+                            Gio.SettingsBindFlags.DEFAULT
+                        );
+                        break;
+                    }
+
+                    case WidgetType.DECIMAL: {
+                        const spin2 = (widget = Gtk.SpinButton.new_with_range(
+                            0,
+                            1,
+                            0.1
+                        ));
+                        this.settings.bind(
+                            key,
+                            spin2.get_adjustment(),
+                            'value',
+                            Gio.SettingsBindFlags.DEFAULT
+                        );
+                        break;
+                    }
+
+                    case WidgetType.INPUT:
+                        widget = Gtk.Entry.new();
+                        this.settings.bind(
+                            key,
+                            widget,
+                            'text',
+                            Gio.SettingsBindFlags.DEFAULT
+                        );
+                        break;
+
+                    case WidgetType.CUSTOM:
+                        if (customWidget == undefined) {
+                            throw new Error(
+                                'Supplied custom widget is undefined'
+                            );
+                        }
+                        widget = customWidget;
+                        break;
+                }
+                widget.set_valign(Gtk.Align.CENTER);
+                const row = new SettingListBoxRow(
+                    summary!,
+                    description!,
+                    widget
+                );
+
+                this._list_box.append(row);
+            }
+        }
+        @registerGObjectClass
+        class PrefsWidget extends Gtk.Box {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
+                GTypeName: 'PrefsWidget',
+                Template: templateDirectory.get_child('prefs.ui').get_uri()!,
+                InternalChildren: ['settings_box'],
+            };
+
+            // Note: will be created by gjs from the InternalChildren meta info property
+            private declare _settings_box: Gtk.Box;
+
+            constructor(
+                metadata: ExtensionMetadata,
+                schemaSource: Gio.SettingsSchemaSource
+            ) {
+                super();
+
+                const theme = new SettingCategoryListBox(
+                    'Theme',
+                    'org.gnome.shell.extensions.materialshell.theme',
+                    schemaSource
+                );
+
+                theme.addSetting('theme', WidgetType.COMBO);
+                theme.addSetting('primary-color', WidgetType.COLOR);
+                theme.addSetting('vertical-panel-position', WidgetType.COMBO);
+                theme.addSetting('horizontal-panel-position', WidgetType.COMBO);
+                theme.addSetting('panel-size', WidgetType.INT);
+                theme.addSetting('panel-opacity', WidgetType.INT);
+                theme.addSetting('panel-icon-style', WidgetType.COMBO);
+                theme.addSetting('panel-icon-color', WidgetType.BOOLEAN);
+                theme.addSetting('taskbar-item-style', WidgetType.COMBO);
+                theme.addSetting('surface-opacity', WidgetType.INT);
+                theme.addSetting('blur-background', WidgetType.BOOLEAN);
+                theme.addSetting('clock-horizontal', WidgetType.BOOLEAN);
+                theme.addSetting('clock-app-launcher', WidgetType.BOOLEAN);
+                theme.addSetting('focus-effect', WidgetType.COMBO);
+                this._settings_box.append(theme);
+
+                const tweaks = new SettingCategoryListBox(
+                    'Tweaks',
+                    'org.gnome.shell.extensions.materialshell.tweaks',
+                    schemaSource
+                );
+
+                tweaks.addSetting('cycle-through-windows', WidgetType.BOOLEAN);
+                tweaks.addSetting(
+                    'cycle-through-workspaces',
+                    WidgetType.BOOLEAN
+                );
+                tweaks.addSetting('disable-notifications', WidgetType.BOOLEAN);
+                tweaks.addSetting('enable-persistence', WidgetType.BOOLEAN);
+                this._settings_box.append(tweaks);
+
+                const layouts = new SettingCategoryListBox(
+                    'Tiling layouts',
+                    'org.gnome.shell.extensions.materialshell.layouts',
+                    schemaSource
+                );
+
+                const tilingLayouts = [
+                    'maximize',
+                    'split',
+                    'half',
+                    'half-horizontal',
+                    'half-vertical',
+                    'ratio',
+                    'grid',
+                    'float',
+                    'simple',
+                    'simple-horizontal',
+                    'simple-vertical',
+                ];
+
+                layouts.addSetting(
+                    'default-layout',
+                    WidgetType.CUSTOM,
+                    getDefaultLayoutComboBox(tilingLayouts, layouts.settings)
+                );
+
+                tilingLayouts.forEach((layoutKey) => {
+                    layouts.addSetting(layoutKey, WidgetType.BOOLEAN);
+                    if (layoutKey === 'ratio') {
+                        layouts.addSetting('ratio-value', WidgetType.DECIMAL);
+                    }
+                });
+
+                layouts.addSetting('gap', WidgetType.INT);
+                layouts.addSetting('use-screen-gap', WidgetType.BOOLEAN);
+                layouts.addSetting('screen-gap', WidgetType.INT);
+                layouts.addSetting('tween-time', WidgetType.DECIMAL);
+                layouts.addSetting('windows-excluded', WidgetType.INPUT);
+                layouts.addSetting('roles-excluded', WidgetType.INPUT);
+                this._settings_box.append(layouts);
+            }
+        }
+
+        return { PrefsWidget };
+    }
+
+    fillPreferencesWindow(window: Adw.PreferencesWindow) {
+        const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
+            this.metadata.dir.get_child('schemas').get_path()!,
+            Gio.SettingsSchemaSource.get_default(),
+            false
+        );
+        const page = new Adw.PreferencesPage();
+        const group = new Adw.PreferencesGroup({
+            title: _('Group Title'),
+        });
+        page.add(group);
+        const Pages = this.loadPages(this.metadata.dir);
+        group.add(new Pages.PrefsWidget(this.metadata, schemaSource));
+        window.add(page);
+    }
+}
+
+enum WidgetType {
+    BOOLEAN = 0,
+    COMBO = 1,
+    INT = 2,
+    DECIMAL = 3,
+    INPUT = 4,
+    COLOR = 5,
+    CUSTOM = 6,
+}
+
+/* TODO make the hotkey edition through Dialog
+ @registerGObjectClass
+class HotkeyDialog extends Gtk.Dialog {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
+        GTypeName: 'HotkeyDialog',
+        Template: Me.metadata.dir.get_child('hotkey_dialog.ui').get_uri(),
+        Signals: {
+            key_press_cb: {
+                param_types: [GObject.TYPE_STRING],
+                accumulator: 0,
+            },
+        },
+    };
+    constructor(parent: Gtk.Window) {
+        super({
+            destroyWithParent: true,
+            transientFor: parent,
+        });
+
+        this.connect('key_press_cb', (_, response) => {
+            log('key', response);
+        });
+    }
+} */
