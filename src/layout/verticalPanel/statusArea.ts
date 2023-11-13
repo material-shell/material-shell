@@ -159,7 +159,7 @@ export class MsStatusArea extends Clutter.Actor {
                 return (
                     actor !=
                         this.gnomeShellPanel.statusArea.activities.container &&
-                    actor != this.gnomeShellPanel.statusArea.appMenu.container
+                    actor != this.gnomeShellPanel.statusArea?.appMenu?.container
                 );
             })
             .forEach((actor) => {
