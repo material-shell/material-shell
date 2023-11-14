@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Gio from 'gio';
+import Gio from 'gi://Gio';
 import { Signal } from 'src/manager/msManager';
 import { assert } from 'src/utils/assert';
 import { getSettings } from 'src/utils/settings';
@@ -31,7 +31,7 @@ function getDynamic(
 ): string | boolean {
     switch (valueType) {
         case 'string':
-            return settings.get_string(key);
+            return settings.get_string(key)!;
         case 'boolean':
             return settings.get_boolean(key);
     }

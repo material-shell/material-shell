@@ -1,8 +1,8 @@
 /** Gnome libs imports */
-const Util = imports.misc.util;
-import * as Meta from 'meta';
+import Meta from 'gi://Meta';
+import * as Util from 'resource:///org/gnome/shell/misc/util.js';
 import { MetaWindowWithMsProperties } from 'src/manager/msWindowManager';
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { Debug } from './debug';
 
 /* exported updateTitleBarVisibility */
 export const updateTitleBarVisibility = function (
@@ -39,7 +39,7 @@ export const setTitleBarVisibility = function (
             `2, 0, ${visible ? '1' : '0'} 0, 0`,
         ]);
     } catch (e) {
-        Me.logFocus('xprop', e);
+        Debug.logFocus('xprop', e);
     }
 
     metaWindow.titleBarVisible = visible;

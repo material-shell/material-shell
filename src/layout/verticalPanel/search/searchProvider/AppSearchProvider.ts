@@ -1,10 +1,11 @@
-import * as Gio from 'gio';
-import * as Shell from 'shell';
-import * as St from 'st';
+import Gio from 'gi://Gio';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as ParentalControlsManager from 'resource:///org/gnome/shell/misc/parentalControlsManager.js';
+import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
+import { default as Me } from 'src/extension';
+
 import { ResultMeta } from './searchProvider';
-export const ParentalControlsManager = imports.misc.parentalControlsManager;
-export const SystemActions = imports.misc.systemActions;
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export class AppSearchProvider {
     private _appSys: Shell.AppSystem;
@@ -23,7 +24,7 @@ export class AppSearchProvider {
         this._appSys = Shell.AppSystem.get_default();
         this.canLaunchSearch = false;
 
-        this._systemActions = new SystemActions.getDefault();
+        this._systemActions = SystemActions.getDefault();
         this._parentalControlsManager = ParentalControlsManager.getDefault();
     }
 
@@ -34,9 +35,9 @@ export class AppSearchProvider {
     activateResult(id: string, terms: string[]): void {
         const app = Shell.AppSystem.get_default().lookup_app(id);
         if (app) {
-            Me.msWindowManager.openApp(
+            Me.msWindowManager!.openApp(
                 app,
-                Me.msWorkspaceManager.getActiveMsWorkspace()
+                Me.msWorkspaceManager!.getActiveMsWorkspace()
             );
         } else {
             SystemActions.getDefault().activateAction(id);
@@ -44,15 +45,15 @@ export class AppSearchProvider {
     }
 
     getResultMetas(apps: string[]) {
-        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
+        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
         const metas: ResultMeta[] = [];
         for (const id of apps) {
             if (id.endsWith('.desktop')) {
                 const app = this._appSys.lookup_app(id);
 
                 metas.push({
-                    id: app.get_id(),
-                    name: app.get_name(),
+                    id: app.get_id()!,
+                    name: app.get_name()!,
                     createIcon: (size) =>
                         app.create_icon_texture(size) as St.Icon,
                 });
@@ -63,8 +64,8 @@ export class AppSearchProvider {
                 const createIcon = (size: number) =>
                     new St.Icon({
                         icon_name: iconName,
-                        width: size * scaleFactor,
-                        height: size * scaleFactor,
+                        width: size * scale_factor,
+                        height: size * scale_factor,
                         style_class: 'system-action-icon',
                     });
 
@@ -112,14 +113,16 @@ export class AppSearchProvider {
         let results: string[] = [];
 
         groups.forEach((group) => {
-            group = group.filter((appID) => {
+            group = group.filter((appID: string) => {
                 const app = this._appSys.lookup_app(appID);
                 return (
                     app &&
                     this._parentalControlsManager.shouldShowApp(app.app_info)
                 );
             });
-            results = results.concat(group.sort((a, b) => usage.compare(a, b)));
+            results = results.concat(
+                group.sort((a: string, b: string) => usage.compare(a, b))
+            );
         });
 
         results = results.concat(this._systemActions.getMatchingActions(terms));

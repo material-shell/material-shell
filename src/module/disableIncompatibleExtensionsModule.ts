@@ -1,9 +1,8 @@
 /** Gnome libs imports */
-import { main as Main } from 'ui';
-const { ExtensionManager, ENABLED_EXTENSIONS_KEY } = imports.ui.extensionSystem;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import * as ExtensionSystem from 'resource:///org/gnome/shell/ui/extensionSystem.js';
+import { Debug } from 'src/utils/debug';
 
 const incompatibleExtensions = [
     'desktop-icons@csoriano',
@@ -20,15 +19,14 @@ const incompatibleExtensions = [
 let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
-        originalFunction = ExtensionManager.prototype._callExtensionEnable;
-        ExtensionManager.prototype._callExtensionEnable = function (
-            uuid: string,
-            ...args: any[]
-        ) {
-            if (incompatibleExtensions.includes(uuid)) return;
-            // eslint-disable-next-line prefer-rest-params
-            originalFunction!.apply(this, arguments);
-        };
+        originalFunction =
+            ExtensionSystem.ExtensionManager.prototype._callExtensionEnable;
+        ExtensionSystem.ExtensionManager.prototype._callExtensionEnable =
+            function (uuid: string, ...args: any[]) {
+                if (incompatibleExtensions.includes(uuid)) return;
+                // eslint-disable-next-line prefer-rest-params
+                originalFunction!.apply(this, arguments);
+            };
 
         this.disableExtensions();
     }
@@ -41,18 +39,19 @@ export class DisableIncompatibleExtensionsModule {
                         incompatibleExtension
                     )
                 ) {
-                    Me.log(
+                    Debug.log(
                         `Disabled gnome extension ${incompatibleExtension} because it is incompatible with Material Shell`
                     );
                 }
             } catch (e) {
-                Me.logFocus('disable error', incompatibleExtension, e);
+                Debug.logFocus('disable error', incompatibleExtension, e);
             }
         }
     }
 
     destroy() {
-        ExtensionManager.prototype._callExtensionEnable = originalFunction;
+        ExtensionSystem.ExtensionManager.prototype._callExtensionEnable =
+            originalFunction;
         originalFunction = null;
     }
 }

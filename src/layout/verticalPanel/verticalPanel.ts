@@ -1,7 +1,10 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Panel from 'resource:///org/gnome/shell/ui/panel.js';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import { MsStatusArea } from 'src/layout/verticalPanel/statusArea';
 import { WorkspaceList } from 'src/layout/verticalPanel/workspaceList';
@@ -13,17 +16,15 @@ import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SignalObserver } from 'src/utils/signal';
 import { MatDivider } from 'src/widget/material/divider';
-import * as St from 'st';
-import { main as Main, panel } from 'ui';
 import { ExtendedPanelContent } from './extendedPanelContent';
-const Util = imports.misc.util;
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
+import { Debug } from 'src/utils/debug';
 
 @registerGObjectClass
 export class PanelContent extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'PanelContent',
         Signals: {
             toggle: {
@@ -53,7 +54,7 @@ export class PanelContent extends St.BoxLayout {
 
         this.buttonIcon = new St.Icon({
             style_class: 'mat-panel-button-icon',
-            icon_size: Me.msThemeManager.getPanelSizeNotScaled() / 2,
+            icon_size: Me.msThemeManager!.getPanelSizeNotScaled() / 2,
         });
 
         this.searchButton = new SearchButton({
@@ -74,11 +75,11 @@ export class PanelContent extends St.BoxLayout {
         this.statusArea = new MsStatusArea();
         this.add_child(this.statusArea);
 
-        const panelSizeSignal = Me.msThemeManager.connect(
+        const panelSizeSignal = Me.msThemeManager!.connect(
             'panel-size-changed',
             () => {
                 this.buttonIcon.set_icon_size(
-                    Me.msThemeManager.getPanelSizeNotScaled() / 2
+                    Me.msThemeManager!.getPanelSizeNotScaled() / 2
                 );
 
                 this.queue_relayout();
@@ -86,7 +87,7 @@ export class PanelContent extends St.BoxLayout {
         );
 
         this.connect('destroy', () => {
-            Me.msThemeManager.disconnect(panelSizeSignal);
+            Me.msThemeManager!.disconnect(panelSizeSignal);
         });
 
         this.setIcon('search');
@@ -101,7 +102,7 @@ export class PanelContent extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_width(_for_height: number): [number, number] {
-        const panelSize = Me.msThemeManager.getPanelSize();
+        const panelSize = Me.msThemeManager!.getPanelSize();
         return [panelSize, panelSize];
     }
 
@@ -109,14 +110,14 @@ export class PanelContent extends St.BoxLayout {
         if (icon === 'search') {
             this.buttonIcon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/magnify-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/magnify-symbolic.svg`
                 )
             );
         }
         if (icon === 'close') {
             this.buttonIcon.set_gicon(
                 Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/close-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/close-symbolic.svg`
                 )
             );
         }
@@ -125,10 +126,10 @@ export class PanelContent extends St.BoxLayout {
 
 @registerGObjectClass
 export class MsPanel extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsPanel',
     };
-    gnomeShellPanel: panel.Panel;
+    gnomeShellPanel: Panel.Panel;
     panelContent: PanelContent;
     extendedPanelContent: ExtendedPanelContent;
     divider: MatDivider;
@@ -146,7 +147,7 @@ export class MsPanel extends St.BoxLayout {
 
         this.updateStyle();
         this.signalObserver.observe(
-            Me.msThemeManager,
+            Me.msThemeManager!,
             msThemeSignalEnum.VerticalPanelPositionChanged,
             this.updateStyle.bind(this)
         );
@@ -155,14 +156,14 @@ export class MsPanel extends St.BoxLayout {
         this.add_child(this.panelContent);
         this.extendedPanelContent = new ExtendedPanelContent();
         this.divider = new MatDivider();
-        this.disableConnect = Me.connect('extension-disable', () => {
-            Me.logFocus('extension-disable');
-            Me.disconnect(this.disableConnect);
+        this.disableConnect = Me.instance.connect('extension-disable', () => {
+            Debug.logFocus('extension-disable');
+            Me.instance.disconnect(this.disableConnect);
             this.disable();
         });
 
         this.signalObserver.observe(
-            Me.msThemeManager,
+            Me.msThemeManager!,
             msThemeSignalEnum.PanelSizeChanged,
             () => {
                 this.queue_relayout();
@@ -174,7 +175,7 @@ export class MsPanel extends St.BoxLayout {
         });
 
         this.panelContent.connect('toggle', () => {
-            Me.layout.toggleOverview();
+            Me.layout!.toggleOverview();
         });
     }
 
@@ -191,7 +192,7 @@ export class MsPanel extends St.BoxLayout {
     updateStyle() {
         this.remove_style_class_name('position-left');
         this.remove_style_class_name('position-right');
-        switch (Me.msThemeManager.verticalPanelPosition) {
+        switch (Me.msThemeManager!.verticalPanelPosition) {
             case VerticalPanelPositionEnum.LEFT: {
                 this.add_style_class_name('position-left');
                 break;
@@ -203,18 +204,18 @@ export class MsPanel extends St.BoxLayout {
     }
 
     override vfunc_get_preferred_width(_for_height: number): [number, number] {
-        const panelSize = Me.msThemeManager.getPanelSize();
+        const panelSize = Me.msThemeManager!.getPanelSize();
         return [panelSize, panelSize];
     }
 
     toggle() {
         if (!this.isExpanded) {
-            if (!Me.layout.panelsVisible) {
+            if (!Me.layout!.panelsVisible) {
                 this.show();
             }
             if (this.extendedPanelContent.get_parent() === null) {
                 if (
-                    Me.msThemeManager.verticalPanelPosition ===
+                    Me.msThemeManager!.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
                 ) {
                     this.insert_child_below(
@@ -230,7 +231,7 @@ export class MsPanel extends St.BoxLayout {
             }
             if (this.divider.get_parent() === null) {
                 if (
-                    Me.msThemeManager.verticalPanelPosition ===
+                    Me.msThemeManager!.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
                 ) {
                     this.insert_child_below(this.divider, this.panelContent);
@@ -239,13 +240,13 @@ export class MsPanel extends St.BoxLayout {
                 }
             }
 
-            this.width = Me.msThemeManager.getScaledSize(448);
+            this.width = Me.msThemeManager!.getScaledSize(448);
             this.translation_x =
-                (Me.msThemeManager.getScaledSize(448) -
-                    (Me.layout.panelsVisible
-                        ? Me.msThemeManager.getPanelSize()
+                (Me.msThemeManager!.getScaledSize(448) -
+                    (Me.layout!.panelsVisible
+                        ? Me.msThemeManager!.getPanelSize()
                         : 0)) *
-                (Me.msThemeManager.verticalPanelPosition ===
+                (Me.msThemeManager!.verticalPanelPosition ===
                 VerticalPanelPositionEnum.LEFT
                     ? -1
                     : 1);
@@ -266,11 +267,11 @@ export class MsPanel extends St.BoxLayout {
 
             this.ease({
                 translation_x:
-                    (Me.msThemeManager.getScaledSize(448) -
-                        (Me.layout.panelsVisible
-                            ? Me.msThemeManager.getPanelSize()
+                    (Me.msThemeManager!.getScaledSize(448) -
+                        (Me.layout!.panelsVisible
+                            ? Me.msThemeManager!.getPanelSize()
                             : 0)) *
-                    (Me.msThemeManager.verticalPanelPosition ===
+                    (Me.msThemeManager!.verticalPanelPosition ===
                     VerticalPanelPositionEnum.LEFT
                         ? -1
                         : 1),
@@ -281,7 +282,7 @@ export class MsPanel extends St.BoxLayout {
                     this.remove_child(this.divider);
                     this.width = -1;
                     this.translation_x = 0;
-                    if (!Me.layout.panelsVisible) {
+                    if (!Me.layout!.panelsVisible) {
                         this.hide();
                     }
                     this.extendedPanelContent.searchResultList.reset();
@@ -304,8 +305,8 @@ export class SearchButton extends MatPanelButton {
     }
     override vfunc_get_preferred_height(_for_width: number): [number, number] {
         const height = Math.max(
-            Me.msThemeManager.getScaledSize(48),
-            Me.msThemeManager.getPanelSize()
+            Me.msThemeManager!.getScaledSize(48),
+            Me.msThemeManager!.getPanelSize()
         );
         return [height, height];
     }

@@ -1,12 +1,13 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import { main as Main } from 'ui';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
 import { assert } from './assert';
 import { Async } from './async';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 /* exported range, debounce, throttle, reparentActor */
 export const range = (to: any) =>
@@ -118,7 +119,7 @@ export const reparentActor = (
 
     if (currentParent === parent) return;
 
-    Me.reparentInProgress = true;
+    Me.instance.reparentInProgress = true;
     const restoreFocusTo = actor.has_key_focus()
         ? actor
         : isParentOfActor(actor, global.stage.key_focus)
@@ -139,7 +140,7 @@ export const reparentActor = (
     if (restoreFocusTo) {
         restoreFocusTo.grab_key_focus();
     }
-    Me.reparentInProgress = false;
+    Me.instance.reparentInProgress = false;
 };
 
 export const InfinityTo0 = (number: number) => {

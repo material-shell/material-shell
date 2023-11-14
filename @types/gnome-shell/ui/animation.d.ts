@@ -1,0 +1,1 @@
+export const Spinner: any;

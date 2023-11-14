@@ -1,11 +1,9 @@
 /* exported loadRemoteSearchProviders */
-import * as GLib from 'glib';
-import * as St from 'st';
+import GLib from 'gi://GLib';
+import St from 'gi://St';
 import { AppSearchProvider } from './AppSearchProvider';
 import { RecentSearchProvider } from './RecentSearchProvider';
 import { RemoteSearchProvider } from './RemoteSearchProvider';
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export interface RawMeta {
     [prop: string]: GLib.Variant;

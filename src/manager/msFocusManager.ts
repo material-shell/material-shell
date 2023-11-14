@@ -1,29 +1,27 @@
 /** Gnome libs imports */
-import { Actor, Grab } from 'clutter';
-import * as GLib from 'glib';
-import { ModalOptions } from 'meta';
-import { ActionMode } from 'shell';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Shell from 'gi://Shell';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { default as Me } from 'src/extension';
+
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 import { MsManager } from 'src/manager/msManager';
-import { assert } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
-import { gnomeVersionGreaterOrEqualTo } from 'src/utils/shellVersionMatch';
-import { main as Main } from 'ui';
+
+import { Debug } from 'src/utils/debug';
 import {
     MetaWindowWithMsProperties,
     MsWindowManagerType,
 } from './msWindowManager';
 
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 export type MsFocusManagerType = InstanceType<typeof MsFocusManager>;
 export class MsFocusManager extends MsManager {
     msWindowManager: MsWindowManagerType;
     lastMsWindowFocused: MsWindow | null = null;
-    lastKeyFocus: Actor | null = null;
+    lastKeyFocus: Clutter.Actor | null = null;
     focusProtected?: boolean;
-    actorGrabMap: Map<Actor, boolean | Grab> = new Map();
+    actorGrabMap: Map<Clutter.Actor, boolean | Clutter.Grab> = new Map();
     constructor(msWindowManager: MsWindowManagerType) {
         super();
         this.msWindowManager = msWindowManager;
@@ -43,7 +41,7 @@ export class MsFocusManager extends MsManager {
             global.workspace_manager,
             'active-workspace-changed',
             () => {
-                if (!Me.loaded) return;
+                if (!Me.instance.loaded) return;
                 this.focusProtected = true;
                 Async.addTimeout(GLib.PRIORITY_DEFAULT, 100, () => {
                     delete this.focusProtected;
@@ -62,7 +60,7 @@ export class MsFocusManager extends MsManager {
                 this.lastKeyFocus != this.lastMsWindowFocused &&
                 this.lastKeyFocus.mapped
             ) {
-                Me.logFocus(
+                Debug.logFocus(
                     'Focus Protected, restore focus to ',
                     this.lastKeyFocus
                 );
@@ -74,7 +72,7 @@ export class MsFocusManager extends MsManager {
 
         this.lastKeyFocus = keyFocus;
 
-        let actor: Actor | null = keyFocus;
+        let actor: Clutter.Actor | null = keyFocus;
         while (actor !== null) {
             if (actor instanceof MsWindow) {
                 this.setFocusToMsWindow(actor);
@@ -117,29 +115,22 @@ export class MsFocusManager extends MsManager {
     }
 
     pushModal(
-        actor: Actor,
+        actor: Clutter.Actor,
         options?: {
             timestamp?: number;
-            options?: ModalOptions;
-            actionMode?: ActionMode;
+            options?: any;
+            actionMode?: Shell.ActionMode;
         }
     ) {
         const grab = Main.pushModal(actor, options);
         this.actorGrabMap.set(actor, grab);
     }
 
-    popModal(actor: Actor) {
+    popModal(actor: Clutter.Actor) {
         const grab = this.actorGrabMap.get(actor);
         if (grab !== undefined) {
-            if (gnomeVersionGreaterOrEqualTo(Main.popModal, '42.0')) {
-                assert(
-                    typeof grab !== 'boolean',
-                    'Expected grab to be a grab object'
-                );
-                Main.popModal(grab);
-            } else {
-                Main.popModal(actor);
-            }
+            Main.popModal(grab);
+
             this.actorGrabMap.delete(actor);
         }
     }

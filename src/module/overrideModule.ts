@@ -1,6 +1,6 @@
 /** Gnome libs imports */
-import * as Meta from 'meta';
-import { windowManager } from 'ui';
+import Meta from 'gi://Meta';
+import * as WindowManager from 'resource:///org/gnome/shell/ui/windowManager.js';
 
 /* exported OverrideModule */
 export class OverrideModule {
@@ -25,15 +25,15 @@ export class OverrideModule {
     overrideWindowManagerFunctions() {
         this.windowManagersFunctionToRestore = [];
         const _shouldAnimate =
-            windowManager.WindowManager.prototype._shouldAnimate;
-        windowManager.WindowManager.prototype._shouldAnimate = function (
+            WindowManager.WindowManager.prototype._shouldAnimate;
+        WindowManager.WindowManager.prototype._shouldAnimate = function (
             _actor,
             _types
         ) {
             return false;
         };
         this.windowManagersFunctionToRestore.push([
-            windowManager.WindowManager.prototype._shouldAnimate,
+            WindowManager.WindowManager.prototype._shouldAnimate,
             _shouldAnimate,
         ]);
     }

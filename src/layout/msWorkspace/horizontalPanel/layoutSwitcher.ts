@@ -1,8 +1,9 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as Gio from 'gio';
-import * as GLib from 'glib';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import St from 'gi://St';
 import { MatPanelButton } from 'src/layout/verticalPanel/panelButton';
 import {
     LayoutState,
@@ -11,28 +12,30 @@ import {
 } from 'src/manager/layoutManager';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
-import { main as Main, popupMenu } from 'ui';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+
 import { MsWorkspace } from '../msWorkspace';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class LayoutSwitcher extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'LayoutSwitcher',
     };
     layoutQuickWidgetBin: St.Bin;
     tilingIcon: St.Icon;
     switcherButton: MatPanelButton;
-    menuManager: popupMenu.PopupMenuManager;
+    menuManager: PopupMenu.PopupMenuManager;
     msWorkspace: MsWorkspace;
-    menu: popupMenu.PopupMenu;
+    menu: PopupMenu.PopupMenu;
 
     constructor(
         msWorkspace: MsWorkspace,
-        panelMenuManager: popupMenu.PopupMenuManager
+        panelMenuManager: PopupMenu.PopupMenuManager
     ) {
         super({});
         this.layoutQuickWidgetBin = new St.Bin({
@@ -101,7 +104,7 @@ export class LayoutSwitcher extends St.BoxLayout {
     }
 
     buildMenu() {
-        const menu = new popupMenu.PopupMenu(this, 0.5, St.Side.TOP);
+        const menu = new PopupMenu.PopupMenu(this, 0.5, St.Side.TOP);
         menu.actor.add_style_class_name('horizontal-panel-menu');
         menu.actor.hide();
         Object.entries(TilingLayoutByKey).forEach(
@@ -116,7 +119,7 @@ export class LayoutSwitcher extends St.BoxLayout {
                 );
             }
         );
-        menu.addMenuItem(new popupMenu.PopupSeparatorMenuItem());
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         menu.addMenuItem(new LayoutsToggle(menu));
         return menu;
     }
@@ -134,11 +137,11 @@ export class LayoutSwitcher extends St.BoxLayout {
             return true;
 
         // Add the layout in the right order
-        const wantedIndex = Me.layoutManager.layoutList.findIndex((layout) => {
+        const wantedIndex = Me.layoutManager!.layoutList.findIndex((layout) => {
             return layoutKey === layout.state.key;
         });
         // Note: This cast is safe, typescript is just not good enough to figure that out
-        const newState = Me.layoutManager.getLayoutByKey(layoutKey)
+        const newState = Me.layoutManager!.getLayoutByKey(layoutKey)
             .state as LayoutState;
         if (wantedIndex > this.msWorkspace.state.layoutStateList.length) {
             this.msWorkspace.state.layoutStateList.push(newState);
@@ -149,7 +152,7 @@ export class LayoutSwitcher extends St.BoxLayout {
                 newState
             );
         }
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
         return true;
     }
 
@@ -165,13 +168,13 @@ export class LayoutSwitcher extends St.BoxLayout {
             (layoutState) => layoutState.key === layoutKey
         );
         this.msWorkspace.state.layoutStateList.splice(index, 1);
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
 
         return true;
     }
 
     vfunc_allocate(...args: [Clutter.ActorBox]) {
-        const height = Me.msThemeManager.getPanelSizeNotScaled() / 2;
+        const height = Me.msThemeManager!.getPanelSizeNotScaled() / 2;
 
         if (this.tilingIcon && this.tilingIcon.get_icon_size() != height) {
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
@@ -184,21 +187,21 @@ export class LayoutSwitcher extends St.BoxLayout {
 }
 
 @registerGObjectClass
-export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
+export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
     editable = false;
 
     constructor(
         layoutConstructor: LayoutType,
         active: boolean,
-        params?: popupMenu.PopupBaseMenuItemParams
+        params?: PopupMenu.PopupBaseMenuItemParams
     ) {
         super(layoutConstructor.label, active, params);
         this.layoutConstructor = layoutConstructor;
         this._icon = new St.Icon({
             style_class: 'popup-menu-icon',
             gicon: Gio.icon_new_for_string(
-                `${Me.path}/assets/icons/tiling/${layoutConstructor.state.key}-symbolic.svg`
+                `${Me.instance.metadata.path}/assets/icons/tiling/${layoutConstructor.state.key}-symbolic.svg`
             ),
             x_align: Clutter.ActorAlign.END,
         });
@@ -291,28 +294,28 @@ export class TilingLayoutMenuItem extends popupMenu.PopupSwitchMenuItem {
 }
 
 @registerGObjectClass
-export class LayoutsToggle extends popupMenu.PopupImageMenuItem {
+export class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
     editText: string;
-    editIcon: Gio.IconPrototype;
+    editIcon: Gio.Icon;
     confirmText: string;
-    confirmIcon: Gio.IconPrototype;
-    menu: popupMenu.PopupMenu;
+    confirmIcon: Gio.Icon;
+    menu: PopupMenu.PopupMenu;
     editable: boolean;
 
     constructor(
-        menu: popupMenu.PopupMenu,
-        params?: popupMenu.PopupBaseMenuItemParams
+        menu: PopupMenu.PopupMenu,
+        params?: PopupMenu.PopupBaseMenuItemParams
     ) {
         const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/category/settings-symbolic.svg`
+            `${Me.instance.metadata.path}/assets/icons/category/settings-symbolic.svg`
         );
         super(editText, editIcon, params);
         this.editText = editText;
         this.editIcon = editIcon;
         this.confirmText = _('Confirm layouts');
         this.confirmIcon = Gio.icon_new_for_string(
-            `${Me.path}/assets/icons/check-symbolic.svg`
+            `${Me.instance.metadata.path}/assets/icons/check-symbolic.svg`
         );
         this.menu = menu;
         this.editable = false;

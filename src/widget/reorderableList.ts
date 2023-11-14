@@ -1,15 +1,14 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
 import { assert } from 'src/utils/assert';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { MatButton } from 'src/widget/material/button';
-import * as St from 'st';
-const DND = imports.ui.dnd;
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 interface DraggableActor extends Clutter.Actor {
     draggable: any;
@@ -32,7 +31,7 @@ interface DraggableActor extends Clutter.Actor {
 
 @registerGObjectClass
 export class ReorderableList extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'ReorderableList',
         Signals: {
             'drag-start': {},
@@ -223,7 +222,7 @@ export class ReorderableList extends Clutter.Actor {
 
 @registerGObjectClass
 export class DropPlaceholder extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'DropPlaceHolder',
         Signals: {
             'drag-dropped': {

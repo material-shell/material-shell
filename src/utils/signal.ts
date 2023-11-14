@@ -1,4 +1,4 @@
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 
 export interface CanSendSignal<F> extends CanDisconnect {
     connect(signal: string, callback: F): number;

@@ -1,33 +1,33 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GLib from 'glib';
-import { PRIORITY_DEFAULT, SOURCE_CONTINUE, SOURCE_REMOVE } from 'glib';
-import * as GObject from 'gobject';
-import * as Meta from 'meta';
-
-import { App, WindowTracker } from 'shell';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 import {
     MetaWindowActorWithMsProperties,
     MetaWindowWithMsProperties,
 } from 'src/manager/msWindowManager';
-import { Rectangular } from 'src/types/mod';
 import { throttle } from 'src/utils';
 import { assert, assertNotNull } from 'src/utils/assert';
 import { Async } from 'src/utils/async';
 /** Extension imports */
+import St from 'gi://St';
+import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { centerInBox } from 'src/utils/layout';
 import { set_style_class } from 'src/utils/styling_utils';
 import * as WindowUtils from 'src/utils/windows';
 import { AppPlaceholder } from 'src/widget/appPlaceholder';
-import * as St from 'st';
-import { dialog, main as Main } from 'ui';
+
+import { Debug } from 'src/utils/debug';
 import { MsWorkspace } from './msWorkspace';
 import { PrimaryBorderEffect } from './tilingLayouts/baseResizeableTiling';
 
-const isWayland = GLib.getenv('XDG_SESSION_TYPE').toLowerCase() === 'wayland';
+const isWayland = GLib.getenv('XDG_SESSION_TYPE')?.toLowerCase() === 'wayland';
 
 const PLACEHOLDER_ICON_SIZE = 248;
 
@@ -62,7 +62,7 @@ export interface MsWindowState {
 }
 
 export interface MsWindowConstructProps {
-    app: App;
+    app: Shell.App;
     persistent?: boolean;
     initialAllocation?: Rectangular;
     msWorkspace: MsWorkspace;
@@ -127,13 +127,13 @@ type MsWindowLifecycleState =
  * This is if the window has drawn its first frame, or there is a gnome-shell dialog on the window.
  */
 function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
-    const actor = metaWindow.get_compositor_private<Meta.WindowActor>();
+    const actor = metaWindow.get_compositor_private() as Meta.WindowActor;
     assert(actor !== null, "Expected the metaWindow's actor to exist");
     if (metaWindow.firstFrameDrawn) {
         return true;
     }
 
-    if (actor.get_children().some((a) => a instanceof dialog.Dialog)) {
+    if (actor.get_children().some((a) => a instanceof Dialog.Dialog)) {
         // The window has an open dialog, but it hasn't drawn its first frame yet.
         // The dialog is probably important. It can for example be a "this application is not responding" dialog.
         return true;
@@ -144,7 +144,7 @@ function isWindowContentInteresting(metaWindow: MetaWindowWithMsProperties) {
 
 @registerGObjectClass
 export class MsWindow extends Clutter.Actor {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsWindow',
         Signals: {
             title_changed: {
@@ -164,7 +164,7 @@ export class MsWindow extends Clutter.Actor {
 
     lifecycleState: MsWindowLifecycleState;
 
-    app: App;
+    app: Shell.App;
     appSignalId: number | undefined = undefined;
     _persistent: boolean | undefined;
     createdAt: Date;
@@ -209,7 +209,7 @@ export class MsWindow extends Clutter.Actor {
         this.windowClone = new Clutter.Clone();
         this.placeholder = new AppPlaceholder(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE),
-            this.app.get_name()
+            this.app.get_name() ?? ''
         );
         this.placeholder.connect('activated', (_) => {
             this.emit('request-new-meta-window');
@@ -239,18 +239,19 @@ export class MsWindow extends Clutter.Actor {
                 break;
             case 'window':
                 matchingInfo = {
-                    appId: this.app.id,
-                    title: this.lifecycleState.metaWindow?.title,
+                    appId: this.app.id!,
+                    title: this.lifecycleState.metaWindow?.title ?? '',
                     pid: this.lifecycleState.metaWindow?.get_pid(),
                     wmClass:
-                        this.lifecycleState.metaWindow?.get_wm_class_instance(),
+                        this.lifecycleState.metaWindow?.get_wm_class_instance() ??
+                        undefined,
                     stableSeq:
                         this.lifecycleState.metaWindow?.get_stable_sequence(),
                 };
                 break;
             default:
                 matchingInfo = {
-                    appId: this.app.id,
+                    appId: this.app.id!,
                     title: undefined,
                     pid: undefined,
                     wmClass: undefined,
@@ -259,7 +260,7 @@ export class MsWindow extends Clutter.Actor {
         }
 
         return {
-            appId: this.app.id,
+            appId: this.app.id!,
             // For compatibility we save a meta window identifier string.
             // This is useful if the user decides to downgrade material-shell to a previous version.
             metaWindowIdentifier:
@@ -321,7 +322,7 @@ export class MsWindow extends Clutter.Actor {
 
     set persistent(boolean: boolean) {
         this._persistent = boolean;
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
     }
 
     private trackAppChanges() {
@@ -345,7 +346,7 @@ export class MsWindow extends Clutter.Actor {
                             lifecycleState.metaWindow
                         ) {
                             const app =
-                                WindowTracker.get_default().get_window_app(
+                                Shell.WindowTracker.get_default().get_window_app(
                                     lifecycleState.metaWindow
                                 );
                             if (app !== null) {
@@ -372,11 +373,11 @@ export class MsWindow extends Clutter.Actor {
             "Expected the MsWindow to be in the 'window' state"
         );
         this.trackAppChanges();
-        state.matchingInfo.appId = this.app.id;
+        state.matchingInfo.appId = this.app.id!;
         this.placeholder.setIcon(
             this.app.create_icon_texture(PLACEHOLDER_ICON_SIZE)
         );
-        this.placeholder.setTitle(this.app.get_name());
+        this.placeholder.setTitle(this.app.get_name()!);
     }
 
     delayGetMetaWindowActor(
@@ -389,7 +390,7 @@ export class MsWindow extends Clutter.Actor {
             // If we don't have actor we hope to get it in the next loop
             Async.addTimeout(GLib.PRIORITY_DEFAULT, 50, () => {
                 const actor =
-                    metaWindow.get_compositor_private<Meta.WindowActor>();
+                    metaWindow.get_compositor_private() as Meta.WindowActor;
                 if (actor && actor.get_texture()) {
                     resolve(actor);
                 } else {
@@ -409,7 +410,7 @@ export class MsWindow extends Clutter.Actor {
 
     get dragged() {
         return (
-            Me.msWindowManager.msDndManager.dragInProgress?.msWindow === this
+            Me.msWindowManager!.msDndManager.dragInProgress?.msWindow === this
         );
     }
 
@@ -429,7 +430,8 @@ export class MsWindow extends Clutter.Actor {
             if (!metaWindow) {
                 return resolve();
             }
-            const actor = metaWindow.get_compositor_private<Meta.WindowActor>();
+            const actor =
+                metaWindow.get_compositor_private() as Meta.WindowActor;
             if (actor && actor.get_texture()) {
                 resolve(actor);
             } else {
@@ -443,12 +445,12 @@ export class MsWindow extends Clutter.Actor {
             const check = () => {
                 if (isWindowContentInteresting(metaWindow)) {
                     resolve();
-                    return SOURCE_REMOVE;
+                    return GLib.SOURCE_REMOVE;
                 }
 
-                return SOURCE_CONTINUE;
+                return GLib.SOURCE_CONTINUE;
             };
-            Async.addTimeout(PRIORITY_DEFAULT, 50, check);
+            Async.addTimeout(GLib.PRIORITY_DEFAULT, 50, check);
 
             // Not strictly necessary, but has slightly lower latency than the repeated check
             metaWindow.firstFrameDrawnPromise?.then(resolve);
@@ -546,7 +548,7 @@ export class MsWindow extends Clutter.Actor {
         const metaWindow = state.metaWindow;
         const windowActor =
             metaWindow &&
-            metaWindow.get_compositor_private<MetaWindowActorWithMsProperties>();
+            (metaWindow.get_compositor_private() as MetaWindowActorWithMsProperties);
 
         if (
             !windowActor ||
@@ -970,7 +972,7 @@ export class MsWindow extends Clutter.Actor {
 
         this.updateWorkspaceAndMonitor(metaWindow);
         this.windowClone.set_source(
-            metaWindow.get_compositor_private<Meta.WindowActor>()
+            metaWindow.get_compositor_private() as Meta.WindowActor
         );
         this.onMetaWindowsChanged();
     }
@@ -1002,7 +1004,7 @@ export class MsWindow extends Clutter.Actor {
                 metaWindow.move_to_monitor(this.msWorkspace.monitor.index);
             }
 
-            const workspace = Me.msWorkspaceManager.getWorkspaceOfMsWorkspace(
+            const workspace = Me.msWorkspaceManager!.getWorkspaceOfMsWorkspace(
                 this.msWorkspace
             );
             if (workspace && metaWindow.get_workspace() != workspace) {
@@ -1033,7 +1035,7 @@ export class MsWindow extends Clutter.Actor {
 
         this.updateWorkspaceAndMonitor(metaWindow);
         const clone = new Clutter.Clone({
-            source: metaWindow.get_compositor_private<Meta.WindowActor>(),
+            source: metaWindow.get_compositor_private() as Meta.WindowActor,
         });
 
         const dialog = {
@@ -1112,7 +1114,7 @@ export class MsWindow extends Clutter.Actor {
     grab_key_focus(): void {
         // TODO: Seems a bit redundant to first focus the dialogs and then change focus to the main window (is that even desired?)
         this.focusDialogs();
-        if (!Me.msWindowManager.msFocusManager.requestFocus(this)) return;
+        if (!Me.msWindowManager!.msFocusManager.requestFocus(this)) return;
         if (this.metaWindow) {
             this.metaWindow.activate(global.get_current_time());
         } else {
@@ -1172,7 +1174,7 @@ export class MsWindow extends Clutter.Actor {
         );
         // If it's neither the MainMetaWindow or a Dialog we ignore, but this shouldn't happen
         if (!isMainMetaWindow && !dialog) {
-            Me.log('Cannot find the window which was unmanaged');
+            Debug.log('Cannot find the window which was unmanaged');
             return;
         }
         if (dialog) {
@@ -1212,7 +1214,7 @@ export class MsWindow extends Clutter.Actor {
                     return new Promise<void>((resolve) => {
                         // TODO: When can this return false?
                         if (
-                            dialog.metaWindow.get_compositor_private<Meta.WindowActor>()
+                            dialog.metaWindow.get_compositor_private() as Meta.WindowActor
                         ) {
                             dialog.metaWindow.connect('unmanaged', (_) => {
                                 resolve();
@@ -1227,7 +1229,7 @@ export class MsWindow extends Clutter.Actor {
                 const promise = new Promise<void>((resolve) => {
                     if (
                         state.metaWindow &&
-                        state.metaWindow.get_compositor_private<Meta.WindowActor>()
+                        (state.metaWindow.get_compositor_private() as Meta.WindowActor)
                     ) {
                         state.metaWindow.connect('unmanaged', (_) => {
                             resolve();
@@ -1297,7 +1299,7 @@ export class MsWindow extends Clutter.Actor {
             const shouldBeHidden =
                 !this.visible ||
                 this.get_parent() === null ||
-                Me.msWindowManager.msDndManager.dragInProgress;
+                Me.msWindowManager!.msDndManager.dragInProgress;
             if (shouldBeHidden && !metaWindow.minimized) {
                 metaWindow.minimize();
             } else if (!shouldBeHidden && metaWindow.minimized) {
@@ -1331,7 +1333,7 @@ export class MsWindowContent extends St.Widget {
     placeholder: Clutter.Actor;
     clone: Clutter.Clone;
 
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsWindowContent',
     };
 
@@ -1359,7 +1361,7 @@ export class MsWindowContent extends St.Widget {
         if (
             metaWindow &&
             metaWindow.firstFrameDrawn &&
-            metaWindow.get_compositor_private<Meta.WindowActor>()
+            (metaWindow.get_compositor_private() as Meta.WindowActor)
         ) {
             const windowFrameRect = metaWindow.get_frame_rect();
             const windowBufferRect = metaWindow.get_buffer_rect();

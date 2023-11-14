@@ -1,18 +1,16 @@
 /** Gnome libs imports */
-import { Color } from 'cogl';
-import * as Gio from 'gio';
-import { byteArray } from 'gjs';
-import * as GLib from 'glib';
-import * as Meta from 'meta';
-import { MsManager } from 'src/manager/msManager';
+import Cogl from 'gi://Cogl';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { default as Me } from 'src/extension';
 import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
+import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
-import * as St from 'st';
-import { main as Main } from 'ui';
-
-/** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { MsManager } from './msManager';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
 
@@ -50,8 +48,8 @@ export const msThemeSignalEnum = {
     FocusEffectChanged: 'focus-effect-changed',
 };
 
-function parseCoglColor(color: string): Color {
-    const c = new Color();
+function parseCoglColor(color: string): Cogl.Color {
+    const c = new Cogl.Color();
     c.init_from_4ub(
         parseInt(color.substring(1, 3), 16),
         parseInt(color.substring(3, 5), 16),
@@ -65,10 +63,10 @@ export class MsThemeManager extends MsManager {
     themeContext: St.ThemeContext;
     theme: St.Theme;
     themeSettings: Gio.Settings;
-    themeFile: Gio.FilePrototype;
+    themeFile: Gio.File;
     themeValue: string;
     primary: string;
-    primaryColor: Color;
+    primaryColor: Cogl.Color;
     metaCursor: Meta.Cursor;
     throttledDisplaySetCursor: () => void;
 
@@ -78,10 +76,12 @@ export class MsThemeManager extends MsManager {
         this.theme = this.themeContext.get_theme();
         this.themeSettings = getSettings('theme');
         this.themeFile = Gio.file_new_for_path(
-            `${GLib.get_user_cache_dir()}/${Me.uuid}-theme.css`
+            `${GLib.get_user_cache_dir()}/${
+                Me.instance.metadata.uuid
+            }-theme.css`
         );
-        this.themeValue = this.themeSettings.get_string('theme');
-        this.primary = this.themeSettings.get_string('primary-color');
+        this.themeValue = this.themeSettings.get_string('theme')!;
+        this.primary = this.themeSettings.get_string('primary-color')!;
         this.primaryColor = parseCoglColor(this.primary);
         this.metaCursor = Meta.Cursor.DEFAULT;
         let displayedCursor: Meta.Cursor = this.metaCursor;
@@ -95,7 +95,7 @@ export class MsThemeManager extends MsManager {
             { leading: false }
         );
         this.observe(this.themeContext, 'changed', () => {
-            Me.log('theme changed');
+            Debug.log('theme changed');
             this.theme = this.themeContext.get_theme();
 
             if (Main.layoutManager.uiGroup.has_style_class_name('no-theme')) {
@@ -206,8 +206,8 @@ export class MsThemeManager extends MsManager {
     }
 
     getScaledSize(size: number) {
-        const { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
-        return size * scaleFactor;
+        const { scale_factor } = St.ThemeContext.get_for_stage(global.stage);
+        return size * scale_factor;
     }
 
     get focusEffect() {
@@ -251,7 +251,7 @@ export class MsThemeManager extends MsManager {
                     assertNotNull(obj).load_contents_finish(res);
                 if (success) {
                     //Read the binay content as string
-                    const content = byteArray.toString(contents);
+                    const content = new TextDecoder().decode(contents);
                     resolve(content);
                 } else {
                     reject(success);
@@ -262,7 +262,9 @@ export class MsThemeManager extends MsManager {
 
     async writeContentToFile(content: string, file: Gio.File) {
         return new Promise<Gio.File>((resolve, _) => {
-            const contentBytes = new GLib.Bytes(byteArray.fromString(content));
+            const contentBytes = new GLib.Bytes(
+                new TextEncoder().encode(content)
+            );
             file.replace_async(
                 null,
                 false,
@@ -287,9 +289,9 @@ export class MsThemeManager extends MsManager {
         });
     }
 
-    async buildThemeStylesheetToFile(file: Gio.FilePrototype) {
+    async buildThemeStylesheetToFile(file: Gio.File) {
         const originThemeFile = Gio.file_new_for_path(
-            `${Me.path}/style-${this.themeValue}-theme.css`
+            `${Me.instance.metadata.path}/style-${this.themeValue}-theme.css`
         );
         let content = await this.readFileContent(originThemeFile);
         content = content.replace(/#3f51b5/g, this.primary); // color-primary
@@ -324,7 +326,7 @@ export class MsThemeManager extends MsManager {
     destroy() {
         super.destroy();
         // Do not remove the stylesheet in during locking disable
-        if (!Me.locked) {
+        if (!Me.instance.locked) {
             this.unloadStylesheet();
         }
     }

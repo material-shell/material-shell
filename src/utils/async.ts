@@ -1,8 +1,6 @@
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
 import { assert } from './assert';
 import { logAsyncException } from './log';
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 export class Async {
     static timeoutIdList = [] as number[];

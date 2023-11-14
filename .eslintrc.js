@@ -25,6 +25,7 @@ module.exports = {
                 destructuredArrayIgnorePattern: '^_',
             },
         ],
+        '@typescript-eslint/no-non-null-assertion': 'warn',
     },
     overrides: [
         {

@@ -1,7 +1,5 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';
 import { logAssert } from 'src/utils/assert';

@@ -1,8 +1,7 @@
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import { Debug } from 'src/utils/debug';
 import { WithSignals } from 'src/utils/gjs';
 
 export interface Signal {
@@ -44,7 +43,7 @@ export class MsManager extends WithSignals {
                 try {
                     signal.from.disconnect(signal.id);
                 } catch (error) {
-                    Me.log(
+                    Debug.log(
                         `Failed to disconnect signal ${signal.id} from ${
                             signal.from
                         } ${

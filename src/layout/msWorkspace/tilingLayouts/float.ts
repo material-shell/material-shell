@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
 /** Extension imports */
 import { BaseTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseTiling';

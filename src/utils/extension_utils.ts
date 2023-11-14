@@ -1,5 +1,5 @@
-import * as Gio from 'gio';
-import { main as Main } from 'ui';
+import Gio from 'gi://Gio';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 /** Get the settings object for an extension.
  * Returns null if it cannot be found.

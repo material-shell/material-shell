@@ -1,7 +1,8 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as Meta from 'meta';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
 import {
     compareVersions,
@@ -9,21 +10,19 @@ import {
     parseVersion,
 } from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
-import * as St from 'st';
-import { Widget } from 'st';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 const beforeGnome44 =
     compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
-interface MatButtonParams extends Partial<Widget.ConstructorProperties> {
+interface MatButtonParams extends Partial<St.Widget.ConstructorProperties> {
     primary?: boolean;
     child?: St.Widget;
 }
 
 @registerGObjectClass
 export class MatButton extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MatButton',
         Signals: {
             clicked: {
@@ -46,7 +45,7 @@ export class MatButton extends St.Widget {
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
         const child = params.child;
-        const super_params: Partial<Widget.ConstructorProperties> = params;
+        const super_params = params;
         delete super_params.child;
         delete super_params.primary;
         Object.assign(super_params, {
@@ -82,10 +81,10 @@ export class MatButton extends St.Widget {
         this.add_action(clickAction);
 
         this.connect('enter-event', () => {
-            Me.msThemeManager.setCursor(Meta.Cursor.POINTING_HAND);
+            Me.msThemeManager!.setCursor(Meta.Cursor.POINTING_HAND);
         });
         this.connect('leave-event', () => {
-            Me.msThemeManager.setCursor(Meta.Cursor.DEFAULT);
+            Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
         });
     }
 
@@ -113,11 +112,9 @@ export class MatButton extends St.Widget {
                 this.emit('drag-start', event);
                 return false;
             };
-            this._longPressLater = beforeGnome44
-                ? Meta.later_add(Meta.LaterType.BEFORE_REDRAW, callback)
-                : global.compositor
-                      .get_laters()
-                      .add(Meta.LaterType.BEFORE_REDRAW, callback);
+            this._longPressLater = global.compositor
+                .get_laters()
+                .add(Meta.LaterType.BEFORE_REDRAW, callback);
         }
         if (state == Clutter.LongPressState.ACTIVATE) {
             this.emit('secondary-action');
@@ -171,7 +168,7 @@ const PropagateClickAction = (() => {
     if (beforeGnome42) {
         @registerGObjectClass
         class PropagateClickActionBefore42 extends Clutter.ClickAction {
-            static metaInfo: GObject.MetaInfo = {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
                 GTypeName: 'PropagateClickAction',
             };
             get event(): Clutter.Event | undefined {
@@ -182,7 +179,7 @@ const PropagateClickAction = (() => {
     } else {
         @registerGObjectClass
         class PropagateClickActionAfter42 extends Clutter.ClickAction {
-            static metaInfo: GObject.MetaInfo = {
+            static metaInfo: GObject.MetaInfo<any, any, any> = {
                 GTypeName: 'PropagateClickAction',
             };
             event: Clutter.Event | undefined;

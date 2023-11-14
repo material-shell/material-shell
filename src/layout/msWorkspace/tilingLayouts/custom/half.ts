@@ -1,5 +1,5 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
+import Clutter from 'gi://Clutter';
 import { BaseResizeableTilingLayout } from 'src/layout/msWorkspace/tilingLayouts/baseResizeableTiling';
 import { registerGObjectClass } from 'src/utils/gjs';
 

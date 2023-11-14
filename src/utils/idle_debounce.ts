@@ -1,4 +1,4 @@
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
 import { assertNotNull } from './assert';
 
 /** Helper to run a function with `GLib.idle_add`, but with automatic debouncing and a convenient cancel function */

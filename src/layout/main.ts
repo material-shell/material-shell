@@ -1,8 +1,10 @@
 /** Gnome libs imports */
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
-import * as Meta from 'meta';
-import * as Shell from 'shell';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MsPanel } from 'src/layout/verticalPanel/verticalPanel';
 import { Signal } from 'src/manager/msManager';
 import {
@@ -14,25 +16,22 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import { SignalHandle } from 'src/utils/signal';
 import { TranslationHelper } from 'src/utils/transition';
-import * as St from 'st';
-import { layout, main as Main } from 'ui';
 import { MsWorkspaceActor } from './msWorkspace/msWorkspace';
-import Monitor = layout.Monitor;
 
-const Background = imports.ui.background;
+import * as Background from 'resource:///org/gnome/shell/ui/background.js';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MsMain',
     };
     panelsVisible: boolean;
     monitorsContainer: MonitorContainer[];
     aboveContainer: Clutter.Actor;
-    backgroundGroup: Meta.BackgroundGroup<Clutter.Actor>;
+    backgroundGroup: Meta.BackgroundGroup;
     primaryMonitorContainer: PrimaryMonitorContainer;
     panel: MsPanel;
     blurEffect: Shell.BlurEffect | undefined;
@@ -42,7 +41,6 @@ export class MsMain extends St.Widget {
 
     constructor() {
         super({});
-        Me.layout = this;
         this.panelsVisible = Me.stateManager.getState('panels-visible') ?? true;
 
         Main.layoutManager.uiGroup.insert_child_above(
@@ -58,6 +56,7 @@ export class MsMain extends St.Widget {
         this.add_child(this.backgroundGroup);
 
         this.primaryMonitorContainer = new PrimaryMonitorContainer(
+            this,
             assertNotNull(this.primaryMonitor),
             this.backgroundGroup,
             {
@@ -71,6 +70,7 @@ export class MsMain extends St.Widget {
         );
         for (const externalMonitor of this.externalMonitors) {
             const container = new MonitorContainer(
+                this,
                 externalMonitor,
                 this.backgroundGroup,
                 {
@@ -190,8 +190,8 @@ export class MsMain extends St.Widget {
         });
 
         this.signals.push({
-            from: Me,
-            id: Me.connect('extension-disable', () => {
+            from: Me.instance,
+            id: Me.instance.connect('extension-disable', () => {
                 this.aboveContainer.get_children().forEach((actor) => {
                     this.aboveContainer.remove_child(actor);
                     global.window_group.add_child(actor);
@@ -223,6 +223,7 @@ export class MsMain extends St.Widget {
                 if (externalMonitorsDiff > 0) {
                     for (let i = 0; i < Math.abs(externalMonitorsDiff); i++) {
                         const container = new MonitorContainer(
+                            this,
                             this.externalMonitors[
                                 this.externalMonitors.length -
                                     Math.abs(externalMonitorsDiff) +
@@ -379,26 +380,24 @@ export class MsMain extends St.Widget {
 
 @registerGObjectClass
 export class MonitorContainer extends St.Widget {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'MonitorContainer',
     };
     bgGroup: Meta.BackgroundGroup;
-    horizontalPanelSpacer: St.Widget<
-        Clutter.LayoutManager,
-        Clutter.ContentPrototype,
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
+    horizontalPanelSpacer: St.Widget;
     bgManager: any;
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
-    monitor!: Monitor;
-
+    monitor!: Main.Monitor;
+    layout: MsMain;
     constructor(
-        monitor: Monitor,
+        layout: MsMain,
+        monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProperties>
     ) {
         super(params);
+        this.layout = layout;
         this.bgGroup = bgGroup;
 
         this.horizontalPanelSpacer = new St.Widget({
@@ -437,7 +436,7 @@ export class MonitorContainer extends St.Widget {
     protected setFullscreen(monitorIsFullscreen: boolean) {
         this.bgManager.backgroundActor.visible = !monitorIsFullscreen;
         this.horizontalPanelSpacer.visible =
-            Me.layout.panelsVisible && !monitorIsFullscreen;
+            this.layout.panelsVisible && !monitorIsFullscreen;
     }
 
     setMsWorkspaceActor(actor: MsWorkspaceActor) {
@@ -465,7 +464,7 @@ export class MonitorContainer extends St.Widget {
         );
     }
 
-    setMonitor(monitor: Monitor) {
+    setMonitor(monitor: Main.Monitor) {
         if (this.bgManager) {
             this.bgManager.destroy();
         }
@@ -505,15 +504,11 @@ export class MonitorContainer extends St.Widget {
 
 @registerGObjectClass
 export class PrimaryMonitorContainer extends MonitorContainer {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'PrimaryMonitorContainer',
     };
     panel: MsPanel;
-    verticalPanelSpacer: St.Widget<
-        Clutter.LayoutManager,
-        Clutter.ContentPrototype,
-        Clutter.Actor<Clutter.LayoutManager, Clutter.ContentPrototype>
-    >;
+    verticalPanelSpacer: St.Widget;
     workspaceContainer = new St.Widget({
         layout_manager: new Clutter.BinLayout(),
         x_align: Clutter.ActorAlign.FILL,
@@ -524,11 +519,12 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         true
     );
     constructor(
-        monitor: Monitor,
+        layout: MsMain,
+        monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProperties>
     ) {
-        super(monitor, bgGroup, params);
+        super(layout, monitor, bgGroup, params);
 
         this.verticalPanelSpacer = new St.Widget({
             style_class: 'VerticalSpacer',
@@ -566,9 +562,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     }
 
     protected setFullscreen(monitorIsFullscreen: boolean) {
-        this.panel.visible = Me.layout.panelsVisible && !monitorIsFullscreen;
+        this.panel.visible = this.layout.panelsVisible && !monitorIsFullscreen;
         this.verticalPanelSpacer.visible =
-            Me.layout.panelsVisible && !monitorIsFullscreen;
+            this.layout.panelsVisible && !monitorIsFullscreen;
         super.setFullscreen(monitorIsFullscreen);
     }
 
@@ -642,7 +638,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         }
 
         const msWorkspaceActorBox = box.copy();
-        if (this.panel && this.panel.visible && Me.layout.panelsVisible) {
+        if (this.panel && this.panel.visible && this.layout.panelsVisible) {
             if (panelPosition === VerticalPanelPositionEnum.LEFT) {
                 msWorkspaceActorBox.x1 =
                     msWorkspaceActorBox.x1 + Me.msThemeManager.getPanelSize();

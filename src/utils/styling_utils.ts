@@ -1,8 +1,7 @@
-import { Widget } from 'st';
-
+import St from 'gi://St';
 /** Sets whether the widget has the given style class */
 export function set_style_class(
-    widget: Widget,
+    widget: St.Widget,
     style_class: string,
     enabled: boolean
 ) {

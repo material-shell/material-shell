@@ -1,7 +1,7 @@
 import { MsWorkspace } from './msWorkspace';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 /* exported MsWorkspaceCategory, MainCategories */
 
@@ -43,7 +43,7 @@ export class MsWorkspaceCategory {
     forceCategory(category: string | undefined) {
         this.forcedCategory = category;
         this.refreshCategory();
-        Me.stateManager.stateChanged();
+        Me.stateManager!.stateChanged();
     }
 
     refreshCategory() {

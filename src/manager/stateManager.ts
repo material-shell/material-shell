@@ -1,15 +1,17 @@
 // Inspired by https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator/blob/master/utils.js
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-import * as Gio from 'gio';
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import { default as Me } from 'src/extension';
+
+import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
 
 /** Gnome libs imports */
 const FileTest = GLib.FileTest;
 
-const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/${Me.uuid}-state.json`;
+const REGISTRY_PATH = `${GLib.get_user_cache_dir()}/material-shell@papyelgringo-state.json`;
 
 type StateDict = { [Key: string]: any };
 
@@ -49,7 +51,7 @@ export class StateManager {
                             JSON.parse(imports.byteArray.toString(contents))
                         );
                     } catch (e) {
-                        Me.log(e);
+                        Debug.log(e);
                         this.state = {};
                     }
                 }
@@ -105,10 +107,10 @@ export class StateManager {
 
     stateChanged() {
         if (
-            !Me.loaded ||
-            Me.msWorkspaceManager.updatingMonitors ||
+            !Me.instance.loaded ||
+            Me.msWorkspaceManager!.updatingMonitors ||
             this.stateChangedTriggered ||
-            Me.disableInProgress
+            Me.instance.disableInProgress
         )
             return;
 
@@ -122,10 +124,10 @@ export class StateManager {
 
     saveCurrentState() {
         // Avoid unnecessary work
-        if (!Me.loaded || Me.disableInProgress) return;
+        if (!Me.instance.loaded || Me.instance.disableInProgress) return;
 
         if (getSettings('tweaks').get_boolean('enable-persistence')) {
-            this.setState('workspaces-state', Me.msWorkspaceManager.state);
+            this.setState('workspaces-state', Me.msWorkspaceManager!.state);
         }
     }
 

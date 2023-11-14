@@ -1,12 +1,12 @@
-import * as Clutter from 'clutter';
-import * as GObject from 'gobject';
+import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { MatButton } from 'src/widget/material/button';
-import * as St from 'st';
 
 @registerGObjectClass
 export class SearchResultEntry extends MatButton {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'SearchResultEntry',
         Signals: {
             activate: {
@@ -19,7 +19,7 @@ export class SearchResultEntry extends MatButton {
     icon: St.Icon | null;
     textLayout = new St.BoxLayout({
         vertical: true,
-        styleClass: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
+        style_class: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
         y_align: Clutter.ActorAlign.CENTER,
     });
     title: St.Label;
@@ -47,7 +47,7 @@ export class SearchResultEntry extends MatButton {
         if (description) {
             this.description = new St.Label({
                 text: description,
-                styleClass: 'caption text-medium-emphasis',
+                style_class: 'caption text-medium-emphasis',
                 style: 'margin-top:2px',
             });
             this.textLayout.add_child(this.description);

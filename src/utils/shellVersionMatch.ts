@@ -1,5 +1,5 @@
+import { PACKAGE_VERSION } from 'resource:///org/gnome/shell/misc/config.js';
 import { logAssert } from './assert';
-const { PACKAGE_VERSION } = imports.misc.config;
 
 /// List of all (relevant) known gnome versions.
 /// The versions should be ordered from oldest to newest.

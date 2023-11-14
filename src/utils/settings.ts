@@ -1,16 +1,16 @@
 /** Gnome libs imports */
-import * as Gio from 'gio';
+import Gio from 'gi://Gio';
 
 /** Extension imports */
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 /* exported getSettings */
 export const getSettings = (key: string) => {
     const schema = Gio.SettingsSchemaSource.new_from_directory(
-        Me.dir.get_child('schemas').get_path(),
+        Me.instance.metadata.dir.get_child('schemas').get_path()!,
         Gio.SettingsSchemaSource.get_default(),
         false
-    ).lookup(Me.metadata[key], true);
+    ).lookup(Me.instance.metadata[key], true);
 
     if (schema !== null) {
         return new Gio.Settings({

@@ -1,4 +1,4 @@
-import * as GLib from 'glib';
+import GLib from 'gi://GLib';
 
 export function assertNotNull<T>(value: T | null | undefined): T {
     if (value === null || value === undefined) {

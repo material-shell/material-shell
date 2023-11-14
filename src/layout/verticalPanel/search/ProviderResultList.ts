@@ -1,19 +1,19 @@
-import * as Gio from 'gio';
-import * as GObject from 'gobject';
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import * as St from 'st';
+import { SearchResultEntry } from './SearchResultEntry';
+import { SearchResultHeader } from './SearchResultHeader';
 import {
     ReactiveSearchProvider,
     ResultMeta,
 } from './searchProvider/searchProvider';
-import { SearchResultEntry } from './SearchResultEntry';
-import { SearchResultHeader } from './SearchResultHeader';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
+import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class ProviderResultList extends St.BoxLayout {
-    static metaInfo: GObject.MetaInfo = {
+    static metaInfo: GObject.MetaInfo<any, any, any> = {
         GTypeName: 'ProviderResultList',
         Signals: {
             activated: {
@@ -47,7 +47,7 @@ export class ProviderResultList extends St.BoxLayout {
             new St.Icon({
                 icon_size: 32,
                 gicon: Gio.icon_new_for_string(
-                    `${Me.path}/assets/icons/chevron-down-symbolic.svg`
+                    `${Me.instance.metadata.path}/assets/icons/chevron-down-symbolic.svg`
                 ),
             }),
             '',

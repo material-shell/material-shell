@@ -13,7 +13,7 @@
         // your workspace
         "target": true,
         "dist": false,
-        "build": true
+        "build": false
     },
     "editor.codeActionsOnSave": {
         "source.addMissingImports": true,
