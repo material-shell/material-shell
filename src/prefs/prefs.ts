@@ -5,7 +5,6 @@ import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 import {
-    ExtensionMetadata,
     ExtensionPreferences,
     gettext as _,
 } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
@@ -142,12 +141,18 @@ export default class MyExtensionPreferences extends ExtensionPreferences {
             };
             settings: Gio.Settings;
 
-            constructor(schemaSource: Gio.SettingsSchemaSource) {
+            constructor() {
                 super();
                 this.connect('row-activated', (_, row: HotkeyListBoxRow) => {
                     row.openDialog();
                 });
-
+                const schemaSource =
+                    Gio.SettingsSchemaSource.new_from_directory(
+                        templateDirectory.get_child('schemas').get_path()!,
+                        Gio.SettingsSchemaSource.get_default(),
+                        false
+                    );
+                log(schemaSource);
                 this.settings = new Gio.Settings({
                     settings_schema:
                         schemaSource.lookup(hotkeysSchemaName, false) ||
@@ -477,10 +482,7 @@ export default class MyExtensionPreferences extends ExtensionPreferences {
             // Note: will be created by gjs from the InternalChildren meta info property
             private declare _settings_box: Gtk.Box;
 
-            constructor(
-                metadata: ExtensionMetadata,
-                schemaSource: Gio.SettingsSchemaSource
-            ) {
+            constructor(schemaSource: Gio.SettingsSchemaSource) {
                 super();
 
                 const theme = new SettingCategoryListBox(
@@ -563,7 +565,7 @@ export default class MyExtensionPreferences extends ExtensionPreferences {
             }
         }
 
-        return { PrefsWidget };
+        return { PrefsWidget, HotkeyListBox };
     }
 
     fillPreferencesWindow(window: Adw.PreferencesWindow) {
@@ -578,8 +580,17 @@ export default class MyExtensionPreferences extends ExtensionPreferences {
         });
         page.add(group);
         const Pages = this.loadPages(this.metadata.dir);
-        group.add(new Pages.PrefsWidget(this.metadata, schemaSource));
+        group.add(new Pages.PrefsWidget(schemaSource));
         window.add(page);
+
+        /* const hotkeyPage = new Adw.PreferencesPage();
+        const group2 = new Adw.PreferencesGroup({
+            title: _('Group Title 2'),
+        });
+        hotkeyPage.add(group2);
+        group2.add(new Pages.HotkeyListBox(schemaSource));
+
+        window.add(hotkeyPage); */
     }
 }
 
