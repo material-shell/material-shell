@@ -1,10 +1,14 @@
 extension = material-shell@papyelgringo
 extension_tool = gnome-extensions
 
-.PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist
+.PHONY: schemas compile build_prod build_tasks update_git update install disable enable dist clean sass
 
-schemas:
-	cp -r schemas dist
+dist:
+	rm -rf dist
+	mkdir -p dist/schemas
+
+schemas: dist
+	cp -r schemas dist/
 	glib-compile-schemas dist/schemas/
 
 sass: dist/style-dark-theme.css dist/style-light-theme.css dist/style-primary-theme.css
@@ -17,10 +21,6 @@ dist/style-light-theme.css: dist src/styles/light-theme.scss
 
 dist/style-primary-theme.css: dist src/styles/primary-theme.scss
 	npx sass --no-source-map src/styles/primary-theme.scss dist/style-primary-theme.css
-
-dist:
-	rm -rf dist
-	mkdir dist
 
 disable:
 	$(extension_tool) disable $(extension)
