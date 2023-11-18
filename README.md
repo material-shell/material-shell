@@ -1,3 +1,8 @@
+⚠️ ‎‎ Material Shell is in transition to become [Veshell](https://github.com/free-explorers/veshell) and if you are interested in the reasons that motivated this decision
+you should read [this letter](/documentation/letter_for_material_shell_users.md) from PapyElGringo
+
+---
+
 ![Material Shell](/documentation/on-all-full.svg)
 
 ---
@@ -200,10 +205,13 @@ gnome-extensions enable material-shell@papyelgringo
 -   Icon theme: [Tela Icon Theme](https://github.com/vinceliuice/Tela-icon-theme)
 
 ## For Multi Monitor with different scaling factor to work properly
+
 You need to enable Wayland Fractionnal Scaling capabilities with:
+
 ```
 gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
 ```
+
 Note that it current have the downside to make XWayland window to possibly become blurry
 
 # Reset Material Shell
