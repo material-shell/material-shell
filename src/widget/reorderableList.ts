@@ -62,7 +62,7 @@ export class ReorderableList extends Clutter.Actor {
         this.vertical = vertical;
         this.classAccepted = classAccepted;
         this.dragInProgress = false;
-        this.connect('actor-added', (_, actor) => {
+        this.connect('child-added', (_, actor) => {
             if (!actor._draggable && actor !== this.placeHolder)
                 this.makeActorDraggable(actor);
         });

@@ -166,7 +166,7 @@ export class MsStatusArea extends Clutter.Actor {
                 this.stealActor(actor, this.leftBoxActors);
             });
         const leftBoxActorAddedSignal = this.gnomeShellPanel._leftBox.connect(
-            'actor-added',
+            'child-added',
             (_, actor) => {
                 this.stealActor(actor, this.leftBoxActors);
             }
@@ -176,7 +176,7 @@ export class MsStatusArea extends Clutter.Actor {
         });
         const centerBoxActorAddedSignal =
             this.gnomeShellPanel._centerBox.connect(
-                'actor-added',
+                'child-added',
                 (_, actor) => {
                     this.stealActor(actor, this.centerBoxActors);
                 }
@@ -188,7 +188,7 @@ export class MsStatusArea extends Clutter.Actor {
                 this.stealActor(actor, this.rightBoxActors);
             });
         const rightBoxActorAddedSignal = this.gnomeShellPanel._rightBox.connect(
-            'actor-added',
+            'child-added',
             (_, actor) => {
                 this.stealActor(actor, this.rightBoxActors);
             }

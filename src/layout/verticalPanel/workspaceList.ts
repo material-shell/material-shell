@@ -406,7 +406,7 @@ export class WorkspaceButton extends MatButton {
         });
 
         rootMenu.addMenuItem(subMenu);
-        Main.layoutManager.uiGroup.add_actor(rootMenu.actor);
+        Main.layoutManager.uiGroup.add_child(rootMenu.actor);
         rootMenu.close();
 
         return {

@@ -50,7 +50,7 @@ export const msThemeSignalEnum = {
 
 function parseCoglColor(color: string): Cogl.Color {
     const c = new Cogl.Color();
-    c.init_from_4ub(
+    c.init_from_4f(
         parseInt(color.substring(1, 3), 16),
         parseInt(color.substring(3, 5), 16),
         parseInt(color.substring(5, 7), 16),
