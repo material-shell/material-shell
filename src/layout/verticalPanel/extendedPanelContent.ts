@@ -56,7 +56,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
         this.searchResultList.connect('result-selected-changed', (_, res) => {
             Util?.ensureActorVisibleInScrollView(this.scrollView, res);
         });
-        this.scrollView.add_actor(this.searchResultList);
+        this.scrollView.add_child(this.searchResultList);
 
         this.add_child(this.scrollView);
     }

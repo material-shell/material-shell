@@ -470,7 +470,7 @@ export class TileableItem extends TaskBarItem {
             })
         );
         this.menu.box.add_child(item); */
-        Main.layoutManager.uiGroup.add_actor(this.menu.actor);
+        Main.layoutManager.uiGroup.add_child(this.menu.actor);
         this.menu.actor.hide();
         // TITLE
         this.title = new St.Label({

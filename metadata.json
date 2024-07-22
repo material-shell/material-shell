@@ -3,7 +3,10 @@
     "description": "A modern desktop interface for Linux - packaged as an extension for GNOME Shell. Improve your user experience and get rid of the anarchy of traditional desktop workflows. Designed to simplify navigation and reduce the need to manipulate windows in order to improve productivity. It's meant to be 100% predictable and bring the benefits of tools coveted by professionals to everyone.",
     "uuid": "material-shell@papyelgringo",
     "url": "https://material-shell.com",
-    "shell-version": ["45"],
+    "shell-version": [
+        "45",
+        "46"
+    ],
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",
     "theme": "org.gnome.shell.extensions.materialshell.theme",
