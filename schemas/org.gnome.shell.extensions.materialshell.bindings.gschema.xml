@@ -1,5 +1,6 @@
 <schemalist>
-    <schema id="org.gnome.shell.extensions.materialshell.bindings" path="/org/gnome/shell/extensions/materialshell/bindings/">
+    <schema id="org.gnome.shell.extensions.materialshell.bindings"
+        path="/org/gnome/shell/extensions/materialshell/bindings/">
         <!-- Window Actions -->
         <key name="previous-window" type="as">
             <default>
@@ -7,8 +8,8 @@
             </default>
             <summary>Focus previous window</summary>
             <description>
-        Focus the previous window of the current workspace
-      </description>
+                Focus the previous window of the current workspace
+            </description>
         </key>
         <key name="next-window" type="as">
             <default>
@@ -16,8 +17,8 @@
             </default>
             <summary>Focus next window</summary>
             <description>
-        Focus the next window of the current workspace
-      </description>
+                Focus the next window of the current workspace
+            </description>
         </key>
         <key name="app-launcher" type="as">
             <default>
@@ -25,8 +26,8 @@
             </default>
             <summary>Focus App Launcher</summary>
             <description>
-        Focus App Launcher of the current workspace
-      </description>
+                Focus App Launcher of the current workspace
+            </description>
         </key>
         <key name="kill-focused-window" type="as">
             <default>
@@ -34,8 +35,8 @@
             </default>
             <summary>Kill the current window</summary>
             <description>
-        Kill the current focused window
-      </description>
+                Kill the current focused window
+            </description>
         </key>
         <key name="move-window-left" type="as">
             <default>
@@ -43,8 +44,8 @@
             </default>
             <summary>Move the current window to the left</summary>
             <description>
-        Move the current window to the left
-      </description>
+                Move the current window to the left
+            </description>
         </key>
         <key name="move-window-right" type="as">
             <default>
@@ -52,8 +53,8 @@
             </default>
             <summary>Move the current window to the right</summary>
             <description>
-        Move the current window to the right
-      </description>
+                Move the current window to the right
+            </description>
         </key>
         <key name="move-window-top" type="as">
             <default>
@@ -61,8 +62,8 @@
             </default>
             <summary>Move the current window to upper workspace</summary>
             <description>
-        Move the current window to upper workspace
-      </description>
+                Move the current window to upper workspace
+            </description>
         </key>
         <key name="move-window-bottom" type="as">
             <default>
@@ -70,8 +71,8 @@
             </default>
             <summary>Move the current window to lower workspace</summary>
             <description>
-        Move the current window to lower workspace
-      </description>
+                Move the current window to lower workspace
+            </description>
         </key>
         <key name="focus-monitor-left" type="as">
             <default>
@@ -79,7 +80,7 @@
             </default>
             <summary>Set the focus to the monitor on the Left</summary>
             <description>
-              Set the focus to the monitor on the Left
+                Set the focus to the monitor on the Left
             </description>
         </key>
         <key name="focus-monitor-up" type="as">
@@ -88,7 +89,7 @@
             </default>
             <summary>Set the focus to the monitor upward</summary>
             <description>
-              Set the focus to the monitor upward
+                Set the focus to the monitor upward
             </description>
         </key>
         <key name="focus-monitor-right" type="as">
@@ -97,7 +98,7 @@
             </default>
             <summary>Set the focus to the monitor on the Right</summary>
             <description>
-              Set the focus to the monitor on the Right
+                Set the focus to the monitor on the Right
             </description>
         </key>
         <key name="focus-monitor-down" type="as">
@@ -106,7 +107,7 @@
             </default>
             <summary>Set the focus to the monitor downward</summary>
             <description>
-              Set the focus to the monitor downward
+                Set the focus to the monitor downward
             </description>
         </key>
         <key name="move-window-monitor-left" type="as">
@@ -115,7 +116,7 @@
             </default>
             <summary>Move the current window to the monitor on the Left</summary>
             <description>
-              Move the current window to the monitor on the Left
+                Move the current window to the monitor on the Left
             </description>
         </key>
         <key name="move-window-monitor-up" type="as">
@@ -124,7 +125,7 @@
             </default>
             <summary>Move the current window to the monitor upward</summary>
             <description>
-              Move the current window to the monitor upward
+                Move the current window to the monitor upward
             </description>
         </key>
         <key name="move-window-monitor-right" type="as">
@@ -133,7 +134,7 @@
             </default>
             <summary>Move the current window to the monitor on the Right</summary>
             <description>
-              Move the current window to the monitor on the Right
+                Move the current window to the monitor on the Right
             </description>
         </key>
         <key name="move-window-monitor-down" type="as">
@@ -142,7 +143,7 @@
             </default>
             <summary>Move the current window to the monitor downward</summary>
             <description>
-              Move the current window to the monitor downward
+                Move the current window to the monitor downward
             </description>
         </key>
         <key name="resize-window-left" type="as">
@@ -151,7 +152,7 @@
             </default>
             <summary>Resize the current window on the Left</summary>
             <description>
-              Resize the current window on the Left
+                Resize the current window on the Left
             </description>
         </key>
         <key name="resize-window-up" type="as">
@@ -160,7 +161,7 @@
             </default>
             <summary>Resize the current window upward</summary>
             <description>
-              Resize the current window upward
+                Resize the current window upward
             </description>
         </key>
         <key name="resize-window-right" type="as">
@@ -169,7 +170,7 @@
             </default>
             <summary>Resize the current window on the Right</summary>
             <description>
-              Resize the current window on the Right
+                Resize the current window on the Right
             </description>
         </key>
         <key name="resize-window-down" type="as">
@@ -178,7 +179,7 @@
             </default>
             <summary>Resize the current window downward</summary>
             <description>
-              Resize the current window downward
+                Resize the current window downward
             </description>
         </key>
         <key name="move-window-to-workspace-1" type="as">
@@ -187,8 +188,8 @@
             </default>
             <summary>Move window to workspace 1</summary>
             <description>
-        Move window to workspace 1
-      </description>
+                Move window to workspace 1
+            </description>
         </key>
         <key name="move-window-to-workspace-2" type="as">
             <default>
@@ -196,8 +197,8 @@
             </default>
             <summary>Move window to workspace 2</summary>
             <description>
-        Move window to workspace 2
-      </description>
+                Move window to workspace 2
+            </description>
         </key>
         <key name="move-window-to-workspace-3" type="as">
             <default>
@@ -205,8 +206,8 @@
             </default>
             <summary>Move window to workspace 3</summary>
             <description>
-        Move window to workspace 3
-      </description>
+                Move window to workspace 3
+            </description>
         </key>
         <key name="move-window-to-workspace-4" type="as">
             <default>
@@ -214,8 +215,8 @@
             </default>
             <summary>Move window to workspace 4</summary>
             <description>
-        Move window to workspace 4
-      </description>
+                Move window to workspace 4
+            </description>
         </key>
         <key name="move-window-to-workspace-5" type="as">
             <default>
@@ -223,8 +224,8 @@
             </default>
             <summary>Move window to workspace 5</summary>
             <description>
-        Move window to workspace 5
-      </description>
+                Move window to workspace 5
+            </description>
         </key>
         <key name="move-window-to-workspace-6" type="as">
             <default>
@@ -232,8 +233,8 @@
             </default>
             <summary>Move window to workspace 6</summary>
             <description>
-        Move window to workspace 6
-      </description>
+                Move window to workspace 6
+            </description>
         </key>
         <key name="move-window-to-workspace-7" type="as">
             <default>
@@ -241,8 +242,8 @@
             </default>
             <summary>Move window to workspace 7</summary>
             <description>
-        Move window to workspace 7`
-      </description>
+                Move window to workspace 7`
+            </description>
         </key>
         <key name="move-window-to-workspace-8" type="as">
             <default>
@@ -250,8 +251,8 @@
             </default>
             <summary>Move window to workspace 8</summary>
             <description>
-        Move window to workspace 8
-      </description>
+                Move window to workspace 8
+            </description>
         </key>
         <key name="move-window-to-workspace-9" type="as">
             <default>
@@ -259,8 +260,8 @@
             </default>
             <summary>Move window to workspace 9</summary>
             <description>
-        Move window to workspace 9
-      </description>
+                Move window to workspace 9
+            </description>
         </key>
         <key name="move-window-to-workspace-10" type="as">
             <default>
@@ -268,8 +269,98 @@
             </default>
             <summary>Move window to workspace 10</summary>
             <description>
-        Move window to workspace 10
-      </description>
+                Move window to workspace 10
+            </description>
+        </key>
+        <key name="focus-window-1" type="as">
+            <default>
+                <![CDATA[['<Super>F1']]]>
+            </default>
+            <summary>Focus window 1</summary>
+            <description>
+                Focus window 1
+            </description>
+        </key>
+        <key name="focus-window-2" type="as">
+            <default>
+                <![CDATA[['<Super>F2']]]>
+            </default>
+            <summary>Focus window 2</summary>
+            <description>
+                Focus window 2
+            </description>
+        </key>
+        <key name="focus-window-3" type="as">
+            <default>
+                <![CDATA[['<Super>F3']]]>
+            </default>
+            <summary>Focus window 3</summary>
+            <description>
+                Focus window 3
+            </description>
+        </key>
+        <key name="focus-window-4" type="as">
+            <default>
+                <![CDATA[['<Super>F4']]]>
+            </default>
+            <summary>Focus window 4</summary>
+            <description>
+                Focus window 4
+            </description>
+        </key>
+        <key name="focus-window-5" type="as">
+            <default>
+                <![CDATA[['<Super>F5']]]>
+            </default>
+            <summary>Focus window 5</summary>
+            <description>
+                Focus window 5
+            </description>
+        </key>
+        <key name="focus-window-6" type="as">
+            <default>
+                <![CDATA[['<Super>F6']]]>
+            </default>
+            <summary>Focus window 6</summary>
+            <description>
+                Focus window 6
+            </description>
+        </key>
+        <key name="focus-window-7" type="as">
+            <default>
+                <![CDATA[['<Super>F7']]]>
+            </default>
+            <summary>Focus window 7</summary>
+            <description>
+                Focus window 7
+            </description>
+        </key>
+        <key name="focus-window-8" type="as">
+            <default>
+                <![CDATA[['<Super>F8']]]>
+            </default>
+            <summary>Focus window 8</summary>
+            <description>
+                Focus window 8
+            </description>
+        </key>
+        <key name="focus-window-9" type="as">
+            <default>
+                <![CDATA[['<Super>F9']]]>
+            </default>
+            <summary>Focus window 9</summary>
+            <description>
+                Focus window 9
+            </description>
+        </key>
+        <key name="focus-window-10" type="as">
+            <default>
+                <![CDATA[['<Super>F10']]]>
+            </default>
+            <summary>Focus window 10</summary>
+            <description>
+                Focus window 10
+            </description>
         </key>
         <!-- Layout actions -->
         <key name="cycle-tiling-layout" type="as">
@@ -278,8 +369,8 @@
             </default>
             <summary>Cycle around the tiling layout on the current workspace</summary>
             <description>
-        Cycle around the tiling layout on the current workspace
-      </description>
+                Cycle around the tiling layout on the current workspace
+            </description>
         </key>
         <key name="reverse-cycle-tiling-layout" type="as">
             <default>
@@ -287,8 +378,8 @@
             </default>
             <summary>Cycle around in reverse order the tiling layout on the current workspace</summary>
             <description>
-        Cycle around in reverse order the tiling layout on the current workspace
-      </description>
+                Cycle around in reverse order the tiling layout on the current workspace
+            </description>
         </key>
         <key name="toggle-material-shell-ui" type="as">
             <default>
@@ -296,8 +387,8 @@
             </default>
             <summary>Toggle the material-shell UI to simulate fullscreen</summary>
             <description>
-        Toggle the material-shell UI to simulate fullscreen
-      </description>
+                Toggle the material-shell UI to simulate fullscreen
+            </description>
         </key>
         <key name="use-maximize-layout" type="as">
             <default>
@@ -305,8 +396,8 @@
             </default>
             <summary>Use maximize layout</summary>
             <description>
-        Use maximize layout
-      </description>
+                Use maximize layout
+            </description>
         </key>
         <key name="use-split-layout" type="as">
             <default>
@@ -314,8 +405,8 @@
             </default>
             <summary>Use split layout</summary>
             <description>
-        Use split layout
-      </description>
+                Use split layout
+            </description>
         </key>
         <key name="use-half-layout" type="as">
             <default>
@@ -323,8 +414,8 @@
             </default>
             <summary>Use half layout</summary>
             <description>
-        Use half layout
-      </description>
+                Use half layout
+            </description>
         </key>
         <key name="use-half-horizontal-layout" type="as">
             <default>
@@ -332,8 +423,8 @@
             </default>
             <summary>Use half-horizontal layout</summary>
             <description>
-        Use half-horizontal layout
-      </description>
+                Use half-horizontal layout
+            </description>
         </key>
         <key name="use-half-vertical-layout" type="as">
             <default>
@@ -341,8 +432,8 @@
             </default>
             <summary>Use half-vertical layout</summary>
             <description>
-        Use half-vertical layout
-      </description>
+                Use half-vertical layout
+            </description>
         </key>
         <key name="use-grid-layout" type="as">
             <default>
@@ -350,8 +441,8 @@
             </default>
             <summary>Use grid layout</summary>
             <description>
-        Use grid layout
-      </description>
+                Use grid layout
+            </description>
         </key>
         <key name="use-ratio-layout" type="as">
             <default>
@@ -359,8 +450,8 @@
             </default>
             <summary>Use ratio layout</summary>
             <description>
-        Use ratio layout
-      </description>
+                Use ratio layout
+            </description>
         </key>
         <key name="use-float-layout" type="as">
             <default>
@@ -368,8 +459,8 @@
             </default>
             <summary>Use float layout</summary>
             <description>
-        Use float layout
-      </description>
+                Use float layout
+            </description>
         </key>
         <key name="use-simple-layout" type="as">
             <default>
@@ -377,8 +468,8 @@
             </default>
             <summary>Use simple layout</summary>
             <description>
-        Use simple layout
-      </description>
+                Use simple layout
+            </description>
         </key>
         <key name="use-simple-horizontal-layout" type="as">
             <default>
@@ -386,8 +477,8 @@
             </default>
             <summary>Use simple-horizontal layout</summary>
             <description>
-        Use simple-horizontal layout
-      </description>
+                Use simple-horizontal layout
+            </description>
         </key>
         <key name="use-simple-vertical-layout" type="as">
             <default>
@@ -395,8 +486,8 @@
             </default>
             <summary>Use simple-vertical layout</summary>
             <description>
-        Use simple-vertical layout
-      </description>
+                Use simple-vertical layout
+            </description>
         </key>
         <!-- Workspace actions -->
         <key name="previous-workspace" type="as">
@@ -405,8 +496,8 @@
             </default>
             <summary>Focus previous workspace</summary>
             <description>
-        Focus the previous workspace
-      </description>
+                Focus the previous workspace
+            </description>
         </key>
         <key name="next-workspace" type="as">
             <default>
@@ -414,8 +505,8 @@
             </default>
             <summary>Focus next workspace</summary>
             <description>
-        Focus the next workspace
-      </description>
+                Focus the next workspace
+            </description>
         </key>
         <key name="last-workspace" type="as">
             <default>
@@ -423,8 +514,8 @@
             </default>
             <summary>Focus last workspace</summary>
             <description>
-        Focus the last workspace
-      </description>
+                Focus the last workspace
+            </description>
         </key>
         <key name="navigate-to-workspace-1" type="as">
             <default>
@@ -432,8 +523,8 @@
             </default>
             <summary>Navigate to workspace 1</summary>
             <description>
-        Navigate to workspace 1
-      </description>
+                Navigate to workspace 1
+            </description>
         </key>
         <key name="navigate-to-workspace-2" type="as">
             <default>
@@ -441,8 +532,8 @@
             </default>
             <summary>Navigate to workspace 2</summary>
             <description>
-        Navigate to workspace 2
-      </description>
+                Navigate to workspace 2
+            </description>
         </key>
         <key name="navigate-to-workspace-3" type="as">
             <default>
@@ -450,8 +541,8 @@
             </default>
             <summary>Navigate to workspace 3</summary>
             <description>
-        Navigate to workspace 3
-      </description>
+                Navigate to workspace 3
+            </description>
         </key>
         <key name="navigate-to-workspace-4" type="as">
             <default>
@@ -459,8 +550,8 @@
             </default>
             <summary>Navigate to workspace 4</summary>
             <description>
-        Navigate to workspace 4
-      </description>
+                Navigate to workspace 4
+            </description>
         </key>
         <key name="navigate-to-workspace-5" type="as">
             <default>
@@ -468,8 +559,8 @@
             </default>
             <summary>Navigate to workspace 5</summary>
             <description>
-        Navigate to workspace 5
-      </description>
+                Navigate to workspace 5
+            </description>
         </key>
         <key name="navigate-to-workspace-6" type="as">
             <default>
@@ -477,8 +568,8 @@
             </default>
             <summary>Navigate to workspace 6</summary>
             <description>
-        Navigate to workspace 6
-      </description>
+                Navigate to workspace 6
+            </description>
         </key>
         <key name="navigate-to-workspace-7" type="as">
             <default>
@@ -486,8 +577,8 @@
             </default>
             <summary>Navigate to workspace 7</summary>
             <description>
-        Navigate to workspace 7`
-      </description>
+                Navigate to workspace 7`
+            </description>
         </key>
         <key name="navigate-to-workspace-8" type="as">
             <default>
@@ -495,8 +586,8 @@
             </default>
             <summary>Navigate to workspace 8</summary>
             <description>
-        Navigate to workspace 8
-      </description>
+                Navigate to workspace 8
+            </description>
         </key>
         <key name="navigate-to-workspace-9" type="as">
             <default>
@@ -504,8 +595,8 @@
             </default>
             <summary>Navigate to workspace 9</summary>
             <description>
-        Navigate to workspace 9
-      </description>
+                Navigate to workspace 9
+            </description>
         </key>
         <key name="navigate-to-workspace-10" type="as">
             <default>
@@ -513,8 +604,8 @@
             </default>
             <summary>Navigate to workspace 10</summary>
             <description>
-        Navigate to workspace 10
-      </description>
+                Navigate to workspace 10
+            </description>
         </key>
     </schema>
 </schemalist>
