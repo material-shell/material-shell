@@ -5,7 +5,8 @@
     "url": "https://material-shell.com",
     "shell-version": [
         "45",
-        "46"
+        "46",
+        "50"
     ],
     "bindings": "org.gnome.shell.extensions.materialshell.bindings",
     "layouts": "org.gnome.shell.extensions.materialshell.layouts",

@@ -14,17 +14,6 @@ import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 declare global {
     function log(msg: string): void;
 
-    /** Localization function
-     * https://developer.gnome.org/glib/stable/glib-I18N.html#N-:CAPS
-     */
-    function N_(format: string): string;
-
-    /** Localization function.
-     * Marks a string for translation, gets replaced with the translated string at runtime.
-     * https://developer.gnome.org/glib/stable/glib-I18N.html
-     */
-    function _(format: string): string;
-
     function ngettext(singular: string, plurial: string, format: any): any;
     interface Date {
         /**
@@ -93,7 +82,7 @@ interface DialogButtonAction {
 declare type ProcessResult = [boolean, any, any, number];
 declare type SignalID = number;
 
-declare module 'gi://GObject' {
+declare module 'gi://GObject?version=2.0' {
     namespace GObject {
         interface Object {
             new (): Object;
@@ -103,7 +92,7 @@ declare module 'gi://GObject' {
             klass: C
         ): C;
         export function registerClass<K, C extends new (...args: any[]) => K>(
-            metaInfo: MetaInfo<any, any, any>,
+            metaInfo: GObject.MetaInfo<any, any, any>,
             klass: C
         ): C;
         // export function registerClass<T extends MetaInfo | Function, K, C extends new (...args: any[])=>K>(a: T, b?: C): C;
@@ -133,7 +122,7 @@ declare namespace Gtk {
     }
 }
 
-declare module 'gi://Meta' {
+declare module 'gi://Meta?version=18' {
     namespace Meta {
         // Expose some additional "private" fields of the Workspace class
         interface Workspace {
@@ -143,7 +132,7 @@ declare module 'gi://Meta' {
     }
 }
 
-declare module 'gi://Clutter' {
+declare module 'gi://Clutter?version=18' {
     namespace Clutter {
         export interface Actor {
             // metaWindow?: any;
@@ -239,7 +228,7 @@ declare module 'gi://Clutter' {
 //     }
 // }
 
-declare module 'gi://Soup' {
+declare module 'gi://Soup?version=3.0' {
     namespace Soup {
         export interface Session {
             send_and_read_async(
