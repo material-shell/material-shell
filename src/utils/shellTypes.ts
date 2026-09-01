@@ -7,6 +7,4 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
  * The shell keeps the class private, so name the type through the layout
  * manager rather than importing it.
  */
-export type Monitor = NonNullable<
-    (typeof Main.layoutManager)['primaryMonitor']
->;
+export type Monitor = NonNullable<typeof Main.layoutManager['primaryMonitor']>;

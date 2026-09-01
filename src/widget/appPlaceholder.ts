@@ -164,7 +164,10 @@ export class AppPlaceholder extends St.Widget {
         if (this.waitForReset) return;
         this.waitForReset = true;
         this.clickableContainer.reactive = false;
-        this._spinner = new Animation.Spinner(16, { animate: false, hideOnStop: false });
+        this._spinner = new Animation.Spinner(16, {
+            animate: false,
+            hideOnStop: false,
+        });
         this.spinnerContainer.add_child(this._spinner);
         this._spinner.play();
         this.spinnerContainer.set_opacity(255);

@@ -388,11 +388,9 @@ export class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         // First manage external screen
-        const externalMonitors: Monitor[] =
-            Main.layoutManager.monitors.filter(
-                (monitor: Monitor) =>
-                    monitor != Main.layoutManager.primaryMonitor
-            );
+        const externalMonitors: Monitor[] = Main.layoutManager.monitors.filter(
+            (monitor: Monitor) => monitor != Main.layoutManager.primaryMonitor
+        );
 
         externalMonitors.forEach((externalMonitor) => {
             // try to find an unused external msWorkspace for this external Monitor

@@ -252,7 +252,8 @@ export class MsWindowManager extends MsManager {
         });
         const groupedMetaWindowsByApp = groupBy(
             windowActors,
-            (window) => this.windowTracker.get_window_app(metaWindowOf(window)).id
+            (window) =>
+                this.windowTracker.get_window_app(metaWindowOf(window)).id
         );
 
         let logged = false;
@@ -326,7 +327,9 @@ export class MsWindowManager extends MsManager {
                 const idx = assignments[i];
                 if (idx < candidateMsWindows.length) {
                     // Found a good match
-                    msWindowAssignments[idx] = metaWindowOf(windowActorGroup[i]);
+                    msWindowAssignments[idx] = metaWindowOf(
+                        windowActorGroup[i]
+                    );
                 }
             }
 
@@ -542,8 +545,9 @@ export class MsWindowManager extends MsManager {
         }
 
         for (const windowActor of global.get_window_actors()) {
-            const metaWindow =
-                metaWindowOf(windowActor) as MetaWindowWithMsProperties;
+            const metaWindow = metaWindowOf(
+                windowActor
+            ) as MetaWindowWithMsProperties;
             // Initialize and reset fields to well defined states.
             metaWindow.firstFrameDrawn = true;
             metaWindow.firstFrameDrawnPromise = Promise.resolve();
@@ -847,8 +851,9 @@ export class MsWindowManager extends MsManager {
         this.msFocusManager.destroy();
         this.checkWindowsForAssignationsDebounce.cancel();
         global.get_window_actors().forEach((windowActor) => {
-            const metaWindow =
-                metaWindowOf(windowActor) as MetaWindowWithMsProperties;
+            const metaWindow = metaWindowOf(
+                windowActor
+            ) as MetaWindowWithMsProperties;
             if (metaWindow.handledByMaterialShell)
                 delete metaWindow.handledByMaterialShell;
         });

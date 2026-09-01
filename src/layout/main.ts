@@ -343,7 +343,12 @@ export class MsMain extends St.Widget {
 
             const dimmerEffect = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
-                brightness: new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 }),
+                brightness: new Cogl.Color({
+                    red: 127,
+                    green: 127,
+                    blue: 127,
+                    alpha: 255,
+                }),
             });
             this.primaryMonitorContainer.workspaceContainer.add_effect(
                 dimmerEffect

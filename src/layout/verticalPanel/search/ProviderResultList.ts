@@ -25,8 +25,12 @@ export class ProviderResultList extends St.BoxLayout {
     resultList: ResultMeta[] = [];
     provider: ReactiveSearchProvider;
     header: SearchResultHeader;
-    firstResultEntryList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
-    restResultEntryList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
+    firstResultEntryList = new St.BoxLayout({
+        orientation: Clutter.Orientation.VERTICAL,
+    });
+    restResultEntryList = new St.BoxLayout({
+        orientation: Clutter.Orientation.VERTICAL,
+    });
     moreResultEntry: SearchResultEntry;
     maxResultLength = 5;
     onClicked: (id: string) => void;

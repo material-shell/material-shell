@@ -129,7 +129,9 @@ export class ReorderableList extends Clutter.Actor {
             // A drag and a long press start from the same press, so keep the
             // long press from cancelling the drag once it passes the
             // threshold, the way the shell's window previews do.
-            actor.longPressGesture.can_not_cancel(actor._draggable.startGesture);
+            actor.longPressGesture.can_not_cancel(
+                actor._draggable.startGesture
+            );
         }
 
         let originalIndex: number | null = null;

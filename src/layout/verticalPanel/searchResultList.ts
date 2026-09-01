@@ -67,7 +67,9 @@ export class SearchResultList extends St.BoxLayout {
     });
     iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
-    allApplicationList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
+    allApplicationList = new St.BoxLayout({
+        orientation: Clutter.Orientation.VERTICAL,
+    });
     providerDisplayMap: Map<ReactiveSearchProvider, ProviderResultList> =
         new Map();
     recentSearchProvider: RecentSearchProvider;

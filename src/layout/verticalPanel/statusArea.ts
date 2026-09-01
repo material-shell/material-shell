@@ -16,7 +16,6 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import {
     compareVersions,
-
     gnomeVersionNumber,
     parseVersion,
 } from 'src/utils/shellVersionMatch';
@@ -57,9 +56,7 @@ export class MsStatusArea extends Clutter.Actor {
         this.leftBoxActors = [];
         this.centerBoxActors = [];
         this.rightBoxActors = [];
-        this.dateMenu = assertNotNull(
-            this.gnomeShellPanel.statusArea.dateMenu
-        );
+        this.dateMenu = assertNotNull(this.gnomeShellPanel.statusArea.dateMenu);
         this.enable();
 
         const panelSizeSignal = Me.msThemeManager!.connect(
@@ -376,9 +373,9 @@ export class MsStatusArea extends Clutter.Actor {
         this.restorePanelActors();
         this.restoreAppIndicatorSettings();
 
-        assertNotNull(this.gnomeShellPanel.statusArea.quickSettings).set_y_expand(
-            true
-        );
+        assertNotNull(
+            this.gnomeShellPanel.statusArea.quickSettings
+        ).set_y_expand(true);
     }
 }
 
