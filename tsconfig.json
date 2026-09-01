@@ -29,11 +29,15 @@
         // The gi:// and resource:/// module ids are declared as ambient modules
         // by @girs/gnome-shell and its @girs/* dependencies, so no path mapping
         // is needed for them any more.
+        // This is a GJS project: do not auto-include node_modules/@types/*,
+        // whose @types/node would shadow the shell's `global` object.
+        "types": [],
         "skipLibCheck": false
     },
     "include": [
         "src/**/*.ts",
         "@types/ambient.d.ts",
-        "@types/mod.d.ts"
+        "@types/mod.d.ts",
+        "@types/shell-internals.d.ts"
     ]
 }

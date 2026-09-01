@@ -1,15 +1,9 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
 /* eslint-disable @typescript-eslint/ban-types */
-import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import 'gi://GObject';
 import Gio from 'gi://Gio';
-import Meta from 'gi://Meta';
-import Shell from 'gi://Shell';
 import 'gi://Soup';
-import MaterialShellExtension from 'src/extension';
-
-import { MsWorkspace } from 'src/layout/msWorkspace/msWorkspace';
 
 declare global {
     function log(msg: string): void;
@@ -27,41 +21,6 @@ declare global {
         y: number;
         width: number;
         height: number;
-    }
-
-    namespace NodeJS {
-        interface Global {
-            log: (msg: string) => void;
-            get_persistent_state: (_: string, key: string) => any;
-            set_persistent_state: (key: string, data: GLib.Variant) => void;
-            get_current_time(): number;
-            get_pointer(): [number, number];
-            get_window_actors(): Array<Meta.WindowActor>;
-
-            /** Create a GAppLaunchContext set up with the correct timestamp, and targeted to activate on the current workspace.
-             * @param timestamp the timestamp for the launch (or 0 for current time)
-             * @param workspace a workspace index, or -1 to indicate the current one
-             */
-            create_app_launch_context(
-                timestep: number,
-                workspace: number
-            ): Gio.AppLaunchContext;
-            /** Material shell */
-            ms: MaterialShellExtension;
-            display: Meta.Display;
-            session_mode: string;
-            stage: Clutter.Stage;
-            window_group: Clutter.Actor;
-            window_manager: Shell.WM;
-            workspace_manager: Meta.WorkspaceManager;
-            top_window_group: Clutter.Actor;
-            compositor: {
-                get_laters: () => {
-                    add(when: Meta.LaterType, func: GLib.SourceFunc): number;
-                    remove(later_id: number): void;
-                };
-            };
-        }
     }
 
     function run_at_leisure(func: () => void): void;
@@ -82,7 +41,7 @@ interface DialogButtonAction {
 declare type ProcessResult = [boolean, any, any, number];
 declare type SignalID = number;
 
-declare module 'gi://GObject?version=2.0' {
+declare module '@girs/gobject-2.0/gobject-2.0' {
     namespace GObject {
         interface Object {
             new (): Object;
@@ -122,77 +81,11 @@ declare namespace Gtk {
     }
 }
 
-declare module 'gi://Meta?version=18' {
-    namespace Meta {
-        // Expose some additional "private" fields of the Workspace class
-        interface Workspace {
-            _lastRemovedWindow: Meta.Window;
-            _keepAliveId: number | undefined;
-        }
-    }
-}
-
-declare module 'gi://Clutter?version=18' {
-    namespace Clutter {
-        export interface Actor {
-            // metaWindow?: any;
-            msWorkspace?: MsWorkspace;
-        }
-
-        // Existed in older versions of clutter, needed for compatibility
+declare module '@girs/clutter-18/clutter-18' {
+    export namespace Clutter {
+        // Existed in older versions of Clutter, kept for the vfunc signatures.
         // eslint-disable-next-line @typescript-eslint/no-empty-interface
         export interface AllocationFlags {}
-
-        type AnimatableActorFields =
-            | 'fixed_x'
-            | 'fixed_y'
-            | 'height'
-            | 'margin_bottom'
-            | 'margin_left'
-            | 'margin_right'
-            | 'margin_top'
-            | 'min_height'
-            | 'min_width'
-            | 'natural_height'
-            | 'natural_width'
-            | 'opacity'
-            | 'pivot_point_z'
-            | 'rotation_angle_x'
-            | 'rotation_angle_y'
-            | 'rotation_angle_z'
-            | 'scale_x'
-            | 'scale_y'
-            | 'scale_z'
-            | 'translation_x'
-            | 'translation_y'
-            | 'translation_z'
-            | 'width'
-            | 'x'
-            | 'y'
-            | 'z_position';
-
-        interface EasingParams {
-            // milliseconds
-            duration: number;
-            // milliseconds
-            delay?: number;
-            mode?: Clutter.AnimationMode;
-            repeatCount?: number;
-            autoReverse?: boolean;
-            onComplete?: () => void;
-            onStopped?: (isFinished: boolean) => void;
-        }
-
-        // Any number of extra fields for the properties to be animated (e.g. "opacity: 0").
-        interface EasingParamsWithProperties
-            extends EasingParams,
-                Partial<Pick<Clutter.Actor, AnimatableActorFields>> {}
-
-        export interface Animatable {
-            // Some extensions added by gnome-shell in gnome-shell/js/ui/environment.js->init
-            ease(params: EasingParamsWithProperties): void;
-            ease_property: any;
-        }
 
         export namespace Event {
             const $gtype: any;
@@ -228,7 +121,7 @@ declare module 'gi://Clutter?version=18' {
 //     }
 // }
 
-declare module 'gi://Soup?version=3.0' {
+declare module '@girs/soup-3.0/soup-3.0' {
     namespace Soup {
         export interface Session {
             send_and_read_async(
