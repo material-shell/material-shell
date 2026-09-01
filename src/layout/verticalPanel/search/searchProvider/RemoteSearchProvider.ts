@@ -164,7 +164,7 @@ export function loadRemoteSearchProviders(
         'search-providers',
         false
     )) {
-        loadRemoteSearchProvider(provider.dir);
+        loadRemoteSearchProvider(provider.file);
     }
 
     const sortOrder = searchSettings.get_strv('sort-order');

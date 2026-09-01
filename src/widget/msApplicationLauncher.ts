@@ -680,7 +680,7 @@ export class MsApplicationButton extends MatButton {
         this.app = app;
         this.buttonSize = buttonSize;
         this.layout = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             width: this.buttonSize,
             height: this.buttonSize,
             clip_to_allocation: true,

@@ -1,3 +1,4 @@
+import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import St from 'gi://St';
@@ -24,8 +25,8 @@ export class ProviderResultList extends St.BoxLayout {
     resultList: ResultMeta[] = [];
     provider: ReactiveSearchProvider;
     header: SearchResultHeader;
-    firstResultEntryList = new St.BoxLayout({ vertical: true });
-    restResultEntryList = new St.BoxLayout({ vertical: true });
+    firstResultEntryList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
+    restResultEntryList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
     moreResultEntry: SearchResultEntry;
     maxResultLength = 5;
     onClicked: (id: string) => void;
@@ -34,7 +35,7 @@ export class ProviderResultList extends St.BoxLayout {
         provider: ReactiveSearchProvider,
         onClicked: (id: string) => void
     ) {
-        super({ vertical: true, visible: false });
+        super({ orientation: Clutter.Orientation.VERTICAL, visible: false });
         this.provider = provider;
         this.onClicked = onClicked;
         this.header = new SearchResultHeader(provider.title);

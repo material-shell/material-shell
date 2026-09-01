@@ -423,9 +423,7 @@ export class MonitorContainer extends St.Widget {
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(panelSizeSignal);
             Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
-            if (this.bgManager) {
-                this.bgManager.destroy();
-            }
+            this.destroyBackgroundManager();
         });
     }
 
@@ -466,10 +464,34 @@ export class MonitorContainer extends St.Widget {
         );
     }
 
+    /**
+     * Clutter destroys an actor's children before emitting ::destroy on the
+     * actor itself, so by the time this container is torn down the background
+     * manager's actor is already gone. Watch for that and clear the reference,
+     * or the manager destroys an actor that no longer exists.
+     */
+    watchBackgroundActor() {
+        const bgManager = this.bgManager;
+        const actor = bgManager?.backgroundActor;
+        if (!actor) return;
+        actor.connect('destroy', () => {
+            if (bgManager.backgroundActor === actor) {
+                bgManager.backgroundActor = null;
+            } else {
+                // The manager swapped in a new actor; follow that one instead.
+                this.watchBackgroundActor();
+            }
+        });
+    }
+
+    destroyBackgroundManager() {
+        const bgManager = this.bgManager;
+        this.bgManager = null;
+        bgManager?.destroy();
+    }
+
     setMonitor(monitor: Monitor) {
-        if (this.bgManager) {
-            this.bgManager.destroy();
-        }
+        this.destroyBackgroundManager();
         this.monitor = monitor;
         this.set_size(monitor.width, monitor.height);
         this.set_position(monitor.x, monitor.y);
@@ -478,6 +500,7 @@ export class MonitorContainer extends St.Widget {
             container: this.bgGroup,
             monitorIndex: monitor.index,
         });
+        this.watchBackgroundActor();
     }
 
     vfunc_allocate(box: Clutter.ActorBox) {

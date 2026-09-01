@@ -127,6 +127,16 @@ declare module '@girs/gnome-shell/misc/util' {
     export function trySpawnCommandLine(commandLine: string): void;
 }
 
+declare module '@girs/gnome-shell/misc/fileUtils' {
+    interface SubdirInfo {
+        /**
+         * collectFromDatadirs yields the entry itself under `file`; the
+         * package's SubdirInfo only names the enclosing `dir`.
+         */
+        file: Gio.File;
+    }
+}
+
 declare module '@girs/gnome-shell/misc/systemActions' {
     interface SystemActions {
         getMatchingActions(terms: string[]): string[];

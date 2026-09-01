@@ -282,7 +282,9 @@ export class MsStatusArea extends Clutter.Actor {
         controlledByMS: boolean
     ) {
         if (actor instanceof St.BoxLayout) {
-            actor.vertical = controlledByMS;
+            actor.orientation = controlledByMS
+                ? Clutter.Orientation.VERTICAL
+                : Clutter.Orientation.HORIZONTAL;
             actor.set_x_align(Clutter.ActorAlign.CENTER);
         }
         if (

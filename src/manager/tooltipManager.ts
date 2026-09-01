@@ -34,17 +34,14 @@ export class TooltipManager extends MsManager {
                     actor.disconnect(leaveId);
                     actor.disconnect(destroyId);
                 }
-                global.stage.disconnect(deactivateId);
             };
             const leaveId = actor.connect('leave-event', leaveCallback);
             const destroyId = actor.connect('destroy', () => {
                 actorDestroyed = true;
                 leaveCallback();
             });
-            const deactivateId = global.stage.connect(
-                'deactivate',
-                leaveCallback
-            );
+            // The stage's ::deactivate signal, which used to hide the
+            // tooltip when the shell lost input focus, no longer exists.
 
             timeoutId = Async.addTimeout(GLib.PRIORITY_DEFAULT, 200, () => {
                 timeoutId = 0;

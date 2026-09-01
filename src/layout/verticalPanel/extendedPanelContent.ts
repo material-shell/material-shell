@@ -21,7 +21,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
     });
     constructor() {
         super({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
             x_expand: true,
             x_align: Clutter.ActorAlign.FILL,

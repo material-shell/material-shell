@@ -56,7 +56,7 @@ export class AppPlaceholder extends St.Widget {
         });
 
         this.identityContainer = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_align: Clutter.ActorAlign.START,
             y_align: Clutter.ActorAlign.CENTER,
             x_expand: true,
@@ -69,7 +69,7 @@ export class AppPlaceholder extends St.Widget {
         );
 
         this.box = new St.BoxLayout({
-            vertical: false,
+            orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER,
             style: 'padding:48px; border-radius:48px',
@@ -123,7 +123,9 @@ export class AppPlaceholder extends St.Widget {
         const vertical = width < height;
         if (vertical === this.vertical) return;
         this.vertical = vertical;
-        this.box.vertical = this.vertical;
+        this.box.orientation = this.vertical
+            ? Clutter.Orientation.VERTICAL
+            : Clutter.Orientation.HORIZONTAL;
         this.identityContainer.x_align = this.vertical
             ? Clutter.ActorAlign.CENTER
             : Clutter.ActorAlign.START;

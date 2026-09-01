@@ -41,13 +41,13 @@ export class PanelContent extends St.BoxLayout {
 
     constructor() {
         super({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
         });
 
         // Top part
         this.topBox = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
         });
         this.add_child(this.topBox);

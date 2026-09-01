@@ -67,7 +67,7 @@ export class SearchResultList extends St.BoxLayout {
     });
     iconClickedId = 0;
     entrySelected: SearchResultEntry | null = null;
-    allApplicationList = new St.BoxLayout({ vertical: true });
+    allApplicationList = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL });
     providerDisplayMap: Map<ReactiveSearchProvider, ProviderResultList> =
         new Map();
     recentSearchProvider: RecentSearchProvider;
@@ -76,7 +76,7 @@ export class SearchResultList extends St.BoxLayout {
     constructor(searchEntry: St.Entry) {
         super({
             style_class: 'search-result-list',
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
         });
         this.recentSearchProvider = new RecentSearchProvider();
         this.recentSearchProvider.loadHistoryFromExtensionState();
