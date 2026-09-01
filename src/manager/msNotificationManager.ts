@@ -9,11 +9,6 @@ import { default as Me } from 'src/extension';
 import { MsManager } from 'src/manager/msManager';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { getSettings } from 'src/utils/settings';
-import {
-    compareVersions,
-    gnomeVersionNumber,
-    parseVersion,
-} from 'src/utils/shellVersionMatch';
 
 import { PACKAGE_VERSION } from 'resource:///org/gnome/shell/misc/config.js';
 import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
@@ -21,8 +16,6 @@ import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import { Debug } from 'src/utils/debug';
 
 const API_SERVER = 'http://api.material-shell.com';
-const beforeGnome43 =
-    compareVersions(gnomeVersionNumber, parseVersion('43.0')) < 0;
 export class MsNotificationManager extends MsManager {
     httpSession: Soup.Session;
 
@@ -50,53 +43,32 @@ export class MsNotificationManager extends MsManager {
         );
 
         // send the HTTP request and wait for response
-        // Before gnome 43 we use Soup 2.4 API
-        if (beforeGnome43) {
-            this.httpSession.queue_message(message, () => {
-                if (message.status_code != Soup.KnownStatusCode.OK) {
-                    Debug.log(
-                        `error fetching notification: ${message.status_code.toString()}`
+        this.httpSession.send_and_read_async(
+            message,
+            GLib.PRIORITY_DEFAULT,
+            new Gio.Cancellable(),
+            (session, result) => {
+                if (session && message.status_code === Soup.Status.OK) {
+                    const bytes = session.send_and_read_finish(
+                        result
+                    ) as GLib.Bytes;
+                    const decoder = new TextDecoder('utf-8');
+                    const response = decoder.decode(
+                        bytes.get_data() as ArrayBuffer
                     );
-                    return;
-                }
-
-                let notifications: NotificationResponseItem[] = [];
-                try {
-                    notifications = JSON.parse(message.response_body.data);
-                } catch (e: unknown) {
-                    Debug.log(`error unpacking notification: ${e}`);
-                    return;
-                }
-                this.showNotifications(notifications);
-            });
-        } else {
-            this.httpSession.send_and_read_async(
-                message,
-                GLib.PRIORITY_DEFAULT,
-                new Gio.Cancellable(),
-                (session, result) => {
-                    if (session && message.status_code === Soup.Status.OK) {
-                        const bytes = session.send_and_read_finish(
-                            result
-                        ) as GLib.Bytes;
-                        const decoder = new TextDecoder('utf-8');
-                        const response = decoder.decode(
-                            bytes.get_data() as ArrayBuffer
-                        );
-                        let notifications: NotificationResponseItem[];
-                        try {
-                            notifications = JSON.parse(
-                                response
-                            ) as NotificationResponseItem[];
-                        } catch (e: unknown) {
-                            Debug.log(`error unpacking notification: ${e}`);
-                            return;
-                        }
-                        this.showNotifications(notifications);
+                    let notifications: NotificationResponseItem[];
+                    try {
+                        notifications = JSON.parse(
+                            response
+                        ) as NotificationResponseItem[];
+                    } catch (e: unknown) {
+                        Debug.log(`error unpacking notification: ${e}`);
+                        return;
                     }
+                    this.showNotifications(notifications);
                 }
-            );
-        }
+            }
+        );
         Me.stateManager!.setState(
             'notification-check',
             new Date().toISOString()
@@ -114,7 +86,7 @@ export class MsNotificationManager extends MsManager {
                 notificationData.action
             );
 
-            source.showNotification(notification);
+            source.addNotification(notification);
         });
     }
 }
@@ -129,13 +101,12 @@ interface NotificationResponseItem {
 @registerGObjectClass
 class MsNotificationSource extends MessageTray.Source {
     constructor() {
-        super('Material Shell');
-    }
-
-    getIcon() {
-        return Gio.icon_new_for_string(
-            `${Me.instance.metadata.path}/assets/icons/on-dark-small.svg`
-        );
+        super({
+            title: 'Material Shell',
+            icon: Gio.icon_new_for_string(
+                `${Me.instance.metadata.path}/assets/icons/on-dark-small.svg`
+            ),
+        });
     }
 }
 
@@ -149,22 +120,25 @@ class MsNotification extends MessageTray.Notification {
         icon: string,
         action: { url: string; label: string } | undefined
     ) {
-        const params: MessageTray.NotificationParams = {};
-        if (icon) {
-            params.gicon = Gio.icon_new_for_string(
-                `${Me.instance.metadata.path}/assets/icons/${icon}.svg`
-            );
-        }
-        super(source, title, text, params);
+        super({
+            source,
+            title,
+            body: text,
+            useBodyMarkup: true,
+            gicon: icon
+                ? Gio.icon_new_for_string(
+                      `${Me.instance.metadata.path}/assets/icons/${icon}.svg`
+                  )
+                : null,
+        });
         this.action = action;
-        this.bannerBodyMarkup = true;
     }
 
     activate() {
         super.activate();
         const dialog = new MsNotificationDialog(
-            this.title,
-            this.bannerBodyText,
+            this.title ?? '',
+            this.body ?? '',
             this.action
         );
         dialog.open(global.get_current_time());

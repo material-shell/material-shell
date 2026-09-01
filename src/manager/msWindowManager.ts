@@ -14,7 +14,7 @@ import { MsDndManager } from 'src/manager/msDndManager';
 import { MsFocusManager } from 'src/manager/msFocusManager';
 import { MsManager } from 'src/manager/msManager';
 import { MsResizeManager } from 'src/manager/msResizeManager';
-import { assert } from 'src/utils/assert';
+import { assert, assertNotNull } from 'src/utils/assert';
 import { AsyncDebounce } from 'src/utils/async';
 import { groupBy } from 'src/utils/group_by';
 import { logAsyncException } from 'src/utils/log';
@@ -38,6 +38,19 @@ export type MetaWindowWithMsProperties = Meta.Window & {
 export type MetaWindowActorWithMsProperties = Meta.WindowActor & {
     lastResize: number;
 };
+
+/**
+ * The window of a window actor.
+ *
+ * `Meta.WindowActor.meta_window` is nullable because an actor briefly outlives
+ * its window while it is being destroyed; every actor Material Shell looks at
+ * still has one.
+ */
+export function metaWindowOf(
+    windowActor: Meta.WindowActor
+): MetaWindowWithMsProperties {
+    return assertNotNull(windowActor.meta_window);
+}
 
 /** Checks if `found` is equal to `desired` and returns the appropriate cost.
  * If desired is not given (undefined) then `skipCost` is returned.
@@ -176,7 +189,7 @@ export class MsWindowManager extends MsManager {
             .get_window_actors()
             .filter(
                 (x) =>
-                    (x.meta_window as MetaWindowWithMsProperties)
+                    (metaWindowOf(x) as MetaWindowWithMsProperties)
                         .handledByMaterialShell
             );
         // Assign all non-dialog windows first
@@ -219,8 +232,8 @@ export class MsWindowManager extends MsManager {
         // Handle all non-dialog windows that haven't been associated with an MsWindow yet. Dialog windows are handled by assignDialogWindows
         const windowActors = actors.filter(
             (w) =>
-                !assignedMetaWindows.has(w.meta_window) &&
-                !this.isMetaWindowDialog(w.meta_window)
+                !assignedMetaWindows.has(metaWindowOf(w)) &&
+                !this.isMetaWindowDialog(metaWindowOf(w))
         );
 
         const candidateMsWindows = this.msWindowList.filter(
@@ -240,7 +253,7 @@ export class MsWindowManager extends MsManager {
         });
         const groupedMetaWindowsByApp = groupBy(
             windowActors,
-            (window) => this.windowTracker.get_window_app(window.meta_window).id
+            (window) => this.windowTracker.get_window_app(metaWindowOf(window)).id
         );
 
         let logged = false;
@@ -250,11 +263,11 @@ export class MsWindowManager extends MsManager {
             for (const windowActor of actors) {
                 Debug.log(
                     `Meta window: ${buildMetaWindowIdentifier(
-                        windowActor.meta_window
+                        metaWindowOf(windowActor)
                     )} title='${
-                        windowActor.meta_window.title
+                        metaWindowOf(windowActor).title
                     }' dialog=${this.isMetaWindowDialog(
-                        windowActor.meta_window
+                        metaWindowOf(windowActor)
                     )}`
                 );
             }
@@ -283,7 +296,7 @@ export class MsWindowManager extends MsManager {
                 groupedMsWindowsByApp.get(groupKey!) || [];
             const costMatrix: number[][] = [];
             for (const windowActor of windowActorGroup) {
-                const metaWindow = windowActor.meta_window;
+                const metaWindow = metaWindowOf(windowActor);
                 const windowInfo: MsWindowMatchingInfo = {
                     appId: groupKey!,
                     wmClass: metaWindow.get_wm_class_instance()!,
@@ -314,7 +327,7 @@ export class MsWindowManager extends MsManager {
                 const idx = assignments[i];
                 if (idx < candidateMsWindows.length) {
                     // Found a good match
-                    msWindowAssignments[idx] = windowActorGroup[i].meta_window;
+                    msWindowAssignments[idx] = metaWindowOf(windowActorGroup[i]);
                 }
             }
 
@@ -350,28 +363,28 @@ export class MsWindowManager extends MsManager {
                         logInfoOnce();
                         Debug.log(
                             `Associating ${buildMetaWindowIdentifier(
-                                windowActor.meta_window
+                                metaWindowOf(windowActor)
                             )} with ${msWindow.windowIdentifier}`
                         );
 
                         // Associate the meta window with the ms window.
                         // This promise is designed to run asynchronously and will cancel itself automatically if necessary.
                         void msWindow
-                            .setWindow(windowActor.meta_window)
+                            .setWindow(metaWindowOf(windowActor))
                             .catch(logAsyncException);
                     }
                 } else {
                     logInfoOnce();
                     Debug.log(
                         `Creating a new MsWindow for ${buildMetaWindowIdentifier(
-                            windowActor.meta_window
+                            metaWindowOf(windowActor)
                         )}`
                     );
                     // Did not find a good match, create a new window instead
-                    this.createNewMsWindow(windowActor.meta_window, {
+                    this.createNewMsWindow(metaWindowOf(windowActor), {
                         msWorkspace:
                             Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
-                                windowActor.meta_window
+                                metaWindowOf(windowActor)
                             ),
                         focus: true,
                         insert: true,
@@ -406,10 +419,10 @@ export class MsWindowManager extends MsManager {
 
         for (const windowActor of actors) {
             if (windowActor.is_destroyed()) continue;
-            if (assignedMetaWindows.has(windowActor.meta_window)) continue;
-            if (!this.isMetaWindowDialog(windowActor.meta_window)) continue;
+            if (assignedMetaWindows.has(metaWindowOf(windowActor))) continue;
+            if (!this.isMetaWindowDialog(metaWindowOf(windowActor))) continue;
 
-            const metaWindow = windowActor.meta_window;
+            const metaWindow = metaWindowOf(windowActor);
             const app = this.windowTracker.get_window_app(
                 metaWindow
             ) as Shell.App | null;
@@ -510,10 +523,10 @@ export class MsWindowManager extends MsManager {
                 msWindowFound.addDialog(metaWindow);
             } else {
                 // No good existing MsWindow was found, instead we create a new MsWindow just for this dialog.
-                this.createNewMsWindow(windowActor.meta_window, {
+                this.createNewMsWindow(metaWindowOf(windowActor), {
                     msWorkspace:
                         Me.msWorkspaceManager!.determineAppropriateMsWorkspace(
-                            windowActor.meta_window
+                            metaWindowOf(windowActor)
                         ),
                     focus: true,
                     insert: true,
@@ -531,7 +544,7 @@ export class MsWindowManager extends MsManager {
 
         for (const windowActor of global.get_window_actors()) {
             const metaWindow =
-                windowActor.meta_window as MetaWindowWithMsProperties;
+                metaWindowOf(windowActor) as MetaWindowWithMsProperties;
             // Initialize and reset fields to well defined states.
             metaWindow.firstFrameDrawn = true;
             metaWindow.firstFrameDrawnPromise = Promise.resolve();
@@ -832,7 +845,7 @@ export class MsWindowManager extends MsManager {
         this.checkWindowsForAssignationsDebounce.cancel();
         global.get_window_actors().forEach((windowActor) => {
             const metaWindow =
-                windowActor.meta_window as MetaWindowWithMsProperties;
+                metaWindowOf(windowActor) as MetaWindowWithMsProperties;
             if (metaWindow.handledByMaterialShell)
                 delete metaWindow.handledByMaterialShell;
         });
