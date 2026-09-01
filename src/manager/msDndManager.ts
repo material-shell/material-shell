@@ -174,7 +174,7 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        Me.msThemeManager!.setCursor(Meta.Cursor.DND_IN_DRAG);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.GRABBING);
     }
 
     endDrag() {
@@ -189,7 +189,7 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {
@@ -265,7 +265,7 @@ export class InputGrabber extends Clutter.Actor {
         super({
             name: 'InputGrabber',
             reactive: true,
-            //backgroundColor: Clutter.Color.new(255, 0, 0, 100),
+            //backgroundColor: new Cogl.Color({ red: 255, green: 0, blue: 0, alpha: 100 }),
         });
         this.add_constraint(
             new Clutter.BindConstraint({

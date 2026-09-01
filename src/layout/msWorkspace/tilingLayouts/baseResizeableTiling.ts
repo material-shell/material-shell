@@ -287,8 +287,8 @@ export class BaseResizeableTilingLayout<
             const dimmer = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
                 brightness: focused
-                    ? Clutter.Color.new(127, 127, 127, 255)
-                    : Clutter.Color.new(100, 100, 100, 255),
+                    ? new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 })
+                    : new Cogl.Color({ red: 100, green: 100, blue: 100, alpha: 255 }),
             });
             tileable.focusEffects = {
                 dimmer,
@@ -335,7 +335,7 @@ export class BaseResizeableTilingLayout<
                     tileable.ease_property(
                         '@effects.dimmer.brightness',
 
-                        Clutter.Color.new(100, 100, 100, 255),
+                        new Cogl.Color({ red: 100, green: 100, blue: 100, alpha: 255 }),
                         {
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                             duration: 150,
@@ -346,7 +346,7 @@ export class BaseResizeableTilingLayout<
                 if (tileable.get_effect('dimmer')) {
                     tileable.ease_property(
                         '@effects.dimmer.brightness',
-                        Clutter.Color.new(127, 127, 127, 255),
+                        new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 }),
                         {
                             duration: 150,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -386,7 +386,7 @@ export class ResizableBorderActor extends St.Widget {
 
     constructor() {
         super({ reactive: true, track_hover: true });
-        this.set_background_color(Clutter.Color.new(10, 10, 10, 255));
+        this.set_background_color(new Cogl.Color({ red: 10, green: 10, blue: 10, alpha: 255 }));
 
         this.connect('event', (actor, event) => {
             const eventType = event.type();
@@ -404,11 +404,11 @@ export class ResizableBorderActor extends St.Widget {
                 }
                 case Clutter.EventType.ENTER:
                     Me.msThemeManager!.setCursor(
-                        Meta.Cursor.MOVE_OR_RESIZE_WINDOW
+                        Clutter.CursorType.MOVE
                     );
                     break;
                 case Clutter.EventType.LEAVE:
-                    Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
+                    Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
                     break;
             }
         });
@@ -440,7 +440,7 @@ export class PrimaryBorderEffect extends Clutter.Effect {
     // Note: Default value set by GObject due to the metaInfo declaration above
     opacity!: number;
 
-    constructor(params: Partial<Clutter.Effect.ConstructorProperties>) {
+    constructor(params: Partial<Clutter.Effect.ConstructorProps>) {
         super(params);
         this._pipeline = null;
         this.color = new Cogl.Color();

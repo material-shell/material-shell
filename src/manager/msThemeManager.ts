@@ -1,4 +1,5 @@
 /** Gnome libs imports */
+import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
@@ -67,8 +68,8 @@ export class MsThemeManager extends MsManager {
     themeValue: string;
     primary: string;
     primaryColor: Cogl.Color;
-    metaCursor: Meta.Cursor;
-    throttledDisplaySetCursor: () => void;
+    cursorType: Clutter.CursorType;
+    throttledStageSetCursorType: () => void;
 
     constructor() {
         super();
@@ -83,13 +84,15 @@ export class MsThemeManager extends MsManager {
         this.themeValue = this.themeSettings.get_string('theme')!;
         this.primary = this.themeSettings.get_string('primary-color')!;
         this.primaryColor = parseCoglColor(this.primary);
-        this.metaCursor = Meta.Cursor.DEFAULT;
-        let displayedCursor: Meta.Cursor = this.metaCursor;
-        this.throttledDisplaySetCursor = throttle(
+        this.cursorType = Clutter.CursorType.DEFAULT;
+        let displayedCursor: Clutter.CursorType = this.cursorType;
+        this.throttledStageSetCursorType = throttle(
             () => {
-                if (displayedCursor == this.metaCursor) return;
-                displayedCursor = this.metaCursor;
-                return global.display.set_cursor(this.metaCursor);
+                if (displayedCursor == this.cursorType) return;
+                displayedCursor = this.cursorType;
+                // Since GNOME 50 the cursor is a property of an actor rather
+                // than global state on the display, so set it on the stage.
+                return global.stage.set_cursor_type(this.cursorType);
             },
             16,
             { leading: false }
@@ -239,9 +242,9 @@ export class MsThemeManager extends MsManager {
         return luminance < 0.179;
     }
 
-    setCursor(cursor: Meta.Cursor) {
-        this.metaCursor = cursor;
-        this.throttledDisplaySetCursor();
+    setCursor(cursor: Clutter.CursorType) {
+        this.cursorType = cursor;
+        this.throttledStageSetCursorType();
     }
 
     async readFileContent(file: Gio.File) {

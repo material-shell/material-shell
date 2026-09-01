@@ -153,7 +153,7 @@ export class WorkspaceList extends St.Widget {
         this.buttonActive.add_style_class_name('active');
 
         this.workspaceActiveIndicator.ease({
-            translation_y: this.get_preferred_width(-1)[1]! * index,
+            translationY: this.get_preferred_width(-1)[1]! * index,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });

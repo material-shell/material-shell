@@ -136,8 +136,8 @@ export class MatTooltip extends St.Label {
     show() {
         this.ease({
             opacity: 255,
-            scale_x: 1,
-            scale_y: 1,
+            scaleX: 1,
+            scaleY: 1,
             duration: 300,
         });
     }

@@ -283,8 +283,8 @@ export class TaskActiveIndicator extends St.Widget {
     }
     animate() {
         this.ease({
-            translation_x: 0,
-            scale_x: 1,
+            translationX: 0,
+            scaleX: 1,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onStopped: () => {

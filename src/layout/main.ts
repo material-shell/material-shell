@@ -1,5 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -323,7 +324,7 @@ export class MsMain extends St.Widget {
             this.overviewShown = false;
             this.primaryMonitorContainer.workspaceContainer.ease_property(
                 '@effects.dimmer.brightness',
-                Clutter.Color.new(127, 127, 127, 255),
+                new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 }),
                 {
                     duration: 300,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -341,14 +342,14 @@ export class MsMain extends St.Widget {
 
             const dimmerEffect = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
-                brightness: Clutter.Color.new(127, 127, 127, 255),
+                brightness: new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 }),
             });
             this.primaryMonitorContainer.workspaceContainer.add_effect(
                 dimmerEffect
             );
             this.primaryMonitorContainer.workspaceContainer.ease_property(
                 '@effects.dimmer.brightness',
-                Clutter.Color.new(90, 90, 90, 255),
+                new Cogl.Color({ red: 90, green: 90, blue: 90, alpha: 255 }),
                 {
                     duration: 300,
                     mode: Clutter.AnimationMode.EASE_IN_QUAD,
@@ -394,7 +395,7 @@ export class MonitorContainer extends St.Widget {
         layout: MsMain,
         monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
-        params?: Partial<St.Widget.ConstructorProperties>
+        params?: Partial<St.Widget.ConstructorProps>
     ) {
         super(params);
         this.layout = layout;
@@ -522,7 +523,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
         layout: MsMain,
         monitor: Main.Monitor,
         bgGroup: Meta.BackgroundGroup,
-        params?: Partial<St.Widget.ConstructorProperties>
+        params?: Partial<St.Widget.ConstructorProps>
     ) {
         super(layout, monitor, bgGroup, params);
 

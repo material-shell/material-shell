@@ -41,8 +41,8 @@ export class RippleWave extends St.Widget {
         this.scale_y = 32 / this.fullSize;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.ease({
-                scale_x: 1,
-                scale_y: 1,
+                scaleX: 1,
+                scaleY: 1,
                 duration: (this.fullSize / 800) * 1000,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             });

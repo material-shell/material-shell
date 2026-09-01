@@ -683,23 +683,37 @@ export class MsWindow extends Clutter.Actor {
                 !shouldBeMaximizedVertically && metaWindow.maximized_vertically;
 
             const callback = () => {
+                // Since GNOME 49 the direction is set separately instead of
+                // being passed to maximize()/unmaximize().
                 if (
                     shouldUnMaximizeHorizontally &&
                     shouldUnMaximizeVertically
                 ) {
-                    metaWindow.unmaximize(Meta.MaximizeFlags.BOTH);
+                    metaWindow.set_unmaximize_flags(Meta.MaximizeFlags.BOTH);
+                    metaWindow.unmaximize();
                 } else if (shouldUnMaximizeHorizontally) {
-                    metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL);
+                    metaWindow.set_unmaximize_flags(
+                        Meta.MaximizeFlags.HORIZONTAL
+                    );
+                    metaWindow.unmaximize();
                 } else if (shouldUnMaximizeVertically) {
-                    metaWindow.unmaximize(Meta.MaximizeFlags.VERTICAL);
+                    metaWindow.set_unmaximize_flags(
+                        Meta.MaximizeFlags.VERTICAL
+                    );
+                    metaWindow.unmaximize();
                 }
 
                 if (shouldMaximizeHorizontally && shouldMaximizeVertically) {
-                    metaWindow.maximize(Meta.MaximizeFlags.BOTH);
+                    metaWindow.set_maximize_flags(Meta.MaximizeFlags.BOTH);
+                    metaWindow.maximize();
                 } else if (shouldMaximizeHorizontally) {
-                    metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL);
+                    metaWindow.set_maximize_flags(
+                        Meta.MaximizeFlags.HORIZONTAL
+                    );
+                    metaWindow.maximize();
                 } else if (shouldMaximizeVertically) {
-                    metaWindow.maximize(Meta.MaximizeFlags.VERTICAL);
+                    metaWindow.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
+                    metaWindow.maximize();
                 }
             };
 

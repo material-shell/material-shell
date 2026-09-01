@@ -15,7 +15,7 @@ import { RippleBackground } from 'src/widget/material/rippleBackground';
 import { default as Me } from 'src/extension';
 const beforeGnome44 =
     compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
-interface MatButtonParams extends Partial<St.Widget.ConstructorProperties> {
+interface MatButtonParams extends Partial<St.Widget.ConstructorProps> {
     primary?: boolean;
     child?: St.Widget;
 }
@@ -81,10 +81,10 @@ export class MatButton extends St.Widget {
         this.add_action(clickAction);
 
         this.connect('enter-event', () => {
-            Me.msThemeManager!.setCursor(Meta.Cursor.POINTING_HAND);
+            Me.msThemeManager!.setCursor(Clutter.CursorType.POINTER);
         });
         this.connect('leave-event', () => {
-            Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
+            Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
         });
     }
 

@@ -252,7 +252,7 @@ export class MsPanel extends St.BoxLayout {
                     : 1);
 
             this.ease({
-                translation_x: 0,
+                translationX: 0,
                 duration: 200,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             });
@@ -266,7 +266,7 @@ export class MsPanel extends St.BoxLayout {
             this.remove_style_class_name('shadow');
 
             this.ease({
-                translation_x:
+                translationX:
                     (Me.msThemeManager!.getScaledSize(448) -
                         (Me.layout!.panelsVisible
                             ? Me.msThemeManager!.getPanelSize()
