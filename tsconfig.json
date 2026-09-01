@@ -32,7 +32,11 @@
         // This is a GJS project: do not auto-include node_modules/@types/*,
         // whose @types/node would shadow the shell's `global` object.
         "types": [],
-        "skipLibCheck": false
+        // @girs/gnome-shell 50.0.4 ships a background.d.ts whose
+        // Animation.load_async does not match its base class, and there is
+        // nothing to fix on our side; errors in our own declarations still
+        // surface where src uses them.
+        "skipLibCheck": true
     },
     "include": [
         "src/**/*.ts",

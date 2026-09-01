@@ -57,6 +57,11 @@ declare module '@girs/gnome-shell/ui/dateMenu' {
     interface MessagesIndicator extends St.Icon {
         _sync(): void;
     }
+
+    interface DateMenuButton {
+        _clockDisplay: St.Label;
+        _indicator: MessagesIndicator;
+    }
 }
 
 declare module '@girs/clutter-18/clutter-18' {

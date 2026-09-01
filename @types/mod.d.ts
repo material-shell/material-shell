@@ -87,10 +87,6 @@ declare module '@girs/clutter-18/clutter-18' {
         // eslint-disable-next-line @typescript-eslint/no-empty-interface
         export interface AllocationFlags {}
 
-        export namespace Event {
-            const $gtype: any;
-        }
-
         export interface ActorBox {
             new (
                 x?: number,
