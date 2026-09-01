@@ -1,20 +1,12 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
-import Meta from 'gi://Meta';
 import St from 'gi://St';
 import { registerGObjectClass } from 'src/utils/gjs';
-import {
-    compareVersions,
-    gnomeVersionNumber,
-    parseVersion,
-} from 'src/utils/shellVersionMatch';
 import { RippleBackground } from 'src/widget/material/rippleBackground';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
-const beforeGnome44 =
-    compareVersions(gnomeVersionNumber, parseVersion('44.0')) < 0;
 interface MatButtonParams extends Partial<St.Widget.ConstructorProps> {
     primary?: boolean;
     child?: St.Widget;
@@ -32,15 +24,16 @@ export class MatButton extends St.Widget {
             'primary-action': {},
             // Right Click or Long press
             'secondary-action': {},
-            'drag-start': {
-                param_types: [Clutter.Event.$gtype],
-            },
         },
     };
     rippleBackground: RippleBackground;
-    clicked: boolean | undefined;
-    private _longPressLater: any;
     child: St.Widget | undefined;
+    /**
+     * Exposed so that a container which also makes this button draggable can
+     * tell the long press not to cancel the drag, the way the shell's own
+     * window previews do.
+     */
+    longPressGesture: Clutter.LongPressGesture;
 
     constructor(params: MatButtonParams) {
         const isPrimary = params.primary;
@@ -62,10 +55,10 @@ export class MatButton extends St.Widget {
             this.add_style_class_name('primary');
         }
 
-        const clickAction = new PropagateClickAction();
-        clickAction.connect('clicked', (action) => {
-            this.clicked = true;
-            const button = action.get_button();
+        const clickGesture = new Clutter.ClickGesture();
+        clickGesture.connect('recognize', () => {
+            // A touch press reports button 0.
+            const button = clickGesture.get_button();
             this.emit('clicked', button);
             if (button === Clutter.BUTTON_PRIMARY || button === 0) {
                 this.emit('primary-action');
@@ -74,11 +67,14 @@ export class MatButton extends St.Widget {
                 this.emit('secondary-action');
             }
             this.rippleBackground.removeRippleWave();
-            return true;
         });
-        clickAction.connect('long-press', this._onLongPress.bind(this));
+        this.add_action(clickGesture);
 
-        this.add_action(clickAction);
+        this.longPressGesture = new Clutter.LongPressGesture();
+        this.longPressGesture.connect('recognize', () => {
+            this.emit('secondary-action');
+        });
+        this.add_action(this.longPressGesture);
 
         this.connect('enter-event', () => {
             Me.msThemeManager!.setCursor(Clutter.CursorType.POINTER);
@@ -86,40 +82,6 @@ export class MatButton extends St.Widget {
         this.connect('leave-event', () => {
             Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
         });
-    }
-
-    _onLongPress(
-        action: Clutter.ClickAction & { event: Clutter.Event | undefined },
-        actor: Clutter.Actor,
-        state: Clutter.LongPressState
-    ) {
-        // Take advantage of the Clutter policy to consider
-        // a long-press canceled when the pointer movement
-        // exceeds dnd-drag-threshold to manually start the drag
-        if (state == Clutter.LongPressState.CANCEL) {
-            const event = action.event;
-            if (this._longPressLater) return true;
-
-            // A click cancels a long-press before any click handler is
-            // run - make sure to not start a drag in that case
-            const callback = () => {
-                delete this._longPressLater;
-                if (this.clicked) {
-                    delete this.clicked;
-                    return false;
-                }
-                action.release();
-                this.emit('drag-start', event);
-                return false;
-            };
-            this._longPressLater = global.compositor
-                .get_laters()
-                .add(Meta.LaterType.BEFORE_REDRAW, callback);
-        }
-        if (state == Clutter.LongPressState.ACTIVATE) {
-            this.emit('secondary-action');
-        }
-        return true;
     }
 
     /**
@@ -161,36 +123,3 @@ export class MatButton extends St.Widget {
         }
     }
 }
-
-const beforeGnome42 =
-    compareVersions(gnomeVersionNumber, parseVersion('42.0')) < 0;
-const PropagateClickAction = (() => {
-    if (beforeGnome42) {
-        @registerGObjectClass
-        class PropagateClickActionBefore42 extends Clutter.ClickAction {
-            static metaInfo: GObject.MetaInfo<any, any, any> = {
-                GTypeName: 'PropagateClickAction',
-            };
-            get event(): Clutter.Event | undefined {
-                return Clutter.get_current_event();
-            }
-        }
-        return PropagateClickActionBefore42;
-    } else {
-        @registerGObjectClass
-        class PropagateClickActionAfter42 extends Clutter.ClickAction {
-            static metaInfo: GObject.MetaInfo<any, any, any> = {
-                GTypeName: 'PropagateClickAction',
-            };
-            event: Clutter.Event | undefined;
-
-            vfunc_handle_event(event: Clutter.Event) {
-                this.event = event;
-                super.vfunc_handle_event(event);
-                //Propagate ( propagating has the side effect to not assign global Clutter.get_current_event so we stash it in lastEvent)
-                return false;
-            }
-        }
-        return PropagateClickActionAfter42;
-    }
-})();

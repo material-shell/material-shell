@@ -22,6 +22,7 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
+import { Monitor } from 'src/utils/shellTypes';
 
 const isTileableItem = (obj: any): obj is TileableItem => {
     return obj instanceof TileableItem;
@@ -321,7 +322,7 @@ export class TaskBarItem extends MatButton {
     private _delegate: this;
     draggable: boolean;
     contentActor: St.Widget;
-    monitor: Main.Monitor;
+    monitor: Monitor;
     menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 

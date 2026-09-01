@@ -120,24 +120,15 @@ export class ReorderableList extends Clutter.Actor {
                 : false;
         };
 
-        const isMatButton = actor instanceof MatButton;
         actor._draggable = DND.makeDraggable(actor, {
             restoreOnSuccess: false,
-            manualMode: isMatButton,
         });
 
-        if (isMatButton) {
-            actor.connect('drag-start', (_, event) => {
-                const [x, y] = event.get_coords();
-
-                actor._draggable.startDrag(
-                    x,
-                    y,
-                    global.get_current_time(),
-                    event.get_event_sequence(),
-                    event.get_device()
-                );
-            });
+        if (actor instanceof MatButton) {
+            // A drag and a long press start from the same press, so keep the
+            // long press from cancelling the drag once it passes the
+            // threshold, the way the shell's window previews do.
+            actor.longPressGesture.can_not_cancel(actor._draggable.startGesture);
         }
 
         let originalIndex: number | null = null;

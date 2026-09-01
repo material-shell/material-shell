@@ -23,6 +23,7 @@ import * as Background from 'resource:///org/gnome/shell/ui/background.js';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
+import { Monitor } from 'src/utils/shellTypes';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
@@ -389,11 +390,11 @@ export class MonitorContainer extends St.Widget {
     bgManager: any;
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
-    monitor!: Main.Monitor;
+    monitor!: Monitor;
     layout: MsMain;
     constructor(
         layout: MsMain,
-        monitor: Main.Monitor,
+        monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProps>
     ) {
@@ -465,7 +466,7 @@ export class MonitorContainer extends St.Widget {
         );
     }
 
-    setMonitor(monitor: Main.Monitor) {
+    setMonitor(monitor: Monitor) {
         if (this.bgManager) {
             this.bgManager.destroy();
         }
@@ -521,7 +522,7 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     );
     constructor(
         layout: MsMain,
-        monitor: Main.Monitor,
+        monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
         params?: Partial<St.Widget.ConstructorProps>
     ) {
