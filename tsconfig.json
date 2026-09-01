@@ -42,6 +42,7 @@
         "src/**/*.ts",
         "@types/ambient.d.ts",
         "@types/mod.d.ts",
-        "@types/shell-internals.d.ts"
+        "@types/shell-internals.d.ts",
+        "@types/shell-modules.d.ts"
     ]
 }

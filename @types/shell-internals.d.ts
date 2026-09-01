@@ -6,6 +6,8 @@
  * to rename in any release; keep this list short and check each entry against
  * the shell sources when bumping the targeted version.
  */
+import type Clutter from 'gi://Clutter';
+import type Gio from 'gi://Gio';
 import type Meta from 'gi://Meta';
 import type St from 'gi://St';
 
@@ -53,6 +55,25 @@ declare module '@girs/gnome-shell/ui/popupMenu' {
 
     interface PopupImageMenuItem {
         _icon: St.Icon;
+    }
+
+    interface PopupMenuBase {
+        /**
+         * addAction() is declared as returning the base item, but it builds a
+         * PopupImageMenuItem whenever an icon is given.
+         */
+        addAction(
+            title: string,
+            callback: (event: Clutter.Event) => void,
+            icon?: Gio.Icon
+        ): PopupImageMenuItem;
+    }
+}
+
+declare module '@girs/gnome-shell/ui/dialog' {
+    interface MessageDialogContent {
+        /** The label behind the `description` property. */
+        _description: St.Label;
     }
 }
 
@@ -113,13 +134,4 @@ declare module '@girs/gnome-shell/misc/systemActions' {
         getIconName(id: string): string | null;
         activateAction(id: string): void;
     }
-}
-
-declare module 'resource:///org/gnome/shell/ui/shellEntry.js' {
-    import type St from 'gi://St';
-
-    export function addContextMenu(
-        entry: St.Entry,
-        params?: { actionMode?: number }
-    ): void;
 }

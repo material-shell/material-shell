@@ -34,7 +34,7 @@
         "rollup-prefs": "npx rollup -c rollup.config.prefs.js -i build/prefs/prefs.js  -o dist/prefs.js",
         "rollup-prefs-watch": "npx rollup -w -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
         "transpile-and-rollup": "node build/transpile.js && npm run rollup-extension && npm run rollup-prefs",
-        "dev": "npx tsc scripts/transpile.ts --outDir build && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "
+        "dev": "npx tsc scripts/transpile.ts --outDir build --skipLibCheck && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "
     },
     "repository": {
         "type": "git",

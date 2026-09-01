@@ -568,7 +568,7 @@ export default class MyExtensionPreferences extends ExtensionPreferences {
         return { PrefsWidget, HotkeyListBox };
     }
 
-    fillPreferencesWindow(window: Adw.PreferencesWindow) {
+    override async fillPreferencesWindow(window: Adw.PreferencesWindow) {
         const schemaSource = Gio.SettingsSchemaSource.new_from_directory(
             this.metadata.dir.get_child('schemas').get_path()!,
             Gio.SettingsSchemaSource.get_default(),

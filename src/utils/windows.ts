@@ -9,7 +9,7 @@ export const updateTitleBarVisibility = function (
     metaWindow: MetaWindowWithMsProperties
 ) {
     const msWorkspaceIsInFloatLayout =
-        metaWindow.msWindow?.msWorkspace.layout.state.key === 'float' ?? false;
+        metaWindow.msWindow?.msWorkspace.layout.state.key === 'float';
     const shouldTitleBarBeVisible = msWorkspaceIsInFloatLayout;
     if (
         !metaWindow.titleBarVisible ||
@@ -24,8 +24,9 @@ export const setTitleBarVisibility = function (
     visible: boolean
 ) {
     const windowXID = getWindowXID(metaWindow);
-    if (!windowXID || metaWindow.is_client_decorated() || !metaWindow.decorated)
-        return;
+    // Meta.Window.is_client_decorated() is gone; `decorated` already excludes
+    // the client side decorated windows this used to filter out.
+    if (!windowXID || !metaWindow.decorated) return;
     try {
         Util.trySpawn([
             'xprop',

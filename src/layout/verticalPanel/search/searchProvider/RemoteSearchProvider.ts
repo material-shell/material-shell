@@ -160,11 +160,12 @@ export function loadRemoteSearchProviders(
 
     if (searchSettings.get_boolean('disable-external')) return [];
 
-    FileUtils.collectFromDatadirs(
+    for (const provider of FileUtils.collectFromDatadirs(
         'search-providers',
-        false,
-        loadRemoteSearchProvider
-    );
+        false
+    )) {
+        loadRemoteSearchProvider(provider.dir);
+    }
 
     const sortOrder = searchSettings.get_strv('sort-order');
 

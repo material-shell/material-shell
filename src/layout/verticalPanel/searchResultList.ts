@@ -1,6 +1,7 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Shell from 'gi://Shell';
@@ -438,7 +439,9 @@ export class SearchResultList extends St.BoxLayout {
                 }
                 return (
                     appInfo.should_show() &&
-                    this.parentalControlsManager.shouldShowApp(appInfo)
+                    this.parentalControlsManager.shouldShowApp(
+                        appInfo as GioUnix.DesktopAppInfo
+                    )
                 );
             })
             .sort((a, b) =>
@@ -465,7 +468,7 @@ export class SearchResultList extends St.BoxLayout {
                 this.resetAndClose();
 
                 const app = Shell.AppSystem.get_default().lookup_app(
-                    appInfo.get_id()
+                    appInfo.get_id()!
                 );
                 if (app) {
                     Me.msWindowManager!.openApp(

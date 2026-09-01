@@ -2,6 +2,7 @@
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import * as ExtensionSystem from 'resource:///org/gnome/shell/ui/extensionSystem.js';
+import { assertNotNull } from 'src/utils/assert';
 import { Debug } from 'src/utils/debug';
 
 const incompatibleExtensions = [
@@ -16,16 +17,15 @@ const incompatibleExtensions = [
     'improved-workspace-indicator@michaelaquilina.github.io',
 ];
 
-let originalFunction: { apply: (uuid: any, args: IArguments) => void } | null;
+let originalFunction: ((uuid: string) => void) | null;
 export class DisableIncompatibleExtensionsModule {
     constructor() {
         originalFunction =
             ExtensionSystem.ExtensionManager.prototype._callExtensionEnable;
         ExtensionSystem.ExtensionManager.prototype._callExtensionEnable =
-            function (uuid: string, ...args: any[]) {
+            function (uuid: string) {
                 if (incompatibleExtensions.includes(uuid)) return;
-                // eslint-disable-next-line prefer-rest-params
-                originalFunction!.apply(this, arguments);
+                assertNotNull(originalFunction).call(this, uuid);
             };
 
         this.disableExtensions();
@@ -51,7 +51,7 @@ export class DisableIncompatibleExtensionsModule {
 
     destroy() {
         ExtensionSystem.ExtensionManager.prototype._callExtensionEnable =
-            originalFunction;
+            assertNotNull(originalFunction);
         originalFunction = null;
     }
 }

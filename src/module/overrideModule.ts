@@ -26,10 +26,7 @@ export class OverrideModule {
         this.windowManagersFunctionToRestore = [];
         const _shouldAnimate =
             WindowManager.WindowManager.prototype._shouldAnimate;
-        WindowManager.WindowManager.prototype._shouldAnimate = function (
-            _actor,
-            _types
-        ) {
+        WindowManager.WindowManager.prototype._shouldAnimate = function () {
             return false;
         };
         this.windowManagersFunctionToRestore.push([

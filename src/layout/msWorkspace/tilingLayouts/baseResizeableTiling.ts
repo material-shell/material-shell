@@ -462,7 +462,7 @@ export class PrimaryBorderEffect extends Clutter.Effect {
         if (this.color !== Me.msThemeManager!.primaryColor) {
             this.color = Me.msThemeManager!.primaryColor;
             const c = this.color.copy();
-            c.set_alpha_float(this.opacity);
+            c.alpha = this.opacity;
             c.premultiply();
             this._pipeline.set_color(c);
         }

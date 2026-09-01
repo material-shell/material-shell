@@ -21,7 +21,6 @@ import { logAsyncException } from 'src/utils/log';
 import { getSettings } from 'src/utils/settings';
 import { weighted_matching } from 'src/utils/weighted_matching';
 
-import * as PolkitAgent from 'resource:///org/gnome/shell/ui/components/polkitAgent.js';
 import { Debug } from 'src/utils/debug';
 
 const Signals = imports.signals;
@@ -700,11 +699,15 @@ export class MsWindowManager extends MsManager {
                 msWindow.lifecycleState.waitingForAppSince !== undefined
             ) {
                 // If there is an authentication dialog postpone the window cleaning process
-                const isAuthenticationDialogDisplayed =
-                    Main.modalActorFocusStack.length > 0 &&
+                // polkitAgent.js keeps AuthenticationDialog private since
+                // GNOME 50, so recognise it by name instead.
+                const topModal =
                     Main.modalActorFocusStack[
                         Main.modalActorFocusStack.length - 1
-                    ].actor instanceof PolkitAgent.AuthenticationDialog;
+                    ];
+                const isAuthenticationDialogDisplayed =
+                    topModal?.actor?.constructor.name ===
+                    'AuthenticationDialog';
                 if (isAuthenticationDialogDisplayed) {
                     msWindow.lifecycleState.waitingForAppSince = now;
                 }

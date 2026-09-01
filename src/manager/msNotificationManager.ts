@@ -141,7 +141,7 @@ class MsNotification extends MessageTray.Notification {
             this.body ?? '',
             this.action
         );
-        dialog.open(global.get_current_time());
+        dialog.open();
     }
 }
 
@@ -189,7 +189,7 @@ export class MsNotificationDialog extends ModalDialog.ModalDialog {
 
         content._description.get_clutter_text().use_markup = true;
 
-        this.contentLayout.add(content);
+        this.contentLayout.add_child(content);
     }
 
     _onCancelButtonPressed() {

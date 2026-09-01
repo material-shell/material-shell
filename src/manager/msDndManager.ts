@@ -206,7 +206,7 @@ export class MsDndManager extends MsManager {
         assert(this.dragInProgress !== null, 'No drag in progress');
 
         const [x, y] = global.get_pointer();
-        const monitor = Main.layoutManager.currentMonitor;
+        const monitor = assertNotNull(Main.layoutManager.currentMonitor);
 
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWindowDragged = this.dragInProgress.msWindow;
@@ -274,7 +274,7 @@ export class InputGrabber extends Clutter.Actor {
             })
         );
     }
-    override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+    override vfunc_key_press_event(keyEvent: Clutter.Event) {
         const actionId = global.display.get_keybinding_action(
             keyEvent.get_key_code(),
             keyEvent.get_state()
