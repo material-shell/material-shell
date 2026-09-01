@@ -190,11 +190,12 @@ export class LayoutSwitcher extends St.BoxLayout {
 export class TilingLayoutMenuItem extends PopupMenu.PopupSwitchMenuItem {
     layoutConstructor: LayoutType;
     editable = false;
+    _icon: St.Icon;
 
     constructor(
         layoutConstructor: LayoutType,
         active: boolean,
-        params?: PopupMenu.PopupBaseMenuItemParams
+        params?: PopupMenu.PopupSwitchMenuItem.ConstructorProps
     ) {
         super(layoutConstructor.label, active, params);
         this.layoutConstructor = layoutConstructor;
@@ -304,7 +305,7 @@ export class LayoutsToggle extends PopupMenu.PopupImageMenuItem {
 
     constructor(
         menu: PopupMenu.PopupMenu,
-        params?: PopupMenu.PopupBaseMenuItemParams
+        params?: PopupMenu.PopupImageMenuItem.ConstructorProps
     ) {
         const editText = _('Tweak available layouts');
         const editIcon = Gio.icon_new_for_string(

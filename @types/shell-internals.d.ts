@@ -13,6 +13,8 @@ declare module '@girs/gnome-shell/ui/windowManager' {
     /** `js/ui/windowManager.js` keeps this class private. */
     interface WorkspaceTracker {
         _checkWorkspaces(): void;
+        _checkWorkspacesId: number;
+        _queueCheckWorkspaces(): void;
         _workspaces: Meta.Workspace[];
         keepWorkspaceAlive(workspace: Meta.Workspace, duration: number): void;
     }
@@ -42,13 +44,15 @@ declare module '@girs/gnome-shell/ui/popupMenu' {
         _menus: PopupMenu[];
     }
 
-    /** Constructor parameters of the private `PopupBaseMenuItem` class. */
-    interface PopupBaseMenuItemParams {
-        reactive?: boolean;
-        activate?: boolean;
-        hover?: boolean;
-        style_class?: string | null;
-        can_focus?: boolean;
+    interface PopupSwitchMenuItem {
+        /** The bin holding the switch, on the right of the item. */
+        _statusBin: St.Bin;
+        /** The menu the item was added to. */
+        _parent: PopupMenuBase | null;
+    }
+
+    interface PopupImageMenuItem {
+        _icon: St.Icon;
     }
 }
 
@@ -89,4 +93,33 @@ declare module '@girs/shell-18/shell-18' {
             ms: import('src/extension').default;
         }
     }
+}
+
+/**
+ * Below: parts of the shell that exist but that `@girs/gnome-shell` 50.0.4
+ * does not describe yet. Unlike the private members above, these are public
+ * API, so they should disappear as the package catches up.
+ */
+
+declare module '@girs/gnome-shell/misc/util' {
+    export function trySpawn(argv: string[]): void;
+    export function trySpawnCommandLine(commandLine: string): void;
+}
+
+declare module '@girs/gnome-shell/misc/systemActions' {
+    interface SystemActions {
+        getMatchingActions(terms: string[]): string[];
+        getName(id: string): string | null;
+        getIconName(id: string): string | null;
+        activateAction(id: string): void;
+    }
+}
+
+declare module 'resource:///org/gnome/shell/ui/shellEntry.js' {
+    import type St from 'gi://St';
+
+    export function addContextMenu(
+        entry: St.Entry,
+        params?: { actionMode?: number }
+    ): void;
 }

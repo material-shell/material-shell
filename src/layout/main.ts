@@ -110,14 +110,14 @@ export class MsMain extends St.Widget {
 
         const effect = (this.blurEffect = new Shell.BlurEffect({
             brightness: 0.55,
-            sigma: 60 * themeContext.scale_factor,
+            radius: 60 * themeContext.scale_factor,
         }));
 
         this._scaleChangedId = SignalHandle.connect(
             themeContext,
             'notify::scale-factor',
             () => {
-                effect.sigma = 60 * themeContext.scale_factor;
+                effect.radius = 60 * themeContext.scale_factor;
             }
         );
 

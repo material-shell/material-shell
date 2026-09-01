@@ -1,7 +1,7 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
 import St from 'gi://St';
-import * as Util from 'resource:///org/gnome/shell/misc/util.js';
+import * as AnimationUtils from 'resource:///org/gnome/shell/misc/animationUtils.js';
 import * as ShellEntry from 'resource:///org/gnome/shell/ui/shellEntry.js';
 import { registerGObjectClass } from 'src/utils/gjs';
 import { SearchResultList } from './searchResultList';
@@ -54,7 +54,7 @@ export class ExtendedPanelContent extends St.BoxLayout {
 
         this.searchResultList = new SearchResultList(this.searchEntry);
         this.searchResultList.connect('result-selected-changed', (_, res) => {
-            Util?.ensureActorVisibleInScrollView(this.scrollView, res);
+            AnimationUtils.ensureActorVisibleInScrollView(this.scrollView, res);
         });
         this.scrollView.add_child(this.searchResultList);
 

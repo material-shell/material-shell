@@ -1,6 +1,7 @@
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 
@@ -104,7 +105,7 @@ export function loadRemoteSearchProviders(
             let appInfo = null;
             try {
                 const desktopId = keyfile.get_string(group, 'DesktopId');
-                appInfo = Gio.DesktopAppInfo.new(desktopId);
+                appInfo = GioUnix.DesktopAppInfo.new(desktopId);
                 if (!appInfo.should_show()) return;
             } catch (e) {
                 log(`Ignoring search provider ${path}: missing DesktopId`);
@@ -209,7 +210,7 @@ export function loadRemoteSearchProviders(
 }
 
 export class RemoteSearchProvider {
-    appInfo: Gio.DesktopAppInfo;
+    appInfo: GioUnix.DesktopAppInfo;
     proxy: Gio.DBusProxy;
     defaultEnabled?: boolean;
     isRemoteProvider = true;
@@ -222,7 +223,7 @@ export class RemoteSearchProvider {
     }
 
     constructor(
-        appInfo: Gio.DesktopAppInfo,
+        appInfo: GioUnix.DesktopAppInfo,
         dbusName: string,
         dbusPath: string,
         autoStart: boolean,
@@ -427,7 +428,7 @@ export class RemoteSearchProvider {
 
 export class RemoteSearchProvider2 extends RemoteSearchProvider {
     constructor(
-        appInfo: Gio.DesktopAppInfo,
+        appInfo: GioUnix.DesktopAppInfo,
         dbusName: string,
         dbusPath: string,
         autoStart: boolean

@@ -222,7 +222,7 @@ export class DropPlaceholder extends St.Widget {
             'drag-over': {},
         },
     };
-    _delegate: this;
+    override _delegate: this;
 
     constructor() {
         super({ style_class: 'drop-placeholder' });

@@ -39,7 +39,7 @@ const isTileableItemOrIconTaskBarItem = (
 };
 @registerGObjectClass
 export class TaskBar extends St.Widget {
-    private _delegate: this;
+    override _delegate: this;
     taskActiveIndicator: TaskActiveIndicator;
     taskButtonContainer: ReorderableList;
     msWorkspace: MsWorkspace;
@@ -319,7 +319,7 @@ export class TaskBarItem extends MatButton {
             'middle-clicked': {},
         },
     };
-    private _delegate: this;
+    override _delegate: this;
     draggable: boolean;
     contentActor: St.Widget;
     monitor: Monitor;

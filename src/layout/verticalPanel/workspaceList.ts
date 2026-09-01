@@ -22,7 +22,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
-    private _delegate: this;
+    override _delegate: this;
     msWorkspaceButtonMap: Map<MsWorkspace, WorkspaceButton>;
     msWorkspaceManager: MsWorkspaceManager;
     menuManager: PopupMenu.PopupMenuManager;
@@ -215,7 +215,7 @@ export class WorkspaceButton extends MatButton {
     msWorkspace: MsWorkspace;
     msWorkspaceManager: MsWorkspaceManager;
     workspaceButtonIcon: WorkspaceButtonIcon;
-    private _delegate: this;
+    override _delegate: this;
     menu: StyleMenu;
     mouseData: {
         pressed: boolean;
