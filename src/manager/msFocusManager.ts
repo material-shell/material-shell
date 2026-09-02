@@ -6,6 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { default as Me } from 'src/extension';
 
 import { MsWindow } from 'src/layout/msWorkspace/msWindow';
+import { MsWorkspaceActor } from 'src/layout/msWorkspace/msWorkspace';
 import { MsManager } from 'src/manager/msManager';
 import { Async } from 'src/utils/async';
 
@@ -60,6 +61,16 @@ export class MsFocusManager extends MsManager {
                 this.lastKeyFocus != this.lastMsWindowFocused &&
                 this.lastKeyFocus.mapped
             ) {
+                // Never restore the focus to an actor of a workspace we just left: it
+                // would pin the keyboard focus to the shell. As long as a shell actor
+                // holds the key focus mutter stops forwarding key events to wayland
+                // clients, so the release of the shortcut key never reaches the focused
+                // window and stays stuck down for it.
+                if (!this.isOnDisplayedMsWorkspace(this.lastKeyFocus)) {
+                    this.lastKeyFocus = null;
+                    return;
+                }
+
                 Debug.logFocus(
                     'Focus Protected, restore focus to ',
                     this.lastKeyFocus
@@ -97,6 +108,21 @@ export class MsFocusManager extends MsManager {
         this.setFocusToMsWindow(msWindow);
     }
 
+    /**
+     * Whether the actor still lives on a workspace which is currently displayed.
+     * Actors outside of any msWorkspace (panels, overlays) are never stale.
+     */
+    isOnDisplayedMsWorkspace(actor: Clutter.Actor): boolean {
+        let current: Clutter.Actor | null = actor;
+        while (current !== null) {
+            if (current instanceof MsWorkspaceActor) {
+                return current.msWorkspace.isDisplayed();
+            }
+            current = current.get_parent();
+        }
+        return true;
+    }
+
     setFocusToMsWindow(msWindow: MsWindow): void {
         if (msWindow === this.lastMsWindowFocused) return;
         this.lastMsWindowFocused = msWindow;
@@ -118,7 +144,7 @@ export class MsFocusManager extends MsManager {
         actor: Clutter.Actor,
         options?: {
             timestamp?: number;
-            options?: any;
+            options?: never;
             actionMode?: Shell.ActionMode;
         }
     ) {
