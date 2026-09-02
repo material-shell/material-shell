@@ -3,7 +3,6 @@ import Clutter from 'gi://Clutter';
 import Cogl from 'gi://Cogl';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Meta from 'gi://Meta';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { default as Me } from 'src/extension';
@@ -11,6 +10,7 @@ import { throttle } from 'src/utils';
 import { assertNotNull } from 'src/utils/assert';
 import { Debug } from 'src/utils/debug';
 import { getSettings } from 'src/utils/settings';
+import { invalidate_style_recursively } from 'src/utils/styling_utils';
 import { MsManager } from './msManager';
 
 /* exported VerticalPanelPositionEnum, HorizontalPanelPositionEnum, PanelIconStyleEnum, FocusEffectEnum, MsThemeManager */
@@ -81,8 +81,8 @@ export class MsThemeManager extends MsManager {
                 Me.instance.metadata.uuid
             }-theme.css`
         );
-        this.themeValue = this.themeSettings.get_string('theme')!;
-        this.primary = this.themeSettings.get_string('primary-color')!;
+        this.themeValue = this.themeSettings.get_string('theme');
+        this.primary = this.themeSettings.get_string('primary-color');
         this.primaryColor = parseCoglColor(this.primary);
         this.cursorType = Clutter.CursorType.DEFAULT;
         let displayedCursor: Clutter.CursorType = this.cursorType;
@@ -106,6 +106,18 @@ export class MsThemeManager extends MsManager {
             }
             if (!this.theme.application_stylesheet) {
                 Main.layoutManager.uiGroup.add_style_class_name('no-theme');
+            }
+
+            // St only walks the stage when it invalidates styles, so a workspace
+            // that is currently out of the tree keeps its cached theme node —
+            // and that node is disposed as soon as this signal returns, leaving
+            // the subtree with a node that has no theme and therefore matches no
+            // rule. Drop those nodes here, while they are still alive. The actors
+            // are unmapped, so nothing is recomputed until the workspace is
+            // mapped again, and st_widget_map does that on its own.
+            for (const msWorkspace of Me.instance.msWorkspaceManager
+                ?.msWorkspaceList ?? []) {
+                invalidate_style_recursively(msWorkspace.msWorkspaceActor);
             }
         });
         this.observe(this.themeSettings, 'changed::theme', (schema) => {
