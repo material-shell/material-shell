@@ -203,10 +203,10 @@ export class BaseTilingLayout<
         actor.translation_y = actor.height * 0.1;
         actor.opacity = 0;
         actor.ease({
-            scale_x: 1,
-            scale_y: 1,
-            translation_x: 0,
-            translation_y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            translationX: 0,
+            translationY: 0,
             opacity: 255,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -216,10 +216,10 @@ export class BaseTilingLayout<
     hideAppLauncher() {
         const actor = this.msWorkspace.appLauncher;
         actor.ease({
-            scale_x: 0.8,
-            scale_y: 0.8,
-            translation_x: actor.width * 0.1,
-            translation_y: actor.height * 0.1,
+            scaleX: 0.8,
+            scaleY: 0.8,
+            translationX: actor.width * 0.1,
+            translationY: actor.height * 0.1,
             opacity: 0,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -361,14 +361,14 @@ export class BaseTilingLayout<
     }
 
     override vfunc_get_preferred_width(
-        _container: Clutter.Container,
+        _container: Clutter.Actor,
         _forHeight: number
     ): [number, number] {
         return [-1, -1];
     }
 
     override vfunc_get_preferred_height(
-        _container: Clutter.Container,
+        _container: Clutter.Actor,
         _forWidth: number
     ): [number, number] {
         return [-1, -1];

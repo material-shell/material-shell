@@ -22,7 +22,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class WorkspaceList extends St.Widget {
-    private _delegate: this;
+    override _delegate: this;
     msWorkspaceButtonMap: Map<MsWorkspace, WorkspaceButton>;
     msWorkspaceManager: MsWorkspaceManager;
     menuManager: PopupMenu.PopupMenuManager;
@@ -153,7 +153,7 @@ export class WorkspaceList extends St.Widget {
         this.buttonActive.add_style_class_name('active');
 
         this.workspaceActiveIndicator.ease({
-            translation_y: this.get_preferred_width(-1)[1]! * index,
+            translationY: this.get_preferred_width(-1)[1]! * index,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
@@ -215,7 +215,7 @@ export class WorkspaceButton extends MatButton {
     msWorkspace: MsWorkspace;
     msWorkspaceManager: MsWorkspaceManager;
     workspaceButtonIcon: WorkspaceButtonIcon;
-    private _delegate: this;
+    override _delegate: this;
     menu: StyleMenu;
     mouseData: {
         pressed: boolean;

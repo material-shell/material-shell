@@ -19,6 +19,7 @@ import { MsApplicationLauncher } from 'src/widget/msApplicationLauncher';
 /** Extension imports */
 import { default as Me } from 'src/extension';
 import { Debug } from 'src/utils/debug';
+import { Monitor } from 'src/utils/shellTypes';
 
 /** Maximum number of previously focused windows to keep track of.
  * The history should be kept reasonably short to avoid memory leaks and because it makes no sense to remember user actions too long ago.
@@ -59,7 +60,7 @@ export class MsWorkspace extends WithSignals {
     // Safety: We always assign this because we call setMonitor from the constructor
     monitorIsExternal!: boolean;
     // Definitely set because we call `setMonitor` in the constructor
-    monitor!: Main.Monitor;
+    monitor!: Monitor;
     emitTileableChangedInProgress: Promise<void> | undefined;
     /** History of previously focused windows.
      * This is used to get a better estimate of how to restore focus when a window is removed from the workspace.
@@ -78,7 +79,7 @@ export class MsWorkspace extends WithSignals {
 
     constructor(
         msWorkspaceManager: MsWorkspaceManager,
-        monitor: Main.Monitor,
+        monitor: Monitor,
         state: Partial<MsWorkspaceState> = {}
     ) {
         super();
@@ -651,7 +652,7 @@ export class MsWorkspace extends WithSignals {
         }
     }
 
-    setMonitor(monitor: Main.Monitor) {
+    setMonitor(monitor: Monitor) {
         this.monitor = monitor;
         this.monitorIsExternal =
             monitor.index !== Main.layoutManager.primaryIndex;
@@ -675,11 +676,11 @@ export class MsWorkspaceActor extends Clutter.Actor {
             clip_to_allocation: true,
             x_expand: true,
             y_expand: true,
-            //background_color: new Clutter.Color({ red: 120, alpha: 255 }),
+            //background_color: new Cogl.Color({ red: 120, alpha: 255 }),
         });
         this.msWorkspace = msWorkspace;
         this.tileableContainer = new Clutter.Actor({
-            //background_color: new Clutter.Color({ blue: 120, alpha: 255 }),
+            //background_color: new Cogl.Color({ blue: 120, alpha: 255 }),
         });
 
         this.panel = new HorizontalPanel(msWorkspace);

@@ -168,7 +168,7 @@ export class MsResizeManager extends MsManager {
         global.stage.add_child(this.inputResizer);
         this.msWindowManager.msFocusManager.pushModal(this.inputResizer);
 
-        Me.msThemeManager!.setCursor(Meta.Cursor.MOVE_OR_RESIZE_WINDOW);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.MOVE);
     }
 
     updateResize() {
@@ -197,7 +197,7 @@ export class MsResizeManager extends MsManager {
         Me.stateManager!.stateChanged();
 
         global.stage.remove_child(this.inputResizer);
-        Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
     }
 
     resizeTileable(

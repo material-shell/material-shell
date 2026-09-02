@@ -22,6 +22,7 @@ import { MsWorkspace, Tileable } from '../msWorkspace';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
+import { Monitor } from 'src/utils/shellTypes';
 
 const isTileableItem = (obj: any): obj is TileableItem => {
     return obj instanceof TileableItem;
@@ -38,7 +39,7 @@ const isTileableItemOrIconTaskBarItem = (
 };
 @registerGObjectClass
 export class TaskBar extends St.Widget {
-    private _delegate: this;
+    override _delegate: this;
     taskActiveIndicator: TaskActiveIndicator;
     taskButtonContainer: ReorderableList;
     msWorkspace: MsWorkspace;
@@ -283,8 +284,8 @@ export class TaskActiveIndicator extends St.Widget {
     }
     animate() {
         this.ease({
-            translation_x: 0,
-            scale_x: 1,
+            translationX: 0,
+            scaleX: 1,
             duration: 250,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onStopped: () => {
@@ -318,10 +319,10 @@ export class TaskBarItem extends MatButton {
             'middle-clicked': {},
         },
     };
-    private _delegate: this;
+    override _delegate: this;
     draggable: boolean;
     contentActor: St.Widget;
-    monitor: Main.Monitor;
+    monitor: Monitor;
     menu: PopupMenu.PopupMenu | undefined;
     tileable: Tileable | undefined;
 

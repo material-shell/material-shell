@@ -21,6 +21,7 @@ import { isNonNull } from 'src/utils/predicates';
 import { getSettings } from 'src/utils/settings';
 
 import { MetaWindowWithMsProperties } from './msWindowManager';
+import { Monitor } from 'src/utils/shellTypes';
 
 interface MsWorkspaceManagerState {
     msWorkspaceList: MsWorkspaceState[];
@@ -387,11 +388,9 @@ export class MsWorkspaceManager extends MsManager {
         this.numOfMonitors = global.display.get_n_monitors();
         this.primaryIndex = global.display.get_primary_monitor();
         // First manage external screen
-        const externalMonitors: Main.Monitor[] =
-            Main.layoutManager.monitors.filter(
-                (monitor: Main.Monitor) =>
-                    monitor != Main.layoutManager.primaryMonitor
-            );
+        const externalMonitors: Monitor[] = Main.layoutManager.monitors.filter(
+            (monitor: Monitor) => monitor != Main.layoutManager.primaryMonitor
+        );
 
         externalMonitors.forEach((externalMonitor) => {
             // try to find an unused external msWorkspace for this external Monitor
@@ -519,7 +518,7 @@ export class MsWorkspaceManager extends MsManager {
     }
 
     createNewMsWorkspace(
-        monitor: Main.Monitor,
+        monitor: Monitor,
         initialState?: Partial<MsWorkspaceState>
     ) {
         const msWorkspace = new MsWorkspace(this, monitor, initialState);

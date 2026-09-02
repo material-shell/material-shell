@@ -174,7 +174,7 @@ export class MsDndManager extends MsManager {
             )
         );
         this.msWindowManager.msFocusManager.pushModal(this.inputGrabber);
-        Me.msThemeManager!.setCursor(Meta.Cursor.DND_IN_DRAG);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.GRABBING);
     }
 
     endDrag() {
@@ -189,7 +189,7 @@ export class MsDndManager extends MsManager {
         this.msWindowManager.msWindowList.forEach((aMsWindow) => {
             aMsWindow.updateMetaWindowVisibility();
         });
-        Me.msThemeManager!.setCursor(Meta.Cursor.DEFAULT);
+        Me.msThemeManager!.setCursor(Clutter.CursorType.DEFAULT);
     }
 
     checkUnderThePointerRoutine() {
@@ -206,7 +206,7 @@ export class MsDndManager extends MsManager {
         assert(this.dragInProgress !== null, 'No drag in progress');
 
         const [x, y] = global.get_pointer();
-        const monitor = Main.layoutManager.currentMonitor;
+        const monitor = assertNotNull(Main.layoutManager.currentMonitor);
 
         //Check for all tileable of the msWindow's msWorkspace if the pointer is above another msWindow
         const msWindowDragged = this.dragInProgress.msWindow;
@@ -265,7 +265,7 @@ export class InputGrabber extends Clutter.Actor {
         super({
             name: 'InputGrabber',
             reactive: true,
-            //backgroundColor: Clutter.Color.new(255, 0, 0, 100),
+            //backgroundColor: new Cogl.Color({ red: 255, green: 0, blue: 0, alpha: 100 }),
         });
         this.add_constraint(
             new Clutter.BindConstraint({
@@ -274,7 +274,7 @@ export class InputGrabber extends Clutter.Actor {
             })
         );
     }
-    override vfunc_key_press_event(keyEvent: Clutter.KeyEvent) {
+    override vfunc_key_press_event(keyEvent: Clutter.Event) {
         const actionId = global.display.get_keybinding_action(
             keyEvent.get_key_code(),
             keyEvent.get_state()

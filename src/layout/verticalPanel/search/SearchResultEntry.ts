@@ -18,7 +18,7 @@ export class SearchResultEntry extends MatButton {
     layout = new St.BoxLayout();
     icon: St.Icon | null;
     textLayout = new St.BoxLayout({
-        vertical: true,
+        orientation: Clutter.Orientation.VERTICAL,
         style_class: 'margin-left-x2 margin-top margin-bottom margin-right-x2',
         y_align: Clutter.ActorAlign.CENTER,
     });

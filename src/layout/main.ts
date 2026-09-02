@@ -1,5 +1,6 @@
 /** Gnome libs imports */
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -22,6 +23,7 @@ import * as Background from 'resource:///org/gnome/shell/ui/background.js';
 
 /** Extension imports */
 import { default as Me } from 'src/extension';
+import { Monitor } from 'src/utils/shellTypes';
 
 @registerGObjectClass
 export class MsMain extends St.Widget {
@@ -108,14 +110,14 @@ export class MsMain extends St.Widget {
 
         const effect = (this.blurEffect = new Shell.BlurEffect({
             brightness: 0.55,
-            sigma: 60 * themeContext.scale_factor,
+            radius: 60 * themeContext.scale_factor,
         }));
 
         this._scaleChangedId = SignalHandle.connect(
             themeContext,
             'notify::scale-factor',
             () => {
-                effect.sigma = 60 * themeContext.scale_factor;
+                effect.radius = 60 * themeContext.scale_factor;
             }
         );
 
@@ -323,7 +325,7 @@ export class MsMain extends St.Widget {
             this.overviewShown = false;
             this.primaryMonitorContainer.workspaceContainer.ease_property(
                 '@effects.dimmer.brightness',
-                Clutter.Color.new(127, 127, 127, 255),
+                new Cogl.Color({ red: 127, green: 127, blue: 127, alpha: 255 }),
                 {
                     duration: 300,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
@@ -341,14 +343,19 @@ export class MsMain extends St.Widget {
 
             const dimmerEffect = new Clutter.BrightnessContrastEffect({
                 name: 'dimmer',
-                brightness: Clutter.Color.new(127, 127, 127, 255),
+                brightness: new Cogl.Color({
+                    red: 127,
+                    green: 127,
+                    blue: 127,
+                    alpha: 255,
+                }),
             });
             this.primaryMonitorContainer.workspaceContainer.add_effect(
                 dimmerEffect
             );
             this.primaryMonitorContainer.workspaceContainer.ease_property(
                 '@effects.dimmer.brightness',
-                Clutter.Color.new(90, 90, 90, 255),
+                new Cogl.Color({ red: 90, green: 90, blue: 90, alpha: 255 }),
                 {
                     duration: 300,
                     mode: Clutter.AnimationMode.EASE_IN_QUAD,
@@ -388,13 +395,13 @@ export class MonitorContainer extends St.Widget {
     bgManager: any;
     msWorkspaceActor: MsWorkspaceActor | undefined;
     // Safety: We definitely set this because we call setMonitor from the constructor
-    monitor!: Main.Monitor;
+    monitor!: Monitor;
     layout: MsMain;
     constructor(
         layout: MsMain,
-        monitor: Main.Monitor,
+        monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
-        params?: Partial<St.Widget.ConstructorProperties>
+        params?: Partial<St.Widget.ConstructorProps>
     ) {
         super(params);
         this.layout = layout;
@@ -421,9 +428,7 @@ export class MonitorContainer extends St.Widget {
         this.connect('destroy', () => {
             Me.msThemeManager.disconnect(panelSizeSignal);
             Me.msThemeManager.disconnect(horizontalPanelPositionSignal);
-            if (this.bgManager) {
-                this.bgManager.destroy();
-            }
+            this.destroyBackgroundManager();
         });
     }
 
@@ -464,10 +469,34 @@ export class MonitorContainer extends St.Widget {
         );
     }
 
-    setMonitor(monitor: Main.Monitor) {
-        if (this.bgManager) {
-            this.bgManager.destroy();
-        }
+    /**
+     * Clutter destroys an actor's children before emitting ::destroy on the
+     * actor itself, so by the time this container is torn down the background
+     * manager's actor is already gone. Watch for that and clear the reference,
+     * or the manager destroys an actor that no longer exists.
+     */
+    watchBackgroundActor() {
+        const bgManager = this.bgManager;
+        const actor = bgManager?.backgroundActor;
+        if (!actor) return;
+        actor.connect('destroy', () => {
+            if (bgManager.backgroundActor === actor) {
+                bgManager.backgroundActor = null;
+            } else {
+                // The manager swapped in a new actor; follow that one instead.
+                this.watchBackgroundActor();
+            }
+        });
+    }
+
+    destroyBackgroundManager() {
+        const bgManager = this.bgManager;
+        this.bgManager = null;
+        bgManager?.destroy();
+    }
+
+    setMonitor(monitor: Monitor) {
+        this.destroyBackgroundManager();
         this.monitor = monitor;
         this.set_size(monitor.width, monitor.height);
         this.set_position(monitor.x, monitor.y);
@@ -476,6 +505,7 @@ export class MonitorContainer extends St.Widget {
             container: this.bgGroup,
             monitorIndex: monitor.index,
         });
+        this.watchBackgroundActor();
     }
 
     vfunc_allocate(box: Clutter.ActorBox) {
@@ -520,9 +550,9 @@ export class PrimaryMonitorContainer extends MonitorContainer {
     );
     constructor(
         layout: MsMain,
-        monitor: Main.Monitor,
+        monitor: Monitor,
         bgGroup: Meta.BackgroundGroup,
-        params?: Partial<St.Widget.ConstructorProperties>
+        params?: Partial<St.Widget.ConstructorProps>
     ) {
         super(layout, monitor, bgGroup, params);
 

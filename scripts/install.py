@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import getpass
-import json
 import os
 import re
 import shutil
@@ -34,17 +32,13 @@ def try_call(params):
 
 
 def window_manager() -> str:
-    sessions = json.loads(subprocess.check_output(["loginctl", "--output=json"]).decode('utf-8'))
-    username = getpass.getuser()
-    sessionIds = [r["session"] for r in sessions if r["user"] == username]
-    window_manager = "unknown"
-    for sessionId in sessionIds:
-        if subprocess.check_output(["loginctl", "show-session", str(sessionId), "-p", "Active", "--value"]).decode('utf-8').strip() == "yes":
-            # Found the active session, get the window manager name from it
-            window_manager = subprocess.check_output(
-                ["loginctl", "show-session", str(sessionId), "-p", "Type", "--value"]).decode('utf-8').strip()
+    '''
+    Returns "x11", "wayland" or "unknown" for the session this script runs in.
 
-    return window_manager
+    Only "x11" makes the caller restart gnome-shell, so an unset variable has to
+    fall through to "unknown": killing the shell on wayland ends the session.
+    '''
+    return os.environ.get("XDG_SESSION_TYPE", "unknown").strip().lower()
 
 
 def install():
@@ -78,7 +72,7 @@ def install():
     #    exit(1)
     if which("gnome-shell") is not None:
         output = check_output(['gnome-shell', '--version']).decode('utf-8')
-        match = re.search("\d+", output)
+        match = re.search(r"\d+", output)
         if match is None or int(match.group(0)) < 40:
             printc(RED, "Your gnome shell version seem to be below 40 and this current version is only compatible with gnome 40 and above. Try the 3.38 branch")
             exit(1)

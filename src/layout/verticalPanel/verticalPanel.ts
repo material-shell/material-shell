@@ -41,13 +41,13 @@ export class PanelContent extends St.BoxLayout {
 
     constructor() {
         super({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
         });
 
         // Top part
         this.topBox = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             y_expand: true,
         });
         this.add_child(this.topBox);
@@ -252,7 +252,7 @@ export class MsPanel extends St.BoxLayout {
                     : 1);
 
             this.ease({
-                translation_x: 0,
+                translationX: 0,
                 duration: 200,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             });
@@ -266,7 +266,7 @@ export class MsPanel extends St.BoxLayout {
             this.remove_style_class_name('shadow');
 
             this.ease({
-                translation_x:
+                translationX:
                     (Me.msThemeManager!.getScaledSize(448) -
                         (Me.layout!.panelsVisible
                             ? Me.msThemeManager!.getPanelSize()

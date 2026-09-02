@@ -18,7 +18,7 @@ import { default as Me } from 'src/extension';
 
 @registerGObjectClass
 export class HorizontalPanel extends St.BoxLayout {
-    private _delegate: this;
+    override _delegate: this;
     menuManager: PopupMenu.PopupMenuManager;
     taskBar: TaskBar;
     layoutSwitcher: LayoutSwitcher;

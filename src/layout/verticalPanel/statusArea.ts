@@ -16,7 +16,6 @@ import { registerGObjectClass } from 'src/utils/gjs';
 import { reparentActor } from 'src/utils/index';
 import {
     compareVersions,
-    gnomeVersionGreaterOrEqualTo,
     gnomeVersionNumber,
     parseVersion,
 } from 'src/utils/shellVersionMatch';
@@ -57,7 +56,7 @@ export class MsStatusArea extends Clutter.Actor {
         this.leftBoxActors = [];
         this.centerBoxActors = [];
         this.rightBoxActors = [];
-        this.dateMenu = this.gnomeShellPanel.statusArea.dateMenu;
+        this.dateMenu = assertNotNull(this.gnomeShellPanel.statusArea.dateMenu);
         this.enable();
 
         const panelSizeSignal = Me.msThemeManager!.connect(
@@ -157,9 +156,8 @@ export class MsStatusArea extends Clutter.Actor {
             .get_children()
             .filter((actor) => {
                 return (
-                    actor !=
-                        this.gnomeShellPanel.statusArea.activities.container &&
-                    actor != this.gnomeShellPanel.statusArea?.appMenu?.container
+                    actor !==
+                    this.gnomeShellPanel.statusArea.activities?.container
                 );
             })
             .forEach((actor) => {
@@ -211,7 +209,8 @@ export class MsStatusArea extends Clutter.Actor {
             Debug.logFocus(Panel.QuickSettings);
             if (
                 mainChild instanceof
-                this.gnomeShellPanel.statusArea.quickSettings.constructor
+                assertNotNull(this.gnomeShellPanel.statusArea.quickSettings)
+                    .constructor
             ) {
                 // This is the main system menu
                 return 1;
@@ -280,7 +279,9 @@ export class MsStatusArea extends Clutter.Actor {
         controlledByMS: boolean
     ) {
         if (actor instanceof St.BoxLayout) {
-            actor.vertical = controlledByMS;
+            actor.orientation = controlledByMS
+                ? Clutter.Orientation.VERTICAL
+                : Clutter.Orientation.HORIZONTAL;
             actor.set_x_align(Clutter.ActorAlign.CENTER);
         }
         if (
@@ -338,9 +339,7 @@ export class MsStatusArea extends Clutter.Actor {
     overridePanelMenuSide() {
         // For each menu override the opening side to match the vertical panel
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
-            const menu = gnomeVersionGreaterOrEqualTo(menuData, '42.0')
-                ? menuData
-                : menuData.menu;
+            const menu = menuData;
 
             if (menu._boxPointer) {
                 (menu._boxPointer as any).oldArrowSideFunction =
@@ -357,9 +356,7 @@ export class MsStatusArea extends Clutter.Actor {
 
     restorePanelMenuSide() {
         for (const menuData of this.gnomeShellPanel.menuManager._menus) {
-            const menu = gnomeVersionGreaterOrEqualTo(menuData, '42.0')
-                ? menuData
-                : menuData.menu;
+            const menu = menuData;
 
             if (menu._boxPointer) {
                 menu._boxPointer._calculateArrowSide = (
@@ -376,11 +373,9 @@ export class MsStatusArea extends Clutter.Actor {
         this.restorePanelActors();
         this.restoreAppIndicatorSettings();
 
-        if (compareVersions(gnomeVersionNumber, parseVersion('43.0')) >= 0) {
-            this.gnomeShellPanel.statusArea.quickSettings.set_y_expand(true);
-        } else {
-            this.gnomeShellPanel.statusArea.aggregateMenu.set_y_expand(true);
-        }
+        assertNotNull(
+            this.gnomeShellPanel.statusArea.quickSettings
+        ).set_y_expand(true);
     }
 }
 

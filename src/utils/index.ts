@@ -120,10 +120,11 @@ export const reparentActor = (
     if (currentParent === parent) return;
 
     Me.instance.reparentInProgress = true;
+    const keyFocus = global.stage.key_focus;
     const restoreFocusTo = actor.has_key_focus()
         ? actor
-        : isParentOfActor(actor, global.stage.key_focus)
-        ? global.stage.key_focus
+        : keyFocus !== null && isParentOfActor(actor, keyFocus)
+        ? keyFocus
         : null;
 
     if (restoreFocusTo) {

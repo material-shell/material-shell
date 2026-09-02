@@ -58,8 +58,8 @@ export class AppSearchProvider {
                         app.create_icon_texture(size) as St.Icon,
                 });
             } else {
-                const name = this._systemActions.getName(id);
-                const iconName = this._systemActions.getIconName(id);
+                const name = this._systemActions.getName(id)!;
+                const iconName = this._systemActions.getIconName(id)!;
 
                 const createIcon = (size: number) =>
                     new St.Icon({

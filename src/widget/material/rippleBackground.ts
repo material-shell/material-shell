@@ -41,8 +41,8 @@ export class RippleWave extends St.Widget {
         this.scale_y = 32 / this.fullSize;
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this.ease({
-                scale_x: 1,
-                scale_y: 1,
+                scaleX: 1,
+                scaleY: 1,
                 duration: (this.fullSize / 800) * 1000,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             });
@@ -107,13 +107,9 @@ export class RippleBackground extends St.Widget {
             }
         );
 
-        const deactivateId = global.stage.connect(
-            'deactivate',
-            this.removeRippleWave.bind(this)
-        );
-        this.connect('destroy', () => {
-            if (deactivateId) global.stage.disconnect(deactivateId);
-        });
+        // The stage used to emit ::deactivate when it lost input focus, which
+        // was a second way to clear the wave. The signal is gone, and the
+        // event handler above already clears it on leave and on release.
     }
 
     createRippleWave(x: number, y: number) {

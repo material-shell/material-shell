@@ -4,6 +4,9 @@
     "description": "A **simple**, **productivity oriented** GNOME Shell replacement that provides an **innovative** and **automated** **mouse and keyboard [workflow](./documentation/material-shell.md#workflow)** which aims to be **faster** and **easier** to use and creates a **great user experience**.",
     "main": "extension.js",
     "devDependencies": {
+        "@girs/giounix-2.0": "^4.5.0",
+        "@girs/gnome-shell": "^50.0.4",
+        "@girs/soup-3.0": "^4.5.0",
         "@rollup/plugin-alias": "^3.1.1",
         "@rollup/plugin-node-resolve": "^11.1.0",
         "@types/estree": "0.0.51",
@@ -22,7 +25,7 @@
         "sass": "^1.54.4",
         "tsc-watch": "^4.2.9",
         "tslib": "^2.2.0",
-        "typescript": "^4.6.3"
+        "typescript": "^5.6.3"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -31,7 +34,7 @@
         "rollup-prefs": "npx rollup -c rollup.config.prefs.js -i build/prefs/prefs.js  -o dist/prefs.js",
         "rollup-prefs-watch": "npx rollup -w -c rollup.config.js -i build/prefs/prefs.js  -o dist/prefs.js",
         "transpile-and-rollup": "node build/transpile.js && npm run rollup-extension && npm run rollup-prefs",
-        "dev": "npx tsc scripts/transpile.ts --outDir build && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "
+        "dev": "npx tsc scripts/transpile.ts --outDir build --skipLibCheck && tsc-watch --onSuccess \"npm run transpile-and-rollup\" "
     },
     "repository": {
         "type": "git",
